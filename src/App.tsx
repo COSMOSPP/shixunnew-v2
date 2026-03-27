@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import PublicLayout from "./layouts/PublicLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Home from "./pages/Home";
@@ -63,7 +63,7 @@ import TeacherResources from "./pages/teacher/TeacherResources";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         {/* Public Website */}
         <Route path="/" element={<PublicLayout />}>
@@ -160,6 +160,6 @@ export default function App() {
           </Route>
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
