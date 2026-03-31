@@ -26,7 +26,7 @@ export default function PublicLayout() {
                 </span>
                 <div className="absolute top-full left-0 hidden group-hover:block">
                   <div className="w-48 rounded-[6px] border border-neutral-border bg-neutral-surface p-2 shadow-sm">
-                    <Link to="/login" className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">人工智能</Link>
+                    <Link to="/user" onClick={() => localStorage.removeItem('isLoggedIn')} className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">人工智能</Link>
                     <Link to="/login" className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">安全运维</Link>
                     <Link to="/login" className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">私有云</Link>
                     <Link to="/login" className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">公有云</Link>

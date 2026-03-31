@@ -38,6 +38,14 @@ export default function UserCourses() {
   const [selectedRole, setSelectedRole] = useState("在校学生");
   const [selectedFamiliarity, setSelectedFamiliarity] = useState("会python，不了解AI");
   const [selectedDirection, setSelectedDirection] = useState("还没想好，先看看");
+  
+  const [selectedTag, setSelectedTag] = useState("全部");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("全部");
+  const [selectedPrice, setSelectedPrice] = useState("全部");
+
+  const tagsList = ["全部", "机器学习", "算法", "人工智能", "神经网络", "深度学习", "CV", "NLP", "Prompt", "大语言模型", "模型微调", "RAG", "知识科普", "数据处理", "模型训练", "Deepseek", "LLM", "Agent", "向量数据库", "实战解读", "MCP"];
+  const difficultiesList = ["全部", "入门", "进阶", "高级"];
+  const pricesList = ["全部", "免费", "付费"];
 
   const courses = [
     {
@@ -146,17 +154,60 @@ export default function UserCourses() {
       {/* Filters */}
       <div className="flex flex-col gap-4 mb-8">
         <div className="flex items-start gap-4">
-          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5">课程标签</span>
+          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5 w-16">课程标签</span>
           <div className="flex flex-wrap gap-2">
-            {["全部", "机器学习", "算法", "人工智能", "神经网络", "深度学习", "CV", "NLP", "Prompt", "大语言模型", "模型微调", "RAG", "知识科普", "数据处理", "模型训练", "Deepseek", "LLM", "Agent", "向量数据库", "实战解读", "MCP"].map((tag, i) => (
+            {tagsList.map((tag) => (
               <button 
-                key={i}
+                key={tag}
+                onClick={() => setSelectedTag(tag)}
                 className={cn(
-                  "px-4 py-1.5 rounded-full text-[13px] transition-colors",
-                  i === 0 ? "bg-[#fa541c] text-white" : "bg-white border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
+                  "px-4 py-1.5 rounded-full text-[13px] transition-colors border",
+                  selectedTag === tag 
+                    ? "bg-[#fa541c] text-white border-transparent" 
+                    : "bg-white border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
                 )}
               >
                 {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-start gap-4">
+          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5 w-16">课程难度</span>
+          <div className="flex flex-wrap gap-2">
+            {difficultiesList.map((diff) => (
+              <button 
+                key={diff}
+                onClick={() => setSelectedDifficulty(diff)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-[13px] transition-colors border",
+                  selectedDifficulty === diff 
+                    ? "bg-[#fa541c] text-white border-transparent" 
+                    : "bg-white border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
+                )}
+              >
+                {diff}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-start gap-4">
+          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5 w-16">付费类型</span>
+          <div className="flex flex-wrap gap-2">
+            {pricesList.map((price) => (
+              <button 
+                key={price}
+                onClick={() => setSelectedPrice(price)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-[13px] transition-colors border",
+                  selectedPrice === price 
+                    ? "bg-[#fa541c] text-white border-transparent" 
+                    : "bg-white border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
+                )}
+              >
+                {price}
               </button>
             ))}
           </div>

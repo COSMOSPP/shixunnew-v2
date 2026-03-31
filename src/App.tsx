@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PublicLayout from "./layouts/PublicLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Home from "./pages/Home";
@@ -12,6 +12,8 @@ import UserAIAssistant from "./pages/UserAIAssistant";
 import UserAIAgents from "./pages/UserAIAgents";
 import UserAISkills from "./pages/UserAISkills";
 import UserProjects from "./pages/UserProjects";
+import UserPractices from "./pages/UserPractices";
+import SkillBuilder from "./pages/SkillBuilder";
 import AICompetition from "./pages/AICompetition";
 import CloudCompetition from "./pages/CloudCompetition";
 import UserCenterLayout from "./layouts/UserCenterLayout";
@@ -63,7 +65,7 @@ import TeacherResources from "./pages/teacher/TeacherResources";
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         {/* Public Website */}
         <Route path="/" element={<PublicLayout />}>
@@ -76,6 +78,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login/user" element={<LoginUser />} />
         <Route path="/login/teacher" element={<LoginTeacher />} />
+
+        {/* Skill Builder (Full Screen) */}
+        <Route path="/skill-builder" element={<SkillBuilder />} />
 
         {/* Teacher Dashboard */}
         <Route path="/teacher" element={<TeacherLayout />}>
@@ -96,6 +101,7 @@ export default function App() {
             <Route path="certificates" element={<UserCenterCertificates />} />
           </Route>
           <Route path="projects" element={<UserProjects />} />
+          <Route path="practices" element={<UserPractices />} />
           <Route path="datasets" element={<UserDatasets />} />
           <Route path="ai/assistant" element={<UserAIAssistant />} />
           <Route path="ai/agents" element={<UserAIAgents />} />
@@ -160,6 +166,6 @@ export default function App() {
           </Route>
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }

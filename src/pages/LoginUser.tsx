@@ -3,43 +3,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Lock, GraduationCap } from "lucide-react";
+import userImg from "../user-img.png";
 
 export default function LoginUser() {
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    localStorage.setItem('isLoggedIn', 'true');
     navigate("/user");
   };
 
   return (
     <div className="min-h-screen flex bg-neutral-bg">
       {/* Left Side - 2/5 */}
-      <div className="hidden lg:flex w-2/5 bg-[#fa541c] relative overflow-hidden flex-col items-center justify-center text-white p-12">
+      <div className="hidden lg:flex w-2/5 relative overflow-hidden bg-white">
+        <img 
+          src={userImg} 
+          alt="Login Background" 
+          className="absolute inset-0 w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+        />
         {/* Logo */}
-        <Link to="/" className="absolute top-8 left-8 z-20 flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link to="/" className="absolute top-8 left-8 z-20 flex items-center gap-2 hover:opacity-80 transition-opacity text-white drop-shadow-md">
           <div className="relative flex items-center justify-center">
-            <GraduationCap className="w-10 h-10 text-white" strokeWidth={1.5} />
+            <GraduationCap className="w-10 h-10 text-white drop-shadow-md" strokeWidth={1.5} />
           </div>
-          <span className="text-[24px] font-bold text-white tracking-widest">
+          <span className="text-[24px] font-bold tracking-widest">
             翼实训平台
           </span>
         </Link>
-
-        <div className="absolute inset-0 opacity-10 bg-[url('https://image.pollinations.ai/prompt/A%20cartoon%20hand-drawn%20illustration%20of%20a%20female%20college%20student%20running%20with%20a%20rolled-up%20exam%20paper,%20youthful%20and%20energetic,%20flat%20color,%20anime%20style?width=800&height=1200&nologo=true')] bg-cover bg-center mix-blend-overlay"></div>
-        <div className="relative z-10 text-center mt-16">
-          <h2 className="text-4xl font-bold mb-6 tracking-wider">青春洋溢，奔赴未来</h2>
-          <p className="text-lg opacity-90 mb-12 tracking-wide">带上你的试卷，向着梦想奔跑</p>
-          {/* Illustration */}
-          <div className="w-80 h-80 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-2xl overflow-hidden mx-auto">
-            <img 
-              src="https://image.pollinations.ai/prompt/A%20cartoon%20hand-drawn%20illustration%20of%20a%20female%20college%20student%20running%20with%20a%20rolled-up%20exam%20paper,%20youthful%20and%20energetic,%20flat%20color,%20anime%20style?width=400&height=400&nologo=true" 
-              alt="女大学生手里拿着卷起来的试卷,青春洋溢奔跑" 
-              className="w-full h-full object-cover opacity-95 hover:scale-105 transition-transform duration-700"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Right Side - 3/5 */}

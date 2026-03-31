@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   Book, 
@@ -25,7 +25,9 @@ import {
   Laptop,
   Network,
   Key,
-  Settings
+  Settings,
+  Bell,
+  Star
 } from "lucide-react";
 
 interface NavItem {
@@ -41,9 +43,18 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ type }: DashboardLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    localStorage.removeItem('isLoggedIn');
+    navigate('/login/user');
+  };
 
   const userItems: NavItem[] = [
     { title: "首页", icon: LayoutDashboard, href: "/user" },
+    { title: "最佳实践", icon: Star, href: "/user/practices" },
     { title: "课程", icon: Book, href: "/user/courses" },
     { title: "项目", icon: FolderKanban, href: "/user/projects" },
     { title: "考试", icon: FileText, href: "/user/exams" },
@@ -132,30 +143,43 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
         </div>
 
         <div className="flex items-center gap-5 text-gray-300">
-          <div className="relative group h-full flex items-center">
-            <button className="flex items-center gap-2 hover:text-white transition-colors h-14 px-2">
-              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-700">
-                <UserIcon className="w-4 h-4" />
+          {isLoggedIn ? (
+            <>
+              <button className="relative hover:text-white transition-colors">
+                <Bell className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              <div className="relative group h-full flex items-center">
+                <button className="flex items-center gap-2 hover:text-white transition-colors h-14 px-2">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-700">
+                    <UserIcon className="w-4 h-4" />
+                  </div>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <div className="absolute top-full right-0 hidden group-hover:block pt-1 min-w-[140px]">
+                  <div className="rounded-[6px] border border-neutral-border bg-white p-2 shadow-lg">
+                    <Link to="/user/center" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">个人中心</Link>
+                    <Link to="/user/projects" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">我的项目</Link>
+                    <Link to="/user/exams" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">我的考试</Link>
+                    <div className="h-[1px] bg-neutral-border my-1" />
+                    <button onClick={handleLogout} className="w-full text-left block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">退出登录</button>
+                  </div>
+                </div>
               </div>
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <div className="absolute top-full right-0 hidden group-hover:block pt-1 min-w-[140px]">
-              <div className="rounded-[6px] border border-neutral-border bg-white p-2 shadow-lg">
-                <Link to="/user/center" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">个人中心</Link>
-                <Link to="/user/projects" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">我的项目</Link>
-                <Link to="/user/exams" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">我的考试</Link>
-                <div className="h-[1px] bg-neutral-border my-1" />
-                <Link to="/login" className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">退出登录</Link>
-              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link to="/login/user" className="text-[14px] hover:text-white transition-colors">登录</Link>
+              <Link to="/login/user" className="text-[14px] bg-[#fa541c] hover:bg-[#ff7a45] text-white px-4 py-1.5 rounded-full transition-colors">注册</Link>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
       {/* Main Body */}
       <div className="flex flex-1 min-h-0">
         {/* Main Content Area */}
-        <main className="flex-1 overflow-auto p-6 bg-[#f5f6f8]">
+        <main className={cn("flex-1 overflow-auto bg-[#f5f6f8]", location.pathname === "/user" ? "p-0" : "p-6")}>
           <Outlet />
         </main>
       </div>
