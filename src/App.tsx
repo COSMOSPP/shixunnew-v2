@@ -18,10 +18,15 @@ import SkillBuilder from "./pages/SkillBuilder";
 import AICompetition from "./pages/AICompetition";
 import CloudCompetition from "./pages/CloudCompetition";
 import UserCenterLayout from "./layouts/UserCenterLayout";
-import UserCenterOverview from "./pages/user/UserCenterOverview";
 import UserCenterProfile from "./pages/user/UserCenterProfile";
 import UserCenterLearning from "./pages/user/UserCenterLearning";
 import UserCenterProjects from "./pages/user/UserCenterProjects";
+import UserCenterFavorites from "./pages/user/UserCenterFavorites";
+import UserCenterHistory from "./pages/user/UserCenterHistory";
+import UserCenterSecurity from "./pages/user/UserCenterSecurity";
+import UserCenterMessages from "./pages/user/UserCenterMessages";
+import UserPersona from "./pages/user/UserPersona";
+import MyLearning from "./pages/user/MyLearning";
 import AdminAILayout from "./layouts/AdminAILayout";
 import AdminAICourses from "./pages/admin/AdminAICourses";
 import AdminAIExperiments from "./pages/admin/AdminAIExperiments";
@@ -94,10 +99,14 @@ export default function App() {
         <Route path="/user" element={<DashboardLayout type="user" />}>
           <Route index element={<UserOverview />} />
           <Route path="center" element={<UserCenterLayout />}>
-            <Route index element={<UserCenterOverview />} />
+            <Route index element={<Navigate to="/user/center/profile" replace />} />
             <Route path="profile" element={<UserCenterProfile />} />
             <Route path="learning" element={<UserCenterLearning />} />
             <Route path="projects" element={<UserCenterProjects />} />
+            <Route path="favorites" element={<UserCenterFavorites />} />
+            <Route path="history" element={<UserCenterHistory />} />
+            <Route path="security" element={<UserCenterSecurity />} />
+            <Route path="messages" element={<UserCenterMessages />} />
           </Route>
           <Route path="projects" element={<UserProjects />} />
           <Route path="practices" element={<UserPractices />} />
@@ -109,6 +118,8 @@ export default function App() {
           <Route path="courses" element={<UserDashboard />} />
           <Route path="experiments" element={<UserExperiments />} />
           <Route path="exams" element={<UserExams />} />
+          <Route path="persona" element={<UserPersona />} />
+          <Route path="mylearning" element={<MyLearning />} />
         </Route>
 
         {/* Admin Dashboard */}

@@ -1,16 +1,18 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { User, BookOpen, FolderKanban, LayoutDashboard } from "lucide-react";
+import { User, BookOpen, Clock, Shield, Star, Bell, LayoutDashboard } from "lucide-react";
 
 export default function UserCenterLayout() {
   const location = useLocation();
 
   const menuItems = [
-    { title: "概览", icon: LayoutDashboard, href: "/user/center" },
     { title: "个人资料", icon: User, href: "/user/center/profile" },
     { title: "学习数据", icon: BookOpen, href: "/user/center/learning" },
-    { title: "我的项目", icon: FolderKanban, href: "/user/center/projects" },
+    { title: "我的收藏", icon: Star, href: "/user/center/favorites" },
+    { title: "历史记录", icon: Clock, href: "/user/center/history" },
+    { title: "账号安全", icon: Shield, href: "/user/center/security" },
+    { title: "消息中心", icon: Bell, href: "/user/center/messages" },
   ];
 
   return (
