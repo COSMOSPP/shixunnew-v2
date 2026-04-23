@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -35,9 +35,10 @@ import { cn } from "@/lib/utils";
 import CourseDetail from "@/components/CourseDetail";
 
 export default function UserCourses() {
+  const location = useLocation();
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showLearningPathModal, setShowLearningPathModal] = useState(false);
-  const [showCourseDetail, setShowCourseDetail] = useState(false);
+  const [showCourseDetail, setShowCourseDetail] = useState(location.state?.showDetail || false);
   const [selectedRole, setSelectedRole] = useState("在校学生");
   
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -172,12 +173,14 @@ export default function UserCourses() {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-neutral-title">全部课程</h1>
         </div>
-        <button 
-          onClick={() => setIsAssistantOpen(true)}
-          className="flex items-center gap-2 bg-[#fa541c] hover:bg-[#ff7a45] text-white px-4 py-2 rounded-[8px] font-bold text-[14px] shadow-sm transition-colors"
+        <a
+          href="http://192.168.1.206:3000/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-gradient-to-r from-[#fa541c] to-[#ff7a45] hover:opacity-90 text-white px-4 py-2 rounded-[8px] font-bold text-[14px] shadow-sm transition-all hover:scale-105"
         >
-          <Bot className="w-5 h-5" /> 课程推荐助手
-        </button>
+          <Bot className="w-5 h-5" /> AI互动课程
+        </a>
       </div>
 
       {/* Filters */}

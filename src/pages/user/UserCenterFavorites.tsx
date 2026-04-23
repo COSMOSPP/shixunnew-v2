@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { ChevronRight, Star, Book, FolderKanban, Database, HeartOff, MonitorPlay, FileText } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ChevronRight, Star, Book, FolderKanban, Database, HeartOff, MonitorPlay, FileText, Sparkles } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function UserCenterFavorites() {
-  const [activeTab, setActiveTab] = useState("courses");
+  const [activeTab, setActiveTab] = useState("practices");
+  const navigate = useNavigate();
 
   const tabs = [
+    { id: "practices", label: "收藏的最佳实践", icon: Sparkles },
     { id: "courses", label: "收藏的课程", icon: Book },
     { id: "projects", label: "收藏的项目", icon: FolderKanban },
     { id: "datasets", label: "收藏的数据集", icon: Database },
@@ -94,6 +96,43 @@ export default function UserCenterFavorites() {
                   </Button>
                 </div>
               </div>
+            ))}
+          </div>
+        );
+      case "practices":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2].map(i => (
+              <Card key={i} className="flex flex-row p-0 overflow-hidden hover:shadow-md transition-shadow group border-neutral-border">
+                <div className="w-32 bg-orange-50 flex items-center justify-center border-r border-neutral-border shrink-0">
+                  <Sparkles className="w-10 h-10 text-orange-400" />
+                </div>
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-neutral-title mb-1 text-[15px]">{i === 1 ? "项目汇报 PPT 生成" : "十年经验简历生成"}</h4>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1 text-primary hover:bg-primary/10" title="取消收藏">
+                        <Star className="w-4 h-4 fill-primary text-primary" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-neutral-body line-clamp-2 mt-1">
+                      {i === 1 
+                        ? "基于大模型快速生成项目汇报PPT大纲与内容，适合各类课程期末汇报、项目结题展示等场景，大幅提升文档编写效率。" 
+                        : "通过深度对话挖掘你的核心竞争力，生成对标资深工程师、架构师级别的专业简历，助你脱颖而出。"}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex gap-2">
+                      <span className="px-2 py-0.5 bg-neutral-bg text-neutral-body text-[10px] rounded-[4px]">内容创作</span>
+                      <span className="px-2 py-0.5 bg-neutral-bg text-neutral-body text-[10px] rounded-[4px]">初阶</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button onClick={() => navigate('/practices', { state: { practiceId: i, showDetail: true } })} variant="outline" size="sm" className="h-7 text-xs">进入详情</Button>
+                      <Button onClick={() => navigate('/practices', { state: { practiceId: i, showDetail: true } })} variant="default" size="sm" className="h-7 text-xs bg-[#fa541c] hover:bg-[#ff7a45] text-white">一键应用</Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
         );

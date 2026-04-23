@@ -1,9 +1,22 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { buttonVariants } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function PublicLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleScrollTo = (id: string) => {
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col bg-neutral-surface">
       {/* Navbar */}
@@ -20,6 +33,8 @@ export default function PublicLayout() {
             </Link>
             <nav className="hidden md:flex items-center gap-6 text-[14px]">
               <Link to="/" className="text-primary font-medium">首页</Link>
+              <button onClick={() => handleScrollTo("featured-courses")} className="text-neutral-body hover:text-primary transition-colors cursor-pointer">精选课程</button>
+              <button onClick={() => handleScrollTo("best-practices")} className="text-neutral-body hover:text-primary transition-colors cursor-pointer">最佳实践</button>
               <div className="group relative cursor-pointer text-neutral-body hover:text-primary transition-colors h-16 flex items-center">
                 <span className="flex items-center gap-1">
                   实训场景 <ChevronDown className="w-4 h-4" />

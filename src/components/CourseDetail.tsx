@@ -119,14 +119,17 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
         {/* Left Column */}
         <div className="flex-1 space-y-6">
           {/* Tabs */}
-          <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center gap-2 sticky top-4 z-20">
+          <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center gap-2 mb-6">
             {[
               { id: 'intro', label: '课程介绍' },
               { id: 'syllabus', label: '课程目录', tag: '试学' },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  document.getElementById(tab.id)?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className={cn(
                   "px-6 py-3 rounded-[8px] text-[15px] font-medium transition-all relative flex items-center gap-2",
                   activeTab === tab.id ? "text-[#fa541c] bg-[#fff2e8]" : "text-neutral-body hover:text-neutral-title hover:bg-neutral-bg"
@@ -364,18 +367,41 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="flex-1 bg-[#f5f6f8] p-8 overflow-y-auto flex justify-center">
-                {/* Fake PDF Page */}
-                <div className="w-full max-w-2xl bg-white shadow-sm border border-neutral-border aspect-[1/1.4] p-12 flex flex-col gap-6">
-                  <div className="h-8 bg-neutral-200 rounded w-3/4 mb-4"></div>
-                  <div className="h-4 bg-neutral-100 rounded w-full"></div>
-                  <div className="h-4 bg-neutral-100 rounded w-full"></div>
-                  <div className="h-4 bg-neutral-100 rounded w-5/6"></div>
-                  <div className="h-4 bg-neutral-100 rounded w-full mt-4"></div>
-                  <div className="h-4 bg-neutral-100 rounded w-full"></div>
-                  <div className="h-4 bg-neutral-100 rounded w-4/6"></div>
-                  <div className="h-48 bg-neutral-100 rounded w-full mt-8 flex items-center justify-center text-neutral-400">
-                    [ 图表或插图 ]
+              <div className="flex-1 bg-[#f5f6f8] overflow-y-auto flex justify-center py-8 custom-scrollbar">
+                {/* Real Document Content */}
+                <div className="w-full max-w-3xl bg-white shadow-sm border border-neutral-border p-12 min-h-full">
+                  <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border">{playingLesson.title}</h1>
+                  
+                  <div className="text-[15px] text-neutral-body leading-loose space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-neutral-title mb-3">一、核心概念</h2>
+                      <p>
+                        在当前的实战课程中，<strong>{playingLesson.title}</strong>的知识非常关键。
+                        人工智能的核心不仅仅是代码和算法的堆砌，更是对业务逻辑以及数据形态的深刻理解。
+                        在本章节中，我们将探索如何有效地将业务场景转化为可以计算和优化的数学模型。
+                      </p>
+                    </div>
+
+                    <div>
+                      <h2 className="text-xl font-bold text-neutral-title mb-3">二、学习目标</h2>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li>理解基本理论背景与技术架构路线。</li>
+                        <li>掌握在开发过程中的环境配置与代码实施流程。</li>
+                        <li>熟悉异常处理、性能调优及实际业务的工程化部署。</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h2 className="text-xl font-bold text-neutral-title mb-3">三、关键参考资料</h2>
+                      <p>
+                        学习本节内容时，建议结合实验环境以及配套视频一起阅读。
+                        如果有任何疑惑，可以随时进入 AI 答疑助手页面获取实时解答。
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-4 border-l-4 border-[#fa541c] rounded mt-12">
+                       <p className="text-sm text-neutral-caption m-0">注：本文档为《{playingLesson.title}》的官方配套讲义资料，未经许可严禁外传。</p>
+                    </div>
                   </div>
                 </div>
               </div>

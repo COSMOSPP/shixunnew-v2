@@ -1,7 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Bot } from "lucide-react";
+import { ArrowRight, Bot, Bookmark, Share2, Edit3, CheckCircle2 } from "lucide-react";
 import AIKnowledgeTree from "@/components/AIKnowledgeTree";
+
+const KnowledgeCard = ({ card }: { card: any }) => {
+  const [flipped, setFlipped] = useState(false);
+  return (
+    <div className="relative w-full h-[320px] group perspective-1000" onClick={() => setFlipped(!flipped)}>
+      <div className={`w-full h-full duration-500 transition-all [transform-style:preserve-3d] cursor-pointer ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
+        {/* Front */}
+        <div className="absolute p-6 w-full h-full bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center [backface-visibility:hidden] hover:shadow-md hover:border-[#fa541c]/50 transition-all">
+           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/80 to-white/10 backdrop-blur-lg border border-white/60 shadow-[0_8px_32px_rgba(250,84,28,0.1)] flex items-center justify-center text-3xl mb-6">
+             {card.icon}
+           </div>
+           <h3 className="text-xl font-bold text-slate-900 text-center mb-4">{card.title}</h3>
+           <div className="flex gap-2 justify-center mb-6">
+             {card.tags.map((tag: string) => (
+               <span key={tag} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded">{tag}</span>
+             ))}
+           </div>
+           <div className="mt-auto flex items-center text-[#fa541c] text-sm font-medium">点击翻转查看解析 <ArrowRight className="w-4 h-4 ml-1" /></div>
+        </div>
+        {/* Back */}
+        <div className="absolute p-6 w-full h-full bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200 shadow-lg flex flex-col [backface-visibility:hidden] [transform:rotateY(180deg)] text-left">
+           <div className="flex justify-between items-start mb-4">
+             <h4 className="font-bold text-lg text-slate-900">{card.title}</h4>
+             <span className="text-2xl">{card.icon}</span>
+           </div>
+           <div className="text-sm text-slate-600 mb-2 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+             <div className="mb-3"><span className="text-[#fa541c] font-bold mr-1 block mb-1">核心定义：</span>{card.desc}</div>
+             <div className="mb-3"><span className="text-blue-600 font-bold mr-1 block mb-1">关键要点：</span>{card.points}</div>
+             <div><span className="text-green-600 font-bold mr-1 block mb-1">关联知识点：</span>{card.relations}</div>
+           </div>
+           <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100 text-slate-500">
+             <div className="flex gap-1.5">
+               <button className="p-1.5 bg-white border border-slate-100 hover:border-[#fa541c] hover:bg-[#fa541c]/5 hover:text-[#fa541c] rounded-full transition-all" title="收藏" onClick={e=>{e.stopPropagation()}}><Bookmark className="w-3.5 h-3.5"/></button>
+               <button className="p-1.5 bg-white border border-slate-100 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-500 rounded-full transition-all" title="添加笔记" onClick={e=>{e.stopPropagation()}}><Edit3 className="w-3.5 h-3.5"/></button>
+               <button className="p-1.5 bg-white border border-slate-100 hover:border-green-500 hover:bg-green-50 hover:text-green-500 rounded-full transition-all" title="分享" onClick={e=>{e.stopPropagation()}}><Share2 className="w-3.5 h-3.5"/></button>
+             </div>
+             <button className="text-xs bg-[#fa541c] text-white px-3 py-1.5 rounded-full flex items-center gap-1 hover:bg-[#d4380d] transition-colors" onClick={e=>{e.stopPropagation()}}><CheckCircle2 className="w-3.5 h-3.5"/>已掌握</button>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 import Footer from "@/components/Footer";
 import OnboardingModal from "@/components/OnboardingModal";
 
@@ -71,7 +114,7 @@ export default function UserOverview() {
           
           <div className="w-full max-w-3xl relative mb-8 bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 p-2 flex items-center border border-white/60">
             <div className="pl-4 pr-2">
-              <Bot className="w-8 h-8 text-[#fa541c]" fill="#fa541c" />
+              <Bot className="w-8 h-8 text-[#fa541c]" strokeWidth={2} />
             </div>
             <input 
               type="text" 
@@ -134,76 +177,14 @@ export default function UserOverview() {
       {/* 3. AI Knowledge Tree (Full Screen White Background) */}
       <div className="w-full bg-white py-16 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {isLoggedIn ? (
-            <AIKnowledgeTree />
-          ) : (
-            <div className="mb-8">
-              <div className="flex flex-col md:flex-row md:items-start justify-between mb-12 gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl drop-shadow-sm">🗺️</span>
-                    <h2 className="text-2xl font-bold text-slate-900">AI 知识图谱</h2>
-                  </div>
-                  <p className="text-slate-500 text-sm">完整的AI课程体系，覆盖从入门到专家的全链路学习路径</p>
-                </div>
-                <Button variant="link" className="text-[#fa541c] hover:text-[#d4380d] p-0 h-auto font-normal">
-                  探索全部课程 <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-              
-              <div className="relative flex flex-col items-center">
-                {/* Main Node */}
-                <div className="bg-gradient-to-b from-[#fa541c] to-[#d4380d] text-white rounded-xl p-6 shadow-lg shadow-orange-500/20 flex flex-col items-center justify-center w-64 z-10 relative">
-                  <div className="text-3xl mb-3 drop-shadow-md">🧠</div>
-                  <div className="font-bold text-lg mb-1">人工智能</div>
-                  <div className="text-xs text-white/80">6大领域 · 200+课程</div>
-                </div>
-
-                {/* Connecting Lines */}
-                <div className="w-px h-8 bg-slate-200 hidden md:block"></div>
-                <div className="w-full max-w-5xl relative h-px hidden md:block">
-                  <div className="absolute top-0 left-[8.33%] right-[8.33%] h-px bg-slate-200"></div>
-                </div>
-
-                {/* Sub Nodes */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 w-full max-w-5xl mt-8 md:mt-0">
-                  {[
-                    { icon: "🌱", title: "AI入门", desc: "12门课程" },
-                    { icon: "🐍", title: "Python编程", desc: "28门课程" },
-                    { icon: "🤖", title: "机器学习", desc: "35门课程" },
-                    { icon: "🔮", title: "深度学习", desc: "42门课程" },
-                    { icon: "💬", title: "NLP", desc: "38门课程" },
-                    { icon: "👁️", title: "计算机视觉", desc: "32门课程" },
-                  ].map((node, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      <div className="w-px h-6 bg-slate-200 hidden md:block"></div>
-                      <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-1 w-full">
-                        {/* Glassy icon container */}
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-white shadow-inner flex items-center justify-center text-2xl mb-3 relative overflow-hidden">
-                          <div className="absolute inset-0 bg-white/40 backdrop-blur-sm"></div>
-                          <span className="relative z-10 drop-shadow-sm">{node.icon}</span>
-                        </div>
-                        <div className="font-bold text-slate-800 text-sm mb-1">{node.title}</div>
-                        <div className="text-xs text-slate-400">{node.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Bottom Banner */}
-                <div className="mt-12 bg-[#fffbe6] border border-[#ffe58f] rounded-lg py-3 px-6 text-sm text-[#d48806] flex items-center justify-center w-full max-w-3xl">
-                  <span className="mr-2">💡</span> 点击任意节点探索详细课程 · 登录后可获得个性化学习路径推荐
-                </div>
-              </div>
-            </div>
-          )}
+          <AIKnowledgeTree isLoggedIn={isLoggedIn} />
         </div>
       </div>
 
+      {/* 4. Your Skill Matrix */}
+      {isLoggedIn && (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* 4. Your Skill Matrix */}
-        {isLoggedIn && (
-          <div className="mb-16">
+        <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900">你的技能矩阵</h2>
             <div className="text-sm text-slate-500">
@@ -236,8 +217,8 @@ export default function UserOverview() {
             ))}
           </div>
         </div>
-        )}
       </div>
+      )}
 
       {/* 5. Enterprise Training Plan (Full Screen White Background) */}
       {isLoggedIn && (
@@ -283,21 +264,54 @@ export default function UserOverview() {
       </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* 5.1 Recommended for You */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+        {/* 6. AI Knowledge Cards */}
         <div className="mb-16">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">📚</span>
+              <h2 className="text-2xl font-bold text-slate-900">AI 知识卡片</h2>
+            </div>
+            {isLoggedIn && (
+              <Button variant="ghost" className="text-slate-500 hover:text-[#fa541c]">
+                查看更多 <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            )}
+          </div>
+          <p className="text-slate-500 mb-6 text-sm">快速了解AI核心概念，5分钟掌握一个知识点</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { title: "什么是 RAG?", desc: "检索增强生成 (RAG) 是一种结合外部知识库和大模型的技术，让AI能回答训练数据之外的问题。", points: "结合检索模块和生成模块；减少大模型幻觉问题；提升专业领域回答准确性。", relations: "向量数据库, 词嵌入, 提示词工程", tags: ["大模型", "3分钟"], icon: "🧠", active: false },
+              { title: "AI Agent 是什么?", desc: "AI Agent (智能体) 是能自主感知环境、做出决策并执行行动的AI系统，是当前AI应用的热门方向。", points: "具备记忆机制(Memory)；支持规划(Planning)和工具使用(Tools)；可独立完成复杂任务。", relations: "AutoGPT, ReAct框架, MCP协议", tags: ["Agent", "5分钟"], icon: "🤖", active: true },
+              { title: "LoRA 微调原理", desc: "LoRA是一种高效的大模型微调方法，只需训练少量参数就能让模型适应特定任务，大幅降低训练成本。", points: "低秩矩阵近似；冻结预训练模型参数；插拔式的轻量级模块。", relations: "PEFT, Transformer架构, 预训练模型", tags: ["微调", "4分钟"], icon: "⚡", active: false },
+              { title: "向量数据库入门", desc: "向量数据库专门存储和检索高维向量，是RAG系统的核心组件，让语义搜索成为可能。", points: "支持高维近似最近邻(ANN)搜索；计算余弦相似度等距离；支持海量数据极速检索。", relations: "RAG, Word2Vec, 语义搜索", tags: ["数据库", "5分钟"], icon: "📊", active: false },
+              { title: "MCP 协议是什么?", desc: "Model Context Protocol (MCP) 是Anthropic推出的开放协议，让AI模型能安全地连接外部工具和数据源。", points: "统一上下文协议标准；简化服务端与模型通信；提升安全性与拓展性。", relations: "Anthropic, API集成, Agent工具", tags: ["协议", "3分钟"], icon: "🔧", active: false },
+              { title: "Prompt Engineering", desc: "提示词工程是与大模型高效沟通的艺术，掌握它能让AI输出更精准、更符合你期望的内容。", points: "结构化提示词；提供Few-shot示例；让模型思考(Chain of Thought)。", relations: "少样本学习, CoT, 大模型交互", tags: ["技巧", "4分钟"], icon: "🎯", active: false },
+            ].map((card, i) => (
+              <KnowledgeCard key={i} card={card} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 5.1 Recommended for You */}
+      <div className="w-full bg-white py-16 border-y border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900">{isLoggedIn ? '为你推荐' : '精选课程推荐'}</h2>
-            <Button variant="ghost" className="text-slate-500 hover:text-[#fa541c]">
-              {isLoggedIn ? '换一批' : '查看更多'} <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+            {isLoggedIn && (
+              <Button variant="ghost" className="text-slate-500 hover:text-[#fa541c]">
+                换一批 <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { title: "Python 核心编程", desc: "零基础掌握Python，开启编程之路", tags: ["基础", "编程"], rating: "4.9", students: "12.5k", color: "bg-[#2563eb]", icon: "🐍" },
-              { title: "机器学习实战", desc: "深入浅出核心算法与应用场景", tags: ["AI", "算法"], rating: "4.8", students: "8.2k", color: "bg-[#7c3aed]", icon: "🤖" },
-              { title: "深度学习进阶", desc: "神经网络模型原理与PyTorch实践", tags: ["进阶", "模型"], rating: "4.7", students: "6.4k", color: "bg-[#e11d48]", icon: "🧠" },
-              { title: "大模型应用开发", desc: "从Prompt Engineering到Agent构建", tags: ["前沿", "LLM"], rating: "4.9", students: "15.1k", color: "bg-[#059669]", icon: "🚀" },
+              { title: "Python 核心编程", desc: "零基础掌握Python，开启编程之路", tags: ["基础", "编程"], collections: "1.2k", students: "12.5k", color: "bg-[#2563eb]", icon: "🐍" },
+              { title: "机器学习实战", desc: "深入浅出核心算法与应用场景", tags: ["AI", "算法"], collections: "2.5k", students: "8.2k", color: "bg-[#7c3aed]", icon: "🤖" },
+              { title: "深度学习进阶", desc: "神经网络模型原理与PyTorch实践", tags: ["进阶", "模型"], collections: "3.8k", students: "6.4k", color: "bg-[#e11d48]", icon: "🧠" },
+              { title: "大模型应用开发", desc: "从Prompt Engineering到Agent构建", tags: ["前沿", "LLM"], collections: "5.1k", students: "15.1k", color: "bg-[#059669]", icon: "🚀" },
             ].map((course, i) => (
               <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer flex flex-col">
                 <div className={`h-32 ${course.color} flex items-center justify-center text-5xl`}>
@@ -312,7 +326,7 @@ export default function UserOverview() {
                     ))}
                   </div>
                   <div className="mt-auto flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
-                    <span className="flex items-center gap-1 text-amber-500 font-medium">⭐ {course.rating}</span>
+                    <span className="flex items-center gap-1 text-amber-500 font-medium">⭐ {course.collections} 收藏</span>
                     <span className="flex items-center gap-1">👥 {course.students} 学习</span>
                   </div>
                 </div>
@@ -322,31 +336,52 @@ export default function UserOverview() {
         </div>
       </div>
 
-      {/* 5.2 Job Practical Cases (Full Screen White Background) */}
-      <div className="w-full bg-white py-16 border-y border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 5.2 Job Practical Cases */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">{isLoggedIn ? '岗位实战案例' : '热门实战案例'}</h2>
-            <Button variant="ghost" className="text-slate-500 hover:text-[#fa541c]">
-              查看更多 <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+            <h2 className="text-2xl font-bold text-slate-900">{isLoggedIn ? '最佳实践案例展示' : '最佳实践案例展示'}</h2>
+            <div className="hidden md:flex bg-slate-100 p-1 rounded-lg">
+               {["教学场景", "竞赛场景", "企业实战"].map(tab => (
+                 <button key={tab} className={`px-4 py-1.5 text-sm rounded-md transition-colors ${tab === '教学场景' ? 'bg-white text-slate-900 shadow-sm font-medium' : 'text-slate-500 hover:text-slate-700'}`}>{tab}</button>
+               ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {[
-              { title: "DeepSeek R1 本地私有化部署指南", rating: "4.9", students: "12.5k", color: "bg-[#6366f1]", icon: "🚀" },
-              { title: "基于 Dify 搭建企业级智能知识库", rating: "4.8", students: "8.2k", color: "bg-[#10b981]", icon: "📚" },
-              { title: "大模型微调 (LoRA) 性能优化技巧", rating: "4.7", students: "6.4k", color: "bg-[#f59e0b]", icon: "⚡" },
-              { title: "AI Agent 智能体开发从入门到精通", rating: "4.9", students: "15.1k", color: "bg-[#f43f5e]", icon: "🤖" },
+              { title: "DeepSeek R1 本地私有化部署指南", desc: "详细讲解如何在由于隐私或安全要求而受限的本地环境部署DeepSeek R1。覆盖依赖安装、硬件配置、推理服务搭建及基于vLLM的推理加速全流程。", difficulty: "高阶", category: "人工智能", scene: "企业实战", users: "12.5k", collections: "3.2k", rating: "4.9", tags: ["大模型", "私有化部署", "vLLM"], color: "bg-[#6366f1]", icon: "🚀" },
+              { title: "基于 Dify 搭建企业级智能知识库", desc: "通过Dify及向量数据库快速构建支持多文档解析、语义检索和RAG生成的企业知识库系统。解决企业内部文档搜索痛点。", difficulty: "中阶", category: "人工智能", scene: "企业实战", users: "8.2k", collections: "2.8k", rating: "4.8", tags: ["RAG", "Dify", "知识库"], color: "bg-[#10b981]", icon: "📚" },
+              { title: "大模型微调 (LoRA) 性能优化技巧", desc: "使用LoRA等参数高效微调方法对Llama-3进行定制化训练。介绍显存管理、数据集预处理以及评估指标。", difficulty: "高阶", category: "人工智能", scene: "教学场景", users: "6.4k", collections: "1.5k", rating: "4.7", tags: ["LoRA", "微调优化"], color: "bg-[#f59e0b]", icon: "⚡" },
             ].map((item, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer flex flex-col">
-                <div className={`h-32 ${item.color} flex items-center justify-center text-5xl`}>
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row group">
+                <div className={`w-full md:w-48 h-32 md:h-auto ${item.color} flex items-center justify-center text-5xl flex-shrink-0 group-hover:scale-105 transition-transform duration-500`}>
                   {item.icon}
                 </div>
-                <div className="p-5 flex flex-col flex-1">
-                  <h3 className="font-bold text-slate-900 mb-4 line-clamp-2">{item.title}</h3>
-                  <div className="mt-auto flex items-center justify-between text-xs text-slate-500">
-                    <span className="flex items-center gap-1 text-amber-500 font-medium">⭐ {item.rating}</span>
-                    <span className="flex items-center gap-1">👥 {item.students} 人已学习</span>
+                <div className="p-6 flex flex-col flex-1 relative bg-white z-10 w-full">
+                  <div className="flex flex-wrap items-center justify-between mb-2 gap-4">
+                    <h3 className="font-bold text-slate-900 text-xl">{item.title}</h3>
+                    <div className="flex gap-2">
+                       <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-md border border-blue-100">{item.scene}</span>
+                       <span className="bg-orange-50 text-orange-600 text-xs px-2 py-1 rounded-md border border-orange-100">{item.difficulty}</span>
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-sm mb-4 line-clamp-2 md:line-clamp-none">{item.desc}</p>
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                     <span className="text-xs text-slate-400">标签：</span>
+                     {item.tags.map(tag => (
+                        <span key={tag} className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{tag}</span>
+                     ))}
+                  </div>
+
+                  <div className="mt-auto flex items-center justify-between text-sm pt-4 border-t border-slate-100 w-full">
+                    <div className="flex items-center gap-4 text-slate-500">
+                       <span className="flex items-center gap-1"><span className="text-amber-500">⭐</span> {item.collections} 收藏</span>
+                       <span className="flex items-center gap-1">👥 {item.users} 使用</span>
+                    </div>
+                    <Button size="sm" className="bg-white text-[#fa541c] border border-[#fa541c] hover:bg-[#fa541c] hover:text-white transition-colors">
+                      一键应用
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -355,51 +390,11 @@ export default function UserOverview() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* 6. AI Knowledge Cards */}
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">📚</span>
-              <h2 className="text-2xl font-bold text-slate-900">AI 知识卡片</h2>
-            </div>
-            <Button variant="ghost" className="text-slate-500 hover:text-[#fa541c]">
-              查看更多 <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-          <p className="text-slate-500 mb-6 text-sm">快速了解AI核心概念，5分钟掌握一个知识点</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { title: "什么是 RAG?", desc: "检索增强生成 (RAG) 是一种结合外部知识库和大模型的技术，让AI能回答训练数据之外的问题。", tags: ["大模型", "3分钟"], icon: "🧠", active: false },
-              { title: "AI Agent 是什么?", desc: "AI Agent (智能体) 是能自主感知环境、做出决策并执行行动的AI系统，是当前AI应用的热门方向。", tags: ["Agent", "5分钟"], icon: "🤖", active: true },
-              { title: "LoRA 微调原理", desc: "LoRA是一种高效的大模型微调方法，只需训练少量参数就能让模型适应特定任务，大幅降低训练成本。", tags: ["微调", "4分钟"], icon: "⚡", active: false },
-              { title: "向量数据库入门", desc: "向量数据库专门存储和检索高维向量，是RAG系统的核心组件，让语义搜索成为可能。", tags: ["数据库", "5分钟"], icon: "📊", active: false },
-              { title: "MCP 协议是什么?", desc: "Model Context Protocol (MCP) 是Anthropic推出的开放协议，让AI模型能安全地连接外部工具和数据源。", tags: ["协议", "3分钟"], icon: "🔧", active: false },
-              { title: "Prompt Engineering", desc: "提示词工程是与大模型高效沟通的艺术，掌握它能让AI输出更精准、更符合你期望的内容。", tags: ["技巧", "4分钟"], icon: "🎯", active: false },
-            ].map((card, i) => (
-              <div key={i} className={`bg-white rounded-2xl p-6 border ${card.active ? 'border-[#fa541c] shadow-md shadow-[#fa541c]/10' : 'border-slate-200 shadow-sm'} hover:shadow-md hover:border-[#fa541c]/50 transition-all cursor-pointer flex flex-col group`}>
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/80 to-white/10 backdrop-blur-lg border border-white/60 shadow-[0_8px_32px_rgba(250,84,28,0.1)] flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-                  {card.icon}
-                </div>
-                <h3 className="font-bold text-slate-900 mb-2">{card.title}</h3>
-                <p className="text-slate-500 text-sm mb-4 flex-1">{card.desc}</p>
-                <div className="flex gap-2 mb-4">
-                  {card.tags.map(tag => (
-                    <span key={tag} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded">{tag}</span>
-                  ))}
-                </div>
-                <div className="text-[#fa541c] text-sm font-medium flex items-center gap-1 hover:text-[#d4380d]">
-                  了解更多 <ArrowRight className="w-3 h-3" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 7. Registration Guidance */}
-        {!isLoggedIn && (
-          <div className="bg-[#fa541c] rounded-[24px] p-12 text-center text-white relative overflow-hidden shadow-lg mb-8">
+      {/* 7. Registration Guidance */}
+      {!isLoggedIn && (
+      <div className="w-full bg-white py-16 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#fa541c] rounded-[24px] p-12 text-center text-white relative overflow-hidden shadow-lg">
             {/* Texture/Pattern */}
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}></div>
             
@@ -418,9 +413,9 @@ export default function UserOverview() {
               </div>
             </div>
           </div>
-        )}
-
+        </div>
       </div>
+      )}
       
       {/* 8. Footer */}
       <Footer />
