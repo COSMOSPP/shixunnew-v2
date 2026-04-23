@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # TODO: 如果你的主分支名称是 master，请将其修改为 master
+      - shixun2-v2
 
 permissions:
   contents: read
