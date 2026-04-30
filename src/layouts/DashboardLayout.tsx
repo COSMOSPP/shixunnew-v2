@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { ZhiYunLogo } from "@/components/icons/ZhiYunLogo";
 import { 
   Book, 
   MonitorPlay, 
@@ -88,11 +89,9 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
       <header className="h-14 bg-[#1f1f1f] text-white flex items-center justify-between px-4 flex-shrink-0 z-50">
         <div className="flex items-center gap-6 h-full">
           <Link to="/" className="flex items-center gap-2 mr-4">
-            <div className="w-6 h-6 bg-[#fa541c] rounded-[4px] flex items-center justify-center text-white font-bold text-xs">
-              翼
-            </div>
+            <ZhiYunLogo className="w-6 h-6 text-[#fa541c]" />
             <span className="text-[16px] font-medium tracking-wide">
-              {type === "admin" ? "翼实训平台" : "翼实训平台(人工智能)"}
+              {type === "admin" ? "智云实训平台" : "智云实训平台(人工智能)"}
             </span>
           </Link>
           

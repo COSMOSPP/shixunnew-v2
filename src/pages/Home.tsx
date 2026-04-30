@@ -22,8 +22,8 @@ export default function Home() {
   const [activeScenario, setActiveScenario] = useState(scenarios[0]);
   const slides = [
     {
-      title: "欢迎使用翼实训 2.0",
-      subtitle: "新一代泛 AI 工具与企业级技术实训平台",
+      title: "欢迎使用智云实训 2.0",
+      subtitle: "新一代泛 AI 工具与智云实训平台",
       image: "https://picsum.photos/seed/banner1/1920/800"
     },
     {

@@ -9,6 +9,7 @@ export interface ProjectData {
   image: string;
   participants: string;
   rating: number;
+  favorites?: number;
   difficulty: string;
   tags: string[];
   status: string;
@@ -24,100 +25,105 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
   const [activeTab, setActiveTab] = useState('detail');
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans w-[100vw] relative left-1/2 -translate-x-1/2 -mt-6 -mb-6">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
       {/* Header Section */}
-      <div className="relative pt-8 pb-12 px-14 overflow-hidden">
+      <div className="relative pt-6 pb-8 px-8 md:px-14">
         {/* Background Image & Gradient */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <img 
             src={project.image} 
             alt="Project Banner" 
-            className="w-full h-full object-cover opacity-20 filter blur-sm"
+            className="w-full h-full object-cover opacity-20 filter blur-md"
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#fff2e8]/95 to-[#ffd8bf]/90"></div>
+          
+          {/* Decorative background elements moved inside the overflow-hidden container */}
+          <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 h-96 bg-white/40 rounded-full blur-3xl pointer-events-none z-0"></div>
         </div>
         
-        {/* Decorative background elements */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 h-96 bg-white/40 rounded-full blur-3xl pointer-events-none z-0"></div>
-        
-        <div className="max-w-7xl mx-auto relative z-10 flex gap-8 items-start">
-          {/* Cover image on the left side of header if desired, but we can also rely on background. Let's add a distinct cover card */}
-          <div className="w-80 h-48 rounded-[12px] overflow-hidden shadow-lg border-4 border-white shrink-0 mt-8 relative">
-             <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
-             <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded">v1.0.0</div>
+        <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row gap-8 items-start">
+          {/* Cover image */}
+          <div className="w-full md:w-[320px] aspect-video rounded-[12px] overflow-hidden shadow-lg border-[3px] border-white/80 shrink-0 relative group bg-white/40 flex items-center justify-center">
+             <img 
+               src={project.image} 
+               alt={project.title} 
+               className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105" 
+               referrerPolicy="no-referrer"
+             />
+             <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-medium px-2 py-0.5 rounded backdrop-blur-md border border-white/20">
+               v1.0.0
+             </div>
+             <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 w-full">
             {/* Breadcrumb & Actions */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center text-[13px] text-neutral-caption">
-                <button onClick={onBack} className="hover:text-[#fa541c] flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
+              <div className="flex items-center text-[13px] text-neutral-caption bg-white/40 px-3 py-1 rounded-full border border-white/50 backdrop-blur-sm">
+                <button onClick={onBack} className="hover:text-[#fa541c] flex items-center gap-1 font-medium transition-colors">
                   <ChevronLeft className="w-4 h-4" /> 返回
                 </button>
                 <span className="mx-2">/</span>
-                <span className="hover:text-[#fa541c] cursor-pointer">全部项目</span>
+                <span className="hover:text-[#fa541c] cursor-pointer transition-colors">全部项目</span>
                 <span className="mx-2">/</span>
-                <span className="text-neutral-title">{project.title}</span>
+                <span className="text-neutral-title font-bold">{project.title}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 hover:bg-white text-[13px] text-neutral-title transition-colors">
-                  <Bookmark className="w-4 h-4 text-[#fa541c]" /> 收藏项目
+              <div className="flex items-center gap-2">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-white hover:bg-neutral-50 text-[13px] font-medium text-neutral-title transition-all shadow-sm border border-neutral-200/50">
+                  <Bookmark className="w-4 h-4 text-[#fa541c]" /> 收藏
                 </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 hover:bg-white text-[13px] text-neutral-title transition-colors">
-                  <Share2 className="w-4 h-4" /> 分享项目
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-white hover:bg-neutral-50 text-[13px] font-medium text-neutral-title transition-all shadow-sm border border-neutral-200/50">
+                  <Share2 className="w-4 h-4" /> 分享
                 </button>
               </div>
             </div>
 
             {/* Title & Meta */}
             <div>
-              <h1 className="text-3xl font-bold text-neutral-title mb-3">{project.title}</h1>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-2 tracking-tight">{project.title}</h1>
               
               {/* Tags & Version */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-[12px] font-bold px-2 py-1 bg-white/80 text-neutral-title rounded border border-white">
-                  版本: v1.0.0
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="text-[12px] font-bold px-2.5 py-0.5 bg-white text-neutral-title rounded-md shadow-sm border border-neutral-200">
+                  官方认证
                 </span>
                 {project.tags.map((tag, i) => (
-                  <span key={i} className="text-[12px] px-2 py-1 bg-[#fa541c]/10 text-[#fa541c] border border-[#fa541c]/20 rounded">
+                  <span key={i} className="text-[12px] font-medium px-2.5 py-0.5 bg-[#fa541c]/10 text-[#fa541c] border border-[#fa541c]/20 rounded-md">
                     {tag}
                   </span>
                 ))}
-                <span className="text-[12px] px-2 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded">
+                <span className="text-[12px] font-medium px-2.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-md">
                   {project.difficulty}
                 </span>
               </div>
 
-              <p className="text-[14px] text-neutral-body mb-6 leading-relaxed max-w-2xl">
+              <p className="text-[14px] text-neutral-700 mb-4 leading-relaxed max-w-3xl bg-white/40 p-3 rounded-[8px] border border-white/50 backdrop-blur-sm">
                 {project.desc}
               </p>
 
-              {/* Rating & Enrollment */}
-              <div className="flex items-center gap-6 mb-8">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-neutral-title">{project.rating}</span>
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className={cn("w-4 h-4", star <= Math.floor(project.rating) ? "text-[#faad14] fill-[#faad14]" : "text-[#faad14]/30 fill-[#faad14]/30")} />
-                    ))}
+              {/* Favorites & Enrollment & Action */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
+                <div className="flex items-center gap-6 bg-white px-4 py-2 rounded-[10px] shadow-sm border border-neutral-200/50">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-neutral-500" />
+                    <span className="text-[13px] text-neutral-600 font-medium"><span className="text-[#fa541c] font-bold">{project.favorites || (project.rating > 10 ? project.rating : Math.floor(project.rating * 100))}</span> 人收藏</span>
+                  </div>
+                  <div className="w-px h-5 bg-neutral-200"></div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-neutral-500" />
+                    <span className="text-[13px] text-neutral-600 font-medium"><span className="text-[#fa541c] font-bold">{project.participants}</span> 人已参与</span>
                   </div>
                 </div>
-                <div className="w-px h-4 bg-neutral-border"></div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-neutral-caption" />
-                  <span className="text-[14px] text-neutral-body"><span className="text-[#fa541c] font-medium">{project.participants}</span> 人已参与此项目</span>
-                </div>
-              </div>
 
-              {/* Action Button */}
-              <Button 
-                onClick={onStart}
-                className="bg-gradient-to-r from-[#fa541c] to-[#ff8c3a] hover:from-[#e84a15] hover:to-[#ff7a22] text-white shadow-lg shadow-[#fa541c]/30 border-0 flex items-center gap-2 rounded-full px-8 h-12 transition-all hover:-translate-y-0.5"
-              >
-                <Play className="w-5 h-5 fill-white" />
-                <span className="font-bold text-[16px] tracking-wide">立刻使用此项目</span>
-              </Button>
+                <Button 
+                  onClick={onStart}
+                  className="bg-gradient-to-r from-[#fa541c] to-[#ff8c3a] hover:from-[#e84a15] hover:to-[#ff7a22] text-white shadow-lg shadow-[#fa541c]/30 border-0 flex items-center gap-2 rounded-[10px] px-8 h-11 transition-all hover:-translate-y-0.5"
+                >
+                  <Play className="w-4 h-4 fill-white" />
+                  <span className="font-bold text-[15px] tracking-wide">立刻使用此项目</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -128,7 +134,7 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
         {/* Left Column */}
         <div className="flex-1 space-y-6">
           {/* Tabs */}
-          <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center gap-2 sticky top-4 z-20">
+          <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center gap-2">
             {[
               { id: 'detail', label: '项目详情卡片', icon: List },
               { id: 'source', label: '项目源码区', icon: Code },

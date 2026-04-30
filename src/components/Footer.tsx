@@ -1,5 +1,6 @@
 import { Github, Twitter, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ZhiYunLogo } from "@/components/icons/ZhiYunLogo";
 
 export default function Footer() {
   return (
@@ -8,15 +9,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-[#fa541c] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                翼
-              </div>
+              <ZhiYunLogo className="w-8 h-8 text-[#fa541c]" />
               <span className="text-xl font-bold text-slate-900">
-                翼实训平台
+                智云实训平台
               </span>
             </Link>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              新一代企业级AI技术实训平台，致力于培养具备实战能力的AI工程师，助力企业数字化转型。
+              新一代智云实训平台，致力于培养具备实战能力的AI工程师，助力企业数字化转型。
             </p>
             <div className="flex items-center gap-4">
               <a href="#" className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-[#fa541c] hover:text-white transition-colors">
@@ -72,7 +71,7 @@ export default function Footer() {
         
         <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-400 text-sm">
-            © {new Date().getFullYear()} 翼实训平台. All rights reserved.
+            © {new Date().getFullYear()} 智云实训平台. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <Link to="#" className="text-slate-400 hover:text-[#fa541c] text-sm transition-colors">隐私政策</Link>

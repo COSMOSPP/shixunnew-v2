@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { buttonVariants } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ZhiYunLogo } from "@/components/icons/ZhiYunLogo";
 
 export default function PublicLayout() {
   const location = useLocation();
@@ -24,11 +25,9 @@ export default function PublicLayout() {
         <div className="container mx-auto max-w-[1200px] flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-[4px] flex items-center justify-center text-white font-bold">
-                实
-              </div>
+              <ZhiYunLogo className="w-8 h-8 text-primary" />
               <span className="text-[18px] font-medium text-neutral-title">
-                企业级实训平台
+                智云实训平台
               </span>
             </Link>
             <nav className="hidden md:flex items-center gap-6 text-[14px]">
@@ -100,7 +99,7 @@ export default function PublicLayout() {
         <span>|</span>
         <Link to="#" className="hover:text-neutral-title transition-colors">服务条款</Link>
         <span>|</span>
-        <span>©2025 翼实训2.0</span>
+        <span>©2025 智云实训2.0</span>
         <span>|</span>
         <span>京ICP备12345678号</span>
       </footer>

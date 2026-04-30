@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit } from 'lucide-react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -7,6 +7,49 @@ interface CourseDetailProps {
   onBack: () => void;
   onShowLearningPath?: () => void;
 }
+
+const COURSE_SYLLABUS = [
+  {
+    chapter: "第一课",
+    title: "人工智能训练师三级考试内容指导",
+    duration: 98,
+    videos: 1,
+    docs: 4,
+    experiments: 0,
+    assignments: 1,
+    description: "",
+    lessons: [
+      { section: "课时1:", title: "职业简介", locked: false, status: "已完成", type: "doc" },
+      { section: "课时2:", title: "认定方案", locked: false, status: "未学习", type: "doc" },
+      { section: "课时3:", title: "认定要素细目表", locked: false, status: "未学习", type: "doc" },
+      { section: "课时4:", title: "实操平台演示", locked: false, status: "未学习", type: "video" },
+      { section: "课时5:", title: "代码复习讲义", locked: false, status: "未学习", type: "doc" },
+      { section: "课时6:", title: "第一课随堂作业", locked: false, status: "未学习", type: "assignment" }
+    ]
+  },
+  {
+    chapter: "第二课",
+    title: "培训与指导",
+    duration: 245,
+    videos: 0,
+    docs: 0,
+    experiments: 10,
+    assignments: 0,
+    description: "",
+    lessons: [
+      { section: "课时1:", title: "智能音箱产品的数据分析与优化[3.1.1]", locked: false, status: "未学习", type: "experiment" },
+      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时6:", title: "图像识别评估系统交互流程设计[3.2.1]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时7:", title: "手写数字识别系统交互流程设计[3.2.2]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时8:", title: "面部表情识别系统交互流程设计[3.2.3]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时9:", title: "花朵智能识别系统交互流程设计[3.2.4]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时10:", title: "人脸AI智能检测系统交互流程设计[3.2.5]", locked: true, status: "未学习", type: "experiment" }
+    ]
+  }
+];
 
 export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
@@ -16,14 +59,15 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
   const [datasetTab, setDatasetTab] = useState('public');
   const [importedDatasets, setImportedDatasets] = useState<string[]>([]);
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
   const isRecommendedMode = (window as any).__RECOMMENDED_MODE === true;
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans w-[100vw] relative left-1/2 -translate-x-1/2 -mt-6 -mb-6">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
       {/* Header Section */}
-      <div className="relative pt-8 pb-12 px-14 overflow-hidden">
+      <div className="relative pt-8 pb-12 px-14">
         {/* Background Image & Gradient */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <img 
             src="https://picsum.photos/seed/pythoncourse/1920/400" 
             alt="Course Banner" 
@@ -31,15 +75,15 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#fff2e8]/95 to-[#ffd8bf]/90"></div>
-        </div>
-        
-        {/* Decorative background elements */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 h-96 bg-white/40 rounded-full blur-3xl pointer-events-none z-0"></div>
-        <div className="absolute right-32 top-1/2 -translate-y-1/2 pointer-events-none z-0">
-          {/* Abstract illustration placeholder */}
-          <div className="w-64 h-48 bg-gradient-to-br from-[#fa541c]/20 to-[#ff9c6e]/20 rounded-xl backdrop-blur-sm border border-white/50 shadow-xl flex items-center justify-center transform rotate-3">
-            <div className="w-32 h-32 bg-white/60 rounded-lg shadow-inner flex items-center justify-center">
-              <PlayCircle className="w-16 h-16 text-[#fa541c]/60" />
+          
+          {/* Decorative background elements */}
+          <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 h-96 bg-white/40 rounded-full blur-3xl pointer-events-none z-0"></div>
+          <div className="absolute right-32 top-1/2 -translate-y-1/2 pointer-events-none z-0">
+            {/* Abstract illustration placeholder */}
+            <div className="w-64 h-48 bg-gradient-to-br from-[#fa541c]/20 to-[#ff9c6e]/20 rounded-xl backdrop-blur-sm border border-white/50 shadow-xl flex items-center justify-center transform rotate-3">
+              <div className="w-32 h-32 bg-white/60 rounded-lg shadow-inner flex items-center justify-center">
+                <PlayCircle className="w-16 h-16 text-[#fa541c]/60" />
+              </div>
             </div>
           </div>
         </div>
@@ -60,10 +104,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
             </div>
             <div className="flex items-center gap-3">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 hover:bg-white text-[13px] text-neutral-title transition-colors">
-                <Bookmark className="w-4 h-4" /> 收藏
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 hover:bg-white text-[13px] text-neutral-title transition-colors">
-                <Share2 className="w-4 h-4" /> 分享
+                <Star className="w-4 h-4" /> 收藏
               </button>
             </div>
           </div>
@@ -92,13 +133,10 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
 
             {/* Rating & Enrollment */}
             <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-neutral-title">4.8</span>
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className={cn("w-4 h-4", star <= 4 ? "text-[#faad14] fill-[#faad14]" : "text-[#faad14]/30 fill-[#faad14]/30")} />
-                  ))}
-                </div>
+              <div className="flex items-center gap-1.5 text-[#faad14]">
+                <Star className="w-5 h-5 fill-current" />
+                <span className="text-lg font-bold">1.2w</span>
+                <span className="text-[13px] font-medium text-neutral-title ml-0.5">人收藏</span>
               </div>
               <div className="w-px h-6 bg-neutral-border"></div>
               <div className="flex items-center gap-3">
@@ -122,31 +160,24 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
           <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center gap-2 mb-6">
             {[
               { id: 'intro', label: '课程介绍' },
-              { id: 'syllabus', label: '课程目录', tag: '试学' },
+              { id: 'syllabus', label: '课程目录' },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  document.getElementById(tab.id)?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => setActiveTab(tab.id)}
                 className={cn(
                   "px-6 py-3 rounded-[8px] text-[15px] font-medium transition-all relative flex items-center gap-2",
                   activeTab === tab.id ? "text-[#fa541c] bg-[#fff2e8]" : "text-neutral-body hover:text-neutral-title hover:bg-neutral-bg"
                 )}
               >
                 {tab.label}
-                {tab.tag && (
-                  <span className="px-1.5 py-0.5 rounded-[4px] border border-[#fa541c]/30 text-[#fa541c] text-[10px] leading-none">
-                    {tab.tag}
-                  </span>
-                )}
               </button>
             ))}
           </div>
 
           {/* Intro Section */}
-          <div id="intro" className="flex flex-col gap-6 scroll-mt-24">
+          {activeTab === 'intro' && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-300">
             <div className="bg-white rounded-[16px] shadow-sm p-8">
               <h2 className="text-lg font-bold text-neutral-title mb-4">课程介绍</h2>
               <p className="text-[14px] text-neutral-body leading-relaxed mb-6">
@@ -169,60 +200,15 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
               </div>
             </div>
           </div>
+          )}
 
           {/* Syllabus Section */}
-          <div id="syllabus" className="bg-white rounded-[16px] shadow-sm p-8 scroll-mt-24">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-neutral-title">课程目录</h2>
-              <Button 
-                onClick={() => setShowReportModal(true)}
-                className="bg-gradient-to-r from-[#fa541c] to-[#ff8c3a] hover:from-[#e84a15] hover:to-[#ff7a22] text-white shadow-md shadow-[#fa541c]/20 border-0 flex items-center gap-2 rounded-full px-6 h-10 transition-all hover:-translate-y-0.5"
-              >
-                <BarChart className="w-4 h-4" />
-                <span className="font-bold tracking-wide">生成个性化学习报告</span>
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse ml-1"></div>
-              </Button>
-            </div>
+          {activeTab === 'syllabus' && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[16px] shadow-sm p-8">
+              <h2 className="text-lg font-bold text-neutral-title mb-4">课程目录</h2>
             <div className="space-y-6">
-              {[
-                {
-                  chapter: "第一课",
-                  title: "人工智能训练师三级考试内容指导",
-                  duration: 98,
-                  videos: 1,
-                  docs: 4,
-                  experiments: 0,
-                  description: "",
-                  lessons: [
-                    { section: "课时1:", title: "职业简介", tag: "免费试学", locked: false, status: "未学习", type: "doc" },
-                    { section: "课时2:", title: "认定方案", locked: false, status: "未学习", type: "doc" },
-                    { section: "课时3:", title: "认定要素细目表", locked: false, status: "未学习", type: "doc" },
-                    { section: "课时4:", title: "实操平台演示", locked: false, status: "未学习", type: "video" },
-                    { section: "课时5:", title: "代码复习讲义", locked: false, status: "未学习", type: "doc" }
-                  ]
-                },
-                {
-                  chapter: "第二课",
-                  title: "培训与指导",
-                  duration: 245,
-                  videos: 0,
-                  docs: 0,
-                  experiments: 10,
-                  description: "",
-                  lessons: [
-                    { section: "课时1:", title: "智能音箱产品的数据分析与优化[3.1.1]", locked: false, status: "未学习", type: "experiment" },
-                    { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时6:", title: "图像识别评估系统交互流程设计[3.2.1]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时7:", title: "手写数字识别系统交互流程设计[3.2.2]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时8:", title: "面部表情识别系统交互流程设计[3.2.3]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时9:", title: "花朵智能识别系统交互流程设计[3.2.4]", locked: true, status: "未学习", type: "experiment" },
-                    { section: "课时10:", title: "人脸AI智能检测系统交互流程设计[3.2.5]", locked: true, status: "未学习", type: "experiment" }
-                  ]
-                }
-              ].map((chapter, i) => (
+              {COURSE_SYLLABUS.map((chapter, i) => (
                 <div key={i} className="flex flex-col">
                   {/* Chapter Header */}
                   <div className="flex items-center justify-between bg-[#f5f6f8] px-6 py-4 rounded-[8px]">
@@ -236,16 +222,20 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                         <span>预计学习 <span className="font-bold text-neutral-title">{chapter.duration}</span> 分钟</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <PlayCircle className="w-4 h-4 text-neutral-caption" />
-                        <span><span className="font-bold text-neutral-title">{chapter.videos}</span> 个视频</span>
+                        <BookOpen className="w-4 h-4 text-neutral-caption" />
+                        <span><span className="font-bold text-neutral-title">{chapter.videos}</span> 个教学课件</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <FileText className="w-4 h-4 text-neutral-caption" />
-                        <span><span className="font-bold text-neutral-title">{chapter.docs}</span> 个文档</span>
+                        <Monitor className="w-4 h-4 text-neutral-caption" />
+                        <span><span className="font-bold text-neutral-title">{chapter.docs}</span> 个实验课件</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Code className="w-4 h-4 text-neutral-caption" />
-                        <span><span className="font-bold text-neutral-title">{chapter.experiments}</span> 个实验</span>
+                        <span><span className="font-bold text-neutral-title">{chapter.experiments}</span> 个互动学习课件</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <CheckSquare className="w-4 h-4 text-neutral-caption" />
+                        <span><span className="font-bold text-neutral-title">{chapter.assignments}</span> 个随堂作业</span>
                       </div>
                       <ChevronDown className="w-4 h-4 ml-2 text-neutral-caption" />
                     </div>
@@ -281,9 +271,10 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                               ) : (
                                  <div className="w-4 h-4 rounded-full border-2 border-neutral-300"></div>
                               )}
-                              {lesson.type === 'video' && <PlayCircle className="w-4 h-4 text-neutral-400" />}
-                              {lesson.type === 'doc' && <FileText className="w-4 h-4 text-neutral-400" />}
+                              {lesson.type === 'video' && <BookOpen className="w-4 h-4 text-neutral-400" />}
+                              {lesson.type === 'doc' && <Monitor className="w-4 h-4 text-neutral-400" />}
                               {lesson.type === 'experiment' && <Code className="w-4 h-4 text-neutral-400" />}
+                              {lesson.type === 'assignment' && <CheckSquare className="w-4 h-4 text-neutral-400" />}
                               <span className={cn(
                                 "text-[14px] transition-colors",
                                 lesson.locked ? "text-neutral-body" : "text-neutral-title group-hover:text-[#fa541c]"
@@ -316,92 +307,223 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
               ))}
             </div>
           </div>
+          </div>
+          )}
         </div>
       </div>
 
       {/* Modals */}
       {playingLesson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
-          {playingLesson.type === 'video' && (
-            <div className="w-full max-w-5xl aspect-video bg-black relative rounded-lg overflow-hidden shadow-2xl mx-4 border border-white/10">
-              <button 
-                onClick={() => setPlayingLesson(null)}
-                className="absolute top-4 right-4 text-white/70 hover:text-white z-10 bg-black/50 hover:bg-black/80 w-10 h-10 rounded-full flex items-center justify-center transition-all"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              
-              {/* Placeholder for video player */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 bg-gradient-to-b from-neutral-900 to-black">
-                <div className="w-20 h-20 rounded-full bg-[#fa541c]/20 flex items-center justify-center mb-6 animate-pulse">
-                  <PlayCircle className="w-12 h-12 text-[#fa541c]" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">{playingLesson.title}</h3>
-                <p className="text-neutral-400">视频正在加载中...</p>
-                
-                {/* Fake Video Controls */}
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent flex items-end px-6 pb-4">
-                  <div className="w-full flex items-center gap-4">
-                    <PlayCircle className="w-6 h-6 text-white cursor-pointer hover:text-[#fa541c] transition-colors" />
-                    <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer">
-                      <div className="w-1/3 h-full bg-[#fa541c] rounded-full"></div>
+          {['doc', 'video', 'assignment'].includes(playingLesson.type) && (
+            <div className="w-full h-full bg-white relative flex font-sans">
+              {/* Left Sidebar */}
+              <div className="w-80 border-r border-neutral-border flex flex-col bg-[#fafafa]">
+                {/* Header */}
+                <div className="p-4 flex flex-col gap-4 border-b border-neutral-border">
+                  <div 
+                    className="flex items-center gap-1 text-[13px] text-neutral-body cursor-pointer hover:text-neutral-title w-fit"
+                    onClick={() => setPlayingLesson(null)}
+                  >
+                    <ChevronLeft className="w-4 h-4" /> 返回
+                  </div>
+                  <div>
+                    <h2 className="text-[16px] font-bold text-neutral-title mb-2">人工智能训练师三级考试</h2>
+                    <div className="flex items-center justify-between text-[12px] text-neutral-caption mb-1.5">
+                      <span className="truncate pr-2">当前学习：{playingLesson.title}</span>
+                      <span className="shrink-0">3.4%</span>
                     </div>
-                    <span className="text-xs text-white/70 font-mono">05:24 / 15:00</span>
+                    <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#fa541c] w-[3.4%] rounded-full"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {playingLesson.type === 'doc' && (
-            <div className="w-full max-w-4xl h-[80vh] bg-white relative rounded-lg overflow-hidden shadow-2xl mx-4 flex flex-col">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-border bg-neutral-bg">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-[#fa541c]" />
-                  <h3 className="text-lg font-bold text-neutral-title">{playingLesson.title}</h3>
+                
+                {/* Syllabus List */}
+                <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+                  {COURSE_SYLLABUS.map((chapter, i) => (
+                    <div key={i} className="mb-4">
+                      <div className="px-4 py-2 flex items-center gap-2">
+                        <span className="font-bold text-neutral-title text-[14px]">{i + 1} {chapter.title}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        {chapter.lessons.map((lesson, idx) => {
+                          const isActive = lesson.title === playingLesson.title;
+                          return (
+                            <div 
+                              key={idx} 
+                              className={cn(
+                                "flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors cursor-pointer border-r-2",
+                                isActive ? "bg-[#fff2e8] text-[#fa541c] border-[#fa541c]" : "text-neutral-body hover:bg-neutral-100 border-transparent",
+                                lesson.locked && "opacity-50 cursor-not-allowed hover:bg-transparent"
+                              )}
+                              onClick={() => {
+                                if (!lesson.locked) {
+                                  setPlayingLesson({ title: lesson.title, type: lesson.type });
+                                }
+                              }}
+                            >
+                              <div className="flex items-center gap-2 w-full pr-4">
+                                <span className={cn("shrink-0", isActive ? "text-[#fa541c] font-medium" : "text-neutral-body")}>{i + 1}-{idx + 1}</span>
+                                <span className={cn("truncate", isActive ? "font-medium" : "")}>{lesson.title}</span>
+                              </div>
+                              {lesson.locked ? (
+                                <Lock className="w-3.5 h-3.5 shrink-0 text-neutral-caption" />
+                              ) : (
+                                <div className={cn("w-3.5 h-3.5 shrink-0 rounded-full border border-neutral-300", isActive && "border-[#fa541c] border-2")}></div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <button 
-                  onClick={() => setPlayingLesson(null)}
-                  className="text-neutral-caption hover:text-neutral-title transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
-              <div className="flex-1 bg-[#f5f6f8] overflow-y-auto flex justify-center py-8 custom-scrollbar">
-                {/* Real Document Content */}
-                <div className="w-full max-w-3xl bg-white shadow-sm border border-neutral-border p-12 min-h-full">
-                  <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border">{playingLesson.title}</h1>
-                  
-                  <div className="text-[15px] text-neutral-body leading-loose space-y-6">
-                    <div>
-                      <h2 className="text-xl font-bold text-neutral-title mb-3">一、核心概念</h2>
-                      <p>
-                        在当前的实战课程中，<strong>{playingLesson.title}</strong>的知识非常关键。
-                        人工智能的核心不仅仅是代码和算法的堆砌，更是对业务逻辑以及数据形态的深刻理解。
-                        在本章节中，我们将探索如何有效地将业务场景转化为可以计算和优化的数学模型。
-                      </p>
-                    </div>
 
-                    <div>
-                      <h2 className="text-xl font-bold text-neutral-title mb-3">二、学习目标</h2>
+              {/* Center Content */}
+              <div className="flex-1 overflow-y-auto bg-white flex justify-center py-12 custom-scrollbar relative">
+                {playingLesson.type === 'doc' && (
+                  <div className="w-full max-w-3xl px-8">
+                    <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border">{playingLesson.title}</h1>
+                    
+                    <div className="text-[15px] text-neutral-body leading-loose space-y-6">
+                      <p>
+                        搜索算法从初始节点出发，不断选择后续节点，完成了搜索树的构造。
+                      </p>
+                      <p>
+                        一开始，搜索树中只有根节点，在每一步中搜索算法将选择与搜索树中某个节点相邻的一个后续节点加入搜索树，这个操作叫做扩展一个节点。
+                      </p>
+                      <p>
+                        能够扩展的节点需满足条件：
+                      </p>
                       <ul className="list-disc pl-6 space-y-2">
-                        <li>理解基本理论背景与技术架构路线。</li>
-                        <li>掌握在开发过程中的环境配置与代码实施流程。</li>
-                        <li>熟悉异常处理、性能调优及实际业务的工程化部署。</li>
+                        <li>该节点不能已经在搜索树中，即该节点不能已经被扩展过；</li>
+                        <li>该节点能够从搜索树中某个节点出发通过执行一个动作抵达。被扩展节点和搜索树节点的某个节点是相邻的。</li>
                       </ul>
-                    </div>
-
-                    <div>
-                      <h2 className="text-xl font-bold text-neutral-title mb-3">三、关键参考资料</h2>
                       <p>
-                        学习本节内容时，建议结合实验环境以及配套视频一起阅读。
-                        如果有任何疑惑，可以随时进入 AI 答疑助手页面获取实时解答。
+                        这些能够被扩展的节点构成的集合称为未访问节点集合。
                       </p>
-                    </div>
+                      <p>
+                        于是，搜索算法的每一步操作可以做如下描述：
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li>每次选择未访问节点集合中的一个节点加入当前搜索树。</li>
+                        <li>检查这个节点所有后续相邻节点。</li>
+                        <li>将满足条件的节点加入未访问节点集合中。</li>
+                        <li>重复执行上述操作，直至被扩展的节点对应一条从初始节点到终止结点的路径。</li>
+                      </ul>
 
-                    <div className="bg-neutral-50 p-4 border-l-4 border-[#fa541c] rounded mt-12">
-                       <p className="text-sm text-neutral-caption m-0">注：本文档为《{playingLesson.title}》的官方配套讲义资料，未经许可严禁外传。</p>
+                      <div>
+                        <h2 className="text-xl font-bold text-neutral-title mt-8 mb-4">根据以上内容，我们可以按照下面的步骤来实现深度优先搜索算法。</h2>
+                        <ol className="list-decimal pl-6 space-y-2">
+                          <li>定义已访问的路径的列表 S</li>
+                          <li>定义一个待访问的路径的列表 Q</li>
+                          <li>把初始起点放进列表 Q 中</li>
+                          <li>如果还有待访问的路径，则
+                            <ol className="list-[upper-alpha] pl-6 mt-2 space-y-2 text-neutral-body">
+                              <li>从列表 Q 中拿取最后一个元素，也就是一个尚未访问的路径，记作 this_path</li>
+                              <li>将此路径加入已访问的路径 S 中</li>
+                              <li>如果此路径的末尾点是目标点，则说明找到了目标点，可继续进行下一循环</li>
+                              <li>对路径末尾点的每一个相邻点，如果该相邻点不在路径中（即不存在回路），则将其连接到 this_path 后，作为新的待访问路径添加到 Q 中</li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </div>
+
+                      <div className="bg-neutral-50 p-4 border-l-4 border-[#fa541c] rounded mt-12">
+                         <p className="text-sm text-neutral-caption m-0">注：本文档为《{playingLesson.title}》的官方配套讲义资料，未经许可严禁外传。</p>
+                      </div>
                     </div>
+                  </div>
+                )}
+                {playingLesson.type === 'video' && (
+                  <div className="w-full max-w-4xl px-8 flex flex-col items-center">
+                    <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border w-full">{playingLesson.title}</h1>
+                    <div className="w-full aspect-video bg-black relative rounded-lg overflow-hidden shadow-2xl border border-white/10">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 bg-gradient-to-b from-neutral-900 to-black">
+                        <div className="w-20 h-20 rounded-full bg-[#fa541c]/20 flex items-center justify-center mb-6 animate-pulse">
+                          <PlayCircle className="w-12 h-12 text-[#fa541c]" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-2">{playingLesson.title}</h3>
+                        <p className="text-neutral-400">视频正在加载中...</p>
+                        
+                        {/* Fake Video Controls */}
+                        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent flex items-end px-6 pb-4">
+                          <div className="w-full flex items-center gap-4">
+                            <PlayCircle className="w-6 h-6 text-white cursor-pointer hover:text-[#fa541c] transition-colors" />
+                            <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer">
+                              <div className="w-1/3 h-full bg-[#fa541c] rounded-full"></div>
+                            </div>
+                            <span className="text-xs text-white/70 font-mono">05:24 / 15:00</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {playingLesson.type === 'assignment' && (
+                  <div className="w-full max-w-3xl px-8">
+                    <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border">{playingLesson.title}</h1>
+                    <div className="text-[15px] text-neutral-body leading-loose space-y-6">
+                      <div>
+                        <h2 className="text-xl font-bold text-neutral-title mb-3">一、选择题</h2>
+                        <p>1. 以下哪个是正确的 Python 变量名？</p>
+                        <ul className="list-none space-y-2 mt-4">
+                          <li><label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" className="text-[#fa541c] focus:ring-[#fa541c]" /> <span>A. 1_variable</span></label></li>
+                          <li><label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" className="text-[#fa541c] focus:ring-[#fa541c]" /> <span>B. variable_1</span></label></li>
+                          <li><label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" className="text-[#fa541c] focus:ring-[#fa541c]" /> <span>C. var-1</span></label></li>
+                          <li><label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" className="text-[#fa541c] focus:ring-[#fa541c]" /> <span>D. def</span></label></li>
+                        </ul>
+                      </div>
+
+                      <div className="mt-8">
+                        <h2 className="text-xl font-bold text-neutral-title mb-3">二、简答题</h2>
+                        <p>2. 简述 Python 中列表和元组的区别。</p>
+                        <textarea className="w-full h-32 p-3 mt-4 border border-neutral-border rounded-md outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all resize-none" placeholder="请输入你的答案..."></textarea>
+                      </div>
+                      
+                      <div className="flex justify-end mt-8 pt-6 border-t border-neutral-border">
+                         <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8" onClick={() => { alert('作业提交成功！'); setPlayingLesson(null); }}>提交作业</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Notes Panel */}
+              {showNotesPanel && (
+                <div className="w-80 border-l border-neutral-border bg-white flex flex-col animate-in slide-in-from-right-8 duration-300">
+                  <div className="p-4 border-b border-neutral-border flex justify-between items-center">
+                    <h3 className="font-bold text-neutral-title flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-[#fa541c]" /> 课堂笔记
+                    </h3>
+                    <X className="w-4 h-4 cursor-pointer text-neutral-caption hover:text-neutral-title" onClick={() => setShowNotesPanel(false)} />
+                  </div>
+                  <div className="flex-1 p-4 overflow-y-auto bg-[#fafafa]">
+                    <textarea 
+                      className="w-full h-full p-4 border border-neutral-border rounded-lg outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-[14px] text-neutral-body bg-white shadow-sm transition-all" 
+                      placeholder="在这里记录你的学习心得、重要知识点或待办事项..."
+                    ></textarea>
+                  </div>
+                  <div className="p-4 border-t border-neutral-border bg-white flex justify-end">
+                    <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-8 text-xs px-4">保存笔记</Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Right Sidebar */}
+              <div className="w-16 border-l border-neutral-border flex flex-col py-6 bg-[#fafafa]">
+                <div className="flex flex-col gap-6 w-full">
+                  <div 
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 cursor-pointer group",
+                      showNotesPanel ? "text-[#fa541c]" : "text-neutral-caption hover:text-[#fa541c]"
+                    )}
+                    onClick={() => setShowNotesPanel(!showNotesPanel)}
+                  >
+                    <FileText className="w-5 h-5" />
+                    <span className="text-[10px]">小记</span>
                   </div>
                 </div>
               </div>

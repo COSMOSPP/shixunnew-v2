@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Lock, GraduationCap } from "lucide-react";
+import { ZhiYunLogo } from "@/components/icons/ZhiYunLogo";
 import userImg from "../user-img.png";
 
 export default function LoginUser() {
@@ -25,12 +26,10 @@ export default function LoginUser() {
           referrerPolicy="no-referrer"
         />
         {/* Logo */}
-        <Link to="/" className="absolute top-8 left-8 z-20 flex items-center gap-2 hover:opacity-80 transition-opacity text-white drop-shadow-md">
-          <div className="relative flex items-center justify-center">
-            <GraduationCap className="w-10 h-10 text-white drop-shadow-md" strokeWidth={1.5} />
-          </div>
+        <Link to="/" className="flex items-center gap-3 mb-16 hover:opacity-90 transition-opacity absolute top-8 left-8 z-20 text-white drop-shadow-md">
+          <ZhiYunLogo className="w-12 h-12 text-white drop-shadow-md" strokeWidth={2} />
           <span className="text-[24px] font-bold tracking-widest">
-            翼实训平台
+            智云实训平台
           </span>
         </Link>
       </div>

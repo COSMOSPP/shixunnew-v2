@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Lock, GraduationCap } from "lucide-react";
+import { ZhiYunLogo } from "@/components/icons/ZhiYunLogo";
 
 export default function LoginTeacher() {
   const navigate = useNavigate();
@@ -17,12 +18,10 @@ export default function LoginTeacher() {
       {/* Left Side - 2/5 */}
       <div className="hidden lg:flex w-2/5 bg-[#fa541c] relative overflow-hidden flex-col items-center justify-center text-white p-12">
         {/* Logo */}
-        <Link to="/" className="absolute top-8 left-8 z-20 flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="relative flex items-center justify-center">
-            <GraduationCap className="w-10 h-10 text-white" strokeWidth={1.5} />
-          </div>
+        <Link to="/" className="absolute top-8 left-8 z-20 flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <ZhiYunLogo className="w-10 h-10 text-white" />
           <span className="text-[24px] font-bold text-white tracking-widest">
-            翼实训平台
+            智云实训平台
           </span>
         </Link>
 

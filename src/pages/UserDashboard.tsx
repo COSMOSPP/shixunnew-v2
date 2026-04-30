@@ -44,7 +44,7 @@ export default function UserCourses() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState([
-    { role: 'assistant', text: '你好！我是课程推荐助手，请告诉我你的当前岗位、技能水平及期望转型的方向。', isCourseCard: false }
+    { role: 'assistant', text: '你好！我是ai助手，请告诉我你的当前岗位、技能水平及期望转型的方向。', isCourseCard: false }
   ]);
 
   const handleSendMsg = (text: string) => {
@@ -224,26 +224,6 @@ export default function UserCourses() {
             ))}
           </div>
         </div>
-
-        <div className="flex items-start gap-4">
-          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5 w-16">付费类型</span>
-          <div className="flex flex-wrap gap-2">
-            {pricesList.map((price) => (
-              <button 
-                key={price}
-                onClick={() => setSelectedPrice(price)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-[13px] transition-colors border",
-                  selectedPrice === price 
-                    ? "bg-[#fa541c] text-white border-transparent" 
-                    : "bg-white border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
-                )}
-              >
-                {price}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Tabs & Search */}
@@ -313,20 +293,7 @@ export default function UserCourses() {
                           <span>{course.students}人在学</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                          <Play className="w-3.5 h-3.5" />
-                          <span>视频 {course.videos}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <FileText className="w-3.5 h-3.5" />
-                          <span>文档 {course.docs}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Code className="w-3.5 h-3.5" />
-                          <span>实验 {course.experiments}</span>
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -652,7 +619,7 @@ export default function UserCourses() {
                 当前进度：<span className="font-bold text-[#fa541c]">2/7</span> 阶段
               </div>
               <Button className="bg-[#fa541c] hover:bg-[#ff7a45] text-white rounded-full px-8">
-                定制专属学习路径
+                我的ai学习路径
               </Button>
             </div>
           </div>
@@ -676,7 +643,7 @@ export default function UserCourses() {
         {/* Chat Header */}
         <div className="h-[60px] bg-gradient-to-r from-[#fa541c] to-[#ff7a45] flex items-center justify-between px-5 shrink-0 z-10 relative shadow-sm">
           <div className="flex items-center gap-2 text-white font-bold text-[16px]">
-            <Bot className="w-5 h-5" /> 课程推荐助手
+            <Bot className="w-5 h-5" /> ai助手
           </div>
           <button onClick={() => setIsAssistantOpen(false)} className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-lg">
             <Minimize2 className="w-[18px] h-[18px]" />
@@ -687,12 +654,12 @@ export default function UserCourses() {
         <div className="flex-1 overflow-y-auto px-4 py-6 bg-[#f9f9fc] flex flex-col gap-6 custom-scrollbar">
           {chatHistory.map((msg, i) => (
              <div key={i} className={cn("flex flex-col gap-1.5 max-w-[90%]", msg.role === 'user' ? "self-end items-end" : "self-start items-start")}>
-                {msg.role === 'assistant' && <div className="text-[12px] font-bold text-neutral-400 ml-1 flex items-center gap-1.5"><Bot className="w-3.5 h-3.5"/> 推荐助手</div>}
+                {msg.role === 'assistant' && <div className="text-[12px] font-bold text-neutral-400 ml-1 flex items-center gap-1.5"><Bot className="w-3.5 h-3.5"/> ai助手</div>}
                 
                 {msg.isCourseCard ? (
                    // Course Recommendation Card
                    <div className="bg-white border border-neutral-border shadow-sm rounded-[16px] p-5 flex flex-col gap-4 w-[300px]">
-                      <div className="font-bold text-[15px] text-neutral-title pb-3 border-b border-neutral-border/60">为你精心定制的课程体系</div>
+                      <div className="font-bold text-[15px] text-neutral-title pb-3 border-b border-neutral-border/60">为你精心定制的ai学习路径</div>
                       <div className="flex flex-col relative before:content-[''] before:absolute before:left-[17px] before:top-[20px] before:bottom-[20px] before:w-[2px] before:bg-gradient-to-b before:from-[#ffbb96] before:to-[#fff2e8] before:z-0">
                          {[
                            { name: "Python 基础进阶", type: "理论课程", duration: "12小时" },
@@ -738,7 +705,7 @@ export default function UserCourses() {
                           onClick={() => setShowLearningPathModal(true)}
                           className="flex items-center justify-center gap-2 w-full py-3 mt-3 bg-gradient-to-r from-[#fa541c] to-[#ff7a45] text-white font-bold text-[14px] rounded-xl shadow-[0_4px_14px_rgba(250,84,28,0.3)] hover:shadow-[0_6px_20px_rgba(250,84,28,0.4)] hover:-translate-y-0.5 transition-all"
                         >
-                           <CheckCircle2 className="w-4 h-4" /> 加入我的专属学习计划
+                           <CheckCircle2 className="w-4 h-4" /> 进入我的ai学习路径
                         </button>
                       )}
                    </div>
@@ -756,25 +723,7 @@ export default function UserCourses() {
         
         {/* Quick Questions & Input Area */}
         <div className="bg-white border-t border-neutral-border shrink-0 pb-6 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.02)] flex flex-col">
-          {/* Quick Questions */}
-          {chatHistory.length === 1 && (
-            <div className="px-4 pt-4 pb-1 flex flex-row gap-2 justify-between">
-              <button 
-                onClick={() => handleSendMsg("我的专属学习路径")}
-                className="flex-1 px-2 py-1.5 bg-[#fff2e8] text-[#fa541c] hover:bg-[#fa541c] hover:text-white border border-[#ffbb96] rounded-full text-[12px] font-medium transition-all shadow-sm whitespace-nowrap"
-              >
-                我的专属学习路径
-              </button>
-              <button 
-                onClick={() => handleSendMsg("推荐课程组合")}
-                className="flex-1 px-2 py-1.5 bg-[#fff2e8] text-[#fa541c] hover:bg-[#fa541c] hover:text-white border border-[#ffbb96] rounded-full text-[12px] font-medium transition-all shadow-sm whitespace-nowrap"
-              >
-                推荐课程组合
-              </button>
-            </div>
-          )}
-          
-          <div className="px-4 pb-4 pt-1 mt-1 flex">
+          <div className="px-4 pb-4 pt-3 flex">
             <div className="relative flex-1">
               <input 
                 className="w-full bg-neutral-50 rounded-xl px-4 py-3.5 text-[14px] outline-none border border-neutral-200 focus:border-[#fa541c]/50 focus:bg-white transition-all pr-[52px] text-neutral-800 placeholder:text-neutral-400 font-medium"

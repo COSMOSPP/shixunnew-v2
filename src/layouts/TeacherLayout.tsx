@@ -22,7 +22,7 @@ export default function TeacherLayout() {
               翼
             </div>
             <span className="text-[16px] font-medium tracking-wide">
-              翼实训平台(教师端)
+              智云实训平台(教师端)
             </span>
           </Link>
           
