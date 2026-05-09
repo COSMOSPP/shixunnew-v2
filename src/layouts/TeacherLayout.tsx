@@ -1,15 +1,27 @@
+import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { GraduationCap, User, LayoutDashboard, FileQuestion, FileText, Database } from "lucide-react";
+import { GraduationCap, User, LayoutDashboard, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function TeacherLayout() {
   const location = useLocation();
+  const [isModuleMenuOpen, setIsModuleMenuOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsModuleMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   
   const navItems = [
     { name: "首页", path: "/teacher", icon: LayoutDashboard },
-    { name: "试题管理", path: "/teacher/questions", icon: FileQuestion },
-    { name: "试卷管理", path: "/teacher/papers", icon: FileText },
-    { name: "资源分配", path: "/teacher/resources", icon: Database },
   ];
 
   return (
@@ -28,6 +40,34 @@ export default function TeacherLayout() {
           
           {/* Top Navigation */}
           <nav className="hidden md:flex items-center h-full gap-1">
+            {/* Module Switcher */}
+            <div className="relative h-full flex items-center mr-2" ref={dropdownRef}>
+              <div 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer text-white font-medium" 
+                onClick={() => setIsModuleMenuOpen(!isModuleMenuOpen)}
+              >
+                <span className="text-[14px]">人工智能</span>
+                <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isModuleMenuOpen ? "rotate-180" : "")} />
+              </div>
+              
+              {/* Dropdown Menu */}
+              {isModuleMenuOpen && (
+                <div className="absolute top-12 left-0 w-32 bg-[#1f1f1f] border border-gray-800 rounded-md shadow-xl py-1 z-50">
+                  <div className="flex flex-col">
+                    <Link to="#" className="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors" onClick={() => setIsModuleMenuOpen(false)}>
+                      安全运维
+                    </Link>
+                    <Link to="#" className="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors" onClick={() => setIsModuleMenuOpen(false)}>
+                      私有云
+                    </Link>
+                    <Link to="#" className="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors" onClick={() => setIsModuleMenuOpen(false)}>
+                      公有云
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {navItems.map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/teacher' && location.pathname.startsWith(item.path));
               return (

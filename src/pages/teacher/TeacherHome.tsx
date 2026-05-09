@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export default function TeacherHome() {
   const [courseTab, setCourseTab] = useState('all'); // all, active, ended
+  const navigate = useNavigate();
 
   const teachingTools = [
-    { icon: FileQuestion, title: '试题管理', desc: '进入试题管理页面', bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
-    { icon: FileText, title: '试卷管理', desc: '进入试卷管理页面', bgColor: 'bg-indigo-50', textColor: 'text-indigo-600' },
-    { icon: Database, title: '资源分配', desc: '进入学生资源分配页面', bgColor: 'bg-purple-50', textColor: 'text-purple-600' },
-    { icon: BookOpen, title: '我的学习', desc: '个人学习记录', bgColor: 'bg-teal-50', textColor: 'text-teal-600' },
+    { icon: FileQuestion, title: '试题管理', desc: '进入试题管理页面', bgColor: 'bg-blue-50', textColor: 'text-blue-600', path: '/teacher/questions' },
+    { icon: FileText, title: '试卷管理', desc: '进入试卷管理页面', bgColor: 'bg-indigo-50', textColor: 'text-indigo-600', path: '/teacher/papers' },
+    { icon: Database, title: '资源分配', desc: '进入学生资源分配页面', bgColor: 'bg-purple-50', textColor: 'text-purple-600', path: '/teacher/resources' },
+    { icon: User, title: '学生管理', desc: '学生信息与成绩管理', bgColor: 'bg-teal-50', textColor: 'text-teal-600', path: '/teacher/students' },
   ];
 
   const courses = [
@@ -60,21 +62,58 @@ export default function TeacherHome() {
   return (
     <div className="space-y-8 pb-12 relative">
       {/* Welcome Banner */}
-      <div className="relative bg-gradient-to-r from-[#fa541c] to-[#ff8c69] rounded-2xl p-8 md:p-10 text-white overflow-hidden shadow-lg border border-[#fa541c]/20">
-        <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">张老师，欢迎回来！</h1>
-          <p className="text-white/90 max-w-xl text-sm md:text-base leading-relaxed">
-            今天是 {new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })}。您有 <span className="font-bold text-white bg-white/20 px-2 py-0.5 rounded-md">2</span> 个待批改的作业，<span className="font-bold text-white bg-white/20 px-2 py-0.5 rounded-md">3</span> 个进行中的课程。
-          </p>
-          <div className="mt-6 flex items-center gap-4">
-            <Button className="bg-white text-[#fa541c] hover:bg-neutral-50 rounded-full px-6 font-medium shadow-sm">
-              查看待办事项
-            </Button>
-          </div>
+      <div className="relative bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] rounded-2xl overflow-hidden shadow-lg group h-auto md:h-[240px]">
+        
+        {/* Diagonal light rays */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.07]">
+           <div className="w-[200%] h-[200%] absolute top-[-50%] left-[-50%] bg-[repeating-linear-gradient(45deg,transparent,transparent_40px,#ffffff_40px,#ffffff_80px)]"></div>
         </div>
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 bg-[url('https://picsum.photos/seed/teacher-banner/800/400')] bg-cover bg-center mix-blend-overlay"></div>
-        <div className="absolute -right-10 top-1/2 -translate-y-1/2 hidden md:block">
-          <img src="https://image.pollinations.ai/prompt/3d%20illustration%20of%20a%20teacher%20desk%20with%20books%20and%20laptop,%20clean%20background,%20vibrant%20colors?width=300&height=300&nologo=true" alt="desk" className="w-64 h-64 object-contain drop-shadow-2xl opacity-90" referrerPolicy="no-referrer" />
+        
+        {/* Background Arrows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg className="absolute -bottom-20 left-[25%] w-[450px] h-[450px] opacity-10 transform rotate-45 text-white" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,0 100,50 70,50 70,100 30,100 30,50 0,50" />
+          </svg>
+          <svg className="absolute top-[10%] left-[50%] w-[250px] h-[250px] opacity-[0.08] transform rotate-45 text-white" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,0 100,50 70,50 70,100 30,100 30,50 0,50" />
+          </svg>
+        </div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row h-full">
+          <div className="p-6 md:p-8 md:pl-12 w-full flex flex-col justify-center">
+            {/* Bold slanted Title */}
+            <div className="transform -skew-x-12 origin-left mb-5 flex flex-wrap items-end gap-3 md:gap-5">
+              <h1 className="text-3xl md:text-[36px] font-black text-white leading-none drop-shadow-[2px_3px_0px_rgba(212,56,13,0.5)] italic tracking-wider">
+                欢迎回来，张老师
+              </h1>
+              <h2 className="text-xl md:text-[26px] font-bold text-white/90 leading-none drop-shadow-[1px_2px_0px_rgba(212,56,13,0.5)] italic tracking-wide md:pb-0.5">
+                智云实战教学空间
+              </h2>
+            </div>
+            
+            {/* White highlighted Subtitle */}
+            <div className="transform -skew-x-12 origin-left mb-6 inline-block max-w-max">
+              <div className="bg-gradient-to-r from-white via-white to-transparent text-[#fa541c] text-base md:text-lg font-black pl-8 pr-16 py-1.5 md:py-2">
+                <span className="transform skew-x-12 block italic tracking-wide">带你轻松管理今日教学任务</span>
+              </div>
+            </div>
+            
+            {/* Outline Tags */}
+            <div className="flex flex-wrap gap-6 items-center pl-4">
+              <div className="border-[1.5px] border-white/80 rounded-md pl-3 pr-5 py-1.5 text-white font-bold flex items-center gap-2.5 transform -skew-x-12 backdrop-blur-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-white transform skew-x-12"></div>
+                <span className="italic transform skew-x-12 block text-sm tracking-widest">待批改作业 <span className="ml-1 text-[#fff0e6] text-lg">2</span></span>
+              </div>
+              <div className="border-[1.5px] border-white/80 rounded-md pl-3 pr-5 py-1.5 text-white font-bold flex items-center gap-2.5 transform -skew-x-12 backdrop-blur-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-white transform skew-x-12"></div>
+                <span className="italic transform skew-x-12 block text-sm tracking-widest">进行中课程 <span className="ml-1 text-[#fff0e6] text-lg">3</span></span>
+              </div>
+              <div className="border-[1.5px] border-white/80 rounded-md pl-3 pr-5 py-1.5 text-white font-bold flex items-center gap-2.5 transform -skew-x-12 backdrop-blur-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-white transform skew-x-12"></div>
+                <span className="italic transform skew-x-12 block text-sm tracking-widest">互动提问 <span className="ml-1 text-[#fff0e6] text-lg">5</span></span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -125,7 +164,11 @@ export default function TeacherHome() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {teachingTools.map((tool, idx) => (
-            <div key={idx} className="bg-white p-5 rounded-2xl border border-neutral-border shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all group">
+            <div 
+              key={idx} 
+              onClick={() => navigate(tool.path)}
+              className="bg-white p-5 rounded-2xl border border-neutral-border shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-[#fa541c]/30 transition-all group"
+            >
               <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm", tool.bgColor, tool.textColor)}>
                 <tool.icon className="w-6 h-6" />
               </div>
@@ -140,47 +183,48 @@ export default function TeacherHome() {
 
       {/* Course Management - Table Layout */}
       <div className="bg-white rounded-2xl border border-neutral-border shadow-sm overflow-hidden">
-        <div className="p-5 md:p-6 border-b border-neutral-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-neutral-title flex items-center gap-2">
-            <div className="w-1.5 h-6 bg-[#fa541c] rounded-full"></div>
-            课程管理
-          </h2>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input 
-                type="text" 
-                placeholder="搜索课程名称/代码" 
-                className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-lg focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
-              />
-            </div>
-            <div className="flex bg-neutral-100/80 rounded-lg p-1 border border-neutral-border/50">
-              <button 
-                className={cn("px-5 py-1.5 text-sm rounded-md transition-all duration-200", courseTab === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-                onClick={() => setCourseTab('all')}
-              >
-                全部
-              </button>
-              <button 
-                className={cn("px-5 py-1.5 text-sm rounded-md transition-all duration-200", courseTab === 'active' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-                onClick={() => setCourseTab('active')}
-              >
-                进行中
-              </button>
-              <button 
-                className={cn("px-5 py-1.5 text-sm rounded-md transition-all duration-200", courseTab === 'ended' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-                onClick={() => setCourseTab('ended')}
-              >
-                已结束
-              </button>
-            </div>
+        <div className="border-b border-neutral-border/50 px-6 pt-4 flex gap-6 overflow-x-auto no-scrollbar">
+          <button className="pb-3 text-[#fa541c] font-bold border-b-2 border-[#fa541c] whitespace-nowrap relative bottom-[-1px]">课程</button>
+          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">项目</button>
+          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">考试</button>
+          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">最佳实践</button>
+          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">ai能力中心</button>
+        </div>
+        <div className="p-5 flex items-center justify-between">
+          <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-border/50">
+            <button 
+              className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
+              onClick={() => setCourseTab('all')}
+            >
+              全部
+            </button>
+            <button 
+              className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'active' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
+              onClick={() => setCourseTab('active')}
+            >
+              进行中
+            </button>
+            <button 
+              className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'ended' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
+              onClick={() => setCourseTab('ended')}
+            >
+              已结束
+            </button>
+          </div>
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input 
+              type="text" 
+              placeholder="搜索课程名称/代码" 
+              className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
+            />
           </div>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-sm text-neutral-caption">
+              <tr className="border-b border-neutral-border/50 bg-neutral-100 text-sm text-neutral-500">
                 <th className="p-5 font-medium w-[35%]">课程信息</th>
                 <th className="p-5 font-medium">授课教师</th>
                 <th className="p-5 font-medium">课程范围</th>
@@ -228,7 +272,7 @@ export default function TeacherHome() {
                       <Button variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full">
                         <Copy className="w-3.5 h-3.5 mr-1" /> 复制
                       </Button>
-                      <Button size="sm" className="h-8 text-xs bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-[#fa541c]/20 rounded-full px-4">
+                      <Button onClick={() => navigate(`/teacher/course/${course.id}`)} variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full px-4">
                         <Eye className="w-3.5 h-3.5 mr-1" /> 查看
                       </Button>
                     </div>
