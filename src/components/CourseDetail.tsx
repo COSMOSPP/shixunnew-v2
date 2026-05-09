@@ -13,8 +13,8 @@ const COURSE_SYLLABUS = [
     chapter: "第一课",
     title: "人工智能训练师三级考试内容指导",
     duration: 98,
-    videos: 1,
-    docs: 4,
+    videos: 5,
+    docs: 0,
     experiments: 0,
     assignments: 1,
     description: "",
@@ -32,13 +32,13 @@ const COURSE_SYLLABUS = [
     title: "培训与指导",
     duration: 245,
     videos: 0,
-    docs: 0,
-    experiments: 10,
+    docs: 1,
+    experiments: 9,
     assignments: 0,
     description: "",
     lessons: [
       { section: "课时1:", title: "智能音箱产品的数据分析与优化[3.1.1]", locked: false, status: "未学习", type: "experiment" },
-      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", locked: true, status: "未学习", type: "experiment" },
+      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", locked: false, status: "未学习", type: "split_doc" },
       { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", locked: true, status: "未学习", type: "experiment" },
       { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", locked: true, status: "未学习", type: "experiment" },
       { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", locked: true, status: "未学习", type: "experiment" },
@@ -54,6 +54,7 @@ const COURSE_SYLLABUS = [
 export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
   const [playingLesson, setPlayingLesson] = useState<{title: string, type: string} | null>(null);
+  const [isExperimentStarted, setIsExperimentStarted] = useState(false);
   const [activeExperimentTab, setActiveExperimentTab] = useState('course');
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
@@ -257,6 +258,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                           onClick={() => {
                             if (!lesson.locked) {
                               setPlayingLesson({ title: lesson.title, type: lesson.type });
+                              setIsExperimentStarted(false);
                             }
                           }}
                         >
@@ -272,7 +274,8 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                                  <div className="w-4 h-4 rounded-full border-2 border-neutral-300"></div>
                               )}
                               {lesson.type === 'video' && <BookOpen className="w-4 h-4 text-neutral-400" />}
-                              {lesson.type === 'doc' && <Monitor className="w-4 h-4 text-neutral-400" />}
+                              {lesson.type === 'doc' && <BookOpen className="w-4 h-4 text-neutral-400" />}
+                              {lesson.type === 'split_doc' && <Monitor className="w-4 h-4 text-neutral-400" />}
                               {lesson.type === 'experiment' && <Code className="w-4 h-4 text-neutral-400" />}
                               {lesson.type === 'assignment' && <CheckSquare className="w-4 h-4 text-neutral-400" />}
                               <span className={cn(
@@ -315,7 +318,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
       {/* Modals */}
       {playingLesson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
-          {['doc', 'video', 'assignment'].includes(playingLesson.type) && (
+          {(['doc', 'video', 'assignment', 'split_doc'].includes(playingLesson.type) || (playingLesson.type === 'experiment' && !isExperimentStarted)) && (
             <div className="w-full h-full bg-white relative flex font-sans">
               {/* Left Sidebar */}
               <div className="w-80 border-r border-neutral-border flex flex-col bg-[#fafafa]">
@@ -360,6 +363,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                               onClick={() => {
                                 if (!lesson.locked) {
                                   setPlayingLesson({ title: lesson.title, type: lesson.type });
+                                  setIsExperimentStarted(false);
                                 }
                               }}
                             >
@@ -437,6 +441,123 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                     </div>
                   </div>
                 )}
+                {playingLesson.type === 'split_doc' && (
+                  <div className="w-full h-full flex bg-white absolute inset-0">
+                    {/* Left half: Document */}
+                    <div className="flex-1 border-r border-neutral-border p-8 overflow-y-auto custom-scrollbar flex flex-col items-center">
+                       <div className="w-full max-w-3xl">
+                         <div className="flex items-center gap-2 mb-6 border-b border-neutral-100 pb-2">
+                           <div className="flex gap-2 text-neutral-400 font-serif items-center text-sm">
+                             <span className="font-bold hover:bg-neutral-100 px-1 rounded cursor-pointer">H</span>
+                             <span className="font-bold italic hover:bg-neutral-100 px-1 rounded cursor-pointer">B</span>
+                             <span className="italic hover:bg-neutral-100 px-1 rounded cursor-pointer">I</span>
+                             <span className="line-through hover:bg-neutral-100 px-1 rounded cursor-pointer">S</span>
+                             <span className="text-xs hover:bg-neutral-100 px-1 rounded cursor-pointer ml-1">🔗</span>
+                             <span className="mx-1 h-3 w-px bg-neutral-300"></span>
+                             <List className="w-3.5 h-3.5 hover:text-neutral-600 cursor-pointer" />
+                             <CheckSquare className="w-3.5 h-3.5 hover:text-neutral-600 cursor-pointer" />
+                             <span className="mx-1 h-3 w-px bg-neutral-300"></span>
+                             <span className="px-2 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium cursor-pointer flex items-center gap-1">
+                               <div className="w-3 h-2 bg-blue-600 rounded-full"></div> AI 备课
+                             </span>
+                           </div>
+                         </div>
+                         <h1 className="text-3xl font-bold text-neutral-title mb-8">第1课：数字图像基本概念</h1>
+                         
+                         <h2 className="text-xl font-bold text-neutral-title mb-4 flex items-center gap-2">
+                           <Layers className="w-5 h-5 text-blue-500" /> 学习目标
+                         </h2>
+                         <div className="bg-white mb-10">
+                           <p className="text-[14px] text-neutral-body mb-3">学完本课后，你将能够：</p>
+                           <ul className="space-y-2">
+                             <li className="flex items-start gap-2 text-[14px] text-neutral-title"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5" /> 理解什么是像素，以及像素与图像的关系</li>
+                             <li className="flex items-start gap-2 text-[14px] text-neutral-title"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5" /> 掌握图像分辨率的含义</li>
+                             <li className="flex items-start gap-2 text-[14px] text-neutral-title"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5" /> 理解RGB颜色模式的原理</li>
+                             <li className="flex items-start gap-2 text-[14px] text-neutral-title"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5" /> 使用Python读取和分析图像的像素信息</li>
+                           </ul>
+                         </div>
+
+                         <h2 className="text-xl font-bold text-neutral-title mb-6">1. 图片的本质：数字的集合</h2>
+                         <h3 className="text-[16px] font-bold text-neutral-title mb-3">1.1 图像在计算机中是什么？</h3>
+                         <p className="text-[14px] text-neutral-body leading-loose mb-4">
+                           我们每天用手机拍照、看电脑屏幕，这些彩色的、栩栩如生的图片，在计算机里究竟是什么样子呢？
+                         </p>
+                         <p className="text-[14px] text-neutral-body leading-loose mb-4">
+                           答案是：<span className="font-bold">一串串数字！</span>
+                         </p>
+                         <p className="text-[14px] text-neutral-body leading-loose mb-8">
+                           计算机不能直接"看"图片，它只能理解数字。所以，所有的图片都被转换成了数字的形式存储和处理。
+                         </p>
+                       </div>
+                    </div>
+
+                    {/* Right half: Workspace */}
+                    <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
+                       <div className="h-12 border-b border-neutral-border flex items-center justify-between px-6 bg-white absolute top-0 left-0 right-0 z-10">
+                         <span className="text-[14px] font-medium text-neutral-title">操作区</span>
+                         <div className="flex gap-3 text-neutral-400">
+                            <span className="cursor-pointer hover:text-neutral-title">⇌</span>
+                            <span className="cursor-pointer hover:text-neutral-title">⤢</span>
+                         </div>
+                       </div>
+                       <div className="flex-1 p-8 pt-20 overflow-y-auto custom-scrollbar bg-[#f5f6f8]">
+                          <div className="flex items-center gap-2 mb-8">
+                             <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
+                             <h2 className="text-2xl font-bold text-neutral-title">1. 数字图像基本概念</h2>
+                          </div>
+                          
+                          <div className="bg-white p-8 rounded-xl shadow-sm border border-neutral-100">
+                            <h3 className="text-[18px] font-bold text-neutral-title mb-4">1.1 图片的本质：数字矩阵</h3>
+                            <p className="text-[14px] text-neutral-body mb-6 leading-loose">
+                              我们看到的图像，在计算机内部其实是一串串数字。这些数字按照行和列整齐地排列，形成了一个 <span className="text-[#fa541c] font-medium">矩阵</span>。
+                            </p>
+                            
+                            <div className="border-2 border-dashed border-neutral-200 rounded-xl p-8 flex flex-col items-center justify-center bg-[#fafafa]">
+                               <div className="text-[#e83e8c] font-bold mb-4 flex items-center gap-2 text-[15px]">
+                                 <div className="w-3 h-3 rounded-full bg-gradient-to-br from-[#e83e8c] to-[#ff75c3]"></div>
+                                 互动实验：像素马赛克（粉色渐变心形）
+                               </div>
+                               <p className="text-[13px] text-neutral-caption mb-8">鼠标悬停在像素块上，可以查看该点的颜色。图像就是由这些纯色的小方块拼成的。</p>
+                               
+                               {/* Heart grid visualization */}
+                               <div className="grid grid-cols-9 gap-0.5 w-64 h-64 bg-white p-3 border border-neutral-200 shadow-sm">
+                                  {Array.from({length: 81}).map((_, i) => {
+                                    const row = Math.floor(i / 9);
+                                    const col = i % 9;
+                                    let isHeart = false;
+                                    let intensity = 50; // percentage
+                                    
+                                    if (row === 1 && (col === 2 || col === 3 || col === 5 || col === 6)) { isHeart = true; intensity = 60; }
+                                    if (row === 2 && (col >= 1 && col <= 7)) { isHeart = true; intensity = 70; }
+                                    if (row === 3 && (col >= 1 && col <= 7)) { isHeart = true; intensity = 80; }
+                                    if (row === 4 && (col >= 2 && col <= 6)) { isHeart = true; intensity = 90; }
+                                    if (row === 5 && (col >= 3 && col <= 5)) { isHeart = true; intensity = 100; }
+                                    if (row === 6 && col === 4) { isHeart = true; intensity = 100; }
+                                    
+                                    if (isHeart) {
+                                      // Generate a shade of pink/red based on intensity
+                                      const opacity = intensity / 100;
+                                      return (
+                                        <div 
+                                          key={i} 
+                                          className="w-full h-full cursor-pointer hover:scale-110 transition-transform hover:shadow-md"
+                                          style={{ backgroundColor: `rgba(255, 107, 129, ${opacity})` }}
+                                          title={`Pixel (${row},${col}) - rgba(255,107,129,${opacity})`}
+                                        ></div>
+                                      );
+                                    } else {
+                                      return (
+                                        <div key={i} className="w-full h-full bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer" title={`Background Pixel (${row},${col})`}></div>
+                                      )
+                                    }
+                                  })}
+                               </div>
+                            </div>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+                )}
                 {playingLesson.type === 'video' && (
                   <div className="w-full max-w-4xl px-8 flex flex-col items-center">
                     <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border w-full">{playingLesson.title}</h1>
@@ -489,6 +610,63 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                     </div>
                   </div>
                 )}
+                {playingLesson.type === 'experiment' && !isExperimentStarted && (
+                  <div className="w-full h-full flex flex-col absolute inset-0">
+                    <div className="flex items-center justify-between px-8 py-4 border-b border-neutral-border bg-white shrink-0 z-10">
+                      <span className="text-[16px] font-bold text-neutral-title">{playingLesson.title}</span>
+                      <div className="flex gap-4">
+                        <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6" onClick={() => setIsExperimentStarted(true)}>启动实验</Button>
+                        <Button variant="outline" className="text-neutral-body h-9 px-6">结束实验</Button>
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                      <div className="max-w-4xl mx-auto">
+                        <h1 className="text-3xl font-bold text-neutral-title mb-8">🧠第12课：Linux 实时进程监控工具 top</h1>
+                        
+                        <h2 className="text-xl font-bold text-neutral-title mt-8 mb-4 flex items-center gap-2"><BookOpen className="w-5 h-5 text-[#fa541c]" /> 介绍</h2>
+                        <p className="text-[14px] text-neutral-body leading-loose mb-6">
+                          在 Linux 系统中，<code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">top</code> 是动态监控进程和系统资源使用情况的核心工具。它以交互式界面的形式实时显示 CPU、内存、负载和每个进程的详细状态，并支持快捷键进行排序、筛选和操作。本课将带你从基础运行 <code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">top</code> 开始，逐步掌握界面解读、常用快捷键、自定义显示字段、批处理模式以及结合脚本进行自动化监控，让你能够实时掌握系统的运行状态。
+                        </p>
+
+                        <h2 className="text-2xl font-bold text-neutral-title mt-10 mb-6">1. 理论</h2>
+                        <h3 className="text-[18px] font-bold text-neutral-title mt-6 mb-4 flex items-center gap-2"><span className="text-yellow-400">💡</span> 基本介绍 什么是 top?</h3>
+                        <p className="text-[14px] text-neutral-body leading-loose mb-4">
+                          <code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">top</code> (table of processes) 是 Linux 中实时显示系统状态的命令。它提供一个全屏交互界面，默认每 3 秒刷新一次，动态展示系统负载、任务总数、CPU 使用率、内存和交换分区使用情况，以及各进程的详细资源占用。用户可通过按键对进程进行排序、杀死进程、调整进程优先级等操作。
+                        </p>
+                        <p className="text-[14px] text-neutral-body leading-loose mb-3">基本语法：</p>
+                        <div className="bg-[#282c34] rounded-lg overflow-hidden mb-8">
+                          <div className="flex items-center justify-between px-4 py-2 bg-[#21252b] border-b border-[#181a1f]">
+                            <div className="flex gap-1.5">
+                              <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                              <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-neutral-400">
+                              <span>bash</span>
+                              <span className="cursor-pointer hover:text-white flex items-center gap-1 ml-4">复制代码 <CheckSquare className="w-3 h-3" /></span>
+                            </div>
+                          </div>
+                          <div className="p-4 text-neutral-300 font-mono text-[14px]">
+                            <span className="text-neutral-500 mr-4">1</span> <span className="text-[#98c379]">top</span> [选项]
+                          </div>
+                        </div>
+
+                        <h3 className="text-[18px] font-bold text-neutral-title mt-8 mb-4 flex items-center gap-2"><BarChart className="w-5 h-5 text-[#fa541c]" /> 解析</h3>
+                        <p className="text-[14px] text-neutral-body leading-loose mb-4">常用选项：</p>
+                        <ul className="list-disc pl-6 space-y-4 text-[14px] text-neutral-body mb-8">
+                          <li><code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">-d 秒数</code> : 指定刷新间隔（默认 3 秒）</li>
+                          <li><code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">-p PID1,PID2</code> : 只监视指定 PID 的进程</li>
+                          <li><code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">-u 用户名</code> : 只显示指定用户的进程</li>
+                          <li><code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">-b</code> : 批处理模式，将输出重定向到文件或管道</li>
+                          <li><code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">-n 次数</code> : 批处理模式下指定刷新次数</li>
+                        </ul>
+                        <p className="text-[14px] text-neutral-body leading-loose">
+                          最简单的用法直接在终端输入 <code className="bg-[#fff2e8] text-[#fa541c] px-1.5 py-0.5 rounded text-[13px]">top</code> 进入交互界面。
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Notes Panel */}
@@ -530,16 +708,19 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
             </div>
           )}
 
-          {playingLesson.type === 'experiment' && (
+          {playingLesson.type === 'experiment' && isExperimentStarted && (
             <div className="w-full h-full bg-white relative flex flex-col">
               {/* Top Bar */}
               <div className="h-12 border-b border-neutral-border flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-[#fa541c] font-bold">
-                    <div className="w-6 h-6 bg-[#fa541c] rounded-full flex items-center justify-center text-white text-xs">M</div>
-                    <span>{playingLesson.title}</span>
+                  <div 
+                    className="flex items-center gap-1 text-[14px] font-bold text-neutral-title cursor-pointer hover:text-[#fa541c]"
+                    onClick={() => setPlayingLesson(null)}
+                  >
+                    <ChevronLeft className="w-4 h-4" /> 返回
                   </div>
-                  <span className="text-neutral-caption text-sm flex items-center gap-1">课程页 <ChevronRight className="w-3 h-3" /></span>
+                  <div className="w-px h-4 bg-neutral-border mx-2"></div>
+                  <span className="text-sm font-bold text-neutral-title">{playingLesson.title}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm text-neutral-body">

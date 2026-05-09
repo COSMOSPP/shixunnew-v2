@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, FileText, Code, CheckSquare, List, Activity, Settings, Eye, Play, Users, Download } from 'lucide-react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, FileText, Code, CheckSquare, List, Activity, Settings, Eye, Play, Users, Download, ChevronDown, Copy, Folder, Info, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -43,24 +43,12 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row gap-8 items-start">
-          {/* Cover image */}
-          <div className="w-full md:w-[320px] aspect-video rounded-[12px] overflow-hidden shadow-lg border-[3px] border-white/80 shrink-0 relative group bg-white/40 flex items-center justify-center">
-             <img 
-               src={project.image} 
-               alt={project.title} 
-               className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105" 
-               referrerPolicy="no-referrer"
-             />
-             <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-medium px-2 py-0.5 rounded backdrop-blur-md border border-white/20">
-               v1.0.0
-             </div>
-             <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
-          </div>
+
 
           <div className="flex-1 w-full">
             {/* Breadcrumb & Actions */}
             <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
-              <div className="flex items-center text-[13px] text-neutral-caption bg-white/40 px-3 py-1 rounded-full border border-white/50 backdrop-blur-sm">
+              <div className="flex items-center text-[13px] text-neutral-caption">
                 <button onClick={onBack} className="hover:text-[#fa541c] flex items-center gap-1 font-medium transition-colors">
                   <ChevronLeft className="w-4 h-4" /> 返回
                 </button>
@@ -134,124 +122,292 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
         {/* Left Column */}
         <div className="flex-1 space-y-6">
           {/* Tabs */}
-          <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center gap-2">
-            {[
-              { id: 'detail', label: '项目详情卡片', icon: List },
-              { id: 'source', label: '项目源码区', icon: Code },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "px-6 py-3 rounded-[8px] text-[15px] font-medium transition-all flex items-center gap-2",
-                  activeTab === tab.id ? "text-[#fa541c] bg-[#fff2e8]" : "text-neutral-body hover:text-neutral-title hover:bg-neutral-bg"
-                )}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
+          <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              {[
+                { id: 'detail', label: '使用', icon: List },
+                { id: 'source', label: '源码', icon: Code },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "px-6 py-3 rounded-[8px] text-[15px] font-medium transition-all flex items-center gap-2",
+                    activeTab === tab.id ? "text-[#fa541c] bg-[#fff2e8]" : "text-neutral-body hover:text-neutral-title hover:bg-neutral-bg"
+                  )}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 text-neutral-500 cursor-pointer hover:text-neutral-900 transition-colors pr-4">
+              <span className="text-[14px] text-neutral-400">版本：</span>
+              <span className="text-[14px] text-neutral-500 mr-1">v0.1.1</span>
+              <ChevronDown className="w-4 h-4 text-neutral-400" />
+            </div>
           </div>
 
           {/* Project Details Section */}
           {activeTab === 'detail' && (
             <div className="flex flex-col gap-6 animate-in fade-in duration-300">
               <div className="bg-white rounded-[16px] shadow-sm p-8">
-                <h2 className="text-lg font-bold text-neutral-title mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#fa541c]" /> 项目卡片 (业务描述)
-                </h2>
-                <p className="text-[14px] text-neutral-body leading-relaxed mb-6">
-                  本项目模拟了企业级真实的开发流程。您需要从给定的原始样本中进行数据清洗与分析，选取适当的算法模型，执行训练并对比不同超参数下的性能，最后部署微调模型以验证泛化能力。
-                </p>
-                <div className="bg-[#fafafa] rounded-[12px] p-6 grid grid-cols-2 gap-y-6 gap-x-4">
-                  {[
-                    "理解项目业务逻辑与痛点",
-                    "数据采集与全流程清洗",
-                    "搭建与训练算法核心模型",
-                    "部署与接口 API 封装测试"
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-[14px] text-neutral-title">
-                      <div className="w-6 h-6 rounded-full bg-[#fff2e8] flex items-center justify-center text-[#fa541c] shrink-0">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="font-medium">{item}</span>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="text-xl font-bold text-neutral-title">API</h2>
+                  <span className="text-[13px] text-neutral-caption">(4278 次被调用)</span>
+                  <Info className="w-4 h-4 text-neutral-caption cursor-pointer" />
+                </div>
+                
+                <div className="flex items-center bg-[#fafafa] rounded-md mb-12">
+                  <div className="flex-1 px-4 py-3 text-[14px] text-neutral-500 font-mono overflow-x-auto">
+                    https://mo.zju.edu.cn/pyapi/apps/run/5f7856b9878cb398519d2063
+                  </div>
+                  <button className="p-3 bg-neutral-200/50 hover:bg-neutral-200 text-neutral-400 hover:text-neutral-600 rounded-r-md transition-colors">
+                    <Copy className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between mb-6 border-b border-neutral-100 pb-2">
+                  <h2 className="text-xl font-bold text-neutral-title">API 参数</h2>
+                  <div className="flex items-center gap-1 text-[#fa541c] text-[14px] cursor-pointer hover:text-[#e84a15]">
+                    收起 <ChevronDown className="w-4 h-4 rotate-180" />
+                  </div>
+                </div>
+
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
+                    <span className="font-bold text-neutral-title">输入</span>
+                  </div>
+                  <div className="border border-neutral-100 rounded-lg overflow-hidden">
+                    <table className="w-full text-left text-[14px]">
+                      <thead className="bg-[#fafafa] text-neutral-500">
+                        <tr>
+                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">参数</th>
+                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">类型</th>
+                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">范围</th>
+                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">默认值</th>
+                          <th className="px-6 py-4 font-medium border-b border-neutral-100 w-1/5 text-center">说明</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-6 py-4 border-r border-neutral-100 text-[#52c41a] text-center">request</td>
+                          <td className="px-6 py-4 border-r border-neutral-100 text-[#eb2f96] font-mono text-center">str</td>
+                          <td className="px-6 py-4 border-r border-neutral-100 text-center text-neutral-caption">-</td>
+                          <td className="px-6 py-4 border-r border-neutral-100 text-center text-neutral-caption">-</td>
+                          <td className="px-6 py-4 text-neutral-title text-center">对模型说话</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
+                    <span className="font-bold text-neutral-title">输出</span>
+                  </div>
+                  <div className="border border-neutral-100 rounded-lg overflow-hidden">
+                    <table className="w-full text-left text-[14px]">
+                      <thead className="bg-[#fafafa] text-neutral-500">
+                        <tr>
+                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-[20%] text-center">参数</th>
+                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-[20%] text-center">类型</th>
+                          <th className="px-6 py-4 font-medium border-b border-neutral-100 w-[60%] text-center">说明</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-6 py-4 border-r border-neutral-100 text-neutral-title text-center">response</td>
+                          <td className="px-6 py-4 border-r border-neutral-100 text-[#eb2f96] font-mono text-center">str</td>
+                          <td className="px-6 py-4 text-neutral-500 text-center">模型的回答</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-[16px] shadow-sm p-8">
-                 <h2 className="text-lg font-bold text-neutral-title mb-6 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-[#fa541c]" /> 项目推进路线说明
-                 </h2>
-                 <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
-                   {[
-                      { step: "步骤 1", title: "环境准备与导入", desc: "分配在线资源沙盒，加载所需的 Python 库及业务预备数据集。" },
-                      { step: "步骤 2", title: "特征工程与清洗", desc: "处理异常值、填补缺失值并实现数据的归一化流转。" },
-                      { step: "步骤 3", title: "模型构建探索", desc: "基于清洗完毕的数据建立基础模型配置，调整网络参数结构。" },
-                      { step: "步骤 4", title: "推演与应用", desc: "将最佳预测模型导出，连接测试端验证其实际推演有效性。" }
-                   ].map((phase, i) => (
-                     <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white bg-[#fa541c] text-white shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10">
-                          <span className="text-[12px] font-bold">{i+1}</span>
-                        </div>
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2rem)] p-4 rounded-[12px] bg-white border border-neutral-border shadow-sm hover:border-[#fa541c] transition-colors">
-                           <div className="mb-1">
-                              <span className="font-bold text-neutral-title text-[15px]">{phase.title}</span>
-                              <span className="text-[12px] text-[#fa541c] ml-2 block sm:inline">{phase.step}</span>
-                           </div>
-                           <div className="text-[13px] text-neutral-caption leading-relaxed">{phase.desc}</div>
-                        </div>
-                     </div>
-                   ))}
-                 </div>
+              <div className="bg-white rounded-[16px] shadow-sm flex overflow-hidden min-h-[400px]">
+                <div className="w-16 bg-white border-r border-neutral-100 py-6 flex flex-col items-center gap-4 shrink-0">
+                  <div className="w-10 h-10 rounded-md bg-[#8ce196] text-white flex items-center justify-center shadow-sm">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div className="w-10 h-10 rounded-md bg-neutral-200 text-white flex items-center justify-center font-bold text-xs">
+                    JS
+                  </div>
+                  <div className="w-10 h-10 rounded-md bg-neutral-200 text-white flex items-center justify-center font-bold text-[10px]">
+                    curl
+                  </div>
+                  <div className="w-10 h-10 rounded-md bg-neutral-200 text-white flex items-center justify-center">
+                    <Code className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex-1 p-10">
+                  <h2 className="text-xl font-bold text-neutral-title mb-10">在线使用</h2>
+                  <div className="flex gap-16">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-8">
+                        <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
+                        <span className="font-bold text-neutral-title">输入</span>
+                      </div>
+                      <div className="mb-3">
+                        <span className="text-[#fa541c] mr-1">*</span>
+                        <span className="text-[14px] text-neutral-title font-medium">request</span>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="对模型说话" 
+                        className="w-full bg-[#fafafa] border border-neutral-100 rounded-md px-4 py-3 text-[14px] outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] mb-8 transition-all"
+                      />
+                      <div className="flex justify-end">
+                        <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8 h-10">提交</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="w-px bg-neutral-100"></div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-8">
+                        <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
+                        <span className="font-bold text-neutral-title">输出</span>
+                      </div>
+                      <div className="flex items-center gap-1 mb-4 text-[14px] text-neutral-title">
+                        response: <Info className="w-3.5 h-3.5 text-neutral-400" />
+                      </div>
+                      <div className="text-[14px] text-neutral-400 mt-6">
+                        提交你的输入来获取输出
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {/* Source Code Section */}
           {activeTab === 'source' && (
-            <div className="bg-white rounded-[16px] shadow-sm p-8 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-neutral-title flex items-center gap-2">
-                  <Code className="w-5 h-5 text-[#fa541c]" /> 源代码展示页
-                </h2>
-                <Button variant="outline" size="sm" className="hidden sm:flex transition-colors hover:text-[#fa541c] hover:border-[#fa541c]">
-                   <Download className="w-4 h-4 mr-2" /> 下载源码 ZIP
-                </Button>
+            <div className="bg-white rounded-[16px] shadow-sm flex overflow-hidden border border-neutral-border h-[700px] animate-in fade-in duration-300">
+              <div className="w-64 border-r border-neutral-border flex flex-col bg-white shrink-0">
+                <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <Folder className="w-4 h-4 text-[#faad14] fill-current opacity-80" /> .vscode
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <Folder className="w-4 h-4 text-[#faad14] fill-current opacity-80" /> results
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <Folder className="w-4 h-4 text-[#faad14] fill-current opacity-80" /> src
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-neutral-300 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">T</div> .gitignore
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-purple-400 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">M</div> _overview.md
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-[#fa541c] text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">J</div> _readme.ipynb
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-pink-400 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">Y</div> app_spec.yml
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-[#fa541c] text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">J</div> coding_here.ipynb
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-blue-500 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">P</div> handler.py
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-neutral-300 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">T</div> LICENSE
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-[#fa541c] text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">J</div> Main.ipynb
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-blue-500 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">P</div> preproduction.py
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-neutral-300 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">T</div> project_requirements.txt
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 bg-[#f5f6f8] rounded cursor-pointer text-[14px] text-neutral-title font-medium border-l-2 border-[#fa541c] -ml-2 pl-3">
+                      <div className="w-4 h-4 bg-purple-400 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">M</div> readme.md
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-blue-500 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">P</div> showEmbedding.py
+                    </div>
+                    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-100 rounded cursor-pointer text-[14px] text-neutral-700">
+                      <div className="w-4 h-4 bg-blue-500 text-white rounded-[3px] flex items-center justify-center font-bold text-[10px]">P</div> showLSTM.py
+                    </div>
+                  </div>
+                </div>
               </div>
-              
-              <div className="border border-neutral-border rounded-[8px] overflow-hidden">
-                 <div className="bg-[#f5f6f8] px-4 py-3 flex items-center gap-2 border-b border-neutral-border text-[13px] font-bold text-neutral-title">
-                   <FileText className="w-4 h-4 text-neutral-caption" />
-                   项目文件结构总览
-                 </div>
-                 <div className="p-2 space-y-1">
-                   {[
-                     { name: "main.ipynb", type: "notebook", size: "12 KB" },
-                     { name: "utils.py", type: "code", size: "4.2 KB" },
-                     { name: "config.json", type: "data", size: "1.1 KB" },
-                     { name: "README.md", type: "doc", size: "5.6 KB" },
-                   ].map((file, i) => (
-                     <div key={i} className="flex items-center justify-between hover:bg-neutral-50 p-2 rounded cursor-pointer group transition-colors">
-                       <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded bg-white border border-neutral-border flex items-center justify-center text-neutral-caption group-hover:text-[#fa541c] transition-colors">
-                             {file.type === 'notebook' && <code className="text-[10px] font-bold">.ipynb</code>}
-                             {file.type === 'code' && <code className="text-[10px] font-bold">.py</code>}
-                             {file.type === 'data' && <code className="text-[10px] font-bold">.json</code>}
-                             {file.type === 'doc' && <code className="text-[10px] font-bold">.md</code>}
-                          </div>
-                          <span className="text-[14px] text-neutral-title font-medium group-hover:text-[#fa541c] transition-colors">{file.name}</span>
-                       </div>
-                       <div className="flex items-center gap-4 text-[13px] text-neutral-caption">
-                         <span className="hidden sm:block">{file.size}</span>
-                         <Button size="icon" variant="ghost" className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Eye className="w-4 h-4 text-neutral-body hover:text-[#fa541c]" />
-                         </Button>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
+              <div className="relative flex-1 flex flex-col bg-white overflow-hidden">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-24 bg-[#fff2e8] rounded-full flex items-center justify-end pr-1 cursor-pointer z-10 border border-[#ffd8bf] shadow-sm">
+                  <ChevronLeft className="w-4 h-4 text-[#fa541c]" />
+                </div>
+                <div className="h-12 border-b border-neutral-100 flex items-center justify-between px-6 shrink-0">
+                  <div className="text-[14px] text-[#fa541c]">master <span className="text-neutral-caption mx-1">/</span> <span className="text-[#fa541c]">readme.md</span></div>
+                  <div className="text-[13px] text-[#fa541c] cursor-pointer hover:underline">分享链接</div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+                  <div className="max-w-3xl">
+                    <h1 className="text-3xl font-bold text-neutral-title mb-10">SOL模拟器</h1>
+                    <h2 className="text-2xl font-bold text-neutral-title mb-6">简介</h2>
+                    <p className="text-[16px] text-neutral-title leading-loose mb-12">
+                      本项目是基于GloVe（求取Embedding）和LSTM（训练生成器）制作的SOL对话模拟器，模拟SOL在群里的对话方式。<br/>
+                      如果有机会的话，后续会制作成QQ插件。
+                    </p>
+                    <h2 className="text-2xl font-bold text-neutral-title mb-8">来自网络的语料库</h2>
+                    <p className="text-[15px] text-neutral-title leading-loose mb-6">
+                      https://github.com/codemayq/chinese_chatbot_corpus
+                    </p>
+                    <div className="border border-neutral-100 rounded overflow-hidden">
+                      <table className="w-full text-left text-[14px]">
+                        <thead className="bg-white border-b border-neutral-100">
+                          <tr>
+                            <th className="px-4 py-4 font-bold text-neutral-title border-r border-neutral-100 w-32 text-center">名称</th>
+                            <th className="px-4 py-4 font-bold text-neutral-title border-r border-neutral-100 w-24 text-center">数量</th>
+                            <th className="px-4 py-4 font-bold text-neutral-title text-center">SOL的奇妙手工打分</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">chatterbot</td>
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">560</td>
+                            <td className="px-4 py-4">8（翻译有问题，但是内容都是对上的）</td>
+                          </tr>
+                          <tr className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">douban</td>
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">3.520M</td>
+                            <td className="px-4 py-4">2（牛头不对马嘴）</td>
+                          </tr>
+                          <tr className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">ptt</td>
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">0.4M</td>
+                            <td className="px-4 py-4">8（八卦太多了，好吧毕竟是八卦语料库，不过好像没怎么参与训练？）</td>
+                          </tr>
+                          <tr className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">qingyun</td>
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">0.1M</td>
+                            <td className="px-4 py-4">5（部分内容无关）</td>
+                          </tr>
+                          <tr className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">subtitle</td>
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">2.74M</td>
+                            <td className="px-4 py-4">8（语言通顺性还行，不过不是对话）</td>
+                          </tr>
+                          <tr className="hover:bg-neutral-50/50">
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">tieba</td>
+                            <td className="px-4 py-4 border-r border-neutral-100 text-center">2.32M</td>
+                            <td className="px-4 py-4">6（语言通顺性还行，但是足球实在太多了）</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -259,45 +415,47 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
 
         {/* Right Column - Project Metadata */}
         <div className="w-80 shrink-0 space-y-6">
-          <div className="bg-white rounded-[16px] shadow-sm p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#fff2e8] to-transparent rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
-            <h3 className="text-[15px] font-bold text-neutral-title mb-4 border-b border-neutral-border pb-2">所需环境架构</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-1 text-[13px]">
-                   <span className="text-neutral-caption">推荐镜像构建</span>
-                   <span className="font-bold text-neutral-title">JupyterLab: Base</span>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-1 text-[13px]">
-                   <span className="text-neutral-caption">内存占用评估</span>
-                   <span className="font-bold text-neutral-title">~ 8 GB</span>
-                </div>
-                <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                   <div className="w-[50%] h-full bg-blue-400"></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-1 text-[13px]">
-                   <span className="text-neutral-caption">GPU算力需求</span>
-                   <span className="font-bold text-neutral-title text-[#fa541c]">建议启用</span>
-                </div>
-                <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                   <div className="w-[80%] h-full bg-[#fa541c]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
           <div className="bg-white rounded-[16px] shadow-sm p-6">
-            <h3 className="text-[15px] font-bold text-neutral-title mb-4">前置知识储备</h3>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-neutral-50 text-[12px] text-neutral-body rounded-full border border-neutral-border">Python 基础</span>
-              <span className="px-3 py-1 bg-neutral-50 text-[12px] text-neutral-body rounded-full border border-neutral-border">Pandas 进阶</span>
-              <span className="px-3 py-1 bg-neutral-50 text-[12px] text-neutral-body rounded-full border border-neutral-border">基础代数 & 矩阵</span>
+            <img 
+              src={project.image} 
+              alt={project.title} 
+              className="w-full aspect-[4/3] object-cover rounded-[8px] mb-6" 
+              referrerPolicy="no-referrer"
+            />
+            
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2 text-[#fa541c] font-medium text-[18px]">
+                <div className="w-[3px] h-4 bg-[#fa541c] rounded-full"></div>
+                项目
+              </div>
+              <div className="flex items-center text-[15px] text-neutral-500">
+                <Star className="w-4 h-4 mr-1.5" /> 4 
+                <span className="w-1 h-1 bg-neutral-300 rounded-full mx-2.5"></span>
+                <Clock className="w-4 h-4 mr-1.5" /> 2022/12/01
+              </div>
             </div>
+
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-[#fa541c] overflow-hidden flex items-center justify-center shadow-sm">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SOL&backgroundColor=fa541c" alt="SOL" className="w-10 h-10" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#7c3aed] rounded flex items-center justify-center text-white text-[10px] border-[2px] border-white">
+                    🤖
+                  </div>
+                </div>
+                <span className="text-[17px] text-neutral-600 font-medium">SOL</span>
+              </div>
+              
+              <button className="w-12 h-12 rounded-full bg-[#fff2e8] flex items-center justify-center text-[#fa541c] hover:bg-[#ffd8bf] transition-colors">
+                <Download className="w-6 h-6" />
+              </button>
+            </div>
+
+            <button className="w-full h-12 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[6px] font-bold text-[18px] transition-colors shadow-sm">
+              Fork
+            </button>
           </div>
         </div>
       </div>

@@ -173,7 +173,7 @@ export default function UserAIAssistant() {
   return (
     <div className="flex flex-col bg-[#f5f6f8] relative h-full">
       {/* Header Tabs */}
-      <div className="bg-white border-b border-neutral-border px-8 pt-6 mb-6">
+      <div className="px-8 pt-6 mb-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-8">
             <h1 className="text-2xl font-bold text-neutral-title mr-4">智能助手</h1>
@@ -202,7 +202,7 @@ export default function UserAIAssistant() {
       <div className="px-8 flex-1 flex flex-col">
         {/* Filters */}
         {activeTab === "全部助手" && (
-          <div className="flex flex-col gap-4 mb-6 bg-white p-4 rounded-[12px] border border-neutral-border shadow-sm">
+          <div className="flex flex-col gap-4 mb-6">
             <div className="flex items-center gap-4">
               <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap min-w-[60px]">助手类型</span>
               <div className="flex flex-wrap gap-2">
@@ -225,13 +225,13 @@ export default function UserAIAssistant() {
 
         {/* Sort & Search */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 bg-white rounded-[8px] p-1 border border-neutral-border shadow-sm">
+          <div className="flex items-center gap-2 bg-white rounded-full p-1 border border-neutral-border shadow-sm">
             {["最新", "最热", "推荐"].map((sort) => (
               <button 
                 key={sort}
                 onClick={() => setActiveSort(sort)}
                 className={cn(
-                  "px-5 py-1.5 rounded-[6px] text-[13px] font-medium transition-colors",
+                  "px-5 py-1.5 rounded-full text-[13px] font-medium transition-colors",
                   activeSort === sort ? "bg-[#f5f6f8] text-neutral-title" : "text-neutral-body hover:text-neutral-title"
                 )}
               >

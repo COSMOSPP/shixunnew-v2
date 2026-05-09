@@ -227,14 +227,7 @@ export default function UserExams() {
                     </div>
                     
                     <div className="flex flex-col items-end gap-3 flex-shrink-0 min-w-[120px]">
-                      {exam.status === "已结束" ? (
-                        <div className="text-center">
-                          <div className="text-[24px] font-bold text-[#fa541c] leading-none mb-1">
-                            {exam.score}
-                          </div>
-                          <div className="text-[12px] text-neutral-caption">最终得分</div>
-                        </div>
-                      ) : exam.status === "进行中" ? (
+                      {exam.status === "已结束" ? null : exam.status === "进行中" ? (
                         <Button className="w-full h-9 text-[13px] rounded-[6px] bg-[#fa541c] hover:bg-[#ff7a45] text-white gap-1.5">
                           <PlayCircle className="w-4 h-4" />
                           继续考试

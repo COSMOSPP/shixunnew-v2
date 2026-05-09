@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Bot, Cpu, Code, Shield, Database, Cloud, Play, Settings, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, Bot, Cpu, Code, Shield, Database, Cloud, Play, Settings, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function UserAIAgents() {
   const navigate = useNavigate();
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
 
   const agents = [
     { id: 1, name: "代码审查专家", desc: "自动检查代码规范、安全漏洞和性能问题", icon: Code, color: "text-blue-500", bg: "bg-blue-50", status: "运行中", calls: 1250 },
@@ -19,7 +20,7 @@ export default function UserAIAgents() {
   return (
     <div className="flex flex-col bg-[#f5f6f8] relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-neutral-title">数字员工</h1>
         </div>
@@ -30,6 +31,15 @@ export default function UserAIAgents() {
           <Plus className="w-4 h-4" />
           创建数字员工
         </button>
+      </div>
+
+      {/* Description Box */}
+      <div className="bg-white p-5 rounded-[12px] border border-neutral-border mb-8 shadow-sm">
+        <p className="text-[14px] text-neutral-body leading-relaxed">
+          <span className="font-bold text-neutral-title">数字员工管理。</span>可自动执行任务的AI Agent，支持一键调用执行复杂任务。数字员工是基于大模型的智能体，可自主规划并执行多步骤任务。功能包括：数字员工列表、详情查看、一键调用、执行状态跟踪、结果查看。
+          <br className="my-1" />
+          <span className="font-medium text-neutral-title">调用方式：</span>选择数字员工 <span className="mx-1 text-neutral-caption">→</span> 输入任务描述 <span className="mx-1 text-neutral-caption">→</span> 执行任务 <span className="mx-1 text-neutral-caption">→</span> 查看结果。
+        </p>
       </div>
 
       {/* Filters */}
@@ -79,6 +89,7 @@ export default function UserAIAgents() {
                 return (
                   <div 
                     key={agent.id} 
+                    onClick={() => setSelectedAgent(agent)}
                     className="bg-white rounded-[12px] overflow-hidden border border-neutral-border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group flex flex-col cursor-pointer p-6"
                   >
                     <div className="flex items-start justify-between mb-5">
@@ -107,11 +118,20 @@ export default function UserAIAgents() {
                         调用次数: <span className="font-medium text-neutral-title ml-1">{agent.calls.toLocaleString()}</span>
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button className="w-8 h-8 flex items-center justify-center rounded-[8px] text-neutral-caption hover:text-[#fa541c] hover:bg-[#fa541c]/10 transition-colors">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAgent(agent);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center rounded-[8px] text-neutral-caption hover:text-[#fa541c] hover:bg-[#fa541c]/10 transition-colors"
+                        >
                           <Settings className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => navigate('/user/ai/agents/studio')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/user/ai/agents/studio');
+                          }}
                           className="w-8 h-8 flex items-center justify-center rounded-[8px] text-neutral-caption hover:text-[#fa541c] hover:bg-[#fa541c]/10 transition-colors"
                         >
                           <Play className="w-4 h-4" />
@@ -151,6 +171,95 @@ export default function UserAIAgents() {
               </div>
             </div>
         </div>
+
+      {/* Agent Detail Modal */}
+      {selectedAgent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedAgent(null)}>
+          <div 
+            className="bg-white rounded-[16px] w-full max-w-2xl overflow-hidden shadow-xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-border flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-lg font-bold text-neutral-title">数字员工详情</h2>
+              <button 
+                onClick={() => setSelectedAgent(null)}
+                className="text-neutral-caption hover:text-neutral-title p-1 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6">
+              <div className="flex items-start gap-5 mb-6">
+                <div className={cn("w-16 h-16 rounded-[16px] flex items-center justify-center shrink-0", selectedAgent.bg, selectedAgent.color)}>
+                  {selectedAgent.icon && <selectedAgent.icon className="w-8 h-8" strokeWidth={2} />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-neutral-title">{selectedAgent.name}</h3>
+                    <div className={cn(
+                      "px-3 py-1 rounded-[6px] text-[12px] font-medium border",
+                      selectedAgent.status === '运行中' 
+                        ? 'bg-green-50 text-green-600 border-green-200' 
+                        : 'bg-neutral-bg text-neutral-body border-neutral-border'
+                    )}>
+                      {selectedAgent.status}
+                    </div>
+                  </div>
+                  <p className="text-[14px] text-neutral-body leading-relaxed">{selectedAgent.desc}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="p-4 rounded-[12px] bg-neutral-50 border border-neutral-100">
+                  <div className="text-[13px] text-neutral-caption mb-1">累计调用次数</div>
+                  <div className="text-2xl font-bold text-neutral-title">{selectedAgent.calls.toLocaleString()}</div>
+                </div>
+                <div className="p-4 rounded-[12px] bg-neutral-50 border border-neutral-100">
+                  <div className="text-[13px] text-neutral-caption mb-1">能力评级</div>
+                  <div className="text-2xl font-bold text-[#fa541c]">S+</div>
+                </div>
+              </div>
+              
+              <div className="bg-[#fff2e8] p-4 rounded-[12px] border border-[#ffbb96] mb-2">
+                <h4 className="text-[14px] font-bold text-neutral-title mb-3 flex items-center gap-2">
+                  <Play className="w-4 h-4 text-[#fa541c]" />
+                  一键调用流程
+                </h4>
+                <div className="flex items-center gap-3 text-[13px] text-neutral-body font-medium">
+                  <div className="flex-1 bg-white p-2.5 rounded-[8px] text-center shadow-sm border border-[#ffbb96]/50">选择数字员工</div>
+                  <ChevronRight className="w-4 h-4 text-[#fa541c] shrink-0" />
+                  <div className="flex-1 bg-white p-2.5 rounded-[8px] text-center shadow-sm border border-[#ffbb96]/50">输入任务描述</div>
+                  <ChevronRight className="w-4 h-4 text-[#fa541c] shrink-0" />
+                  <div className="flex-1 bg-white p-2.5 rounded-[8px] text-center shadow-sm border border-[#ffbb96]/50">执行多步任务</div>
+                  <ChevronRight className="w-4 h-4 text-[#fa541c] shrink-0" />
+                  <div className="flex-1 bg-white p-2.5 rounded-[8px] text-center shadow-sm border border-[#ffbb96]/50">查看执行结果</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-border flex items-center justify-end gap-3 bg-neutral-50/50">
+              <button 
+                onClick={() => setSelectedAgent(null)}
+                className="px-5 py-2 rounded-[8px] text-[14px] font-medium border border-neutral-border text-neutral-body hover:bg-neutral-100 transition-colors"
+              >
+                取消
+              </button>
+              <button 
+                onClick={() => navigate('/user/ai/agents/studio')}
+                className="bg-[#fa541c] hover:bg-[#fa541c]/90 text-white px-5 py-2 rounded-[8px] text-[14px] font-medium transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                立即调用
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

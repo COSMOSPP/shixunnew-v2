@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, CheckCircle2, XCircle, Award, BarChart2, Clock, Target, Hash, ShieldCheck, Zap, AlertTriangle, PlayCircle } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, XCircle, Award, BarChart2, Clock, Target, Hash, ShieldCheck, Zap, AlertTriangle, PlayCircle, LineChart, FileText, Bot, PenTool, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -120,9 +120,10 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
            {/* Horizontal Tabs mapping to image structure */}
            <div className="flex border-b border-neutral-100 gap-8 px-2">
              {[
-              { id: 'overview', label: '能力总览与错题' },
-              { id: 'detail', label: '客观题对错对比' },
-              { id: 'practical', label: 'AI 主观与实操' },
+              { id: 'overview', label: '成绩统计增强' },
+              { id: 'ai-auto', label: 'AI自动判分' },
+              { id: 'ai-assist', label: 'AI辅助判分' },
+              { id: 'mistakes', label: '错题汇总' },
              ].map(tab => (
                <button
                  key={tab.id}
@@ -144,19 +145,44 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
            <div className="flex flex-col gap-6 -mt-2">
             {activeTab === 'overview' && (
               <>
-                {/* Score Breakdown Radar / Progress */}
                 <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
+                  <div className="flex items-center justify-between mb-8">
+                    <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2">
+                       <LineChart className="w-5 h-5 text-[#fa541c]" /> 多维度成绩统计分析
+                    </h3>
+                    <div className="flex gap-3">
+                       <Button variant="outline" className="h-8 text-[13px] border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8]"><FileText className="w-3.5 h-3.5 mr-1" /> 下载成绩单</Button>
+                       <Button className="h-8 text-[13px] bg-[#fa541c] hover:bg-[#e84a15] text-white"><BarChart2 className="w-3.5 h-3.5 mr-1" /> 生成成绩报告</Button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-5 gap-4 mb-8">
+                    {[
+                      { label: "平均分", value: "78.5" },
+                      { label: "最高分", value: "98" },
+                      { label: "及格率", value: "85%" },
+                      { label: "优秀率", value: "32%" },
+                      { label: "整体排名", value: "12/45", change: "↑3" }
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-white p-4 rounded-[12px] border border-neutral-200 text-center shadow-sm">
+                        <div className="text-[13px] text-neutral-caption mb-1">{stat.label}</div>
+                        <div className="text-[24px] font-bold text-neutral-title">
+                          {stat.value}
+                          {stat.change && <span className="text-[12px] text-green-500 ml-1 font-medium">{stat.change}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2 mb-6">
-                     <BarChart2 className="w-5 h-5 text-[#fa541c]" /> 各题型表现雷达图
+                     <BarChart2 className="w-5 h-5 text-[#fa541c]" /> 成绩分布与表现
                   </h3>
                   <div className="grid grid-cols-2 gap-8">
                      <div className="space-y-4">
                        {[
-                         { name: '单项选择题', score: '30 / 30', pct: 100 },
-                         { name: '多项选择题', score: '15 / 20', pct: 75 },
-                         { name: '判断题', score: '10 / 10', pct: 100 },
-                         { name: '填空题', score: '10 / 10', pct: 100 },
-                         { name: '代码与实操能力', score: '30 / 30', pct: 100 },
+                         { name: '基础理论 (单选/多选)', score: '45 / 50', pct: 90 },
+                         { name: '代码实操验证', score: '30 / 30', pct: 100 },
+                         { name: '主观论述 (AI辅助)', score: '20 / 20', pct: 100 },
                        ].map((t, i) => (
                          <div key={i}>
                            <div className="flex justify-between text-[13px] mb-1">
@@ -169,7 +195,7 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
                          </div>
                        ))}
                      </div>
-                     <div className="bg-[#fafafa] rounded-[12px] p-6 border border-neutral-border flex items-center justify-center relative">
+                     <div className="bg-white rounded-[12px] p-6 border border-neutral-200 flex items-center justify-center relative shadow-sm">
                         <div className="w-48 h-48 rounded-full border-4 border-[#fff2e8] border-t-[#fa541c] border-r-[#fa541c] animate-[spin_3s_linear_infinite]"></div>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                            <ShieldCheck className="w-10 h-10 text-green-500 mb-2" />
@@ -178,122 +204,174 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
                      </div>
                   </div>
                 </div>
-
-                {/* Wrong Questions Recap */}
-                <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
-                  <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2 mb-6">
-                     <AlertTriangle className="w-5 h-5 text-[#fa541c]" /> 错题与薄弱点汇总
-                  </h3>
-                  <div className="space-y-4">
-                     <div className="p-4 rounded-[8px] bg-red-50 border border-red-100 flex gap-4 items-start">
-                        <span className="w-8 h-8 flex items-center justify-center bg-white text-red-500 font-bold rounded shadow-sm shrink-0">12</span>
-                        <div>
-                          <p className="text-[14px] font-bold text-neutral-title mb-2">多选题：在 Pandas 中如何对缺失值进行填充？</p>
-                          <div className="text-[13px] text-neutral-body space-y-1">
-                             <div><span className="text-red-500 font-medium">您的答案:</span> A. dropna() , B. fillna()</div>
-                             <div><span className="text-green-600 font-medium">正确答案:</span> B. fillna() , C. interpolate()</div>
-                             <div className="text-neutral-caption mt-2 p-2 bg-white rounded border border-neutral-200">
-                                <strong>AI 诊断建议:</strong> 分析显示您对插值函数 interpolate() 的掌握不够熟练，建议复习《数据清洗》模块。
-                             </div>
-                          </div>
-                        </div>
-                     </div>
-                  </div>
-                </div>
               </>
             )}
 
-            {activeTab === 'detail' && (
-              <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
-                <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2 mb-6">
-                   <Hash className="w-5 h-5 text-[#fa541c]" /> 单题答案全景对比 (AI 自动判分)
-                </h3>
-                <div className="border border-neutral-200 rounded-[8px] overflow-hidden">
-                   <table className="w-full text-left border-collapse text-[13px]">
-                     <thead className="bg-[#f5f6f8] text-neutral-caption font-bold border-b border-neutral-200">
-                       <tr>
-                         <th className="p-3 w-16 text-center">题号</th>
-                         <th className="p-3">题目类型</th>
-                         <th className="p-3">您的答案</th>
-                         <th className="p-3">标准答案</th>
-                         <th className="p-3 w-20 text-center">结果</th>
-                       </tr>
-                     </thead>
-                     <tbody className="divide-y divide-neutral-100 bg-white text-neutral-body">
-                        {[1, 2, 3, 4, 5, 6].map((num) => (
-                           <tr key={num} className="hover:bg-neutral-50 transition-colors">
-                             <td className="p-3 text-center font-mono font-bold">{num}</td>
-                             <td className="p-3 text-neutral-title font-bold">单项选择题</td>
-                             <td className="p-3 text-green-600 font-bold">C. list</td>
-                             <td className="p-3">C. list</td>
-                             <td className="p-3 flex justify-center"><CheckCircle2 className="w-4 h-4 text-green-500" /></td>
-                           </tr>
-                        ))}
-                        <tr className="hover:bg-neutral-50 transition-colors bg-red-50/30">
-                          <td className="p-3 text-center font-mono font-bold">7</td>
-                          <td className="p-3 text-neutral-title font-bold">判断题</td>
-                          <td className="p-3 text-red-500 font-bold">错误</td>
-                          <td className="p-3">正确</td>
-                          <td className="p-3 flex justify-center"><XCircle className="w-4 h-4 text-red-500" /></td>
-                        </tr>
-                     </tbody>
-                   </table>
+            {activeTab === 'ai-auto' && (
+              <div className="flex flex-col gap-6">
+                <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2">
+                       <Bot className="w-5 h-5 text-[#fa541c]" /> 客观题自动判分 (标准答案匹配)
+                    </h3>
+                    <span className="text-[12px] bg-green-100 text-green-700 px-2.5 py-1 rounded-md font-medium border border-green-200">提交即判分，实时反馈</span>
+                  </div>
+                  <div className="border border-neutral-200 rounded-[8px] overflow-hidden">
+                     <table className="w-full text-left border-collapse text-[13px]">
+                       <thead className="bg-[#f5f6f8] text-neutral-caption font-bold border-b border-neutral-200">
+                         <tr>
+                           <th className="p-3 w-16 text-center">题号</th>
+                           <th className="p-3">题目类型</th>
+                           <th className="p-3">您的答案</th>
+                           <th className="p-3">标准答案</th>
+                           <th className="p-3 w-20 text-center">结果</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-neutral-100 bg-white text-neutral-body">
+                          {[1, 2, 3].map((num) => (
+                             <tr key={num} className="hover:bg-neutral-50 transition-colors">
+                               <td className="p-3 text-center font-mono font-bold">{num}</td>
+                               <td className="p-3 text-neutral-title font-bold">单项选择题</td>
+                               <td className="p-3 text-green-600 font-bold">C. list</td>
+                               <td className="p-3">C. list</td>
+                               <td className="p-3 flex justify-center"><CheckCircle2 className="w-4 h-4 text-green-500" /></td>
+                             </tr>
+                          ))}
+                       </tbody>
+                     </table>
+                  </div>
+                </div>
+
+                <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
+                  <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2 mb-6">
+                     <Zap className="w-5 h-5 text-[#fa541c]" /> 编程与实操题判分 (代码执行验证脚本)
+                  </h3>
+                  
+                  <div className="mb-6">
+                    <div className="font-bold text-[15px] mb-3 text-neutral-title">代码题：合并两个有序数组</div>
+                    <div className="p-5 bg-white border border-neutral-200 rounded-[8px] shadow-sm">
+                       <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-3">
+                          <span className="text-[13px] font-bold text-neutral-body">执行测试用例比对输出结果：满分 (10/10)</span>
+                          <div className="flex gap-2 text-[12px]">
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full border border-green-200">时空复杂度达标</span>
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full border border-blue-200">测试用例全通过</span>
+                          </div>
+                       </div>
+                       <p className="text-[13px] text-neutral-caption leading-relaxed">
+                         <strong className="text-neutral-title">解析说明：</strong>双指针算法非常出色地在 O(N+M) 的时间复杂度内完成了归并操作，没有触发任何边界溢出，满足了本考点的所有要求，脚本引擎判定满分。
+                       </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {activeTab === 'practical' && (
+            {activeTab === 'ai-assist' && (
               <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
-                <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2 mb-6">
-                   <Zap className="w-5 h-5 text-[#fa541c]" /> AI 主观与实操综合评判链
-                </h3>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2">
+                     <PenTool className="w-5 h-5 text-[#fa541c]" /> 主观题/论述题 AI 辅助评分
+                  </h3>
+                  <span className="text-[12px] bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md font-medium border border-blue-200">基于大模型 NLP 能力</span>
+                </div>
                 
-                <div className="mb-8">
-                  <div className="font-bold text-[15px] mb-3 text-neutral-title">代码题：合并两个有序数组</div>
-                  <div className="p-5 bg-[#fafafa] border border-neutral-200 rounded-[8px]">
-                     <div className="flex items-center justify-between mb-4 border-b border-neutral-200 pb-3">
-                        <span className="text-[13px] font-bold text-neutral-body">AI 审查结果：满分 (10/10)</span>
-                        <div className="flex gap-2 text-[12px]">
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full border border-green-200">时空复杂度达标</span>
-                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full border border-blue-200">无溢出缺陷</span>
-                        </div>
+                <div className="p-6 bg-white border border-neutral-200 rounded-[12px] shadow-sm mb-6">
+                   <div className="flex justify-between items-start mb-4">
+                     <div>
+                       <span className="inline-block px-2 py-0.5 bg-neutral-100 text-neutral-title text-[12px] rounded font-bold mb-2">论述题</span>
+                       <h4 className="text-[15px] font-bold text-neutral-title">请简述微服务架构的主要优势及可能带来的挑战。</h4>
                      </div>
-                     <p className="text-[13px] text-neutral-caption leading-relaxed">
-                       学员使用的双指针算法非常出色地在 O(N+M) 的时间复杂度内完成了归并操作，没有触发任何边界溢出，满足了本考点的所有要求，系统予以满分放行。
-                     </p>
+                     <div className="text-right">
+                       <div className="text-[20px] font-bold text-[#fa541c]">15 <span className="text-[14px] text-neutral-400">/ 20</span></div>
+                       <div className="text-[12px] text-orange-500 font-medium bg-orange-50 px-2 py-0.5 rounded border border-orange-100 mt-1">教师待复核</div>
+                     </div>
+                   </div>
+
+                   <div className="mb-4">
+                     <div className="text-[13px] font-bold text-neutral-500 mb-1">您的作答：</div>
+                     <div className="text-[14px] text-neutral-body leading-relaxed bg-[#f9f9f9] p-4 rounded-md border border-neutral-100">
+                       微服务架构的主要优势是解耦，每个服务可以独立部署和扩展，团队可以独立开发。带来的挑战是系统复杂度增加，服务间通信成本变高，以及分布式事务处理比较困难。
+                     </div>
+                   </div>
+
+                   <div className="border-t border-neutral-100 pt-4 mt-4">
+                     <div className="text-[14px] font-bold text-neutral-title mb-3 flex items-center gap-2">
+                       <Bot className="w-4 h-4 text-[#fa541c]" /> AI 评分建议与分析
+                     </div>
+                     <div className="grid grid-cols-2 gap-4 mb-4">
+                       <div className="flex items-center gap-2 text-[13px]">
+                         <CheckCircle2 className="w-4 h-4 text-green-500" />
+                         <span className="text-neutral-body">答案完整性: <strong className="text-neutral-title">良好</strong></span>
+                       </div>
+                       <div className="flex items-center gap-2 text-[13px]">
+                         <CheckCircle2 className="w-4 h-4 text-green-500" />
+                         <span className="text-neutral-body">逻辑性评估: <strong className="text-neutral-title">清晰</strong></span>
+                       </div>
+                       <div className="flex items-center gap-2 text-[13px] col-span-2">
+                         <XCircle className="w-4 h-4 text-orange-500" />
+                         <span className="text-neutral-body">关键词覆盖度: <strong className="text-neutral-title">75% (自动标记常见错误/遗漏：容错性、监控)</strong></span>
+                       </div>
+                     </div>
+                     <div className="text-[13px] text-neutral-caption bg-[#fff2e8] p-4 rounded border border-[#ffd8bf] leading-relaxed">
+                        <strong className="text-[#fa541c]">AI 评分理由：</strong> 答案基本涵盖了微服务独立部署、解耦等核心优势，也指出了通信成本和分布式事务等主要挑战。对比标准优秀答案，缺少了对“技术栈多样性”优势以及“服务监控与日志追踪”挑战的描述。建议得分 15 分。
+                     </div>
+                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'mistakes' && (
+              <div className="bg-[#fafafa] rounded-[16px] border border-neutral-100 p-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-[16px] text-neutral-title flex items-center gap-2">
+                     <BookOpen className="w-5 h-5 text-[#fa541c]" /> 错题本自动收集
+                  </h3>
+                  <div className="flex gap-2">
+                     <span className="text-[12px] bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-md border border-neutral-200 cursor-pointer hover:bg-neutral-200">按错误类型</span>
+                     <span className="text-[12px] bg-[#fa541c] text-white px-2.5 py-1 rounded-md cursor-pointer hover:bg-[#e84a15]">按知识点分类</span>
                   </div>
                 </div>
 
-                <div>
-                  <div className="font-bold text-[15px] mb-3 text-neutral-title">实操题：Nginx 配置与测试 (沙盒探针取证)</div>
-                  <div className="p-5 bg-[#fafafa] border border-neutral-200 rounded-[8px]">
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3 bg-white p-3 border border-neutral-100 shadow-sm rounded">
-                           <CheckCircle2 className="w-5 h-5 text-green-500" />
-                           <div className="text-[13px]">
-                             <div className="font-bold text-neutral-title">端口监视器状态</div>
-                             <div className="text-neutral-caption">Nginx 成功代理在 8080 端口，且启动成功。</div>
-                           </div>
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                   <div className="bg-white p-4 rounded-[8px] border border-neutral-200 shadow-sm flex justify-between items-center">
+                      <div>
+                        <div className="text-[12px] text-neutral-caption mb-1">本次产生错题</div>
+                        <div className="text-[20px] font-bold text-neutral-title">1 道</div>
+                      </div>
+                      <AlertTriangle className="w-8 h-8 text-orange-400 opacity-20" />
+                   </div>
+                   <div className="bg-white p-4 rounded-[8px] border border-neutral-200 shadow-sm flex justify-between items-center">
+                      <div>
+                        <div className="text-[12px] text-neutral-caption mb-1">薄弱知识点</div>
+                        <div className="text-[15px] font-bold text-[#fa541c] mt-1">数据清洗 (Pandas)</div>
+                      </div>
+                      <Target className="w-8 h-8 text-red-400 opacity-20" />
+                   </div>
+                   <div className="bg-white p-4 rounded-[8px] border border-neutral-200 shadow-sm flex items-center justify-center cursor-pointer hover:bg-neutral-50 transition-colors">
+                      <div className="font-bold text-[#fa541c] flex items-center gap-2">
+                         <PlayCircle className="w-4 h-4" /> 错题重做强化
+                      </div>
+                   </div>
+                </div>
+
+                <div className="space-y-4">
+                   <div className="p-5 rounded-[12px] bg-white border border-red-100 shadow-sm flex gap-4 items-start relative overflow-hidden">
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400"></div>
+                      <span className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 font-bold rounded shadow-sm shrink-0 text-[13px]">错</span>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="text-[14px] font-bold text-neutral-title">多选题：在 Pandas 中如何对缺失值进行填充？</p>
+                          <span className="text-[12px] text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">来源：随堂测验</span>
                         </div>
-                        <div className="flex items-center gap-3 bg-white p-3 border border-neutral-100 shadow-sm rounded">
-                           <CheckCircle2 className="w-5 h-5 text-green-500" />
-                           <div className="text-[13px]">
-                             <div className="font-bold text-neutral-title">配置文件验证 (nginx.conf)</div>
-                             <div className="text-neutral-caption">语法审查完毕，无多余的分号遗漏。</div>
-                           </div>
+                        <div className="text-[13px] text-neutral-body space-y-1 mb-3">
+                           <div><span className="text-red-500 font-medium">您的答案:</span> A. dropna() , B. fillna()</div>
+                           <div><span className="text-green-600 font-medium">正确答案:</span> B. fillna() , C. interpolate()</div>
                         </div>
-                        <div className="flex items-center gap-3 bg-white p-3 border border-neutral-100 shadow-sm rounded">
-                           <XCircle className="w-5 h-5 text-red-500" />
-                           <div className="text-[13px]">
-                             <div className="font-bold text-neutral-title">请求转发连通性 (curl test)</div>
-                             <div className="text-neutral-caption">未正确拦截 /api/ 开头的路径。</div>
-                           </div>
+                        <div className="text-[13px] text-neutral-600 p-3 bg-[#fafafa] rounded border border-neutral-200">
+                           <strong className="text-neutral-title">解析说明:</strong> dropna() 是删除缺失值，不是填充。fillna() 可以填充指定值，interpolate() 可以进行插值填充。<span className="text-[#fa541c] font-medium ml-2">关联知识点：【数据预处理】</span>
                         </div>
-                     </div>
-                     <div className="mt-4 pt-4 border-t border-neutral-200 text-[13px] text-[#fa541c] font-bold text-right">
-                        该题得分：12 / 20 分 (部分达标)
-                     </div>
-                  </div>
+                      </div>
+                   </div>
                 </div>
               </div>
             )}
