@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search } from 'lucide-react';
+import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -230,11 +230,11 @@ export default function TeacherHome() {
                 <th className="p-5 font-medium">课程范围</th>
                 <th className="p-5 font-medium">状态</th>
                 <th className="p-5 font-medium">审核状态</th>
-                <th className="p-5 font-medium text-right">操作</th>
+                <th className="p-5 font-medium">操作</th>
               </tr>
             </thead>
             <tbody>
-              {filteredCourses.map(course => (
+              {filteredCourses.map((course, index) => (
                 <tr key={course.id} className="border-b border-neutral-border/30 hover:bg-[#fff2e8]/30 transition-colors group">
                   <td className="p-5">
                     <div className="flex items-center gap-4">
@@ -267,14 +267,19 @@ export default function TeacherHome() {
                       {course.auditStatus}
                     </span>
                   </td>
-                  <td className="p-5 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="p-5">
+                    <div className="flex items-center gap-2">
                       <Button variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full">
                         <Copy className="w-3.5 h-3.5 mr-1" /> 复制
                       </Button>
                       <Button onClick={() => navigate(`/teacher/course/${course.id}`)} variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full px-4">
                         <Eye className="w-3.5 h-3.5 mr-1" /> 查看
                       </Button>
+                      {index === 1 && (
+                        <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full px-4">
+                          <Trash2 className="w-3.5 h-3.5 mr-1" /> 删除
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>

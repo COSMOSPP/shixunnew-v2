@@ -83,55 +83,57 @@ export default function TeacherCourseManage() {
         <div className="flex-1 overflow-y-auto relative no-scrollbar">
           
           {/* Hero Header Area */}
-          <div className="bg-gradient-to-r from-[#fff2e8] via-[#fff7f2] to-blue-50/50 h-[300px] w-full pt-10 px-6 lg:px-10">
-            <div className="flex items-center gap-10 w-full">
-              {/* Course Cover Card */}
-              <div className="w-[360px] h-[200px] bg-gradient-to-br from-[#40a9ff] to-[#096dd9] rounded-xl shadow-lg relative overflow-hidden flex flex-col items-center justify-center group">
-                 {/* This makes the cover match the image reference (blue card), but we can make it orange if preferred. 
-                     The prompt says "主题色为橙色" (Theme color is orange), so let's make the card orange. */}
-                 <div className="absolute inset-0 bg-gradient-to-br from-[#fa541c] to-[#ff7a45]"></div>
-                 
-                 <div className="absolute top-0 right-0 bg-[#52c41a] text-white text-[11px] font-bold px-3 py-1.5 rounded-bl-xl shadow-sm z-20">
-                   教学实训
-                 </div>
-                 
-                 {/* decorative hexes background */}
-                 <div className="absolute right-[-30px] bottom-[-30px] opacity-20 z-10 group-hover:scale-110 transition-transform duration-700">
-                   <svg width="150" height="150" viewBox="0 0 100 100">
-                     <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill="none" stroke="white" strokeWidth="1.5"/>
-                     <polygon points="50 20 75 35 75 65 50 80 25 65 25 35" fill="none" stroke="white" strokeWidth="1"/>
-                   </svg>
-                 </div>
-                 <div className="absolute left-[-20px] top-[-20px] opacity-10 z-10">
-                   <svg width="100" height="100" viewBox="0 0 100 100">
-                     <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill="none" stroke="white" strokeWidth="2"/>
-                   </svg>
-                 </div>
-                 
-                 <h2 className="text-3xl font-bold text-white tracking-widest relative z-20 drop-shadow-md">人工智能基础与实践</h2>
-              </div>
-              
-              {/* Course Info */}
-              <div>
-                <h1 className="text-3xl font-bold text-neutral-title mb-4">人工智能基础与实践</h1>
-                <div className="flex items-center gap-3 text-[13px] text-neutral-500 mb-6 font-medium">
-                  <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-full border border-white/40 shadow-sm text-neutral-600">
-                    <BookOpen className="w-3.5 h-3.5 text-[#fa541c]"/> 4 章节 | 18 课节
-                  </span>
-                  <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-full border border-white/40 shadow-sm text-neutral-600">
-                    课程编号: AI20261014 <Copy className="w-3.5 h-3.5 ml-1 cursor-pointer hover:text-[#fa541c] transition-colors"/>
-                  </span>
+          {activeTab === 'editor' && (
+            <div className="bg-gradient-to-r from-[#fff2e8] via-[#fff7f2] to-blue-50/50 h-[300px] w-full pt-10 px-6 lg:px-10">
+              <div className="flex items-center gap-10 w-full">
+                {/* Course Cover Card */}
+                <div className="w-[360px] h-[200px] bg-gradient-to-br from-[#40a9ff] to-[#096dd9] rounded-xl shadow-lg relative overflow-hidden flex flex-col items-center justify-center group">
+                   {/* This makes the cover match the image reference (blue card), but we can make it orange if preferred. 
+                       The prompt says "主题色为橙色" (Theme color is orange), so let's make the card orange. */}
+                   <div className="absolute inset-0 bg-gradient-to-br from-[#fa541c] to-[#ff7a45]"></div>
+                   
+                   <div className="absolute top-0 right-0 bg-[#52c41a] text-white text-[11px] font-bold px-3 py-1.5 rounded-bl-xl shadow-sm z-20">
+                     教学实训
+                   </div>
+                   
+                   {/* decorative hexes background */}
+                   <div className="absolute right-[-30px] bottom-[-30px] opacity-20 z-10 group-hover:scale-110 transition-transform duration-700">
+                     <svg width="150" height="150" viewBox="0 0 100 100">
+                       <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill="none" stroke="white" strokeWidth="1.5"/>
+                       <polygon points="50 20 75 35 75 65 50 80 25 65 25 35" fill="none" stroke="white" strokeWidth="1"/>
+                     </svg>
+                   </div>
+                   <div className="absolute left-[-20px] top-[-20px] opacity-10 z-10">
+                     <svg width="100" height="100" viewBox="0 0 100 100">
+                       <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill="none" stroke="white" strokeWidth="2"/>
+                     </svg>
+                   </div>
+                   
+                   <h2 className="text-3xl font-bold text-white tracking-widest relative z-20 drop-shadow-md">人工智能基础与实践</h2>
                 </div>
-                <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8 h-10 rounded-lg shadow-sm shadow-orange-500/20 font-medium">
-                  去编辑
-                </Button>
+                
+                {/* Course Info */}
+                <div>
+                  <h1 className="text-3xl font-bold text-neutral-title mb-4">人工智能基础与实践</h1>
+                  <div className="flex items-center gap-3 text-[13px] text-neutral-500 mb-6 font-medium">
+                    <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-full border border-white/40 shadow-sm text-neutral-600">
+                      <BookOpen className="w-3.5 h-3.5 text-[#fa541c]"/> 4 章节 | 18 课节
+                    </span>
+                    <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-full border border-white/40 shadow-sm text-neutral-600">
+                      课程编号: AI20261014 <Copy className="w-3.5 h-3.5 ml-1 cursor-pointer hover:text-[#fa541c] transition-colors"/>
+                    </span>
+                  </div>
+                  <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8 h-10 rounded-lg shadow-sm shadow-orange-500/20 font-medium">
+                    去编辑
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Tab Main Content Card */}
-          <div className="w-full -mt-8 relative z-20 pb-16 px-6 lg:px-10">
-            <div className="bg-white rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)] border border-neutral-border/50 min-h-[500px]">
+          <div className={cn("w-full relative z-20 pb-8 px-6 lg:px-10", activeTab === 'editor' ? "-mt-8" : "pt-4")}>
+            <div className={cn("bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.03)] border border-neutral-border/50 min-h-[500px]", activeTab === 'editor' ? "rounded-t-[30px]" : "rounded-[30px]")}>
               
               {/* 1. 课程章节 (Course Chapters - like the screenshot) */}
               {activeTab === 'editor' && (
@@ -153,7 +155,7 @@ export default function TeacherCourseManage() {
                   </div>
 
                   {/* Chapter List Area */}
-                  <div className="p-8 space-y-6">
+                  <div className="p-6 space-y-4">
                     {COURSE_SYLLABUS.map((chapter, i) => (
                       <div key={i} className="rounded-lg bg-neutral-50 border border-neutral-100 overflow-hidden">
                         <div className="flex items-center justify-between px-6 py-4 bg-neutral-100/50">
@@ -200,7 +202,7 @@ export default function TeacherCourseManage() {
 
               {/* 2. 作业考试 (Assignments) */}
               {activeTab === 'assignments' && (
-                <div className="p-8 animate-in fade-in duration-500">
+                <div className="p-6 animate-in fade-in duration-500">
                   <div className="flex justify-between items-center mb-8 border-b border-neutral-border pb-4">
                     <h2 className="text-xl font-bold text-neutral-title">作业考试管理</h2>
                     <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded shadow-sm">
@@ -235,7 +237,7 @@ export default function TeacherCourseManage() {
 
               {/* 3. 成员管理 (Members) */}
               {activeTab === 'members' && (
-                <div className="p-8 animate-in fade-in duration-500">
+                <div className="p-6 animate-in fade-in duration-500">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-neutral-title">班级成员</h2>
                     <div className="flex gap-3">
@@ -291,7 +293,7 @@ export default function TeacherCourseManage() {
 
               {/* 4. 学情数据 (Analytics) */}
               {activeTab === 'analytics' && (
-                <div className="p-8 animate-in fade-in duration-500">
+                <div className="p-6 animate-in fade-in duration-500">
                   <div className="flex justify-between items-center mb-8 border-b border-neutral-border pb-4">
                     <h2 className="text-xl font-bold text-neutral-title">学习情况全景</h2>
                     <Button variant="outline" className="border-neutral-300 text-neutral-600 h-9">
