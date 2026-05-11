@@ -4,10 +4,11 @@ import {
   ArrowLeft, BarChart2, BookOpen, Users, 
   Download, Plus, Search, FileText, CheckCircle, 
   Clock, MoreVertical, Settings, BarChart, Copy,
-  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare
+  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import CourseDetail from '@/components/CourseDetail';
 
 const COURSE_SYLLABUS = [
   {
@@ -39,13 +40,20 @@ export default function TeacherCourseManage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('editor');
+  const [showCourseDetail, setShowCourseDetail] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<{title: string, type: string} | null>(null);
 
   const tabs = [
     { id: 'editor', label: '课程章节', icon: BookOpen },
     { id: 'assignments', label: '作业考试', icon: FileText },
     { id: 'members', label: '成员管理', icon: Users },
     { id: 'analytics', label: '学情数据', icon: BarChart2 },
+    { id: 'settings', label: '课程设置', icon: Settings },
   ];
+
+  if (showCourseDetail) {
+    return <CourseDetail onBack={() => setShowCourseDetail(false)} onShowLearningPath={() => {}} initialLesson={selectedLesson} />;
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#f5f7fa] -mt-6 -mx-6 md:-mx-8 overflow-hidden">
@@ -132,8 +140,8 @@ export default function TeacherCourseManage() {
           )}
 
           {/* Tab Main Content Card */}
-          <div className={cn("w-full relative z-20 pb-8 px-6 lg:px-10", activeTab === 'editor' ? "-mt-8" : "pt-4")}>
-            <div className={cn("bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.03)] border border-neutral-border/50 min-h-[500px]", activeTab === 'editor' ? "rounded-t-[30px]" : "rounded-[30px]")}>
+          <div className={cn("w-full relative z-20 pb-8 px-4", activeTab === 'editor' ? "-mt-8" : "pt-4")}>
+            <div className={cn("bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.03)] border border-neutral-border/50 min-h-[500px]", activeTab === 'editor' ? "rounded-t-[24px]" : "rounded-[24px]")}>
               
               {/* 1. 课程章节 (Course Chapters - like the screenshot) */}
               {activeTab === 'editor' && (
@@ -170,7 +178,10 @@ export default function TeacherCourseManage() {
                         </div>
                         <div className="bg-white">
                           {chapter.lessons.map((lesson, idx) => (
-                            <div key={idx} className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 hover:bg-neutral-50 group border-l-2 border-l-transparent hover:border-l-[#fa541c] transition-colors">
+                            <div key={idx} onClick={() => {
+                              setSelectedLesson({ title: lesson.title, type: lesson.type });
+                              setShowCourseDetail(true);
+                            }} className="cursor-pointer flex items-center justify-between px-6 py-4 border-b border-neutral-100 hover:bg-neutral-50 group border-l-2 border-l-transparent hover:border-l-[#fa541c] transition-colors">
                               <div className="flex items-center gap-6">
                                 <span className="text-[14px] text-neutral-body w-12">{lesson.section}</span>
                                 <div className="flex items-center gap-3">
@@ -327,6 +338,138 @@ export default function TeacherCourseManage() {
                         <div className="w-40 h-40 rounded-full border-[20px] border-[#fa541c] border-r-orange-300 border-b-orange-200 border-l-orange-100"></div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 5. 课程设置 (Settings) */}
+              {activeTab === 'settings' && (
+                <div className="p-6 animate-in fade-in duration-500">
+                  <div className="max-w-4xl space-y-6">
+                    {/* 课程名称 */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-neutral-700 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 课程名称</label>
+                      <input type="text" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="智云实训体验课程" />
+                    </div>
+
+                    {/* 课程描述 */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700">课程描述</label>
+                      <textarea className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] min-h-[80px]" defaultValue="本课程作为智云实训平台的体验课程，旨在直观呈现平台丰富多元的课程形态，助力用户快速了解平台课程设计特色。"></textarea>
+                    </div>
+
+                    {/* 课程学期 */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-neutral-700 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 课程学期</label>
+                      <div className="relative">
+                        <select className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white">
+                          <option>2026学年 / 春季</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* 课程类型及属性 */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-neutral-700 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 课程类型及属性</label>
+                      <div className="relative">
+                        <select className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white">
+                          <option>教学实训 / 专业基础课</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* 应用方向 */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700">应用方向</label>
+                      <div className="relative">
+                        <select className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-400">
+                          <option>请选择</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* 学时 */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700">学时</label>
+                      <input type="text" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请填写学时" />
+                    </div>
+
+                    {/* 课程范围 */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-neutral-700 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 课程范围 <span className="text-neutral-400 text-xs border border-neutral-300 rounded-full w-3.5 h-3.5 flex items-center justify-center cursor-help">?</span></label>
+                      <div className="flex items-center gap-6 mt-2">
+                        <label className="flex items-center gap-2 cursor-pointer text-sm text-neutral-500">
+                          <input type="radio" name="scope" className="text-[#fa541c] focus:ring-[#fa541c]" defaultChecked /> 私有课程
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-sm text-neutral-300">
+                          <input type="radio" name="scope" className="text-[#fa541c] focus:ring-[#fa541c]" disabled /> 公开课程
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* 课程图片 */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-neutral-700 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 课程图片</label>
+                      <div className="w-24 h-24 border border-dashed border-neutral-300 rounded-md p-1 cursor-pointer hover:border-[#fa541c] transition-colors">
+                        <div className="w-full h-full bg-blue-400 flex items-center justify-center overflow-hidden rounded-sm relative">
+                          <div className="absolute inset-0 bg-blue-500 opacity-80 mix-blend-overlay"></div>
+                          {/* Mock image content matching reference */}
+                          <div className="w-full h-full opacity-30">
+                            <svg width="100%" height="100%" viewBox="0 0 100 100">
+                               <polygon points="50 0 100 25 100 75 50 100 0 75 0 25" fill="none" stroke="white" strokeWidth="2"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 课程介绍 */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700">课程介绍</label>
+                      <div className="border border-neutral-200 rounded-md overflow-hidden flex flex-col">
+                        <div className="bg-neutral-50 border-b border-neutral-200 px-3 py-2 flex items-center gap-3">
+                          <button className="text-sm text-neutral-600 bg-white border border-neutral-200 px-2 py-0.5 rounded shadow-sm">编辑</button>
+                          <button className="text-sm text-neutral-500 hover:text-neutral-700">预览</button>
+                          <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                          <button className="text-neutral-700 font-bold hover:text-[#fa541c] px-1">H</button>
+                          <button className="text-neutral-700 font-bold hover:text-[#fa541c] px-1">B</button>
+                          <button className="text-neutral-700 italic hover:text-[#fa541c] px-1">I</button>
+                          <button className="text-neutral-700 line-through hover:text-[#fa541c] px-1">S</button>
+                          <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                          <button className="text-neutral-600 hover:text-[#fa541c] px-1">🔗</button>
+                          <button className="text-neutral-600 hover:text-[#fa541c] px-1">”</button>
+                          <button className="text-neutral-600 hover:text-[#fa541c] px-1">&lt;/&gt;</button>
+                          <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                          <button className="text-neutral-600 hover:text-[#fa541c] px-1">☰</button>
+                          <button className="text-neutral-600 hover:text-[#fa541c] px-1">1.</button>
+                        </div>
+                        <textarea className="w-full p-4 text-sm min-h-[150px] outline-none resize-y" defaultValue={"此课程为智云实训平台专属体验课程，通过实际案例充分展示平台在课程形态上的丰富性与多样性，为用户提供清晰的平台功能参考。\n\n新形态课程——满足教师“五精课程”等成果建设\n\n<div class='insertContainerBox row'>\n<div class='insertItem' align=center><img src=\"https://files.momodel.cn/hv/656203fde39349d28373c8ad4c441bc3.png\"></div>"}></textarea>
+                      </div>
+                    </div>
+
+                    {/* 开课时间 */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-neutral-700 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 开课时间</label>
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex-1 max-w-[200px]">
+                          <input type="text" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="2026-01-30" />
+                          <Calendar className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                        <span className="text-neutral-400">~</span>
+                        <div className="relative flex-1 max-w-[200px]">
+                          <input type="text" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="2099-06-30" />
+                          <Calendar className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-6 flex justify-center">
+                      <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8">提交</Button>
+                    </div>
+
                   </div>
                 </div>
               )}

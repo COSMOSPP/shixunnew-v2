@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 interface CourseDetailProps {
   onBack: () => void;
   onShowLearningPath?: () => void;
+  initialLesson?: { title: string, type: string } | null;
 }
 
 const COURSE_SYLLABUS = [
@@ -51,9 +52,9 @@ const COURSE_SYLLABUS = [
   }
 ];
 
-export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetailProps) {
+export default function CourseDetail({ onBack, onShowLearningPath, initialLesson }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
-  const [playingLesson, setPlayingLesson] = useState<{title: string, type: string} | null>(null);
+  const [playingLesson, setPlayingLesson] = useState<{title: string, type: string} | null>(initialLesson || null);
   const [isExperimentStarted, setIsExperimentStarted] = useState(false);
   const [activeExperimentTab, setActiveExperimentTab] = useState('course');
   const [showReportModal, setShowReportModal] = useState(false);
@@ -62,6 +63,14 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
   const [importedDatasets, setImportedDatasets] = useState<string[]>([]);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
   const isRecommendedMode = (window as any).__RECOMMENDED_MODE === true;
+
+  const handleCloseLesson = () => {
+    if (initialLesson) {
+      onBack();
+    } else {
+      setPlayingLesson(null);
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
@@ -207,7 +216,15 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
           {activeTab === 'syllabus' && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-300">
             <div className="bg-white rounded-[16px] shadow-sm p-8">
-              <h2 className="text-lg font-bold text-neutral-title mb-4">课程目录</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-neutral-title">课程目录</h2>
+                <Button 
+                  className="bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe4d3] border border-[#ffbb96] shadow-sm h-8 px-4 text-[13px] flex items-center gap-1.5"
+                  onClick={() => setShowReportModal(true)}
+                >
+                  <span className="text-[14px]">✨</span> 生成个性化学习报告
+                </Button>
+              </div>
             <div className="space-y-6">
               {COURSE_SYLLABUS.map((chapter, i) => (
                 <div key={i} className="flex flex-col">
@@ -326,7 +343,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                 <div className="p-4 flex flex-col gap-4 border-b border-neutral-border">
                   <div 
                     className="flex items-center gap-1 text-[13px] text-neutral-body cursor-pointer hover:text-neutral-title w-fit"
-                    onClick={() => setPlayingLesson(null)}
+                    onClick={handleCloseLesson}
                   >
                     <ChevronLeft className="w-4 h-4" /> 返回
                   </div>
@@ -605,7 +622,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                       </div>
                       
                       <div className="flex justify-end mt-8 pt-6 border-t border-neutral-border">
-                         <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8" onClick={() => { alert('作业提交成功！'); setPlayingLesson(null); }}>提交作业</Button>
+                         <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8" onClick={() => { alert('作业提交成功！'); handleCloseLesson(); }}>提交作业</Button>
                       </div>
                     </div>
                   </div>
@@ -715,7 +732,7 @@ export default function CourseDetail({ onBack, onShowLearningPath }: CourseDetai
                 <div className="flex items-center gap-4">
                   <div 
                     className="flex items-center gap-1 text-[14px] font-bold text-neutral-title cursor-pointer hover:text-[#fa541c]"
-                    onClick={() => setPlayingLesson(null)}
+                    onClick={handleCloseLesson}
                   >
                     <ChevronLeft className="w-4 h-4" /> 返回
                   </div>

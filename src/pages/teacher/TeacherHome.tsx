@@ -211,13 +211,18 @@ export default function TeacherHome() {
               已结束
             </button>
           </div>
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input 
-              type="text" 
-              placeholder="搜索课程名称/代码" 
-              className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
-            />
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input 
+                type="text" 
+                placeholder="搜索课程名称/代码" 
+                className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
+              />
+            </div>
+            <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm">
+              <Plus className="w-4 h-4 mr-1" /> 新建课程
+            </Button>
           </div>
         </div>
         

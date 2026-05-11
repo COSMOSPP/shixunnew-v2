@@ -226,7 +226,7 @@ export default function UserOverview() {
       <div className="w-full bg-white py-16 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">企业培训计划</h2>
+            <h2 className="text-2xl font-bold text-slate-900">培训计划</h2>
             <div className="flex items-center gap-4">
               <span className="text-sm text-slate-500">必修课进度</span>
               <div className="w-48 bg-slate-100 rounded-full h-2">
