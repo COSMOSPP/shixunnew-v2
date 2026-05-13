@@ -1,306 +1,312 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  ArrowLeft, Bot, User, Paperclip, Send, Sparkles, Terminal as TerminalIcon, 
-  Code, PlayCircle, CheckCircle2, ChevronDown, Plus, LayoutTemplate, 
-  Settings, Trash2, Cpu, FileCode, Wand2, RefreshCw, Box, SunMoon, Command, ToggleLeft, ToggleRight, Server
+  ChevronLeft, ChevronDown, History, FolderOpen, FileText, Rocket, X, Plus,
+  Sun, GitBranch, Copy, Bot, Sparkles, Code, Ghost, Search, List, LayoutDashboard,
+  Maximize2, ChevronUp, ChevronRight, Info, Mic
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SkillBuilder() {
   const navigate = useNavigate();
-  const [input, setInput] = useState("");
-  const [autoMode, setAutoMode] = useState(true);
-  const [generating, setGenerating] = useState(true); // For mock "生成中" state
-
-  const handleBack = () => {
-    navigate(-1);
-  };
+  const [activeBuilderTab, setActiveBuilderTab] = useState<'preview' | 'deploy'>('preview');
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#f5f6f8] text-neutral-body font-sans overflow-hidden">
-      {/* 1. Header Area (部署与发布 & 返回) */}
-      <div className="h-[60px] border-b border-neutral-border shrink-0 px-5 flex items-center justify-between bg-white shadow-sm z-10">
+    <div className="fixed inset-0 z-[150] flex flex-col h-full bg-white font-sans w-full">
+      {/* Top Header */}
+      <div className="h-14 border-b border-neutral-200 flex items-center justify-between px-4 bg-white shrink-0">
+        {/* Left: Title & Actions */}
         <div className="flex items-center gap-4">
           <button 
-            onClick={handleBack}
-            className="flex items-center gap-2 text-neutral-caption hover:text-neutral-title transition-colors text-[14px] font-medium"
+            onClick={() => {
+               navigate(-1);
+            }}
+            className="flex items-center justify-center p-1.5 hover:bg-neutral-100 rounded text-neutral-600 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> 返回最佳实践
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <div className="w-[1px] h-4 bg-neutral-border"></div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#fa541c]" />
-            <h1 className="text-[15px] font-bold text-neutral-title tracking-wide">Skill Builder Agent 协同开发环境</h1>
+          <div className="flex items-center gap-2 text-sm font-medium text-neutral-800 bg-neutral-100/50 px-3 py-1.5 rounded-lg border border-neutral-200/50">
+            <div className="w-5 h-5 rounded overflow-hidden shrink-0">
+               <img src="https://picsum.photos/seed/datavis/32/32" className="w-full h-full object-cover" alt="icon"/>
+            </div>
+            数据可视化技能
+            <ChevronDown className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+          </div>
+          <div className="flex items-center gap-1 text-neutral-500">
+             <button className="p-1.5 hover:bg-neutral-100 rounded"><History className="w-4 h-4" /></button>
+             <button className="p-1.5 hover:bg-neutral-100 rounded"><FolderOpen className="w-4 h-4" /></button>
           </div>
         </div>
         
-        {/* 部署与发布核心按钮 */}
+        {/* Center/Right Tabs */}
+        <div className="flex-1 flex justify-start items-end h-full ml-8 gap-1 pt-3">
+           <div className={cn(
+             "px-4 py-2 text-sm font-medium border-t-2 rounded-t-lg flex items-center gap-2 cursor-pointer transition-colors",
+             activeBuilderTab === 'preview' ? "bg-white border-[#fa541c] text-neutral-900 border-x border-neutral-200 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]" : "bg-neutral-100 border-transparent text-neutral-500 hover:bg-neutral-200"
+           )}
+           onClick={() => setActiveBuilderTab('preview')}
+           >
+             <FileText className="w-4 h-4" /> 预览
+           </div>
+           {activeBuilderTab === 'deploy' && (
+             <div className={cn(
+               "px-4 py-2 text-sm font-medium border-t-2 rounded-t-lg flex items-center gap-2 cursor-pointer transition-colors",
+               "bg-white border-[#fa541c] text-neutral-900 border-x border-neutral-200 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]"
+             )}>
+               <Rocket className="w-4 h-4" /> 部署
+               <X className="w-3.5 h-3.5 ml-2 hover:text-[#fa541c]" onClick={(e) => { e.stopPropagation(); setActiveBuilderTab('preview'); }} />
+             </div>
+           )}
+           <button className="px-3 py-2 text-sm text-neutral-500 hover:text-neutral-800 flex items-center gap-1 hover:bg-neutral-100 rounded-t-lg ml-1">
+              <Plus className="w-4 h-4" /> 新标签页
+           </button>
+        </div>
+
+        {/* Right Actions */}
         <div className="flex items-center gap-3">
-          <button className="px-5 py-1.5 rounded-md bg-white hover:bg-neutral-bg text-[13px] font-medium transition-colors border border-neutral-border text-neutral-title flex items-center gap-2 shadow-sm">
-            <PlayCircle className="w-4 h-4 text-emerald-500" /> 预览
-          </button>
-          <button className="bg-gradient-to-r from-[#fa541c] to-[#ff7a45] hover:opacity-90 text-white px-6 py-1.5 rounded-md font-bold transition-opacity text-[13px] shadow-sm shadow-orange-500/20 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> 部署
-          </button>
+           <button className="p-1.5 text-neutral-500 hover:bg-neutral-100 rounded"><Sun className="w-4 h-4" /></button>
+           <button className="p-1.5 text-neutral-500 hover:bg-neutral-100 rounded"><GitBranch className="w-4 h-4" /></button>
+           <button className="p-1.5 text-neutral-500 hover:bg-neutral-100 rounded"><Copy className="w-4 h-4" /></button>
+           <button 
+             onClick={() => setActiveBuilderTab('deploy')}
+             className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 py-1.5 rounded-lg text-[13px] font-bold shadow-sm transition-colors ml-2"
+           >
+             部署
+           </button>
         </div>
       </div>
 
-      <div className="flex flex-1 min-h-0">
-        {/* 2. Left Side: Skill Builder 交互区 */}
-        <div className="w-[35%] lg:w-[420px] border-r border-neutral-border flex flex-col bg-[#f8fafc] shrink-0">
-          
-          {/* Agent Chat List */}
-          <div className="flex-1 overflow-y-auto p-5 pb-8 flex flex-col gap-6 custom-scrollbar">
-            
-            {/* Agent 引导语 */}
-            <div className="flex gap-3 max-w-[95%]">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-[#fa541c] flex items-center justify-center shrink-0 shadow-sm">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex flex-col gap-1.5 w-full">
-                <span className="text-[12px] font-bold text-neutral-caption ml-1">Builder Agent</span>
-                <div className="bg-white border border-neutral-border rounded-2xl rounded-tl-none p-4 text-[14px] leading-relaxed text-neutral-body shadow-sm">
-                  <p className="mb-4 text-neutral-title">你好！我是 Skill Builder Agent。请告诉我你想要做什么，或者直接从下方选择核心操作：</p>
-                  
-                  {/* 核心操作选项 */}
-                  <div className="flex flex-col gap-2">
-                    <button className="flex items-center justify-between bg-neutral-bg hover:bg-[#f1f5f9] border border-transparent hover:border-[#fa541c]/30 rounded-lg px-4 py-2.5 transition-all text-left group">
-                       <span className="flex items-center gap-2 text-[13px] font-medium text-neutral-title group-hover:text-[#fa541c]">
-                         <Wand2 className="w-4 h-4 text-blue-500" /> 创建新 Skill
-                       </span>
-                       <ChevronDown className="w-4 h-4 text-neutral-caption -rotate-90 group-hover:text-[#fa541c] transition-colors" />
-                    </button>
-                    <button className="flex items-center justify-between bg-neutral-bg hover:bg-[#f1f5f9] border border-transparent hover:border-[#fa541c]/30 rounded-lg px-4 py-2.5 transition-all text-left group">
-                       <span className="flex items-center gap-2 text-[13px] font-medium text-neutral-title group-hover:text-[#fa541c]">
-                         <Settings className="w-4 h-4 text-emerald-500" /> 修改现有 Skill
-                       </span>
-                       <ChevronDown className="w-4 h-4 text-neutral-caption -rotate-90 group-hover:text-[#fa541c] transition-colors" />
-                    </button>
-                    <button className="flex items-center justify-between bg-neutral-bg hover:bg-[#f1f5f9] border border-transparent hover:border-[#fa541c]/30 rounded-lg px-4 py-2.5 transition-all text-left group">
-                       <span className="flex items-center gap-2 text-[13px] font-medium text-neutral-title group-hover:text-[#fa541c]">
-                         <RefreshCw className="w-4 h-4 text-purple-500" /> 转换外部 Skill
-                       </span>
-                       <ChevronDown className="w-4 h-4 text-neutral-caption -rotate-90 group-hover:text-[#fa541c] transition-colors" />
-                    </button>
-                  </div>
+      {/* Main Workspace */}
+      <div className="flex-1 flex overflow-hidden bg-neutral-50/30">
+        {/* Left Chat Area */}
+        <div className="w-[420px] flex flex-col border-r border-neutral-200 bg-white shadow-[2px_0_12px_rgba(0,0,0,0.02)] relative z-10 shrink-0">
+          {/* Chat History */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+             {/* User Bubble */}
+             <div className="flex justify-end">
+                <div className="bg-[#f0f0f0] text-neutral-800 px-4 py-3 rounded-2xl rounded-tr-sm text-[14px] max-w-[85%] leading-relaxed">
+                   帮我做一个信息图设计技能，支持输入数据，生成高质量数据可视化图表
                 </div>
-              </div>
-            </div>
-
-            {/* Mock User Message */}
-            <div className="flex gap-3 w-full justify-end">
-              <div className="flex flex-col gap-1 items-end max-w-[85%]">
-                <span className="text-[12px] font-bold text-neutral-caption mr-1">我</span>
-                <div className="bg-[#fff2e8] border border-[#ffbb96] rounded-2xl rounded-tr-none p-4 text-[14px] leading-relaxed text-[#0f172a] shadow-sm font-medium">
-                  帮我创建一个自动化数据处理环境，支持 Excel 文件的批量清洗，并把缺失值默认填充。
+             </div>
+             
+             {/* AI Bubble */}
+             <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-1">
+                   <Bot className="w-4 h-4 text-blue-600" />
                 </div>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 border border-neutral-border shadow-sm">
-                <User className="w-4 h-4 text-slate-500" />
-              </div>
-            </div>
-
-            {/* Mock Generating State inside Chat */}
-            {generating && (
-              <div className="flex gap-3 max-w-[95%]">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-[#fa541c] flex items-center justify-center shrink-0 shadow-sm">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="flex-1 flex flex-col gap-3">
+                   <div className="text-[14px] font-medium text-neutral-500 flex items-center gap-1.5">
+                     <Sparkles className="w-3.5 h-3.5" /> 思考过程
+                   </div>
+                   <div className="text-[14px] text-neutral-800 leading-relaxed">
+                     我来分析这个需求并创建信息图设计技能。
+                   </div>
+                   
+                   <div className="flex flex-col gap-1.5">
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <FileText className="w-3.5 h-3.5" /> 更新计划
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <Sparkles className="w-3.5 h-3.5" /> 思考过程
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <FileText className="w-3.5 h-3.5" /> 更新计划
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <Sparkles className="w-3.5 h-3.5" /> 思考过程
+                     </div>
+                   </div>
+                   
+                   <div className="text-[14px] text-neutral-800 mt-2">
+                     现在开始创建技能文件，并执行：
+                   </div>
+                   
+                   <div className="flex flex-col gap-1.5">
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <Code className="w-3.5 h-3.5" /> 执行命令 mkdir -p /workspace/projects/infographic-designer/scripts...
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <FileText className="w-3.5 h-3.5" /> 创建文件 /workspace/projects/infographic-designer/SKILL.md
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <FileText className="w-3.5 h-3.5" /> 创建文件 /workspace/projects/infographic-designer/references/chart-types.md
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <FileText className="w-3.5 h-3.5" /> 创建文件 /workspace/projects/infographic-designer/scripts/generate_chart.py
+                     </div>
+                     <div className="flex items-center gap-2 text-[13px] text-neutral-600 bg-neutral-50 px-3 py-2 rounded border border-neutral-100">
+                       <Sparkles className="w-3.5 h-3.5" /> 思考过程
+                     </div>
+                   </div>
+                   
+                   <div className="text-[14px] text-neutral-800 mt-2">
+                     现在验证脚本并打包：
+                   </div>
+                   <div className="flex gap-2 items-center mt-2 p-2 border border-neutral-100 rounded-full w-fit">
+                     <div className="w-2 h-2 rounded-full bg-[#fa541c] animate-bounce"></div>
+                     <div className="w-2 h-2 rounded-full bg-[#fa541c] animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                     <div className="w-2 h-2 rounded-full bg-[#fa541c] animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                   </div>
                 </div>
-                <div className="flex items-center gap-3 bg-white border border-[#fa541c]/30 rounded-2xl rounded-tl-none px-5 py-3.5 text-[13px] shadow-sm">
-                  <div className="flex gap-1">
-                    <div className="w-1.5 h-1.5 bg-[#fa541c] rounded-full animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 bg-[#fa541c] rounded-full animate-bounce" style={{animationDelay: "0.2s"}}></div>
-                    <div className="w-1.5 h-1.5 bg-[#fa541c] rounded-full animate-bounce" style={{animationDelay: "0.4s"}}></div>
-                  </div>
-                  <span className="font-mono tracking-wide font-bold bg-gradient-to-r from-[#fa541c] to-orange-400 bg-clip-text text-transparent">正在解析需求并生成技能配置，请关注右侧面板...</span>
-                </div>
-              </div>
-            )}
+             </div>
           </div>
           
-          {/* 需求输入框 & 快捷操作按钮 */}
-          <div className="p-4 bg-white border-t border-neutral-border z-10 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.05)]">
-            {/* Quick Actions Bar */}
-            <div className="mb-3 flex items-center justify-between">
-               <div className="flex gap-2">
-                 <button className="flex items-center gap-1.5 text-[12px] bg-neutral-bg hover:bg-[#e2e8f0] border border-transparent text-neutral-title rounded-md px-2.5 py-1.5 transition-colors font-medium">
-                   <Command className="w-3.5 h-3.5" /> 快捷指令
-                 </button>
-               </div>
-               
-               {/* 模式切换 (自动/手动) */}
-               <button 
-                  onClick={() => setAutoMode(!autoMode)}
-                  className="flex items-center gap-1.5 text-[12px] text-neutral-title hover:text-[#fa541c] transition-colors font-medium"
-               >
-                 {autoMode ? <ToggleRight className="w-5 h-5 text-[#fa541c]" /> : <ToggleLeft className="w-5 h-5 text-neutral-caption" />}
-                 {autoMode ? "自动编排模式" : "手动编辑模式"}
-               </button>
-            </div>
-            
-            <div className="relative group">
-              <textarea 
-                className="w-full bg-[#f8fafc] border border-neutral-border rounded-xl px-4 py-3.5 pr-14 text-[14px] text-neutral-title resize-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all h-[110px] shadow-inner placeholder:text-neutral-caption"
-                placeholder="在此使用自然语言描述你的具体需求（可使用 Shift+Enter 换行）..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-              />
-              {/* Bottom Right Actions in Textarea */}
-              <div className="absolute right-3 bottom-3 flex flex-col items-center gap-2">
-                <button className="p-1.5 text-neutral-caption hover:text-[#fa541c] hover:bg-[#fff2e8] rounded transition-all tooltip" title="添加附件">
-                  <Paperclip className="w-4 h-4" />
-                </button>
-                <button className={cn(
-                  "p-2 rounded-lg transition-all shadow-sm",
-                  input.trim().length > 0 ? "bg-[#fa541c] hover:bg-[#ff7a45] text-white" : "bg-neutral-bg text-neutral-caption border border-neutral-border cursor-not-allowed"
-                )}>
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+          {/* Chat Input */}
+          <div className="p-4 bg-white border-t border-neutral-100">
+             <div className="border border-neutral-200 rounded-xl overflow-hidden focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-all shadow-sm bg-white">
+                <textarea 
+                  className="w-full min-h-[60px] max-h-[200px] p-3 text-[14px] outline-none resize-none placeholder:text-neutral-400"
+                  placeholder="欢迎使用扣子编程，可以在此输入你的要求。"
+                />
+                <div className="flex items-center justify-between px-2 pb-2">
+                   <div className="flex items-center gap-1">
+                      <button className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded"><Plus className="w-4 h-4"/></button>
+                      <div className="text-[12px] bg-neutral-100 text-neutral-600 px-2 py-1 rounded flex items-center gap-1 ml-1 cursor-pointer">
+                         <Sparkles className="w-3 h-3" /> 自动 <ChevronDown className="w-3 h-3" />
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <button className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded"><Mic className="w-4 h-4"/></button>
+                     <button className="w-7 h-7 bg-black text-white flex items-center justify-center rounded-full hover:bg-neutral-800 transition-colors">
+                        <div className="w-2.5 h-2.5 bg-white rounded-sm"></div>
+                     </button>
+                   </div>
+                </div>
+             </div>
           </div>
         </div>
 
-        {/* 3. Right Side: 开发编辑区 & 终端面板 */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#fefefe] relative">
-          
-          {/* 编辑器操作栏 */}
-          <div className="h-11 bg-white border-b border-neutral-border flex items-center justify-between pr-4 pl-2 shrink-0 z-10">
-            {/* Editor Tabs (新建标签页) */}
-            <div className="flex items-center h-full">
-               <div className="px-5 border-r border-neutral-border h-full flex items-center gap-2 bg-[#fefefe] text-[13px] border-t-2 border-t-[#fa541c] text-[#fa541c] font-bold font-mono cursor-pointer transition-colors shadow-sm">
-                  <FileCode className="w-4 h-4" /> main.py
-               </div>
-               <div className="px-5 border-r border-neutral-border h-full flex items-center gap-2 bg-neutral-bg text-neutral-body hover:bg-[#e2e8f0] text-[13px] font-mono cursor-pointer transition-colors">
-                  <Box className="w-4 h-4 text-emerald-600" /> requirements.txt
-               </div>
-               {/* 新建标签页 */}
-               <button className="ml-2 w-7 h-7 flex items-center justify-center hover:bg-neutral-bg text-neutral-caption rounded transition-colors group">
-                 <Plus className="w-4 h-4 group-hover:text-neutral-title"/>
-               </button>
-            </div>
-            
-            {/* 布局配置 & 主题切换 */}
-            <div className="flex gap-1.5">
-               <button className="p-1.5 hover:bg-neutral-bg rounded text-neutral-caption hover:text-neutral-title transition-colors" title="主题切换">
-                 <SunMoon className="w-4 h-4" />
-               </button>
-               <button className="p-1.5 hover:bg-neutral-bg rounded text-neutral-caption hover:text-neutral-title transition-colors" title="布局调整">
-                 <LayoutTemplate className="w-4 h-4" />
-               </button>
-            </div>
-          </div>
-
-          {/* 中央展示区域: 编辑器 or 技能生成状态 */}
-          <div className="flex-1 overflow-auto bg-[#fefefe] p-0 font-mono text-[13px] leading-relaxed flex relative">
-             {generating && (
-                <div className="absolute inset-0 z-10 bg-white/70 backdrop-blur-md flex flex-col items-center justify-center">
-                   <div className="bg-white border border-neutral-border p-8 rounded-[20px] shadow-xl flex flex-col items-center max-w-sm w-full">
-                      <div className="relative w-16 h-16 mb-6">
-                         <div className="absolute inset-0 border-[3px] border-[#fff2e8] rounded-full"></div>
-                         <div className="absolute inset-0 border-[3px] border-[#fa541c] rounded-full border-t-transparent animate-spin"></div>
-                         <Cpu className="absolute inset-0 m-auto w-6 h-6 text-[#fa541c]" />
-                      </div>
-                      <h3 className="text-neutral-title text-lg font-bold mb-2">技能正在生成中...</h3>
-                      <p className="text-neutral-body text-[13px] text-center mb-6">Agent 正在为您构建基础代码结构并配置运行环境</p>
-                      
-                      {/* 快捷键提示 */}
-                      <div className="bg-neutral-bg border border-neutral-border rounded-lg p-3 w-full text-center">
-                         <span className="text-[12px] text-neutral-caption mb-2 block font-medium">你可以使用快捷键随时干预</span>
-                         <div className="flex items-center justify-center gap-2 text-[12px] font-bold">
-                            <kbd className="bg-white border border-neutral-border text-neutral-title px-2 py-1 rounded shadow-sm">Esc</kbd>
-                            <span className="text-neutral-caption font-normal">取消生成</span>
-                            <span className="mx-2 text-neutral-border">|</span>
-                            <kbd className="bg-white border border-neutral-border text-neutral-title px-2 py-1 rounded shadow-sm">Ctrl</kbd>
-                            <span className="text-neutral-caption font-normal">+</span>
-                            <kbd className="bg-white border border-neutral-border text-neutral-title px-2 py-1 rounded shadow-sm">S</kbd>
-                            <span className="text-neutral-caption font-normal">手动保存</span>
-                         </div>
-                      </div>
-                   </div>
-                </div>
-             )}
-
-             {/* Code Lines Mock (Light syntax highlight) */}
-             <div className="w-12 shrink-0 text-slate-400 bg-[#f8fafc] py-4 flex flex-col items-end pr-3 border-r border-neutral-border select-none text-[12px] font-medium">
-                {Array.from({length: 25}).map((_, i) => <div key={i} className={i === 5 ? "text-slate-800 font-bold" : ""}>{i+1}</div>)}
-             </div>
-             
-             {/* Text Content Mock */}
-             <div className="pl-6 py-4 space-y-1.5 text-neutral-title w-full font-medium">
-                <div className="flex"><span className="text-purple-600 w-16 font-bold">import</span> <span className="text-blue-600">pandas</span> <span className="text-purple-600 ml-2 font-bold">as</span> <span className="text-amber-600">pd</span></div>
-                <div className="flex"><span className="text-purple-600 w-16 font-bold">import</span> <span className="text-blue-600">os</span></div>
-                <div className="h-4"></div>
-                <div className="flex"><span className="text-purple-600 w-16 font-bold">def</span> <span className="text-blue-600 font-bold">process_excel_data</span><span className="text-slate-500">(file_path:</span> <span className="text-amber-600">str</span><span className="text-slate-500">{") ->"}</span> <span className="text-amber-600">bool</span><span className="text-slate-500">:</span></div>
-                <div className="flex text-slate-400 pl-8">"""</div>
-                <div className="flex text-slate-500 bg-[#fff2e8] px-2 py-0.5 ml-8 border-l-2 border-[#fa541c] shadow-sm italic">Agent 生成的代码：读取 Excel，处理缺失值为 0，并导出。</div>
-                <div className="flex text-slate-400 pl-8">"""</div>
-                <div className="flex pl-8"><span className="text-purple-600 font-bold">try</span><span className="text-slate-500">:</span></div>
-                <div className="flex pl-12"><span className="text-red-600">df</span> <span className="text-cyan-600 font-bold">=</span> <span className="text-amber-600">pd</span><span className="text-slate-500">.</span><span className="text-blue-600">read_excel</span><span className="text-slate-500">(file_path)</span></div>
-                <div className="flex pl-12"><span className="text-slate-400"># 填充缺失值</span></div>
-                <div className="flex pl-12"><span className="text-red-600">df</span><span className="text-slate-500">.</span><span className="text-blue-600">fillna</span><span className="text-slate-500">(</span><span className="text-orange-500">0</span><span className="text-slate-500">,</span> <span className="text-red-600">inplace</span><span className="text-cyan-600 font-bold">=</span><span className="text-orange-500">True</span><span className="text-slate-500">)</span></div>
-             </div>
-          </div>
-
-          {/* 终端面板 (Light version) */}
-          <div className="h-[220px] bg-white border-t border-neutral-border shrink-0 flex flex-col shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.03)] relative z-10">
-            {/* Terminal Header */}
-            <div className="h-10 border-b border-neutral-border flex items-center px-4 justify-between bg-[#f8fafc]">
-               <div className="flex gap-6 text-[12px] font-mono h-full">
-                  <button className="text-neutral-title border-b-2 border-[#fa541c] h-full uppercase font-bold tracking-wider flex items-center gap-2">
-                     <TerminalIcon className="w-4 h-4" /> 终端
-                  </button>
-                  <button className="text-neutral-caption hover:text-neutral-title transition-colors h-full uppercase tracking-wider flex items-center gap-2">
-                     <Settings className="w-4 h-4" /> 运行环境
-                  </button>
-               </div>
-               
-               {/* 存储容量 & 操作 */}
-               <div className="flex items-center gap-6">
-                  {/* Storage Status */}
-                  <div className="hidden md:flex items-center gap-3 text-[12px] font-mono group" title="存储空间已用 3.2GB / 总容量 10GB">
-                    <span className="text-neutral-caption flex items-center gap-1.5 font-bold"><Server className="w-3.5 h-3.5"/> 3.2G / 10G</span>
-                    <div className="w-32 h-2.5 bg-neutral-bg rounded-full overflow-hidden border border-neutral-border/50 shadow-inner">
-                       <div className="w-[32%] h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all group-hover:bg-emerald-400"></div>
+        {/* Right Workspace */}
+        <div className="flex-1 relative flex flex-col bg-white">
+           {activeBuilderTab === 'preview' ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 relative">
+                 <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
+                 <Ghost className="w-12 h-12 text-neutral-300 mb-4" />
+                 <h2 className="text-[16px] font-medium text-neutral-600 mb-8 z-10">技能正在生成中...</h2>
+                 
+                 <div className="space-y-4 z-10">
+                    <div className="flex items-center gap-4 text-[13px] justify-between w-[320px]">
+                       <div className="flex items-center gap-2 text-neutral-400">
+                         <Search className="w-4 h-4" /> 快速检索代码内容
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">⌘</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">F</kbd>
+                         <span className="mx-1 text-neutral-300">/</span>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">Ctrl</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">F</kbd>
+                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Divider */}
-                  <div className="w-[1px] h-4 bg-neutral-border"></div>
+                    
+                    <div className="flex items-center gap-4 text-[13px] justify-between w-[320px]">
+                       <div className="flex items-center gap-2 text-neutral-400">
+                         <List className="w-4 h-4" /> 切换文件目录可见性
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">⌥</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">B</kbd>
+                         <span className="mx-1 text-neutral-300">/</span>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">Alt</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">B</kbd>
+                       </div>
+                    </div>
 
-                  {/* Terminal Actions */}
-                  <div className="flex items-center gap-1.5">
-                     <button className="p-1.5 hover:bg-[#e2e8f0] rounded text-neutral-caption hover:text-[#fa541c] transition-colors" title="清理终端">
-                       <Trash2 className="w-4 h-4" />
-                     </button>
-                     <button className="p-1.5 hover:bg-[#e2e8f0] rounded text-neutral-caption hover:text-emerald-500 transition-colors" title="新建终端">
-                       <Plus className="w-4 h-4" />
-                     </button>
-                  </div>
-               </div>
-            </div>
-            
-            {/* Terminal Content */}
-            <div className="flex-1 p-4 font-mono text-[13px] leading-relaxed text-slate-700 overflow-y-auto space-y-1.5 custom-scrollbar bg-[#fdfdfd]">
-               <div className="flex items-start gap-3">
-                  <span className="text-emerald-600 mt-0.5 font-bold">➜</span>
-                  <div className="text-emerald-600 font-bold">system <span className="text-slate-400 font-normal">~</span> <span className="text-slate-800">skill-builder init --template data-process</span></div>
-               </div>
-               <div className="pl-6 text-slate-500">[INFO] Allocating container resources...</div>
-               <div className="pl-6 text-slate-500">[INFO] Downloading base dependencies. This may take a few seconds.</div>
-               <div className="pl-6 flex items-center gap-2">
-                  <span className="text-emerald-600 font-bold">✔</span> 
-                  <span className="text-slate-600">Environment initialized. Container ID: <span className="text-blue-600 font-bold">a8f93c2</span></span>
-               </div>
-               <div className="pl-6 text-indigo-500 pt-2 font-medium">Building project structure...</div>
-               <div className="flex items-start gap-3 pt-2">
-                  <span className="text-emerald-600 mt-0.5 font-bold">➜</span>
-                  <div className="text-emerald-600 font-bold">system <span className="text-slate-400 font-normal">~</span> <span className="text-slate-800"></span></div>
-                  <div className="w-2.5 h-[18px] mt-[3px] bg-slate-600 animate-pulse"></div>
-               </div>
-            </div>
-          </div>
+                    <div className="flex items-center gap-4 text-[13px] justify-between w-[320px]">
+                       <div className="flex items-center gap-2 text-neutral-400">
+                         <LayoutDashboard className="w-4 h-4" /> 切换底部面板可见性
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">⌥</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">`</kbd>
+                         <span className="mx-1 text-neutral-300">/</span>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">Alt</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">`</kbd>
+                       </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-[13px] justify-between w-[320px]">
+                       <div className="flex items-center gap-2 text-neutral-400">
+                         <Plus className="w-4 h-4" /> 打开新的默认标签页
+                       </div>
+                       <div className="flex items-center gap-1">
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">⌥</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">N</kbd>
+                         <span className="mx-1 text-neutral-300">/</span>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">Alt</kbd>
+                         <kbd className="px-1.5 py-0.5 bg-white border border-neutral-200 rounded text-neutral-500 shadow-sm font-mono text-[11px]">N</kbd>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           ) : (
+              <div className="flex-1 flex flex-col items-center bg-white p-10 overflow-y-auto custom-scrollbar">
+                 <div className="w-full flex justify-start mb-6">
+                   <span className="text-[16px] font-bold text-neutral-800 border-b-2 border-neutral-800 pb-2">总览</span>
+                 </div>
+                 <div className="w-full max-w-[600px] flex flex-col gap-6 mt-4 pb-20">
+                    <h2 className="text-[20px] font-bold text-neutral-900 text-center mb-2">开始部署你的项目吧</h2>
+                    
+                    <div className="flex flex-col gap-2">
+                       <label className="text-[13px] font-bold text-neutral-700">部署版本</label>
+                       <div className="border border-neutral-200 rounded-xl px-4 py-3 bg-white flex items-center justify-between cursor-pointer shadow-sm hover:border-neutral-300 transition-colors">
+                          <div className="flex items-center gap-3">
+                             <span className="text-[13px] font-mono font-bold text-neutral-800 bg-neutral-100 px-2 py-0.5 rounded">d690426</span>
+                             <span className="text-[13px] text-neutral-600">feat: 创建信息图设计技能 infographic-designer</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-neutral-400">
+                             <span className="text-[12px]">2 分钟前</span>
+                             <ChevronDown className="w-4 h-4" />
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                       <label className="text-[13px] font-bold text-neutral-700">
+                         生产环境变量
+                         <span className="block font-normal text-neutral-400 text-[12px] mt-0.5">查看、新增、修改或同步至生产环境的环境变量</span>
+                       </label>
+                       <div className="border border-neutral-200 rounded-xl px-4 py-3 bg-white flex items-center justify-between cursor-pointer shadow-sm hover:border-neutral-300 transition-colors mt-1">
+                          <span className="text-[14px] text-neutral-800 font-medium">查看详情</span>
+                          <ChevronRight className="w-4 h-4 text-neutral-400" />
+                       </div>
+                    </div>
+
+                    <div className="border border-neutral-200 rounded-xl px-4 py-4 bg-white flex items-center justify-between shadow-sm">
+                       <div className="flex items-center gap-2">
+                         <span className="text-[14px] text-neutral-800 font-medium">加密部署</span>
+                         <Info className="w-3.5 h-3.5 text-neutral-400" />
+                       </div>
+                       <div className="w-10 h-5 bg-neutral-200 rounded-full flex items-center px-0.5 cursor-pointer">
+                          <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                       </div>
+                    </div>
+
+                    <button 
+                       className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3.5 rounded-xl text-[15px] font-bold shadow-md transition-colors mt-4"
+                       onClick={() => {
+                          alert('部署成功！');
+                          navigate('/practices');
+                       }}
+                    >
+                       开始部署
+                    </button>
+                 </div>
+              </div>
+           )}
+           
+           {/* Terminal Footer */}
+           <div className="h-10 border-t border-neutral-200 flex items-center justify-between px-4 text-[12px] text-neutral-400 bg-white shrink-0 absolute bottom-0 left-0 right-0 z-10">
+              <span className="font-bold text-neutral-800">终端</span>
+              <div className="flex items-center gap-4">
+                 <span>已使用 / 空间总容量: <strong className="text-neutral-700">248KB</strong> / 1.0GB</span>
+                 <button className="px-2 py-0.5 border border-neutral-200 rounded text-neutral-600 hover:bg-neutral-50 transition-colors bg-white">清理</button>
+                 <div className="flex items-center gap-3">
+                   <button className="hover:text-neutral-700"><Plus className="w-3.5 h-3.5"/></button>
+                   <button className="hover:text-neutral-700"><Maximize2 className="w-3.5 h-3.5"/></button>
+                   <button className="hover:text-neutral-700"><ChevronUp className="w-3.5 h-3.5"/></button>
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
     </div>

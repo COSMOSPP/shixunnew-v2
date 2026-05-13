@@ -1026,7 +1026,7 @@ export default function UserPractices() {
                       e.preventDefault();
                       if (builderInput.trim()) {
                         setShowChat(false);
-                        setView('builder');
+                        navigate('/skill-builder');
                       }
                     }
                   }}
@@ -1071,7 +1071,7 @@ export default function UserPractices() {
                       onClick={() => {
                         if (builderInput.trim()) {
                           setShowChat(false);
-                          setView('builder');
+                          navigate('/skill-builder');
                         }
                       }}
                       className={cn(
