@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor } from 'lucide-react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, PlusCircle, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -7,6 +7,7 @@ interface CourseDetailProps {
   onBack: () => void;
   onShowLearningPath?: () => void;
   initialLesson?: { title: string, type: string } | null;
+  isTeacher?: boolean;
 }
 
 const COURSE_SYLLABUS = [
@@ -52,11 +53,12 @@ const COURSE_SYLLABUS = [
   }
 ];
 
-export default function CourseDetail({ onBack, onShowLearningPath, initialLesson }: CourseDetailProps) {
+export default function CourseDetail({ onBack, onShowLearningPath, initialLesson, isTeacher }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
   const [playingLesson, setPlayingLesson] = useState<{title: string, type: string} | null>(initialLesson || null);
   const [isExperimentStarted, setIsExperimentStarted] = useState(false);
   const [activeExperimentTab, setActiveExperimentTab] = useState('course');
+  const [teacherActionMode, setTeacherActionMode] = useState<'detail' | 'preview' | 'edit'>('detail');
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
   const [datasetTab, setDatasetTab] = useState('public');
@@ -65,6 +67,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
   const isRecommendedMode = (window as any).__RECOMMENDED_MODE === true;
 
   const handleCloseLesson = () => {
+    setTeacherActionMode('detail');
     if (initialLesson) {
       onBack();
     } else {
@@ -276,6 +279,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                             if (!lesson.locked) {
                               setPlayingLesson({ title: lesson.title, type: lesson.type });
                               setIsExperimentStarted(false);
+                              setTeacherActionMode('detail');
                             }
                           }}
                         >
@@ -335,31 +339,59 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
       {/* Modals */}
       {playingLesson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
-          {(['doc', 'video', 'assignment', 'split_doc'].includes(playingLesson.type) || (playingLesson.type === 'experiment' && !isExperimentStarted)) && (
+          {(teacherActionMode !== 'edit' && (['doc', 'video', 'assignment', 'split_doc'].includes(playingLesson.type) || (playingLesson.type === 'experiment' && !isExperimentStarted))) && (
             <div className="w-full h-full bg-white relative flex font-sans">
               {/* Left Sidebar */}
               <div className="w-80 border-r border-neutral-border flex flex-col bg-[#fafafa]">
                 {/* Header */}
-                <div className="p-4 flex flex-col gap-4 border-b border-neutral-border">
-                  <div 
-                    className="flex items-center gap-1 text-[13px] text-neutral-body cursor-pointer hover:text-neutral-title w-fit"
-                    onClick={handleCloseLesson}
-                  >
-                    <ChevronLeft className="w-4 h-4" /> 返回
-                  </div>
-                  <div>
-                    <h2 className="text-[16px] font-bold text-neutral-title mb-2">人工智能训练师三级考试</h2>
-                    <div className="flex items-center justify-between text-[12px] text-neutral-caption mb-1.5">
-                      <span className="truncate pr-2">当前学习：{playingLesson.title}</span>
-                      <span className="shrink-0">3.4%</span>
+                {isTeacher && teacherActionMode !== 'preview' ? (
+                  <div className="p-4 flex flex-col gap-4 border-b border-neutral-border">
+                    <div 
+                      className="flex items-center gap-1 text-[15px] font-medium text-neutral-title cursor-pointer hover:text-[#fa541c] w-fit"
+                      onClick={handleCloseLesson}
+                    >
+                      <ChevronLeft className="w-4 h-4" /> 人工智能基础与实践
                     </div>
-                    <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#fa541c] w-[3.4%] rounded-full"></div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#fa541c] rounded-sm flex items-center justify-center text-white text-[10px]">
+                          <BookOpen className="w-2.5 h-2.5" />
+                        </div>
+                        <h2 className="text-[14px] font-bold text-neutral-title">课程目录</h2>
+                      </div>
+                      <Button variant="outline" size="sm" className="h-7 px-2 text-[#fa541c] border-[#fa541c] hover:bg-[#fff2e8] flex items-center gap-1 text-xs shadow-sm">
+                        <PlusCircle className="w-3.5 h-3.5" /> 新建章
+                      </Button>
                     </div>
                   </div>
-                </div>
-                
-                {/* Syllabus List */}
+                ) : (
+                  <div className="p-4 flex flex-col gap-4 border-b border-neutral-border">
+                    <div 
+                      className="flex items-center gap-1 text-[13px] text-neutral-body cursor-pointer hover:text-neutral-title w-fit"
+                      onClick={() => {
+                        if (teacherActionMode === 'preview') {
+                          setTeacherActionMode('detail');
+                        } else {
+                          handleCloseLesson();
+                        }
+                      }}
+                    >
+                        <ChevronLeft className="w-4 h-4" /> 返回
+                      </div>
+                      <div>
+                        <h2 className="text-[16px] font-bold text-neutral-title mb-2">人工智能训练师三级考试</h2>
+                        <div className="flex items-center justify-between text-[12px] text-neutral-caption mb-1.5">
+                          <span className="truncate pr-2">当前学习：{playingLesson.title}</span>
+                          <span className="shrink-0">3.4%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-[#fa541c] w-[3.4%] rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Syllabus List */}
                 <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
                   {COURSE_SYLLABUS.map((chapter, i) => (
                     <div key={i} className="mb-4">
@@ -402,11 +434,52 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                 </div>
               </div>
 
-              {/* Center Content */}
-              <div className="flex-1 overflow-y-auto bg-white flex justify-center py-12 custom-scrollbar relative">
+              {/* Middle Column (Course Summary List) */}
+              {isTeacher && teacherActionMode !== 'preview' && (
+                <div className="w-64 border-r border-neutral-border flex flex-col bg-white shadow-[2px_0_10px_rgba(0,0,0,0.02)] z-10">
+                  <div className="p-4 border-b border-neutral-border bg-neutral-50/50">
+                    <h3 className="font-bold text-neutral-title text-[15px]">{playingLesson.title}</h3>
+                  </div>
+                  <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+                    <div className="flex flex-col">
+                      <div className="px-4 py-3.5 text-[13px] bg-[#fff2e8] text-[#fa541c] border-l-[3px] border-[#fa541c] cursor-pointer font-medium hover:bg-[#ffe4d3] transition-colors">
+                        1.1 我们为什么要学 AI
+                      </div>
+                      <div className="px-4 py-3.5 text-[13px] text-neutral-body hover:bg-neutral-50 hover:text-neutral-title cursor-pointer border-l-[3px] border-transparent transition-colors">
+                        2.1 什么是 AI
+                      </div>
+                      <div className="px-4 py-3.5 text-[13px] text-neutral-body hover:bg-neutral-50 hover:text-neutral-title cursor-pointer border-l-[3px] border-transparent transition-colors">
+                        3.1 大模型的出现
+                      </div>
+                      <div className="px-4 py-3.5 text-[13px] text-neutral-body hover:bg-neutral-50 hover:text-neutral-title cursor-pointer border-l-[3px] border-transparent transition-colors">
+                        4.1 AI 是怎么学习的
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Center Content Area */}
+              <div className="flex-1 flex flex-col bg-white relative overflow-hidden">
+                {isTeacher && teacherActionMode === 'detail' && (
+                  <div className="h-14 border-b border-neutral-border flex items-center justify-between px-6 bg-white shrink-0 shadow-sm z-20">
+                    <div className="flex items-center gap-2 text-neutral-title font-medium">
+                      {playingLesson.title}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button variant="outline" className="h-8 px-4 text-[#fa541c] border-[#fa541c] hover:bg-[#fff2e8] flex items-center gap-1.5 shadow-sm rounded-md" onClick={() => setTeacherActionMode('preview')}>
+                        <Eye className="w-3.5 h-3.5" /> 预览
+                      </Button>
+                      <Button className="h-8 px-4 bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm rounded-md" onClick={() => setTeacherActionMode('edit')}>
+                        <Edit className="w-3.5 h-3.5" /> 编辑
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1 overflow-y-auto flex justify-center py-12 custom-scrollbar relative">
                 {playingLesson.type === 'doc' && (
-                  <div className="w-full max-w-3xl px-8">
-                    <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border">{playingLesson.title}</h1>
+                  <div className="w-full max-w-4xl px-8 relative">
+                    <h1 className="text-3xl font-bold text-neutral-title mb-8 text-center pb-6 border-b border-neutral-border w-[80%] mx-auto">{playingLesson.title}</h1>
                     
                     <div className="text-[15px] text-neutral-body leading-loose space-y-6">
                       <p>
@@ -684,6 +757,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                     </div>
                   </div>
                 )}
+                </div>
               </div>
 
               {/* Notes Panel */}
@@ -725,21 +799,35 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             </div>
           )}
 
-          {playingLesson.type === 'experiment' && isExperimentStarted && (
+          {(teacherActionMode === 'edit' || (playingLesson.type === 'experiment' && isExperimentStarted)) && (
             <div className="w-full h-full bg-white relative flex flex-col">
               {/* Top Bar */}
               <div className="h-12 border-b border-neutral-border flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
                   <div 
                     className="flex items-center gap-1 text-[14px] font-bold text-neutral-title cursor-pointer hover:text-[#fa541c]"
-                    onClick={handleCloseLesson}
+                    onClick={() => {
+                      if (teacherActionMode === 'edit') {
+                        setTeacherActionMode('detail');
+                      } else {
+                        handleCloseLesson();
+                      }
+                    }}
                   >
                     <ChevronLeft className="w-4 h-4" /> 返回
                   </div>
                   <div className="w-px h-4 bg-neutral-border mx-2"></div>
                   <span className="text-sm font-bold text-neutral-title">{playingLesson.title}</span>
+                  {teacherActionMode === 'edit' && (
+                    <span className="ml-2 px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] text-[10px] rounded border border-[#ffbb96]">编辑模式</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-4">
+                  {teacherActionMode === 'edit' && (
+                    <Button size="sm" className="h-7 text-xs bg-[#fa541c] hover:bg-[#e84a15] text-white px-4 mr-4" onClick={() => setTeacherActionMode('detail')}>
+                      保存课时
+                    </Button>
+                  )}
                   <div className="flex items-center gap-2 text-sm text-neutral-body">
                     <div className="mx-2 h-4 w-px bg-neutral-border"></div>
                     <button className="p-1 hover:bg-neutral-200 rounded text-neutral-600" title="Save file"><Save className="w-4 h-4" /></button>
@@ -1279,7 +1367,10 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
               </div>
               
               <button 
-                onClick={() => setPlayingLesson(null)}
+                onClick={() => {
+                  setTeacherActionMode('detail');
+                  setPlayingLesson(null);
+                }}
                 className="absolute top-2 right-2 text-neutral-caption hover:text-neutral-title z-50 bg-white/80 hover:bg-white w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <X className="w-5 h-5" />

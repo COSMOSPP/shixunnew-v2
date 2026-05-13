@@ -52,7 +52,7 @@ export default function TeacherCourseManage() {
   ];
 
   if (showCourseDetail) {
-    return <CourseDetail onBack={() => setShowCourseDetail(false)} onShowLearningPath={() => {}} initialLesson={selectedLesson} />;
+    return <CourseDetail onBack={() => setShowCourseDetail(false)} onShowLearningPath={() => {}} initialLesson={selectedLesson} isTeacher={true} />;
   }
 
   return (
