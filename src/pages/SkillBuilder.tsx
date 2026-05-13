@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { 
   ChevronLeft, ChevronDown, History, FolderOpen, FileText, Rocket, X, Plus,
   Sun, GitBranch, Copy, Bot, Sparkles, Code, Ghost, Search, List, LayoutDashboard,
-  Maximize2, ChevronUp, ChevronRight, Info, Mic
+  Maximize2, ChevronUp, ChevronRight, Info, Mic, CheckCircle2, ArrowUpRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SkillBuilder() {
   const navigate = useNavigate();
   const [activeBuilderTab, setActiveBuilderTab] = useState<'preview' | 'deploy'>('preview');
+  const [deployState, setDeployState] = useState<'idle' | 'success'>('idle');
 
   return (
     <div className="fixed inset-0 z-[150] flex flex-col h-full bg-white font-sans w-full">
@@ -238,7 +239,7 @@ export default function SkillBuilder() {
                     </div>
                  </div>
               </div>
-           ) : (
+           ) : deployState === 'idle' ? (
               <div className="flex-1 flex flex-col items-center bg-white p-10 overflow-y-auto custom-scrollbar">
                  <div className="w-full flex justify-start mb-6">
                    <span className="text-[16px] font-bold text-neutral-800 border-b-2 border-neutral-800 pb-2">总览</span>
@@ -284,12 +285,73 @@ export default function SkillBuilder() {
                     <button 
                        className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3.5 rounded-xl text-[15px] font-bold shadow-md transition-colors mt-4"
                        onClick={() => {
-                          alert('部署成功！');
-                          navigate('/practices');
+                          setDeployState('success');
                        }}
                     >
                        开始部署
                     </button>
+                 </div>
+              </div>
+           ) : (
+              <div className="flex-1 flex flex-col bg-white p-10 overflow-y-auto custom-scrollbar relative">
+                 <div className="w-full flex justify-start mb-6 shrink-0">
+                    <span className="text-[16px] font-bold text-neutral-800 border-b-2 border-neutral-800 pb-2">总览</span>
+                 </div>
+
+                 <div className="flex items-center text-sm font-medium text-neutral-600 cursor-pointer mb-6 hover:text-neutral-900 transition-colors w-fit" onClick={() => setDeployState('idle')}>
+                    <ChevronLeft className="w-4 h-4 mr-1" /> 返回总览
+                 </div>
+                 
+                 <div className="w-full border border-neutral-200 rounded-xl bg-white shadow-sm overflow-hidden mb-6 flex-1 max-h-[800px] flex flex-col">
+                    <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between cursor-pointer hover:bg-neutral-50 transition-colors shrink-0">
+                       <div className="flex items-center gap-2 text-[14px] font-bold text-neutral-800">部署成功</div>
+                       <ChevronDown className="w-4 h-4 text-neutral-400" />
+                    </div>
+                    
+                    <div className="p-8 flex-1 flex flex-col">
+                       <div className="flex items-center justify-between w-full mx-auto mb-20 relative px-4">
+                          {/* Connecting Lines */}
+                          <div className="absolute left-[40px] right-[40px] top-[12px] h-[1px] bg-neutral-800 z-0"></div>
+                          
+                          {/* Step 1 */}
+                          <div className="flex items-center gap-2 bg-white px-2 z-10 relative">
+                             <div className="w-6 h-6 rounded-full bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                                <CheckCircle2 className="w-4 h-4" />
+                             </div>
+                             <span className="text-[13px] font-bold text-neutral-800 pr-1">打包</span>
+                          </div>
+                          
+                          {/* Step 2 */}
+                          <div className="flex items-center gap-2 bg-white px-2 z-10 relative">
+                             <div className="w-6 h-6 rounded-full bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                                <CheckCircle2 className="w-4 h-4" />
+                             </div>
+                             <span className="text-[13px] font-bold text-neutral-800 pr-1">构建</span>
+                          </div>
+                          
+                          {/* Step 3 */}
+                          <div className="flex items-center gap-2 bg-white px-2 z-10 relative">
+                             <div className="w-6 h-6 rounded-full bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                                <CheckCircle2 className="w-4 h-4" />
+                             </div>
+                             <span className="text-[13px] font-bold text-neutral-800 pr-1">部署</span>
+                          </div>
+                       </div>
+
+                       <div className="flex flex-col items-center justify-center text-center mt-6">
+                          <div className="w-16 h-16 rounded-2xl border border-neutral-200 flex items-center justify-center mb-6 shadow-sm bg-white">
+                             <CheckCircle2 className="w-7 h-7 text-neutral-800" />
+                          </div>
+                          <h3 className="text-[22px] font-bold text-neutral-900 mb-3">部署成功</h3>
+                          <p className="text-[14px] text-neutral-500 mb-10">请前往扣子对话区进行体验</p>
+                          <button 
+                             onClick={() => navigate('/practices', { state: { openChat: true } })}
+                             className="bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-2.5 rounded-lg text-[14px] font-medium transition-colors flex items-center gap-2 shadow-sm"
+                          >
+                             立即体验 <ArrowUpRight className="w-4 h-4" />
+                          </button>
+                       </div>
+                    </div>
                  </div>
               </div>
            )}

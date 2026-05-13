@@ -96,6 +96,14 @@ export default function UserPractices() {
   const [activeBuilderTab, setActiveBuilderTab] = useState<'preview' | 'deploy'>('preview');
 
   useEffect(() => {
+    if (location.state && (location.state as any).openChat) {
+      setShowChat(true);
+      // Clear the state so it doesn't reopen if the user refreshes
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  useEffect(() => {
     if (location.state?.showDetail && location.state?.practiceId) {
       const practice = practices.find(p => p.id === location.state.practiceId);
       if (practice) {
