@@ -15,6 +15,7 @@ import UserAIAgentsStudio from "./pages/UserAIAgentsStudio";
 import UserProjects from "./pages/UserProjects";
 import UserPractices from "./pages/UserPractices";
 import SkillBuilder from "./pages/SkillBuilder";
+import PracticeChat from "./pages/PracticeChat";
 import AICompetition from "./pages/AICompetition";
 import CloudCompetition from "./pages/CloudCompetition";
 import UserCenterLayout from "./layouts/UserCenterLayout";
@@ -85,8 +86,9 @@ export default function App() {
         <Route path="/login/user" element={<LoginUser />} />
         <Route path="/login/teacher" element={<LoginTeacher />} />
 
-        {/* Skill Builder (Full Screen) */}
+        {/* Skill Builder & Practice Chat (Full Screen) */}
         <Route path="/skill-builder" element={<SkillBuilder />} />
+        <Route path="/practice-chat" element={<PracticeChat />} />
 
         {/* Teacher Dashboard */}
         <Route path="/teacher" element={<TeacherLayout />}>

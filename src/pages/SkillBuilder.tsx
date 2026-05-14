@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { 
   ChevronLeft, ChevronDown, History, FolderOpen, FileText, Rocket, X, Plus,
   Sun, GitBranch, Copy, Bot, Sparkles, Code, Ghost, Search, List, LayoutDashboard,
-  Maximize2, ChevronUp, ChevronRight, Info, Mic, CheckCircle2, ArrowUpRight
+  Maximize2, ChevronUp, ChevronRight, Info, Mic, CheckCircle2, ArrowUpRight, User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SkillBuilder() {
   const navigate = useNavigate();
   const [activeBuilderTab, setActiveBuilderTab] = useState<'preview' | 'deploy'>('preview');
-  const [deployState, setDeployState] = useState<'idle' | 'success'>('idle');
+  const [deployState, setDeployState] = useState<'history' | 'idle' | 'success'>('idle');
 
   return (
     <div className="fixed inset-0 z-[150] flex flex-col h-full bg-white font-sans w-full">
@@ -239,11 +239,62 @@ export default function SkillBuilder() {
                     </div>
                  </div>
               </div>
+           ) : deployState === 'history' ? (
+              <div className="flex-1 flex flex-col bg-white p-10 overflow-y-auto custom-scrollbar relative">
+                 <div className="w-full flex justify-start mb-6 shrink-0">
+                    <span className="text-[16px] font-bold text-neutral-800 border-b-2 border-neutral-800 pb-2">总览</span>
+                 </div>
+
+                 <div className="flex items-center justify-between mb-8 w-full">
+                    <h2 className="text-[20px] font-bold text-neutral-900">部署历史</h2>
+                    <button 
+                       onClick={() => setDeployState('idle')}
+                       className="border border-neutral-200 hover:bg-neutral-50 px-4 py-1.5 rounded-lg text-[13px] font-medium text-neutral-800 transition-colors"
+                    >
+                       更改部署配置
+                    </button>
+                 </div>
+
+                 <div className="flex flex-col w-full relative pl-2">
+                    <div className="flex items-center gap-3 mb-6">
+                       <span className="text-[14px] font-bold text-neutral-800">生产环境</span>
+                       <span className="bg-neutral-800 text-white text-[12px] px-3 py-0.5 rounded-full font-medium">已创建</span>
+                    </div>
+
+                    <div className="relative border-l border-neutral-200 pl-6 pb-6 ml-1.5">
+                       <div className="absolute left-[-6px] top-5 w-3 h-3 rounded-full border-2 border-neutral-300 bg-white"></div>
+                       
+                       <div className="border border-neutral-200 rounded-xl p-4 bg-white shadow-sm flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                             <span className="text-[14px] font-mono font-bold text-neutral-800">d690426</span>
+                             <span className="text-[14px] text-neutral-600">feat: 创建信息图设计技能 infographic-designer...</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                             <span className="bg-[#e6f7ef] text-[#1bbd6c] text-[12px] px-2.5 py-0.5 rounded-full font-bold">部署成功</span>
+                             <span className="text-[13px] text-neutral-400">CPU: 1 / RAM: 2 GiB</span>
+                             <div className="flex items-center gap-1.5 text-[13px] text-neutral-400">
+                                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white shrink-0">
+                                   <User className="w-3 h-3" />
+                                </div>
+                                RootUser_2100350928
+                             </div>
+                             <span className="text-[13px] text-neutral-400">1小时前</span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
            ) : deployState === 'idle' ? (
               <div className="flex-1 flex flex-col items-center bg-white p-10 overflow-y-auto custom-scrollbar">
                  <div className="w-full flex justify-start mb-6">
                    <span className="text-[16px] font-bold text-neutral-800 border-b-2 border-neutral-800 pb-2">总览</span>
                  </div>
+                 
+                 <div className="w-full max-w-[600px] flex items-center text-sm font-medium text-neutral-600 cursor-pointer mb-6 hover:text-neutral-900 transition-colors" onClick={() => setDeployState('history')}>
+                    <ChevronLeft className="w-4 h-4 mr-1" /> 返回总览
+                 </div>
+
                  <div className="w-full max-w-[600px] flex flex-col gap-6 mt-4 pb-20">
                     <h2 className="text-[20px] font-bold text-neutral-900 text-center mb-2">开始部署你的项目吧</h2>
                     
@@ -298,55 +349,55 @@ export default function SkillBuilder() {
                     <span className="text-[16px] font-bold text-neutral-800 border-b-2 border-neutral-800 pb-2">总览</span>
                  </div>
 
-                 <div className="flex items-center text-sm font-medium text-neutral-600 cursor-pointer mb-6 hover:text-neutral-900 transition-colors w-fit" onClick={() => setDeployState('idle')}>
+                 <div className="flex items-center text-sm font-medium text-neutral-600 cursor-pointer mb-6 hover:text-neutral-900 transition-colors w-fit" onClick={() => setDeployState('history')}>
                     <ChevronLeft className="w-4 h-4 mr-1" /> 返回总览
                  </div>
                  
                  <div className="w-full border border-neutral-200 rounded-xl bg-white shadow-sm overflow-hidden mb-6 flex-1 max-h-[800px] flex flex-col">
                     <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between cursor-pointer hover:bg-neutral-50 transition-colors shrink-0">
-                       <div className="flex items-center gap-2 text-[14px] font-bold text-neutral-800">部署成功</div>
-                       <ChevronDown className="w-4 h-4 text-neutral-400" />
+                       <div className="flex items-center gap-2 text-[14px] font-bold text-[#fa541c]">部署成功</div>
+                       <ChevronDown className="w-4 h-4 text-[#fa541c]" />
                     </div>
                     
                     <div className="p-8 flex-1 flex flex-col">
                        <div className="flex items-center justify-between w-full mx-auto mb-20 relative px-4">
                           {/* Connecting Lines */}
-                          <div className="absolute left-[40px] right-[40px] top-[12px] h-[1px] bg-neutral-800 z-0"></div>
+                          <div className="absolute left-[40px] right-[40px] top-[12px] h-[1px] bg-[#fa541c] z-0"></div>
                           
                           {/* Step 1 */}
                           <div className="flex items-center gap-2 bg-white px-2 z-10 relative">
-                             <div className="w-6 h-6 rounded-full bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                             <div className="w-6 h-6 rounded-full bg-[#fa541c] text-white flex items-center justify-center shrink-0">
                                 <CheckCircle2 className="w-4 h-4" />
                              </div>
-                             <span className="text-[13px] font-bold text-neutral-800 pr-1">打包</span>
+                             <span className="text-[13px] font-bold text-[#fa541c] pr-1">打包</span>
                           </div>
                           
                           {/* Step 2 */}
                           <div className="flex items-center gap-2 bg-white px-2 z-10 relative">
-                             <div className="w-6 h-6 rounded-full bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                             <div className="w-6 h-6 rounded-full bg-[#fa541c] text-white flex items-center justify-center shrink-0">
                                 <CheckCircle2 className="w-4 h-4" />
                              </div>
-                             <span className="text-[13px] font-bold text-neutral-800 pr-1">构建</span>
+                             <span className="text-[13px] font-bold text-[#fa541c] pr-1">构建</span>
                           </div>
                           
                           {/* Step 3 */}
                           <div className="flex items-center gap-2 bg-white px-2 z-10 relative">
-                             <div className="w-6 h-6 rounded-full bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                             <div className="w-6 h-6 rounded-full bg-[#fa541c] text-white flex items-center justify-center shrink-0">
                                 <CheckCircle2 className="w-4 h-4" />
                              </div>
-                             <span className="text-[13px] font-bold text-neutral-800 pr-1">部署</span>
+                             <span className="text-[13px] font-bold text-[#fa541c] pr-1">部署</span>
                           </div>
                        </div>
 
                        <div className="flex flex-col items-center justify-center text-center mt-6">
-                          <div className="w-16 h-16 rounded-2xl border border-neutral-200 flex items-center justify-center mb-6 shadow-sm bg-white">
-                             <CheckCircle2 className="w-7 h-7 text-neutral-800" />
+                          <div className="w-16 h-16 rounded-2xl border border-orange-200 flex items-center justify-center mb-6 shadow-sm bg-orange-50">
+                             <CheckCircle2 className="w-7 h-7 text-[#fa541c]" />
                           </div>
-                          <h3 className="text-[22px] font-bold text-neutral-900 mb-3">部署成功</h3>
+                          <h3 className="text-[22px] font-bold text-[#fa541c] mb-3">部署成功</h3>
                           <p className="text-[14px] text-neutral-500 mb-10">请前往扣子对话区进行体验</p>
                           <button 
-                             onClick={() => navigate('/practices', { state: { openChat: true } })}
-                             className="bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-2.5 rounded-lg text-[14px] font-medium transition-colors flex items-center gap-2 shadow-sm"
+                             onClick={() => navigate('/practice-chat')}
+                             className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 py-2.5 rounded-lg text-[14px] font-medium transition-colors flex items-center gap-2 shadow-sm"
                           >
                              立即体验 <ArrowUpRight className="w-4 h-4" />
                           </button>
