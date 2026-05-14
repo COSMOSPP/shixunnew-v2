@@ -20,7 +20,7 @@ import AICompetition from "./pages/AICompetition";
 import CloudCompetition from "./pages/CloudCompetition";
 import UserCenterLayout from "./layouts/UserCenterLayout";
 import UserCenterProfile from "./pages/user/UserCenterProfile";
-import UserCenterLearning from "./pages/user/UserCenterLearning";
+import UserCenterQuota from "./pages/user/UserCenterQuota";
 import UserCenterProjects from "./pages/user/UserCenterProjects";
 import UserCenterFavorites from "./pages/user/UserCenterFavorites";
 import UserCenterHistory from "./pages/user/UserCenterHistory";
@@ -105,7 +105,7 @@ export default function App() {
           <Route path="center" element={<UserCenterLayout />}>
             <Route index element={<Navigate to="/user/center/profile" replace />} />
             <Route path="profile" element={<UserCenterProfile />} />
-            <Route path="learning" element={<UserCenterLearning />} />
+            <Route path="quota" element={<UserCenterQuota />} />
             <Route path="projects" element={<UserCenterProjects />} />
             <Route path="favorites" element={<UserCenterFavorites />} />
             <Route path="history" element={<UserCenterHistory />} />

@@ -8,7 +8,7 @@ export default function UserCenterLayout() {
 
   const menuItems = [
     { title: "个人资料", icon: User, href: "/user/center/profile" },
-    { title: "学习数据", icon: BookOpen, href: "/user/center/learning" },
+    { title: "资源额度", icon: LayoutDashboard, href: "/user/center/quota" },
     { title: "我的收藏", icon: Star, href: "/user/center/favorites" },
     { title: "历史记录", icon: Clock, href: "/user/center/history" },
     { title: "账号安全", icon: Shield, href: "/user/center/security" },

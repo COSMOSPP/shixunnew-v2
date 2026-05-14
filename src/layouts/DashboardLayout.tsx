@@ -180,7 +180,7 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
         <main className={cn(
           "flex flex-col min-h-0",
           (location.pathname === "/user/ai/assistant/studio" || location.pathname === "/user/ai/agents/studio") ? "flex-1 p-0 bg-[#f5f6f8] overflow-hidden" : "flex-1 bg-[#f5f6f8] overflow-auto",
-          (location.pathname === "/user" || location.pathname.startsWith("/user/center") || location.pathname === "/user/ai/assistant/studio" || location.pathname === "/user/ai/agents/studio") ? "p-0" : "p-6"
+          (location.pathname === "/user" || location.pathname.startsWith("/user/center") || location.pathname === "/user/mylearning" || location.pathname === "/user/ai/assistant/studio" || location.pathname === "/user/ai/agents/studio") ? "p-0" : "p-6"
         )}>
           <Outlet />
         </main>

@@ -4,7 +4,7 @@ import {
   Search, ChevronRight, ChevronDown, ChevronLeft, Play, Plus, ArrowLeft, ArrowRight, 
   Terminal, Code, Settings, Rocket, BookOpen, Clock, User, FileCode, CheckCircle2, 
   Bot, Send, Paperclip, LayoutDashboard, Database, Activity, Cpu, PlayCircle, FileText,
-  History, Calendar, Info, Layers, Zap, Star, Sparkles, GitFork, Download, Tag, Heart, X, Copy, Users, Box, MessageSquare, ImageIcon, Edit3, Languages, Code2, LayoutGrid, Mic, LogOut, Ghost, FolderOpen, Sun, GitBranch, Maximize2, ChevronUp
+  History, Calendar, Info, Layers, Zap, Star, Sparkles, GitFork, Download, Tag, Heart, X, Copy, Users, Box, MessageSquare, ImageIcon, Edit3, Languages, Code2, LayoutGrid, Mic, LogOut, Ghost, FolderOpen, Sun, GitBranch, Maximize2, ChevronUp, Store
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -86,6 +86,9 @@ export default function UserPractices() {
   const [selectedSkill, setSelectedSkill] = useState<any>(null);
   const [showChat, setShowChat] = useState<boolean>(false);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [createStep, setCreateStep] = useState(1);
+  const [createType, setCreateType] = useState('chat');
 
   const [selectedTech, setSelectedTech] = useState("全部");
   const [selectedScenario, setSelectedScenario] = useState("全部");
@@ -146,11 +149,11 @@ export default function UserPractices() {
           <p className="text-neutral-body text-[14px] mt-1 font-medium">发现、应用、或构建高效的 AI 实战场景与解决方案</p>
         </div>
         <button 
-          onClick={() => setShowChat(true)}
+          onClick={() => { setShowCreateModal(true); setCreateStep(1); }}
           className="mt-4 md:mt-0 flex items-center gap-2 bg-[#fa541c] hover:bg-[#ff7a45] text-white px-5 py-2.5 rounded-[8px] font-medium transition-all text-[14px] shadow-sm"
         >
           <Plus className="w-4 h-4" />
-          创建项目
+          创建最佳实践
         </button>
       </div>
 
@@ -1100,12 +1103,187 @@ export default function UserPractices() {
     );
   };
 
+  const renderCreateModal = () => {
+    if (!showCreateModal) return null;
+    
+    return (
+      <div className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-white rounded-[20px] shadow-2xl w-full max-w-[640px] flex flex-col max-h-[90vh] overflow-hidden relative">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-100">
+            <h2 className="text-[20px] font-bold text-neutral-900">创建最佳实践</h2>
+            <button onClick={() => setShowCreateModal(false)} className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-neutral-50/30">
+            {createStep === 1 ? (
+              <div className="flex flex-col gap-4">
+                <div 
+                  onClick={() => setCreateStep(2)}
+                  className="bg-white border border-neutral-200 rounded-2xl p-5 flex items-start gap-5 cursor-pointer hover:border-[#fa541c] hover:shadow-md transition-all group"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Plus className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1 mt-1">
+                    <h3 className="text-[17px] font-bold text-neutral-900 mb-1.5 group-hover:text-[#fa541c] transition-colors">对话创建</h3>
+                    <p className="text-[14px] text-neutral-500 leading-relaxed">根据需求从零搭建专属的智能对话、业务流程或数据处理管道</p>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-neutral-200 rounded-2xl p-5 flex items-start gap-5 cursor-pointer hover:border-[#fa541c] hover:shadow-md transition-all group">
+                  <div className="w-14 h-14 rounded-2xl bg-orange-500 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Store className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1 mt-1">
+                    <h3 className="text-[17px] font-bold text-neutral-900 mb-1.5 group-hover:text-[#fa541c] transition-colors">从模板创建</h3>
+                    <p className="text-[14px] text-neutral-500 leading-relaxed">探索并添加经过专家验证的预置最佳实践模板，即刻开启使用</p>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-neutral-200 rounded-2xl p-5 flex items-start gap-5 cursor-pointer hover:border-[#fa541c] hover:shadow-md transition-all group">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <FileCode className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1 mt-1">
+                    <h3 className="text-[17px] font-bold text-neutral-900 mb-1.5 group-hover:text-[#fa541c] transition-colors">导入配置</h3>
+                    <p className="text-[14px] text-neutral-500 leading-relaxed">快速恢复历史流程结构，或导入第三方提供的配置文件</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <button 
+                    onClick={() => setCreateStep(1)}
+                    className="flex items-center gap-1 text-[#fa541c] hover:text-[#e84a15] text-[14px] font-medium transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> 返回选择方式
+                  </button>
+                </div>
+
+                <div className="space-y-5 bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <label className="text-[13px] text-neutral-600 font-bold mb-2 flex items-center gap-1">
+                        <span className="text-red-500">*</span> 最佳实践名称
+                      </label>
+                      <input type="text" placeholder="请输入名称..." className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all" />
+                    </div>
+                    <div>
+                      <label className="text-[13px] text-neutral-600 font-bold mb-2 flex items-center gap-1">标题</label>
+                      <input type="text" placeholder="请输入标题..." className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 flex items-center gap-1">
+                      <span className="text-red-500">*</span> 业务场景
+                    </label>
+                    <input type="text" placeholder="描述适用的业务场景..." className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <label className="text-[13px] text-neutral-600 font-bold mb-2 flex items-center gap-1">分类</label>
+                      <select className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all text-neutral-600">
+                        <option value="">选择分类...</option>
+                        <option value="data">数据处理</option>
+                        <option value="model">模型训练</option>
+                        <option value="viz">可视化</option>
+                        <option value="chat">对话交互</option>
+                        <option value="code">代码开发</option>
+                        <option value="image">图像生成</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[13px] text-neutral-600 font-bold mb-2 flex items-center gap-1">难度</label>
+                      <select className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all text-neutral-600">
+                        <option value="low">初阶</option>
+                        <option value="mid">中阶</option>
+                        <option value="high">高阶</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 flex items-center gap-1">适用场景</label>
+                    <input type="text" placeholder="适用场景标签，用逗号分隔..." className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all" />
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 block">描述</label>
+                    <textarea placeholder="最佳实践的简要描述..." className="w-full h-20 px-3 py-2 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] resize-none bg-neutral-50/50 transition-all" />
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 block">详细步骤</label>
+                    <textarea placeholder="记录解决问题的方法和经验，以及详细操作步骤..." className="w-full h-24 px-3 py-2 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] resize-none bg-neutral-50/50 transition-all" />
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 block">代码示例</label>
+                    <textarea placeholder="输入代码段..." className="w-full h-24 px-3 py-2 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] resize-none bg-neutral-50/50 font-mono transition-all" />
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 block">参考资源</label>
+                    <input type="text" placeholder="相关文档链接、教程链接..." className="w-full h-10 px-3 rounded-lg border border-neutral-200 focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] outline-none text-[13px] bg-neutral-50/50 transition-all" />
+                  </div>
+
+                  <div>
+                    <label className="text-[13px] text-neutral-600 font-bold mb-2 block">附件上传</label>
+                    <div className="border border-dashed border-neutral-300 rounded-lg p-6 flex flex-col items-center justify-center bg-neutral-50/50 hover:bg-neutral-100 transition-colors cursor-pointer group">
+                      <Download className="w-6 h-6 text-neutral-400 mb-2 group-hover:text-[#fa541c] transition-colors" />
+                      <span className="text-[13px] text-neutral-600 font-medium group-hover:text-[#fa541c] transition-colors">点击或拖拽文件到此处上传</span>
+                      <span className="text-[11px] text-neutral-400 mt-1">支持 .pdf, .docx, .zip, 最大 50MB</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {createStep === 2 && (
+            <div className="p-5 border-t border-neutral-100 bg-white">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 bg-white border border-neutral-200 text-neutral-600 h-11 rounded-xl text-[14px] font-medium hover:bg-neutral-50 transition-all"
+                >
+                  保存为私有草稿
+                </button>
+                <button 
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 bg-white border border-neutral-200 text-[#fa541c] h-11 rounded-xl text-[14px] font-medium hover:bg-orange-50 transition-all"
+                >
+                  保存并申请公开
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    navigate('/practice-chat');
+                  }}
+                  className="flex-[1.2] bg-[#fa541c] hover:bg-[#e84a15] text-white h-11 rounded-xl text-[14px] font-bold shadow-md shadow-orange-500/20 hover:shadow-orange-500/40 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Bot className="w-4 h-4" /> 对话生成
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
       {view === 'list' && renderListView()}
       {view === 'detail' && renderDetailView()}
       {view === 'builder' && renderBuilderView()}
       {showChat && renderChatView()}
+      {renderCreateModal()}
     </div>
   );
 }

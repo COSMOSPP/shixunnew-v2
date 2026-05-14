@@ -1,155 +1,496 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, MonitorPlay, FolderKanban, Database, Plus, Play, Download, Search } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { 
+  ChevronRight, MonitorPlay, FolderKanban, Database, Plus, Play, Download, Search,
+  BookOpen, Clock, Bot, TrendingUp, Calendar as CalendarIcon, Target, Flame, Trash2, ArrowRight, ChevronLeft, Sparkles
+} from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell } from "recharts";
+import { cn } from "@/lib/utils";
 
 export default function MyLearning() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center text-sm text-neutral-caption mb-4">
-        <Link to="/user" className="hover:text-primary cursor-pointer transition-colors">首页</Link>
-        <ChevronRight className="w-4 h-4 mx-1" />
-        <span className="text-neutral-title font-medium">我的学习</span>
-      </div>
+  const [activeTab, setActiveTab] = useState<'learning' | 'duration' | 'ai-path'>('learning');
 
-      {/* 课程进度学习卡片 */}
+  const renderLearningTab = () => (
+    <div className="space-y-8 animation-fade-in">
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-neutral-title flex items-center gap-2">
-            <MonitorPlay className="w-5 h-5 text-primary" />
-            课程进度学习卡片
+          <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+            <MonitorPlay className="w-5 h-5 text-[#fa541c]" />
+            最近学习的课程
           </h2>
-          <Button variant="ghost" className="text-sm text-neutral-caption hover:text-primary">
-            进入全部课程 <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
+          <button className="text-sm text-neutral-500 hover:text-[#fa541c] flex items-center transition-colors">
+            进入全部课程 <ChevronRight className="w-4 h-4 ml-0.5" />
+          </button>
         </div>
         
-        <Card className="border-neutral-border shadow-sm hover:border-primary/30 transition-colors">
-          <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
-            <div className="w-48 h-32 bg-neutral-bg rounded-lg flex items-center justify-center shrink-0 object-cover overflow-hidden relative">
-              <MonitorPlay className="w-12 h-12 text-neutral-caption" />
-              <div className="absolute inset-0 bg-black/5 flex items-center justify-center group-hover:bg-black/20 transition-all cursor-pointer">
-                <Play className="w-10 h-10 text-white opacity-80" />
+        <div className="border border-neutral-200 rounded-2xl shadow-sm hover:border-orange-200 transition-colors bg-white">
+          <div className="p-6 flex flex-col md:flex-row items-center gap-6">
+            <div className="w-48 h-32 bg-orange-50 rounded-xl flex items-center justify-center shrink-0 object-cover overflow-hidden relative group">
+              <MonitorPlay className="w-10 h-10 text-orange-200" />
+              <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[2px]">
+                <Play className="w-10 h-10 text-white opacity-90" />
               </div>
             </div>
             <div className="flex-1 space-y-4 w-full">
               <div>
-                <h3 className="text-lg font-bold text-neutral-title">Python高级数据处理与可视化</h3>
-                <p className="text-sm text-neutral-body mt-1">正在学习：第4章 复杂数据清洗与异常处理 - 小节 4.2</p>
+                <h3 className="text-lg font-bold text-neutral-900">Python高级数据处理与可视化</h3>
+                <p className="text-sm text-neutral-500 mt-1">正在学习：第4章 复杂数据清洗与异常处理 - 小节 4.2</p>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-neutral-caption">课程总进度</span>
-                  <span className="text-primary font-medium">65%</span>
+                  <span className="text-neutral-500">课程总进度</span>
+                  <span className="text-[#fa541c] font-bold">65%</span>
                 </div>
-                <div className="w-full h-2 bg-neutral-bg rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: '65%' }} />
+                <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#fa541c] rounded-full transition-all" style={{ width: '65%' }} />
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <Button className="bg-primary hover:bg-primary-hover text-white flex-1 md:flex-none">继续学习</Button>
-                <Button variant="outline" className="flex-1 md:flex-none">查看课程详情</Button>
+                <button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                  继续学习
+                </button>
+                <button className="bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-600 px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                  查看课程详情
+                </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
 
-      {/* 我的工作台 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between mt-8">
-          <h2 className="text-lg font-bold text-neutral-title flex items-center gap-2">
+          <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
             <FolderKanban className="w-5 h-5 text-indigo-500" />
             我的工作台
           </h2>
-          <Button variant="ghost" className="text-sm text-neutral-caption hover:text-indigo-500">
-            进入个人工作台 <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 项目列表 */}
-          <Card className="border-neutral-border shadow-sm flex flex-col h-[500px]">
-            <CardHeader className="pb-3 border-b border-neutral-border flex flex-row items-center justify-between shrink-0">
-              <CardTitle className="text-base font-bold text-neutral-title">项目 (2)</CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-caption" />
-                  <input type="text" placeholder="搜索项目" className="h-8 pl-9 pr-3 text-sm border border-neutral-border rounded-md bg-neutral-bg" />
-                </div>
-                <Button size="sm" variant="outline" className="h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50"><Plus className="w-4 h-4 mr-1" /> 新建项目</Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 flex-1 overflow-y-auto space-y-4">
+          <div className="border border-neutral-200 rounded-2xl shadow-sm flex flex-col h-[400px] bg-white">
+            <div className="p-4 border-b border-neutral-100 flex items-center justify-between shrink-0">
+              <span className="text-base font-bold text-neutral-900">项目 (2)</span>
+            </div>
+            <div className="p-4 flex-1 overflow-y-auto space-y-4 custom-scrollbar">
               {[1, 2].map((i) => (
-                <div key={i} className="flex gap-4 p-4 border border-neutral-border rounded-lg hover:border-indigo-300 transition-colors bg-white">
-                  <div className="w-20 h-20 bg-indigo-50 rounded-md border border-indigo-100 flex items-center justify-center shrink-0">
-                    <FolderKanban className="w-8 h-8 text-indigo-300" />
+                <div key={i} className="flex gap-4 p-4 border border-neutral-100 rounded-xl hover:border-indigo-200 transition-colors bg-neutral-50/50">
+                  <div className="w-16 h-16 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center justify-center shrink-0">
+                    <FolderKanban className="w-6 h-6 text-indigo-300" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between space-y-2">
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-bold text-neutral-title truncate text-[15px]">电商用户行为预测</h4>
-                      </div>
-                      <p className="text-xs text-neutral-body line-clamp-2">默认描述：使用深度学习模型预测用户购买转化率的实战开发项目。</p>
+                      <h4 className="font-bold text-neutral-900 truncate text-[14px]">电商用户行为预测</h4>
+                      <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">使用深度学习模型预测用户购买转化率的实战开发项目。</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-neutral-bg text-neutral-body text-[10px] rounded-[4px]">分类模型</span>
-                        <span className="text-[10px] text-neutral-caption ml-2">2小时前更新</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" className="h-6 text-xs text-indigo-600 hover:bg-indigo-50 px-2 border border-indigo-100">开始开发</Button>
-                      </div>
+                      <span className="px-2 py-0.5 bg-white border border-neutral-200 text-neutral-500 text-[10px] rounded-md">分类模型</span>
+                      <button className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">开始开发</button>
                     </div>
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* 数据集列表 */}
-          <Card className="border-neutral-border shadow-sm flex flex-col h-[500px]">
-            <CardHeader className="pb-3 border-b border-neutral-border flex flex-row items-center justify-between shrink-0">
-              <CardTitle className="text-base font-bold text-neutral-title">数据集 (3)</CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-caption" />
-                  <input type="text" placeholder="搜索数据集" className="h-8 pl-9 pr-3 text-sm border border-neutral-border rounded-md bg-neutral-bg" />
-                </div>
-                <Button size="sm" variant="outline" className="h-8 border-blue-200 text-blue-600 hover:bg-blue-50"><Plus className="w-4 h-4 mr-1" /> 新建数据集</Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 flex-1 overflow-y-auto space-y-4">
+          <div className="border border-neutral-200 rounded-2xl shadow-sm flex flex-col h-[400px] bg-white">
+            <div className="p-4 border-b border-neutral-100 flex items-center justify-between shrink-0">
+              <span className="text-base font-bold text-neutral-900">数据集 (3)</span>
+            </div>
+            <div className="p-4 flex-1 overflow-y-auto space-y-4 custom-scrollbar">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4 p-4 border border-neutral-border rounded-lg hover:border-blue-300 transition-colors bg-white">
-                  <div className="w-20 h-20 bg-blue-50 rounded-md border border-blue-100 flex items-center justify-center shrink-0">
-                    <Database className="w-8 h-8 text-blue-300" />
+                <div key={i} className="flex gap-4 p-4 border border-neutral-100 rounded-xl hover:border-blue-200 transition-colors bg-neutral-50/50">
+                  <div className="w-16 h-16 bg-blue-50 rounded-xl border border-blue-100 flex items-center justify-center shrink-0">
+                    <Database className="w-6 h-6 text-blue-300" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between space-y-2">
                     <div>
-                      <h4 className="font-bold text-neutral-title truncate text-[15px] mb-1">淘宝用户行为日志 2025</h4>
-                      <p className="text-xs text-neutral-body line-clamp-2">包含数百万用户浏览、加购、购买数据的结构化特征表。</p>
+                      <h4 className="font-bold text-neutral-900 truncate text-[14px]">淘宝用户行为日志 2025</h4>
+                      <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">包含数百万用户浏览、加购、购买数据的结构化特征表。</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-neutral-caption">更新于昨天</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-neutral-caption hover:text-blue-600 hover:bg-blue-50" title="下载">
-                          <Download className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-6 text-xs text-neutral-caption hover:text-blue-600 hover:bg-blue-50 px-2 border border-neutral-border">添加到项目</Button>
-                      </div>
+                      <span className="text-[10px] text-neutral-400">更新于昨天</span>
+                      <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">查看详情</button>
                     </div>
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </section>
+    </div>
+  );
+
+  const [trendRange, setTrendRange] = useState<'week' | 'month'>('week');
+
+  const monthData = React.useMemo(() => Array.from({ length: 30 }).map((_, i) => {
+    const val = 2 + Math.sin(i / 3) * 1.5 + Math.random() * 1.5;
+    return { name: `4/${i + 1}`, hours: Number(val.toFixed(1)) };
+  }), []);
+
+  const renderDurationTab = () => {
+    const weekData = [
+      { name: '05-01', hours: 2.5 },
+      { name: '05-02', hours: 4.0 },
+      { name: '05-03', hours: 3.2 },
+      { name: '05-04', hours: 5.1 },
+      { name: '05-05', hours: 2.8 },
+      { name: '05-06', hours: 4.5 },
+      { name: '05-07', hours: 3.5 },
+    ];
+
+    const calendarDays = [];
+    for (let i = 0; i < 5; i++) calendarDays.push(null);
+    for (let i = 1; i <= 31; i++) {
+      let status = 'future';
+      if (i < 10) status = 'missed';
+      if (i === 11 || i === 12) status = 'makeup';
+      if (i >= 13 && i <= 31) status = 'done';
+      if (i === 13) status = 'today-done';
+      if (i === 14) status = 'tomorrow';
+      calendarDays.push({ date: i, status });
+    }
+
+    return (
+      <div className="flex gap-6 h-full animation-fade-in items-start overflow-hidden">
+        {/* Left Column */}
+        <div className="flex-1 flex flex-col gap-6 overflow-y-auto custom-scrollbar pr-2 h-full pb-6">
+          {/* Overview Cards */}
+          <div className="grid grid-cols-4 gap-4 shrink-0">
+            <div className="bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm hover:border-orange-200 transition-colors">
+              <div className="text-[13px] font-bold text-neutral-500 mb-2 flex items-center justify-between">
+                今日学习 <Clock className="w-4 h-4 text-orange-400" />
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-neutral-900 tracking-tight">2.5</span>
+                <span className="text-xs text-neutral-500 font-medium">小时</span>
+              </div>
+            </div>
+            <div className="bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm hover:border-orange-200 transition-colors">
+              <div className="text-[13px] font-bold text-neutral-500 mb-2 flex items-center justify-between">
+                本周学习 <CalendarIcon className="w-4 h-4 text-orange-400" />
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-neutral-900 tracking-tight">12.8</span>
+                <span className="text-xs text-neutral-500 font-medium">小时</span>
+              </div>
+            </div>
+            <div className="bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm hover:border-orange-200 transition-colors">
+              <div className="text-[13px] font-bold text-neutral-500 mb-2 flex items-center justify-between">
+                本月学习 <TrendingUp className="w-4 h-4 text-orange-400" />
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-neutral-900 tracking-tight">45.2</span>
+                <span className="text-xs text-neutral-500 font-medium">小时</span>
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-[#fa541c] to-[#ff7a45] rounded-2xl p-5 shadow-md shadow-orange-500/20 text-white relative overflow-hidden group">
+              <div className="absolute right-0 bottom-0 opacity-10 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500">
+                <Clock className="w-24 h-24 -mr-4 -mb-4" />
+              </div>
+              <div className="text-[13px] font-bold text-orange-100 mb-2 relative z-10 flex items-center justify-between">
+                累计学习时长
+              </div>
+              <div className="flex items-baseline gap-1 relative z-10 mt-1">
+                <span className="text-3xl font-black tracking-tight">328</span>
+                <span className="text-xs text-orange-100 font-medium">小时</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Trend Chart */}
+          <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm shrink-0 flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-base font-bold text-neutral-900">学习趋势</h3>
+              <div className="flex bg-neutral-100 p-1 rounded-lg">
+                <button 
+                  onClick={() => setTrendRange('week')}
+                  className={cn("px-4 py-1.5 text-[13px] font-bold rounded-md transition-all", trendRange === 'week' ? "bg-white text-[#fa541c] shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
+                >
+                  近一周
+                </button>
+                <button 
+                  onClick={() => setTrendRange('month')}
+                  className={cn("px-4 py-1.5 text-[13px] font-bold rounded-md transition-all", trendRange === 'month' ? "bg-white text-[#fa541c] shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
+                >
+                  近一月
+                </button>
+              </div>
+            </div>
+            
+            <div className="h-[280px] w-full">
+              {trendRange === 'week' ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weekData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
+                    <RechartsTooltip 
+                      cursor={{ fill: '#fff2e8' }}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '13px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#fa541c' }}
+                    />
+                    <Bar dataKey="hours" name="学习时长(小时)" radius={[6, 6, 0, 0]} maxBarSize={40}>
+                      {weekData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === weekData.length - 1 ? '#fa541c' : '#ffc0a9'} className="transition-all duration-300 hover:opacity-80" />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} dy={10} minTickGap={20} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
+                    <RechartsTooltip 
+                      cursor={{ stroke: '#fa541c', strokeWidth: 1, strokeDasharray: '4 4' }}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '13px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#fa541c' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="hours" 
+                      name="学习时长(小时)" 
+                      stroke="#fa541c" 
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 6, fill: '#fa541c', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* Reminders & Streak - Rich Glassmorphism Design */}
+          <div className="grid grid-cols-2 gap-4 shrink-0">
+            <div className="relative overflow-hidden rounded-2xl p-6 shadow-sm border border-orange-100/60 bg-gradient-to-br from-white/90 to-orange-50/50 backdrop-blur-xl flex items-center gap-6 hover:shadow-md transition-all group">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-orange-300/30 to-transparent rounded-full blur-2xl"></div>
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-white rounded-2xl flex items-center justify-center shrink-0 shadow-inner border border-white relative z-10">
+                <Target className="w-8 h-8 text-[#fa541c]" />
+              </div>
+              <div className="flex-1 relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-[16px] font-extrabold text-neutral-800 tracking-wide">每日学习目标</h4>
+                  <div className="flex items-baseline gap-1 bg-white/60 px-2 py-1 rounded-lg border border-white shadow-sm">
+                    <span className="text-[14px] font-black text-[#fa541c]">2.5</span>
+                    <span className="text-[12px] text-neutral-500 font-bold">/ 3.0h</span>
+                  </div>
+                </div>
+                <div className="w-full bg-orange-100/50 rounded-full h-2.5 mb-2.5 shadow-inner overflow-hidden border border-orange-200/30">
+                  <div className="bg-gradient-to-r from-orange-400 to-[#fa541c] h-full rounded-full transition-all duration-1000 relative" style={{ width: '83%' }}>
+                    <div className="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+                  </div>
+                </div>
+                <span className="text-[11px] text-orange-600 font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> 还差半小时，继续加油！
+                </span>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl p-6 shadow-sm border border-red-100/60 bg-gradient-to-br from-white/90 to-red-50/50 backdrop-blur-xl flex items-center gap-6 hover:shadow-md transition-all group">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-red-300/30 to-transparent rounded-full blur-2xl"></div>
+              <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-white rounded-2xl flex items-center justify-center shrink-0 shadow-inner border border-white relative z-10">
+                <Flame className="w-8 h-8 text-red-500" />
+              </div>
+              <div className="flex-1 relative z-10">
+                <h4 className="text-[16px] font-extrabold text-neutral-800 mb-1 tracking-wide">连续学习打卡</h4>
+                <div className="flex items-end gap-2 mb-2">
+                  <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-500 to-orange-600 leading-none drop-shadow-sm">12</span>
+                  <span className="text-sm text-red-800/60 font-bold mb-1">天</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-white/50 w-max px-2.5 py-1.5 rounded-md border border-white shadow-sm">
+                  <TrendingUp className="w-3.5 h-3.5 text-red-500" />
+                  <span className="text-[11px] text-red-600 font-bold">超过了 85% 的同学，保持势头！</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Calendar */}
+        <div className="w-[340px] shrink-0 bg-white rounded-2xl shadow-sm border border-neutral-200 h-full flex flex-col overflow-hidden">
+          <div className="bg-gradient-to-br from-orange-50/60 to-white p-5 flex flex-col items-center flex-1 overflow-y-auto custom-scrollbar">
+            <div className="w-full flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-[#fa541c]">
+                  <CalendarIcon className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-[17px] text-neutral-900 tracking-wide">打卡日历</span>
+              </div>
+              <div className="flex items-center bg-[#fa541c] text-white rounded-full px-1.5 py-1.5 shadow-md shadow-orange-500/20">
+                <button className="p-0.5 hover:bg-white/20 rounded-full transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+                <span className="text-[12px] font-bold px-2 tracking-wider">2026年05月</span>
+                <button className="p-0.5 hover:bg-white/20 rounded-full transition-colors"><ChevronRight className="w-4 h-4" /></button>
+              </div>
+            </div>
+
+            <div className="w-full grid grid-cols-7 gap-y-5 gap-x-2 text-center pb-4">
+              {['日', '一', '二', '三', '四', '五', '六'].map(d => (
+                <div key={d} className="text-[12px] font-bold text-neutral-500 mb-2">{d}</div>
+              ))}
+              
+              {calendarDays.map((day, i) => {
+                if (!day) return <div key={`empty-${i}`} />;
+                
+                return (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    {day.status === 'done' || day.status === 'today-done' || day.status === 'tomorrow' ? (
+                      <div className={cn(
+                        "w-9 h-9 rounded-[10px] flex flex-col items-center justify-center relative cursor-pointer hover:scale-105 transition-transform",
+                        day.status === 'today-done' 
+                          ? "bg-white border-2 border-[#fa541c] shadow-sm" 
+                          : "bg-[#fff8eb] border border-[#ffe0ad]"
+                      )}>
+                        <span className="text-[10px] font-black text-orange-500 leading-none mt-1">+3</span>
+                        <div className="w-[14px] h-[14px] rounded-full bg-[#ffd43b] flex items-center justify-center mt-0.5 shadow-sm">
+                          <div className="w-2 h-2 rounded-full border-[1.5px] border-orange-500/80"></div>
+                        </div>
+                      </div>
+                    ) : day.status === 'missed' ? (
+                      <div className="w-9 h-9 rounded-[10px] flex flex-col items-center justify-center bg-[#f4f5f7] border border-neutral-200 cursor-pointer hover:bg-neutral-200 transition-colors">
+                        <span className="text-[9px] text-neutral-400 font-bold scale-90">未打卡</span>
+                      </div>
+                    ) : day.status === 'makeup' ? (
+                      <div className="w-9 h-9 rounded-[10px] flex flex-col items-center justify-center bg-orange-50 border border-orange-200 cursor-pointer hover:bg-orange-100 transition-colors">
+                        <span className="text-[9px] text-[#fa541c] font-bold scale-90">补卡</span>
+                      </div>
+                    ) : null}
+                    
+                    <span className={cn(
+                      "text-[10px] font-bold",
+                      day.status === 'today-done' ? "text-[#fa541c]" : "text-neutral-400"
+                    )}>
+                      {day.status === 'today-done' ? '今天' : day.status === 'tomorrow' ? '明天' : day.date}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAIPathTab = () => {
+    const paths = [
+      { id: 1, title: 'AI数据分析师成长路线', progress: 45, currentCourse: 'Pandas进阶数据清洗', totalCourses: 12, completedCourses: 5 },
+      { id: 2, title: '大语言模型微调实战', progress: 80, currentCourse: 'RLHF原理与实践', totalCourses: 8, completedCourses: 6 },
+      { id: 3, title: '计算机视觉工程师', progress: 15, currentCourse: 'CNN网络结构解析', totalCourses: 15, completedCourses: 2 },
+    ];
+
+    return (
+      <div className="space-y-6 animation-fade-in">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-bold text-neutral-900">AI学习路径记录</h2>
+          <button className="text-sm text-neutral-400 hover:text-red-500 flex items-center transition-colors">
+            <Trash2 className="w-4 h-4 mr-1" /> 清除历史记录
+          </button>
+        </div>
+
+        <div className="grid gap-4">
+          {paths.map(path => (
+            <div key={path.id} className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm hover:border-orange-200 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex items-start gap-4 flex-1 w-full">
+                <div className="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center shrink-0 border border-orange-100">
+                  <Bot className="w-7 h-7 text-[#fa541c]" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-[16px] font-bold text-neutral-900">{path.title}</h3>
+                    <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[11px] rounded-md font-medium">
+                      {path.completedCourses} / {path.totalCourses} 课程
+                    </span>
+                  </div>
+                  <p className="text-[13px] text-neutral-500 mb-3">当前学习: <span className="text-neutral-700 font-medium">{path.currentCourse}</span></p>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 h-2 bg-neutral-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-orange-400 to-[#fa541c] rounded-full" style={{ width: `${path.progress}%` }} />
+                    </div>
+                    <span className="text-[13px] font-bold text-[#fa541c] w-10">{path.progress}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+                <button className="flex-1 md:flex-none bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-600 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
+                  查看详情
+                </button>
+                <button className="flex-1 md:flex-none bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5">
+                  <Play className="w-4 h-4 fill-white" /> 继续学习
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex h-full w-full bg-white overflow-hidden shadow-sm font-sans">
+      {/* Left Sidebar */}
+      <div className="w-[200px] border-r border-neutral-200 flex-shrink-0 flex flex-col bg-white">
+        <div className="p-5 border-b border-neutral-200">
+          <h2 className="text-lg font-semibold text-neutral-900">学习中心</h2>
+        </div>
+        <nav className="flex-1 p-4 space-y-1">
+          <button 
+            onClick={() => setActiveTab('learning')}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-colors text-left",
+              activeTab === 'learning' 
+                ? "bg-[#fff2e8] text-[#fa541c]" 
+                : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+            )}
+          >
+            <BookOpen className="w-5 h-5" />
+            我的学习
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('duration')}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-colors text-left",
+              activeTab === 'duration' 
+                ? "bg-[#fff2e8] text-[#fa541c]" 
+                : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+            )}
+          >
+            <Clock className="w-5 h-5" />
+            学习时长
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('ai-path')}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-colors text-left",
+              activeTab === 'ai-path' 
+                ? "bg-[#fff2e8] text-[#fa541c]" 
+                : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+            )}
+          >
+            <Bot className="w-5 h-5" />
+            AI学习路径记录
+          </button>
+        </nav>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-6">
+        <div className="flex items-center text-sm text-neutral-500 mb-6 shrink-0">
+          <Link to="/user" className="hover:text-[#fa541c] transition-colors">首页</Link>
+          <ChevronRight className="w-4 h-4 mx-1" />
+          <span className="text-neutral-900 font-bold">我的学习</span>
+        </div>
+        
+        {activeTab === 'learning' && renderLearningTab()}
+        {activeTab === 'duration' && renderDurationTab()}
+        {activeTab === 'ai-path' && renderAIPathTab()}
+      </div>
     </div>
   );
 }
