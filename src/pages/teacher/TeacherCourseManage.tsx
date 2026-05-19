@@ -4,11 +4,12 @@ import {
   ArrowLeft, BarChart2, BookOpen, Users, 
   Download, Plus, Search, FileText, CheckCircle, 
   Clock, MoreVertical, Settings, BarChart, Copy,
-  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar
+  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import CourseDetail from '@/components/CourseDetail';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart as BarChartRecharts, Bar } from 'recharts';
 
 const COURSE_SYLLABUS = [
   {
@@ -36,16 +37,46 @@ const COURSE_SYLLABUS = [
   }
 ];
 
+const activityData = [
+  { day: '周一', active: 420 },
+  { day: '周二', active: 580 },
+  { day: '周三', active: 510 },
+  { day: '周四', active: 680 },
+  { day: '周五', active: 850 },
+  { day: '周六', active: 1020 },
+  { day: '周日', active: 940 },
+];
+
+const scoreData = [
+  { range: '<60', count: 12 },
+  { range: '60-70', count: 35 },
+  { range: '70-80', count: 85 },
+  { range: '80-90', count: 120 },
+  { range: '90-100', count: 48 },
+];
+
 export default function TeacherCourseManage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('editor');
   const [showCourseDetail, setShowCourseDetail] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{title: string, type: string} | null>(null);
+  const [showGrading, setShowGrading] = useState(false);
+  const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+  const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+  const [showScoringRulesModal, setShowScoringRulesModal] = useState(false);
+  const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
+  const [addMenuOpenIndex, setAddMenuOpenIndex] = useState<number | null>(null);
+  const [showTeachingMaterialModal, setShowTeachingMaterialModal] = useState(false);
+  const [showExperimentMaterialModal, setShowExperimentMaterialModal] = useState(false);
+  const [showInteractiveMaterialModal, setShowInteractiveMaterialModal] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [selectedExperimentIndex, setSelectedExperimentIndex] = useState<number | null>(null);
+  const [isSearchingExperiment, setIsSearchingExperiment] = useState(false);
 
   const tabs = [
     { id: 'editor', label: '课程章节', icon: BookOpen },
-    { id: 'assignments', label: '作业考试', icon: FileText },
+    { id: 'assignments', label: '作业配置', icon: FileText },
     { id: 'members', label: '成员管理', icon: Users },
     { id: 'analytics', label: '学情数据', icon: BarChart2 },
     { id: 'settings', label: '课程设置', icon: Settings },
@@ -153,8 +184,8 @@ export default function TeacherCourseManage() {
                        <button className="pb-4 text-[15px] font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent relative bottom-[-1px]">课程作业</button>
                      </div>
                      <div className="flex items-center gap-4 pb-3">
-                       <Button variant="outline" size="sm" className="h-8 text-[#fa541c] border-[#fa541c] hover:bg-[#fff2e8] rounded flex items-center gap-1.5">
-                         <PlusCircle className="w-3.5 h-3.5" /> 新建章
+                       <Button variant="outline" size="sm" onClick={() => setShowCreateLessonModal(true)} className="h-8 text-[#fa541c] border-[#fa541c] bg-transparent hover:bg-[#fa541c] hover:text-white rounded flex items-center gap-1.5 transition-colors">
+                         <PlusCircle className="w-3.5 h-3.5" /> 新建课节
                        </Button>
                        <button className="text-sm text-[#fa541c] flex items-center gap-1 hover:opacity-80">
                          展开 <ChevronDown className="w-4 h-4" />
@@ -171,7 +202,35 @@ export default function TeacherCourseManage() {
                             <h3 className="text-lg font-bold text-neutral-title">{chapter.chapter} {chapter.title}</h3>
                           </div>
                           <div className="flex items-center gap-3 text-neutral-400">
-                            <PlusCircle className="w-5 h-5 cursor-pointer hover:text-[#fa541c] transition-colors" />
+                            <div className="relative">
+                              <PlusCircle 
+                                className="w-5 h-5 cursor-pointer hover:text-[#fa541c] transition-colors" 
+                                onClick={() => setAddMenuOpenIndex(addMenuOpenIndex === i ? null : i)}
+                              />
+                              {addMenuOpenIndex === i && (
+                                <>
+                                  <div className="fixed inset-0 z-40" onClick={() => setAddMenuOpenIndex(null)}></div>
+                                  <div className="absolute right-0 top-8 w-64 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up">
+                                    {[
+                                      { title: '教学课件', desc: '支持图文、PPT 文档、视频等', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', action: () => {setShowTeachingMaterialModal(true); setAddMenuOpenIndex(null);} },
+                                      { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', action: () => {setShowExperimentMaterialModal(true); setAddMenuOpenIndex(null);} },
+                                      { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', action: () => {setShowInteractiveMaterialModal(true); setAddMenuOpenIndex(null);} },
+                                      { title: '随堂作业', desc: '章节测验，客观题、编程题等', icon: CheckSquare, color: 'text-rose-500', bg: 'bg-rose-50', action: () => {setShowAssignmentModal(true); setAddMenuOpenIndex(null);} }
+                                    ].map((item, idx) => (
+                                      <div key={idx} onClick={item.action} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-neutral-50 cursor-pointer transition-colors group">
+                                        <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", item.bg, item.color)}>
+                                          <item.icon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                          <div className="text-[14px] font-bold text-neutral-800 mb-0.5 group-hover:text-[#fa541c] transition-colors">{item.title}</div>
+                                          <div className="text-[11px] text-neutral-400">{item.desc}</div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                            </div>
                             <MoreVertical className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" />
                             <ChevronDown className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" />
                           </div>
@@ -211,38 +270,228 @@ export default function TeacherCourseManage() {
                 </div>
               )}
 
-              {/* 2. 作业考试 (Assignments) */}
+              {/* 2. 作业配置 (Assignments) */}
               {activeTab === 'assignments' && (
-                <div className="p-6 animate-in fade-in duration-500">
-                  <div className="flex justify-between items-center mb-8 border-b border-neutral-border pb-4">
-                    <h2 className="text-xl font-bold text-neutral-title">作业考试管理</h2>
-                    <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded shadow-sm">
-                      <Plus className="w-4 h-4 mr-1.5" /> 发布新任务
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-lg border border-neutral-200 hover:border-[#fa541c]/40 hover:shadow-sm transition-all bg-neutral-50/30">
-                        <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center mt-0.5 shadow-sm">
-                            <FileText className="w-5 h-5" />
+                <div className="p-6 lg:p-8 animate-in fade-in duration-500 bg-neutral-50/30 rounded-b-[24px]">
+                  {!showGrading ? (
+                    <>
+                      <div className="flex justify-between items-center mb-8 border-b border-neutral-100 pb-5">
+                        <div>
+                          <h2 className="text-xl font-black text-neutral-900 flex items-center gap-2">
+                            <FileText className="w-6 h-6 text-[#fa541c]" /> 作业任务配置与批阅
+                          </h2>
+                          <p className="text-[13px] text-neutral-500 mt-1">管理课程测验与作业，设置规则并进行在线批阅打分。</p>
+                        </div>
+                        <Button onClick={() => setShowCreateTaskModal(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
+                          <Plus className="w-4 h-4 mr-2" /> 创建作业任务
+                        </Button>
+                      </div>
+
+                      {/* 统计概览 Cards */}
+                      <div className="grid grid-cols-4 gap-6 mb-8">
+                        {[
+                          { label: '平均提交率', value: '85.2%', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                          { label: '全局平均分', value: '88.5', icon: BarChart, color: 'text-blue-500', bg: 'bg-blue-50' },
+                          { label: '待批改总数', value: '27', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-50' },
+                          { label: '延期申请', value: '3', icon: Paperclip, color: 'text-purple-500', bg: 'bg-purple-50' },
+                        ].map((stat, i) => (
+                          <div key={i} className="p-5 rounded-2xl border border-neutral-200 bg-white shadow-sm flex items-center gap-4 hover:shadow-md hover:border-orange-200 transition-all">
+                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
+                              <stat.icon className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <div className="text-[12px] text-neutral-500 font-bold mb-0.5">{stat.label}</div>
+                              <div className="text-xl font-black text-neutral-900 leading-tight">{stat.value}</div>
+                            </div>
                           </div>
+                        ))}
+                      </div>
+
+                      {/* Task List */}
+                      <div className="space-y-5">
+                        {[
+                          { title: '模块 1 综合测验：Python 基础', deadline: '2026-05-20', submitCount: 45, totalCount: 50, avgScore: 88.5, toGrade: 12, rejected: 2 },
+                          { title: '模块 2 实战作业：爬虫数据分析', deadline: '2026-06-05', submitCount: 15, totalCount: 50, avgScore: '-', toGrade: 15, rejected: 0 },
+                        ].map((task, i) => (
+                          <div key={i} className="bg-white border border-neutral-200 rounded-2xl p-6 hover:border-orange-200 hover:shadow-md transition-all group">
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                  <div className="flex items-center gap-3 mb-2">
+                                      <h3 className="text-[16px] font-bold text-neutral-900 group-hover:text-[#fa541c] transition-colors">{task.title}</h3>
+                                      <span className="px-2 py-0.5 bg-orange-50 text-[#fa541c] text-[11px] font-bold rounded border border-orange-100">满分: 100</span>
+                                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 text-[11px] font-bold rounded border border-neutral-200">限交 2 次</span>
+                                  </div>
+                                  <div className="flex items-center gap-5 text-[13px] text-neutral-500">
+                                      <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 截止: {task.deadline}</span>
+                                      <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-500" /> 提交率: {task.submitCount}/{task.totalCount} ({Math.round(task.submitCount/task.totalCount*100)}%)</span>
+                                      <span className="flex items-center gap-1.5"><BarChart className="w-4 h-4 text-blue-500" /> 平均分: {task.avgScore}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button onClick={() => setShowScoringRulesModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3">
+                                      <Settings className="w-3.5 h-3.5 mr-1.5"/> 评分规则
+                                  </Button>
+                                  <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3">
+                                      <Edit className="w-3.5 h-3.5 mr-1.5"/> 编辑
+                                  </Button>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-neutral-50/80 rounded-xl p-5 border border-neutral-100 flex items-center justify-between">
+                                <div className="flex gap-8">
+                                  <div className="flex flex-col">
+                                    <span className="text-[12px] text-neutral-500 mb-1 font-medium">待批改</span>
+                                    <span className="text-[20px] font-black text-[#fa541c]">{task.toGrade}</span>
+                                  </div>
+                                  <div className="w-px h-10 bg-neutral-200"></div>
+                                  <div className="flex flex-col">
+                                    <span className="text-[12px] text-neutral-500 mb-1 font-medium">已打回重做</span>
+                                    <span className="text-[20px] font-black text-red-500">{task.rejected}</span>
+                                  </div>
+                                  <div className="w-px h-10 bg-neutral-200"></div>
+                                  <div className="flex flex-col">
+                                    <span className="text-[12px] text-neutral-500 mb-1 font-medium">已批改完成</span>
+                                    <span className="text-[20px] font-black text-emerald-600">{task.submitCount - task.toGrade - task.rejected}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  {task.toGrade > 0 && (
+                                    <Button onClick={() => setShowGrading(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-orange-500/20 text-[13px] h-9 px-6 font-bold">
+                                        进入批阅模式 <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                  )}
+                                  {task.toGrade === 0 && (
+                                    <Button variant="outline" onClick={() => setShowGrading(true)} className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 text-[13px] h-9 px-6 font-bold">
+                                        查看批阅记录
+                                    </Button>
+                                  )}
+                                </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    /* 批阅模式 (Grading Dashboard) */
+                    <div className="flex flex-col h-full animation-slide-up">
+                      <div className="flex items-center justify-between mb-6 pb-5 border-b border-neutral-100">
+                        <div className="flex items-center gap-4">
+                          <button onClick={() => setShowGrading(false)} className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-[#fa541c] transition-colors">
+                            <ArrowLeft className="w-5 h-5" />
+                          </button>
                           <div>
-                            <h4 className="font-bold text-neutral-title text-base">模块 {i} 综合测验</h4>
-                            <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-neutral-500">
-                              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 截止: 2026-05-20</span>
-                              <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 text-green-500" /> 已交: 45/50</span>
-                              <span className="flex items-center gap-1"><BarChart className="w-3.5 h-3.5 text-blue-500" /> 均分: 88.5</span>
+                            <h2 className="text-[18px] font-black text-neutral-900 tracking-tight">模块 1 综合测验：Python 基础</h2>
+                            <p className="text-[12px] text-neutral-500 font-medium">共 50 人 · 已交 45 人 · 待批改 12 人</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Button variant="outline" className="border-orange-200 text-[#fa541c] bg-orange-50 h-9 font-bold text-[13px]">
+                            处理延期申请 (3)
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-1 gap-6 min-h-[600px]">
+                        {/* Left: Student List */}
+                        <div className="w-[280px] bg-white rounded-2xl border border-neutral-200 shadow-sm flex flex-col overflow-hidden shrink-0">
+                          <div className="flex items-center p-2 border-b border-neutral-100 bg-neutral-50 text-[13px] font-bold text-neutral-500">
+                            <button className="flex-1 py-1.5 text-center bg-white rounded shadow-sm text-[#fa541c]">待批改(12)</button>
+                            <button className="flex-1 py-1.5 text-center hover:text-neutral-700 transition-colors">已批改(31)</button>
+                            <button className="flex-1 py-1.5 text-center hover:text-neutral-700 transition-colors">已打回(2)</button>
+                          </div>
+                          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+                            {['刘晓明', '张伟', '陈静', '王芳'].map((name, i) => (
+                              <div key={i} className={cn("p-3 rounded-xl cursor-pointer transition-colors border", i === 0 ? "bg-orange-50/50 border-[#fa541c]/30" : "border-transparent hover:bg-neutral-50")}>
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className={cn("text-[14px] font-bold", i === 0 ? "text-[#fa541c]" : "text-neutral-800")}>{name}</span>
+                                  <span className="text-[11px] text-neutral-400">10分钟前提交</span>
+                                </div>
+                                <div className="text-[12px] text-neutral-500">学号: 2026{1000+i}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Right: Grading Area */}
+                        <div className="flex-1 flex flex-col gap-6">
+                          {/* Submission Content */}
+                          <div className="flex-1 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 overflow-y-auto custom-scrollbar relative">
+                            <div className="absolute top-4 right-4 flex gap-2">
+                              <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[12px] font-bold border border-blue-100 flex items-center gap-1.5">
+                                <Code className="w-3.5 h-3.5" /> 代码查重率: 5% (安全)
+                              </span>
+                            </div>
+                            <h3 className="text-[16px] font-bold text-neutral-900 mb-4 pb-4 border-b border-neutral-100">学生解答与附件</h3>
+                            
+                            <div className="space-y-4">
+                              <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl">
+                                <h4 className="text-[13px] font-bold text-neutral-700 mb-2">代码文件</h4>
+                                <div className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-lg max-w-sm">
+                                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                                    <Code className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <div className="text-[14px] font-bold text-neutral-800 hover:text-[#fa541c] cursor-pointer">spider_main.py</div>
+                                    <div className="text-[12px] text-neutral-400">2.4 KB</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl relative group">
+                                <h4 className="text-[13px] font-bold text-neutral-700 mb-2">在线解答</h4>
+                                <div className="bg-white p-4 border border-neutral-200 rounded-lg text-[14px] text-neutral-700 font-mono leading-relaxed">
+                                  # 核心解析代码实现<br/>
+                                  def parse_page(html):<br/>
+                                  &nbsp;&nbsp;&nbsp;&nbsp;soup = BeautifulSoup(html, 'lxml')<br/>
+                                  &nbsp;&nbsp;&nbsp;&nbsp;items = soup.find_all('div', class_='item')<br/>
+                                  <span className="bg-orange-100 border-b-2 border-[#fa541c] cursor-pointer" title="点击添加批注">&nbsp;&nbsp;&nbsp;&nbsp;# 老师批注：这里没有考虑反爬虫策略，建议加入随机 User-Agent</span><br/>
+                                  &nbsp;&nbsp;&nbsp;&nbsp;...
+                                </div>
+                                <div className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button variant="outline" size="sm" className="h-8 text-[12px] bg-white shadow-sm"><Edit className="w-3.5 h-3.5 mr-1" /> 添加在线批注</Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Scoring & Action Area */}
+                          <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 shrink-0">
+                            <div className="flex gap-8">
+                              <div className="flex-1 space-y-4">
+                                <div>
+                                  <label className="text-[14px] font-bold text-neutral-800 flex items-center gap-1.5 mb-2">
+                                    <Edit className="w-4 h-4 text-[#fa541c]" /> 教师评语
+                                  </label>
+                                  <textarea 
+                                    className="w-full h-20 p-3 text-[14px] rounded-xl border border-neutral-200 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none" 
+                                    placeholder="请输入评语，指导学生..."
+                                    defaultValue="代码结构很清晰，基本逻辑正确。但在解析页面时没有考虑常见的反爬机制，建议在实际项目中加入请求头伪装。继续努力！"
+                                  ></textarea>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer" defaultChecked />
+                                    <span className="text-[13px] font-bold text-neutral-600 group-hover:text-neutral-900 flex items-center gap-1"><Award className="w-4 h-4 text-amber-500" /> 标记为优秀作业</span>
+                                  </label>
+                                </div>
+                              </div>
+
+                              <div className="w-[300px] flex flex-col justify-between">
+                                <div className="flex items-center justify-between mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                                  <span className="text-[14px] font-bold text-neutral-800">最终评分 (满分 100)</span>
+                                  <input type="number" className="w-20 text-center text-[24px] font-black text-[#fa541c] bg-white border border-neutral-200 rounded-lg py-1 focus:outline-none focus:border-[#fa541c]" defaultValue={92} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <Button variant="outline" className="border-red-200 text-red-500 hover:bg-red-50 font-bold h-10">打回重做</Button>
+                                  <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 shadow-md shadow-orange-500/20">提交评分并继续</Button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-4 sm:mt-0">
-                          <Button variant="outline" size="sm" className="text-[#fa541c] border-[#fa541c] hover:bg-[#fff2e8]">批阅记录</Button>
-                          <Button variant="ghost" size="icon"><MoreVertical className="w-4 h-4" /></Button>
-                        </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -304,41 +553,125 @@ export default function TeacherCourseManage() {
 
               {/* 4. 学情数据 (Analytics) */}
               {activeTab === 'analytics' && (
-                <div className="p-6 animate-in fade-in duration-500">
-                  <div className="flex justify-between items-center mb-8 border-b border-neutral-border pb-4">
-                    <h2 className="text-xl font-bold text-neutral-title">学习情况全景</h2>
-                    <Button variant="outline" className="border-neutral-300 text-neutral-600 h-9">
-                      <Download className="w-4 h-4 mr-1.5" /> 导出报告
+                <div className="p-6 lg:p-8 animate-in fade-in duration-500 bg-neutral-50/30 rounded-b-[24px]">
+                  <div className="flex justify-between items-center mb-8 border-b border-neutral-100 pb-5">
+                    <div>
+                      <h2 className="text-xl font-black text-neutral-900 flex items-center gap-2">
+                        <BarChart2 className="w-6 h-6 text-[#fa541c]" /> 整体学情全景报告
+                      </h2>
+                      <p className="text-[13px] text-neutral-500 mt-1">实时统计所有选课学生的学习进度与考核数据，数据每 15 分钟刷新一次。</p>
+                    </div>
+                    <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
+                      <Download className="w-4 h-4 mr-2" /> 导出详细数据报告
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-4 gap-6 mb-8">
-                    {['总体学习进度', '视频完播率', '作业提交率', '考试及格率'].map((stat, i) => (
-                      <div key={i} className="p-5 rounded-lg border border-neutral-200 bg-white shadow-sm flex flex-col justify-between">
-                        <div className="text-sm text-neutral-500 font-medium mb-3">{stat}</div>
-                        <div className="text-3xl font-bold text-neutral-title">{Math.floor(Math.random() * 40 + 60)}<span className="text-lg text-neutral-400 ml-1">%</span></div>
+                  {/* Top Key Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {[
+                      { label: '视频完播率', value: '86.5', unit: '%', desc: '高于全校平均 12%', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50' },
+                      { label: '作业平均提交率', value: '92.0', unit: '%', desc: '本周新增提交 45 份', icon: CheckSquare, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                      { label: '考试及格率', value: '88.3', unit: '%', desc: '期中测试统计', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-50' },
+                      { label: '周活跃学生', value: '1,245', unit: '人', desc: '占总人数 78%', icon: Users, color: 'text-orange-500', bg: 'bg-orange-50' },
+                    ].map((stat, i) => (
+                      <div key={i} className="p-6 rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-md hover:border-orange-200 transition-all group">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", stat.bg, stat.color)}>
+                            <stat.icon className="w-5 h-5" />
+                          </div>
+                        </div>
+                        <div className="text-[13px] text-neutral-500 font-bold mb-1">{stat.label}</div>
+                        <div className="flex items-baseline gap-1 mb-2">
+                          <span className="text-3xl font-black text-neutral-900 tracking-tight">{stat.value}</span>
+                          <span className="text-[14px] font-bold text-neutral-400">{stat.unit}</span>
+                        </div>
+                        <div className="text-[11px] font-medium text-neutral-400 bg-neutral-50 px-2 py-1 rounded inline-block">{stat.desc}</div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="h-72 rounded-lg border border-neutral-200 bg-white p-6 flex flex-col shadow-sm">
-                      <h3 className="font-bold text-neutral-title mb-6">活跃度趋势</h3>
-                      <div className="flex-1 flex items-end gap-2 px-4">
-                        {[40, 50, 30, 70, 80, 60, 90, 85].map((h, i) => (
-                          <div key={i} className="flex-1 bg-orange-100 rounded-t hover:bg-orange-200 transition-colors relative group" style={{ height: `${h}%` }}>
-                            <div className="w-full bg-[#fa541c] rounded-t absolute top-0 left-0" style={{ height: '4px' }}></div>
-                          </div>
-                        ))}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Activity Trend */}
+                    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm flex flex-col h-[360px]">
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-bold text-neutral-900 text-[15px] flex items-center gap-2">
+                           <TrendingUp className="w-4 h-4 text-[#fa541c]" /> 学生活跃度趋势 (近7天)
+                        </h3>
+                      </div>
+                      <div className="flex-1 w-full min-h-0">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#fa541c" stopOpacity={0.3}/>
+                                  <stop offset="95%" stopColor="#fa541c" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8c8c8c' }} dy={10} />
+                              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8c8c8c' }} />
+                              <CartesianGrid vertical={false} stroke="#f0f0f0" />
+                              <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #f0f0f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
+                              <Area type="monotone" dataKey="active" stroke="#fa541c" strokeWidth={3} fillOpacity={1} fill="url(#colorActive)" />
+                            </AreaChart>
+                         </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="h-72 rounded-lg border border-neutral-200 bg-white p-6 flex flex-col shadow-sm">
-                      <h3 className="font-bold text-neutral-title mb-6">任务完成分布</h3>
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="w-40 h-40 rounded-full border-[20px] border-[#fa541c] border-r-orange-300 border-b-orange-200 border-l-orange-100"></div>
+
+                    {/* Score Distribution */}
+                    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm flex flex-col h-[360px]">
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-bold text-neutral-900 text-[15px] flex items-center gap-2">
+                           <BarChart className="w-4 h-4 text-blue-500" /> 考试成绩分布
+                        </h3>
+                      </div>
+                      <div className="flex-1 w-full min-h-0">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <BarChartRecharts data={scoreData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={36}>
+                              <XAxis dataKey="range" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8c8c8c' }} dy={10} />
+                              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8c8c8c' }} />
+                              <CartesianGrid vertical={false} stroke="#f0f0f0" strokeDasharray="3 3" />
+                              <Tooltip cursor={{fill: '#f5f5f5'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f0f0f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
+                              <Bar dataKey="count" fill="#40a9ff" radius={[6, 6, 0, 0]} />
+                            </BarChartRecharts>
+                         </ResponsiveContainer>
                       </div>
                     </div>
                   </div>
+
+                  {/* Chapter Progress */}
+                  <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 md:p-8 shadow-sm">
+                    <h3 className="font-bold text-neutral-900 text-[16px] flex items-center gap-2 mb-8 border-b border-neutral-100 pb-4">
+                       <BookOpen className="w-5 h-5 text-emerald-500" /> 各章节学习进度全景
+                    </h3>
+                    <div className="space-y-6">
+                       {[
+                         { title: '第一课：人工智能训练师三级考试内容指导', progress: 95, studentCount: 1200 },
+                         { title: '第二课：培训与指导', progress: 82, studentCount: 1150 },
+                         { title: '第三课：数据标注核心技术与实战', progress: 68, studentCount: 980 },
+                         { title: '第四课：模型部署与性能优化', progress: 45, studentCount: 850 },
+                       ].map((chap, i) => (
+                         <div key={i}>
+                           <div className="flex items-center justify-between mb-2">
+                             <div className="flex items-center gap-2">
+                               <span className="w-6 h-6 rounded-md bg-neutral-100 text-neutral-500 flex items-center justify-center text-[12px] font-bold">{i+1}</span>
+                               <span className="text-[14px] font-bold text-neutral-800">{chap.title}</span>
+                             </div>
+                             <div className="flex items-center gap-4">
+                               <span className="text-[12px] text-neutral-400 font-medium">{chap.studentCount} 人已学</span>
+                               <span className="text-[14px] font-black text-neutral-900 min-w-[36px] text-right">{chap.progress}%</span>
+                             </div>
+                           </div>
+                           <div className="w-full h-2.5 bg-neutral-100 rounded-full overflow-hidden shadow-inner">
+                             <div 
+                               className={cn("h-full rounded-full transition-all duration-1000", chap.progress > 80 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : chap.progress > 50 ? "bg-gradient-to-r from-orange-400 to-[#fa541c]" : "bg-gradient-to-r from-neutral-300 to-neutral-400")}
+                               style={{ width: `${chap.progress}%` }}
+                             />
+                           </div>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+
                 </div>
               )}
 
@@ -478,6 +811,353 @@ export default function TeacherCourseManage() {
           </div>
         </div>
       </div>
+
+      {/* 创建作业任务 / 编辑作业任务 Modal */}
+      {(showCreateTaskModal || showEditTaskModal) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                {showCreateTaskModal ? <PlusCircle className="w-5 h-5 text-[#fa541c]" /> : <Edit className="w-5 h-5 text-[#fa541c]" />} 
+                {showCreateTaskModal ? '创建作业任务' : '编辑作业任务'}
+              </h2>
+              <button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 任务标题</label>
+                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="例如：模块 1 综合测验：Python 基础" defaultValue={showEditTaskModal ? "模块 1 综合测验：Python 基础" : ""} />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800">任务说明</label>
+                <textarea className="w-full h-24 p-3 text-[14px] rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none" placeholder="填写具体的作业要求与指导..." defaultValue={showEditTaskModal ? "请完成提供的 Python 基础代码填空题，并确保所有测试用例通过。" : ""}></textarea>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 截止时间</label>
+                  <div className="relative">
+                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue={showEditTaskModal ? "2026-05-20T23:59" : ""} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 满分分值</label>
+                  <input type="number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="100" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">提交限制设置</label>
+                <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-200 space-y-4">
+                   <div className="flex items-center justify-between">
+                     <span className="text-[13px] text-neutral-700">开启提交次数限制</span>
+                     <input type="checkbox" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 rounded cursor-pointer" defaultChecked />
+                   </div>
+                   <div className="flex items-center gap-3">
+                     <span className="text-[13px] text-neutral-600">最多允许提交</span>
+                     <input type="number" className="w-20 border border-neutral-200 rounded-md px-3 py-1.5 text-[13px] text-center focus:outline-none focus:border-[#fa541c]" defaultValue="2" />
+                     <span className="text-[13px] text-neutral-600">次</span>
+                   </div>
+                   <div className="pt-2 border-t border-neutral-200">
+                     <label className="flex items-center gap-2 cursor-pointer mt-2">
+                       <input type="checkbox" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 rounded cursor-pointer" defaultChecked />
+                       <span className="text-[13px] text-neutral-700">允许学生提交延期申请（需教师审批）</span>
+                     </label>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-neutral-100 bg-white shrink-0 flex items-center justify-end gap-3">
+              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存设置</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 评分规则 Modal */}
+      {showScoringRulesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[560px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-[#fa541c]" /> 配置评分维度
+              </h2>
+              <button onClick={() => setShowScoringRulesModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 flex-1 space-y-6">
+               <div className="bg-orange-50 border border-orange-100 p-3 rounded-lg flex items-start gap-2 mb-2">
+                 <div className="text-orange-600 mt-0.5"><Award className="w-4 h-4" /></div>
+                 <p className="text-[12px] text-orange-800 leading-relaxed">设置多个评分维度，方便批阅时打分。各个维度的分值总和应等于该任务的满分（100分）。</p>
+               </div>
+
+               <div className="space-y-3">
+                 {[
+                   { name: '代码功能完整性', desc: '实现所有要求的功能，能正常运行', score: 40 },
+                   { name: '代码规范与风格', desc: '遵守 PEP8，变量命名清晰', score: 30 },
+                   { name: '算法效率优化', desc: '时间与空间复杂度达标', score: 30 },
+                 ].map((rule, i) => (
+                   <div key={i} className="flex items-start gap-4 p-4 border border-neutral-200 rounded-xl bg-white group hover:border-[#fa541c] transition-colors relative">
+                     <div className="flex-1">
+                       <input type="text" className="font-bold text-[14px] text-neutral-900 bg-transparent outline-none w-full mb-1" defaultValue={rule.name} />
+                       <input type="text" className="text-[12px] text-neutral-500 bg-transparent outline-none w-full" defaultValue={rule.desc} />
+                     </div>
+                     <div className="flex items-center gap-1 border border-neutral-200 rounded px-2 py-1 bg-neutral-50">
+                       <input type="number" className="w-10 text-center font-bold text-[#fa541c] bg-transparent outline-none" defaultValue={rule.score} />
+                       <span className="text-[12px] text-neutral-500 font-bold">分</span>
+                     </div>
+                     <button className="absolute -right-3 -top-3 w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:border-red-200 shadow-sm opacity-0 group-hover:opacity-100 transition-all">
+                       <Trash2 className="w-3.5 h-3.5" />
+                     </button>
+                   </div>
+                 ))}
+               </div>
+
+               <Button variant="outline" className="w-full border-dashed border-neutral-300 text-neutral-600 hover:text-[#fa541c] hover:border-orange-300 bg-neutral-50 hover:bg-orange-50 h-10">
+                 <Plus className="w-4 h-4 mr-2" /> 新增评分维度
+               </Button>
+            </div>
+
+            <div className="p-5 border-t border-neutral-100 bg-white shrink-0 flex items-center justify-between gap-3">
+              <span className="text-[13px] font-bold text-neutral-600">当前总分：<span className="text-[#fa541c] text-[16px]">100</span> 分</span>
+              <div className="flex gap-3">
+                <Button onClick={() => setShowScoringRulesModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+                <Button onClick={() => setShowScoringRulesModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存规则</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 新建课节 Modal */}
+      {showCreateLessonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建课节
+              </h2>
+              <button onClick={() => setShowCreateLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 课节名称
+                </label>
+                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课节名称" autoFocus />
+              </div>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button onClick={() => setShowCreateLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button onClick={() => setShowCreateLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 新建教学课件 Modal */}
+      {showTeachingMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                 新建教学课件
+              </h2>
+              <button onClick={() => setShowTeachingMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 名称
+                </label>
+                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入教学课件名称" autoFocus />
+              </div>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button onClick={() => setShowTeachingMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button onClick={() => setShowTeachingMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 选择实验课件 Modal */}
+      {showExperimentMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col h-[500px]">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                 <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择实验课件 <span className="text-[13px] text-blue-500 font-normal cursor-pointer hover:underline ml-2">帮助教程 <Info className="w-3.5 h-3.5 inline mb-0.5" /></span>
+              </h2>
+              <button onClick={() => setShowExperimentMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="px-6 py-3 border-b border-neutral-100 flex items-center justify-between">
+               <div className="text-[14px] font-bold text-neutral-700">我创建的</div>
+               <div className="flex items-center gap-3">
+                 {isSearchingExperiment ? (
+                   <div className="flex items-center border border-[#fa541c] rounded-full px-3 h-8 overflow-hidden bg-white animation-slide-left">
+                     <Search className="w-3.5 h-3.5 text-[#fa541c] mr-2 shrink-0" />
+                     <input type="text" className="w-32 text-[13px] outline-none text-neutral-800 placeholder-neutral-400" placeholder="搜索课件..." autoFocus onBlur={() => setIsSearchingExperiment(false)} />
+                   </div>
+                 ) : (
+                   <div onClick={() => setIsSearchingExperiment(true)} className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-neutral-100 text-neutral-400 hover:text-[#fa541c] transition-colors">
+                     <Search className="w-4 h-4" />
+                   </div>
+                 )}
+                 <Button onClick={() => navigate('/teacher/course/1/experiment/new')} variant="outline" className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors">
+                   <Plus className="w-3.5 h-3.5 mr-1" /> 新建
+                 </Button>
+               </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-2">
+               {[
+                 { id: 'IL511779172854', subtitle: '人工智能' },
+                 { id: 'IL511779173126', subtitle: '人工智能' }
+               ].map((item, idx) => (
+                 <div 
+                   key={idx} 
+                   onClick={() => setSelectedExperimentIndex(idx)}
+                   className={cn(
+                     "flex items-center justify-between p-4 border-b cursor-pointer group transition-all rounded-lg mb-1",
+                     selectedExperimentIndex === idx ? "bg-orange-50 border-orange-100 shadow-[0_2px_10px_rgba(250,84,28,0.05)]" : "hover:bg-neutral-50 border-neutral-50"
+                   )}
+                 >
+                   <div className="flex items-center gap-4">
+                     <div className={cn(
+                       "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                       selectedExperimentIndex === idx ? "bg-[#fa541c] text-white" : "bg-orange-100 text-[#fa541c] group-hover:bg-[#fa541c] group-hover:text-white"
+                     )}>
+                       <Code className="w-5 h-5" />
+                     </div>
+                     <div>
+                       <div className="text-[15px] font-bold text-neutral-800 mb-1 group-hover:text-[#fa541c] transition-colors">{item.id}</div>
+                       <div className="text-[12px] text-neutral-400 flex items-center gap-1"><Paperclip className="w-3 h-3" /> {item.subtitle}</div>
+                     </div>
+                   </div>
+                   <div className={cn(
+                     "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                     selectedExperimentIndex === idx ? "border-[#fa541c] bg-[#fa541c]" : "border-neutral-300 group-hover:border-[#fa541c]"
+                   )}>
+                     {selectedExperimentIndex === idx && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                   </div>
+                 </div>
+               ))}
+            </div>
+
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-between shrink-0">
+              <div className="text-[13px] text-neutral-500">已选 <span className="text-[#fa541c] font-bold">{selectedExperimentIndex !== null ? 1 : 0}</span> 项</div>
+              <div className="flex gap-3">
+                <Button onClick={() => setShowExperimentMaterialModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c]">取消</Button>
+                <Button onClick={() => setShowExperimentMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 新建互动学习课件 Modal */}
+      {showInteractiveMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                 新建互动学习课件
+              </h2>
+              <button onClick={() => setShowInteractiveMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 名称
+                </label>
+                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课件名称" autoFocus />
+              </div>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button onClick={() => setShowInteractiveMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button onClick={() => setShowInteractiveMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 选择随堂作业 Modal */}
+      {showAssignmentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col h-[560px]">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                 <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择随堂作业
+              </h2>
+              <button onClick={() => setShowAssignmentModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="px-6 border-b border-neutral-100 flex items-center justify-between">
+               <div className="flex items-center gap-8">
+                 <div className="py-3 text-[14px] font-bold text-[#fa541c] border-b-2 border-[#fa541c] cursor-pointer">个人</div>
+                 <div className="py-3 text-[14px] font-medium text-neutral-500 hover:text-neutral-900 cursor-pointer border-b-2 border-transparent transition-colors">公开</div>
+               </div>
+               <Search className="w-4 h-4 text-neutral-400 cursor-pointer hover:text-neutral-600 transition-colors" />
+            </div>
+
+            <div className="px-6 py-3 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/30">
+               <div className="text-[13px] text-neutral-500">列表</div>
+               <Button variant="outline" className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors">
+                 <Plus className="w-3.5 h-3.5 mr-1" /> 新建
+               </Button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-2">
+               {[
+                 { title: '大模型应用测验', subtitle: '用于「Mo 体验课程」大模型应用测验试卷' },
+                 { title: 'Python编程测验', subtitle: '用于「Mo 体验课程」的Python编程测验试卷' },
+                 { title: 'AI 通识第一课测验', subtitle: '用于「Mo 体验课程」的“AI 通识第一课”章节测验试卷' }
+               ].map((item, idx) => (
+                 <div key={idx} className="flex items-center justify-between p-4 hover:bg-neutral-50 border-b border-neutral-50 cursor-pointer group">
+                   <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0">
+                       <FileText className="w-5 h-5" />
+                     </div>
+                     <div>
+                       <div className="text-[15px] font-bold text-neutral-800 mb-1">{item.title}</div>
+                       <div className="text-[12px] text-neutral-400">{item.subtitle}</div>
+                     </div>
+                   </div>
+                   <div className="w-4 h-4 rounded-full border border-neutral-300 group-hover:border-[#fa541c] shrink-0 ml-4 transition-colors"></div>
+                 </div>
+               ))}
+            </div>
+
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-between shrink-0">
+              <div className="text-[13px] text-neutral-500">已选 <span className="text-[#fa541c] font-bold">0</span> 项</div>
+              <div className="flex gap-3">
+                <Button onClick={() => setShowAssignmentModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c]">取消</Button>
+                <Button onClick={() => setShowAssignmentModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

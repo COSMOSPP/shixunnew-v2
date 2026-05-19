@@ -128,7 +128,7 @@ export default function TeacherHome() {
             <p className="text-sm text-neutral-caption">开启一段新的教学旅程</p>
           </div>
           <div className="relative z-10">
-             <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-6 shadow-sm shadow-[#fa541c]/20">立即创建</Button>
+             <Button onClick={() => navigate('/teacher/course/create')} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-6 shadow-sm shadow-[#fa541c]/20">立即创建</Button>
           </div>
           <div className="absolute right-0 bottom-0 w-40 h-40 bg-gradient-to-tl from-[#fff2e8] to-transparent rounded-tl-full opacity-50 transition-transform group-hover:scale-110"></div>
         </div>
@@ -220,7 +220,7 @@ export default function TeacherHome() {
                 className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
               />
             </div>
-            <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm">
+            <Button onClick={() => navigate('/teacher/course/create')} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm">
               <Plus className="w-4 h-4 mr-1" /> 新建课程
             </Button>
           </div>
