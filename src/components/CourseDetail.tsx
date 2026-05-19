@@ -339,6 +339,118 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
       {/* Modals */}
       {playingLesson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
+          {/* Assignment Edit UI */}
+          {teacherActionMode === 'edit' && playingLesson.type === 'assignment' && (
+            <div className="w-full h-full bg-[#f5f6f8] relative flex flex-col font-sans animation-fade-in">
+              <div className="h-14 border-b border-neutral-200 bg-white flex items-center px-6 shrink-0 justify-between">
+                 <div className="flex items-center gap-3">
+                   <button onClick={() => setTeacherActionMode('detail')} className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-[#fa541c] transition-colors">
+                     <ArrowLeft className="w-5 h-5" />
+                   </button>
+                   <span className="text-[14px] text-neutral-400">题库管理 / <span className="text-neutral-900 font-bold">试卷管理</span></span>
+                 </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                 <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-neutral-200 p-6 min-h-[600px]">
+                   <div className="flex items-center justify-between mb-6">
+                     <div className="flex items-center gap-4">
+                       <h2 className="text-[18px] font-bold text-neutral-900">试卷管理</h2>
+                       <span className="text-[13px] text-neutral-400">新建试卷前请先创建可用试题，试卷“启用”后即可用于课程作业或章节测验</span>
+                     </div>
+                     <Button className="bg-[#2f54eb] hover:bg-[#1d39c4] text-white h-8 px-4 rounded shadow-sm shadow-blue-500/20 text-[13px] font-medium flex items-center gap-1.5 transition-colors">
+                       <Plus className="w-3.5 h-3.5" /> 新建试卷
+                     </Button>
+                   </div>
+                   
+                   <div className="overflow-x-auto">
+                     <table className="w-full text-left border-collapse border border-neutral-200 rounded-lg overflow-hidden">
+                       <thead>
+                         <tr className="bg-neutral-50/80 text-[13px] text-neutral-600 font-medium border-b border-neutral-200">
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200">试卷名称</th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200 w-64">试卷说明</th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200">题目数量</th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">包含题型 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">试卷类型 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">状态 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">创建人 <Search className="w-3.5 h-3.5 inline ml-1" /></th>
+                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">更新时间 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
+                           <th className="py-4 px-4 font-bold">操作</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         <tr className="border-b border-neutral-200 hover:bg-blue-50/30 transition-colors">
+                           <td className="py-4 px-4 border-r border-neutral-200">
+                             <div className="flex items-center gap-3">
+                               <div className="w-5 h-5 rounded border border-blue-400 flex items-center justify-center text-blue-500 bg-blue-50 text-[16px] font-bold cursor-pointer transition-colors">-</div>
+                               <span className="text-[14px] font-bold text-neutral-800">大模型应用测验</span>
+                               <Search className="w-3.5 h-3.5 text-blue-500 cursor-pointer ml-auto hover:text-blue-700 transition-colors" />
+                             </div>
+                           </td>
+                           <td className="py-4 px-4 border-r border-neutral-200 text-[13px] text-neutral-600 leading-relaxed">用于「Mo 体验课程」大模型应用测验试卷</td>
+                           <td className="py-4 px-4 border-r border-neutral-200 text-[14px] text-neutral-800">10</td>
+                           <td className="py-4 px-4 border-r border-neutral-200 text-[13px] text-neutral-600">单选题、填空题、多选题、编程题、判断题</td>
+                           <td className="py-4 px-4 border-r border-neutral-200 text-[14px] text-neutral-800">测验</td>
+                           <td className="py-4 px-4 border-r border-neutral-200">
+                             <span className="px-2 py-0.5 rounded border border-[#52c41a] text-[#52c41a] text-[12px]">启用</span>
+                           </td>
+                           <td className="py-4 px-4 border-r border-neutral-200 text-[14px] text-neutral-800">孙昕</td>
+                           <td className="py-4 px-4 border-r border-neutral-200 text-[13px] text-neutral-500">2026/02/11 12:07</td>
+                           <td className="py-4 px-4 text-[13px]">
+                             <button className="text-blue-600 hover:text-blue-800 mr-3 transition-colors">编辑</button>
+                             <button className="text-blue-600 hover:text-blue-800 transition-colors">删除</button>
+                           </td>
+                         </tr>
+                         {/* Details expanded view */}
+                         <tr className="bg-neutral-50/50">
+                           <td colSpan={9} className="p-8">
+                             <div className="max-w-4xl">
+                               <h3 className="flex items-center gap-2 text-[15px] font-bold text-neutral-800 mb-6">
+                                 <FileText className="w-4 h-4 text-blue-600" /> 客观题
+                               </h3>
+                               <div className="space-y-6 pl-6">
+                                 <div>
+                                   <div className="font-bold text-[14px] text-neutral-800 mb-2">1. 客观题 10 道，共 100 分</div>
+                                   <div className="text-[12px] text-neutral-400">客观题包括单选题、多选题、判断题、填空题、编程题</div>
+                                 </div>
+                                 <div>
+                                   <div className="font-bold text-[14px] text-neutral-800 mb-2">2. 答题限时： 分钟</div>
+                                   <div className="text-[12px] text-neutral-400">客观题需在 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</div>
+                                 </div>
+                                 <Button className="mt-4 bg-[#2f54eb] hover:bg-[#1d39c4] text-white h-9 px-6 rounded text-[13px] font-medium transition-colors">
+                                   预览客观题
+                                 </Button>
+                               </div>
+                             </div>
+                           </td>
+                         </tr>
+                       </tbody>
+                     </table>
+                     
+                     <div className="flex items-center justify-end mt-6 text-[13px] text-neutral-500 gap-4">
+                       <span>共 1 条</span>
+                       <div className="flex items-center gap-1">
+                         <button className="w-8 h-8 flex items-center justify-center border border-neutral-200 rounded text-neutral-300 cursor-not-allowed">
+                           <ChevronLeft className="w-4 h-4" />
+                         </button>
+                         <button className="w-8 h-8 flex items-center justify-center border border-[#2f54eb] rounded bg-[#2f54eb] text-white">
+                           1
+                         </button>
+                         <button className="w-8 h-8 flex items-center justify-center border border-neutral-200 rounded text-neutral-300 cursor-not-allowed">
+                           <ChevronRight className="w-4 h-4" />
+                         </button>
+                       </div>
+                       <div className="flex items-center gap-1 border border-neutral-200 rounded px-2 h-8 cursor-pointer hover:border-blue-400 transition-colors">
+                         <span>10 条/页</span>
+                         <ChevronDown className="w-3.5 h-3.5" />
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Standard Lesson View */}
           {(teacherActionMode !== 'edit' && (['doc', 'video', 'assignment', 'split_doc'].includes(playingLesson.type) || (playingLesson.type === 'experiment' && !isExperimentStarted))) && (
             <div className="w-full h-full bg-white relative flex font-sans">
               {/* Left Sidebar */}

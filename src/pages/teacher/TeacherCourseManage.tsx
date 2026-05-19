@@ -19,7 +19,7 @@ const COURSE_SYLLABUS = [
       { section: "课时1:", title: "职业简介", type: "doc" },
       { section: "课时2:", title: "认定方案", type: "doc" },
       { section: "课时3:", title: "认定要素细目表", type: "doc" },
-      { section: "课时4:", title: "实操平台演示", type: "video" },
+      { section: "课时4:", title: "实操平台演示", type: "doc" },
       { section: "课时5:", title: "代码复习讲义", type: "doc" },
       { section: "课时6:", title: "第一课随堂作业", type: "assignment" }
     ]
@@ -29,7 +29,7 @@ const COURSE_SYLLABUS = [
     title: "培训与指导",
     lessons: [
       { section: "课时1:", title: "智能音箱产品的数据分析与优化[3.1.1]", type: "experiment" },
-      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", type: "split_doc" },
+      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", type: "video" },
       { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", type: "experiment" },
       { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", type: "experiment" },
       { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", type: "experiment" }
@@ -73,6 +73,9 @@ export default function TeacherCourseManage() {
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [selectedExperimentIndex, setSelectedExperimentIndex] = useState<number | null>(null);
   const [isSearchingExperiment, setIsSearchingExperiment] = useState(false);
+  const [chapterMenuOpenIndex, setChapterMenuOpenIndex] = useState<number | null>(null);
+  const [showEditChapterModal, setShowEditChapterModal] = useState(false);
+  const [showDeleteChapterModal, setShowDeleteChapterModal] = useState(false);
 
   const tabs = [
     { id: 'editor', label: '课程章节', icon: BookOpen },
@@ -231,7 +234,38 @@ export default function TeacherCourseManage() {
                                 </>
                               )}
                             </div>
-                            <MoreVertical className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" />
+                            <div className="relative">
+                              <MoreVertical 
+                                className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setChapterMenuOpenIndex(chapterMenuOpenIndex === i ? null : i);
+                                }}
+                              />
+                              {chapterMenuOpenIndex === i && (
+                                <>
+                                  <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setChapterMenuOpenIndex(null); }}></div>
+                                  <div className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
+                                    <div 
+                                      className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowEditChapterModal(true);
+                                        setChapterMenuOpenIndex(null);
+                                      }}
+                                    >编辑</div>
+                                    <div 
+                                      className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowDeleteChapterModal(true);
+                                        setChapterMenuOpenIndex(null);
+                                      }}
+                                    >删除</div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                             <ChevronDown className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" />
                           </div>
                         </div>
@@ -246,10 +280,10 @@ export default function TeacherCourseManage() {
                                 <div className="flex items-center gap-3">
                                   <div className={cn(
                                     "w-6 h-6 rounded flex items-center justify-center",
-                                    lesson.type === 'video' ? "bg-orange-100 text-[#fa541c]" : 
-                                    lesson.type === 'experiment' ? "bg-blue-100 text-blue-500" :
-                                    lesson.type === 'assignment' ? "bg-green-100 text-green-500" :
-                                    "bg-purple-100 text-purple-500"
+                                    lesson.type === 'video' ? "bg-blue-50 text-blue-500" : 
+                                    lesson.type === 'experiment' ? "bg-orange-50 text-[#fa541c]" :
+                                    lesson.type === 'assignment' ? "bg-rose-50 text-rose-500" :
+                                    "bg-emerald-50 text-emerald-500"
                                   )}>
                                     {lesson.type === 'video' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
                                      lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
@@ -1153,6 +1187,63 @@ export default function TeacherCourseManage() {
               <div className="flex gap-3">
                 <Button onClick={() => setShowAssignmentModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c]">取消</Button>
                 <Button onClick={() => setShowAssignmentModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 编辑章节 Modal */}
+      {showEditChapterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                 编辑章节
+              </h2>
+              <button onClick={() => setShowEditChapterModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 名称
+                </label>
+                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="第一课" autoFocus />
+              </div>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button onClick={() => setShowEditChapterModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button onClick={() => setShowEditChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 删除确认 Modal */}
+      {showDeleteChapterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col">
+            <div className="p-6 flex items-start gap-4">
+              <div className="w-1 h-5 bg-[#fa541c] rounded-full mt-1 shrink-0"></div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-[18px] font-bold text-neutral-900">删除确认</h2>
+                  <button onClick={() => setShowDeleteChapterModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-[14px] text-neutral-600 mb-4">
+                  确定要删除这个章吗？删除后将无法恢复
+                </p>
+                <p className="text-[14px] text-[#fa541c] font-medium mb-6">
+                  若该目录下存在子目录或学生学习数据将一并删除
+                </p>
+                <div className="flex justify-end gap-3">
+                  <Button onClick={() => setShowDeleteChapterModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200">取消</Button>
+                  <Button onClick={() => setShowDeleteChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 shadow-sm">确定</Button>
+                </div>
               </div>
             </div>
           </div>
