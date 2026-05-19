@@ -29,7 +29,7 @@ const COURSE_SYLLABUS = [
     title: "培训与指导",
     lessons: [
       { section: "课时1:", title: "智能音箱产品的数据分析与优化[3.1.1]", type: "experiment" },
-      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", type: "video" },
+      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", type: "split_doc" },
       { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", type: "experiment" },
       { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", type: "experiment" },
       { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", type: "experiment" }
@@ -280,12 +280,12 @@ export default function TeacherCourseManage() {
                                 <div className="flex items-center gap-3">
                                   <div className={cn(
                                     "w-6 h-6 rounded flex items-center justify-center",
-                                    lesson.type === 'video' ? "bg-blue-50 text-blue-500" : 
+                                    lesson.type === 'split_doc' ? "bg-blue-50 text-blue-500" : 
                                     lesson.type === 'experiment' ? "bg-orange-50 text-[#fa541c]" :
                                     lesson.type === 'assignment' ? "bg-rose-50 text-rose-500" :
                                     "bg-emerald-50 text-emerald-500"
                                   )}>
-                                    {lesson.type === 'video' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
+                                    {lesson.type === 'split_doc' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
                                      lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
                                      lesson.type === 'assignment' ? <CheckSquare className="w-3.5 h-3.5" /> :
                                      <FileText className="w-3.5 h-3.5" />
