@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, PlusCircle, Edit } from 'lucide-react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, PlusCircle, Edit, Trash2, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -10,7 +10,28 @@ interface CourseDetailProps {
   isTeacher?: boolean;
 }
 
-const COURSE_SYLLABUS = [
+interface Lesson {
+  section: string;
+  title: string;
+  locked: boolean;
+  status: string;
+  type: string;
+  tag?: string;
+}
+
+interface Chapter {
+  chapter: string;
+  title: string;
+  duration: number;
+  videos: number;
+  docs: number;
+  experiments: number;
+  assignments: number;
+  description: string;
+  lessons: Lesson[];
+}
+
+const COURSE_SYLLABUS: Chapter[] = [
   {
     chapter: "第一课",
     title: "人工智能训练师三级考试内容指导",
@@ -65,6 +86,99 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
   const [importedDatasets, setImportedDatasets] = useState<string[]>([]);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
   const isRecommendedMode = (window as any).__RECOMMENDED_MODE === true;
+
+  // Interactive Paper Management States
+  const [expandedRows, setExpandedRows] = useState<number[]>([1]); // Row 1 expanded by default
+  const [showCreatePaperModal, setShowCreatePaperModal] = useState(false);
+  const [showPreviewQuestionsModal, setShowPreviewQuestionsModal] = useState(false);
+  const [activePreviewIndex, setActivePreviewIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  
+  // Custom Paper Creation form state
+  const [newPaperForm, setNewPaperForm] = useState({
+    name: "",
+    desc: "",
+    questionsCount: 1,
+    questionTypes: "编程题",
+    paperType: "测验",
+    timeLimit: 60
+  });
+
+  const [papers, setPapers] = useState([
+    {
+      id: 1,
+      name: "Python编程测验",
+      desc: "用于「Mo 体验课程」的 Python编程测验试卷",
+      questionsCount: 1,
+      questionTypes: "编程题",
+      paperType: "测验",
+      status: "启用",
+      creator: "孙昕",
+      updatedAt: "2026/02/11 11:55"
+    },
+    {
+      id: 2,
+      name: "Python编程测验演示",
+      desc: "Python编程测验演示",
+      questionsCount: 1,
+      questionTypes: "编程题",
+      paperType: "测验",
+      status: "启用",
+      creator: "Momodel",
+      updatedAt: "2026/02/02 15:08"
+    }
+  ]);
+
+  const handleToggleRow = (id: number) => {
+    if (expandedRows.includes(id)) {
+      setExpandedRows(prev => prev.filter(x => x !== id));
+    } else {
+      setExpandedRows(prev => [...prev, id]);
+    }
+  };
+
+  const handleCreatePaper = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPaperForm.name) {
+      alert("请输入试卷名称！");
+      return;
+    }
+    const newId = papers.length > 0 ? Math.max(...papers.map(p => p.id)) + 1 : 1;
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    
+    const newPaper = {
+      id: newId,
+      name: newPaperForm.name,
+      desc: newPaperForm.desc || "自定义创建的试卷",
+      questionsCount: Number(newPaperForm.questionsCount) || 1,
+      questionTypes: newPaperForm.questionTypes,
+      paperType: newPaperForm.paperType,
+      status: "启用",
+      creator: "李老师", // Current teacher name
+      updatedAt: formattedDate
+    };
+
+    setPapers(prev => [newPaper, ...prev]);
+    setShowCreatePaperModal(false);
+    setNewPaperForm({
+      name: "",
+      desc: "",
+      questionsCount: 1,
+      questionTypes: "编程题",
+      paperType: "测验",
+      timeLimit: 60
+    });
+    alert("试卷新建成功！");
+  };
+
+  const handleDeletePaper = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("确定要删除这张试卷吗？此操作不可恢复。")) {
+      setPapers(prev => prev.filter(p => p.id !== id));
+      setExpandedRows(prev => prev.filter(x => x !== id));
+    }
+  };
 
   const handleCloseLesson = () => {
     setTeacherActionMode('detail');
@@ -341,112 +455,488 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
           {/* Assignment Edit UI */}
           {teacherActionMode === 'edit' && playingLesson.type === 'assignment' && (
-            <div className="w-full h-full bg-[#f5f6f8] relative flex flex-col font-sans animation-fade-in">
-              <div className="h-14 border-b border-neutral-200 bg-white flex items-center px-6 shrink-0 justify-between">
-                 <div className="flex items-center gap-3">
-                   <button onClick={() => setTeacherActionMode('detail')} className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-[#fa541c] transition-colors">
-                     <ArrowLeft className="w-5 h-5" />
-                   </button>
-                   <span className="text-[14px] text-neutral-400">题库管理 / <span className="text-neutral-900 font-bold">试卷管理</span></span>
-                 </div>
+            <div className="w-full h-full bg-[#f5f6f8] relative flex font-sans animation-fade-in">
+              {/* Left Sidebar */}
+              <div className="w-56 bg-white border-r border-neutral-200 flex flex-col shrink-0">
+                {/* Sidebar Brand/Logo */}
+                <div className="h-14 border-b border-neutral-100 flex items-center px-6 gap-2 shrink-0 bg-white">
+                  <div className="w-6 h-6 rounded-md bg-[#fa541c] flex items-center justify-center text-white font-bold text-xs shadow-sm">Mo</div>
+                  <span className="font-bold text-[14px] text-neutral-800">实训教师端</span>
+                </div>
+                
+                {/* Sidebar Menu */}
+                <div className="flex-1 py-4 overflow-y-auto px-3 space-y-1">
+                  {/* Menu Item 1: 资源分配 */}
+                  <div>
+                    <div className="flex items-center justify-between px-3 py-2.5 rounded-lg text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors group">
+                      <div className="flex items-center gap-2.5">
+                        <Compass className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600" />
+                        <span className="text-[13px] font-medium">资源分配</span>
+                      </div>
+                      <ChevronDown className="w-3.5 h-3.5 text-neutral-400 transform -rotate-90" />
+                    </div>
+                  </div>
+
+                  {/* Menu Item 2: 题库管理 */}
+                  <div>
+                    <div className="flex items-center justify-between px-3 py-2.5 rounded-lg text-neutral-800 font-bold cursor-default transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <Database className="w-4 h-4 text-[#fa541c]" />
+                        <span className="text-[13px]">题库管理</span>
+                      </div>
+                      <ChevronDown className="w-3.5 h-3.5 text-neutral-500" />
+                    </div>
+                    
+                    {/* Submenus */}
+                    <div className="pl-3 mt-1.5 space-y-2">
+                      <div className="text-[12px] text-neutral-500 hover:text-[#fa541c] cursor-pointer transition-colors select-none">
+                        试题管理
+                      </div>
+                      <div className="text-[12px] font-bold text-[#fa541c] cursor-pointer transition-all select-none">
+                        试卷管理
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                 <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-neutral-200 p-6 min-h-[600px]">
-                   <div className="flex items-center justify-between mb-6">
-                     <div className="flex items-center gap-4">
-                       <h2 className="text-[18px] font-bold text-neutral-900">试卷管理</h2>
-                       <span className="text-[13px] text-neutral-400">新建试卷前请先创建可用试题，试卷“启用”后即可用于课程作业或章节测验</span>
-                     </div>
-                     <Button className="bg-[#2f54eb] hover:bg-[#1d39c4] text-white h-8 px-4 rounded shadow-sm shadow-blue-500/20 text-[13px] font-medium flex items-center gap-1.5 transition-colors">
-                       <Plus className="w-3.5 h-3.5" /> 新建试卷
-                     </Button>
+
+              {/* Main Content Area */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Top Navigation / Breadcrumbs */}
+                <div className="h-11 border-b border-neutral-200 bg-white flex items-center px-6 justify-between shrink-0">
+                   <div className="flex items-center gap-2 text-xs">
+                     <span className="text-neutral-400">题库管理</span>
+                     <span className="text-neutral-300">/</span>
+                     <span className="text-neutral-800 font-medium">试卷管理</span>
                    </div>
-                   
-                   <div className="overflow-x-auto">
-                     <table className="w-full text-left border-collapse border border-neutral-200 rounded-lg overflow-hidden">
-                       <thead>
-                         <tr className="bg-neutral-50/80 text-[13px] text-neutral-600 font-medium border-b border-neutral-200">
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200">试卷名称</th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200 w-64">试卷说明</th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200">题目数量</th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">包含题型 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">试卷类型 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">状态 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">创建人 <Search className="w-3.5 h-3.5 inline ml-1" /></th>
-                           <th className="py-4 px-4 font-bold border-r border-neutral-200 cursor-pointer hover:text-neutral-900">更新时间 <ChevronDown className="w-3.5 h-3.5 inline ml-1" /></th>
-                           <th className="py-4 px-4 font-bold">操作</th>
-                         </tr>
-                       </thead>
-                       <tbody>
-                         <tr className="border-b border-neutral-200 hover:bg-blue-50/30 transition-colors">
-                           <td className="py-4 px-4 border-r border-neutral-200">
-                             <div className="flex items-center gap-3">
-                               <div className="w-5 h-5 rounded border border-blue-400 flex items-center justify-center text-blue-500 bg-blue-50 text-[16px] font-bold cursor-pointer transition-colors">-</div>
-                               <span className="text-[14px] font-bold text-neutral-800">大模型应用测验</span>
-                               <Search className="w-3.5 h-3.5 text-blue-500 cursor-pointer ml-auto hover:text-blue-700 transition-colors" />
-                             </div>
-                           </td>
-                           <td className="py-4 px-4 border-r border-neutral-200 text-[13px] text-neutral-600 leading-relaxed">用于「Mo 体验课程」大模型应用测验试卷</td>
-                           <td className="py-4 px-4 border-r border-neutral-200 text-[14px] text-neutral-800">10</td>
-                           <td className="py-4 px-4 border-r border-neutral-200 text-[13px] text-neutral-600">单选题、填空题、多选题、编程题、判断题</td>
-                           <td className="py-4 px-4 border-r border-neutral-200 text-[14px] text-neutral-800">测验</td>
-                           <td className="py-4 px-4 border-r border-neutral-200">
-                             <span className="px-2 py-0.5 rounded border border-[#52c41a] text-[#52c41a] text-[12px]">启用</span>
-                           </td>
-                           <td className="py-4 px-4 border-r border-neutral-200 text-[14px] text-neutral-800">孙昕</td>
-                           <td className="py-4 px-4 border-r border-neutral-200 text-[13px] text-neutral-500">2026/02/11 12:07</td>
-                           <td className="py-4 px-4 text-[13px]">
-                             <button className="text-blue-600 hover:text-blue-800 mr-3 transition-colors">编辑</button>
-                             <button className="text-blue-600 hover:text-blue-800 transition-colors">删除</button>
-                           </td>
-                         </tr>
-                         {/* Details expanded view */}
-                         <tr className="bg-neutral-50/50">
-                           <td colSpan={9} className="p-8">
-                             <div className="max-w-4xl">
-                               <h3 className="flex items-center gap-2 text-[15px] font-bold text-neutral-800 mb-6">
-                                 <FileText className="w-4 h-4 text-blue-600" /> 客观题
-                               </h3>
-                               <div className="space-y-6 pl-6">
-                                 <div>
-                                   <div className="font-bold text-[14px] text-neutral-800 mb-2">1. 客观题 10 道，共 100 分</div>
-                                   <div className="text-[12px] text-neutral-400">客观题包括单选题、多选题、判断题、填空题、编程题</div>
-                                 </div>
-                                 <div>
-                                   <div className="font-bold text-[14px] text-neutral-800 mb-2">2. 答题限时： 分钟</div>
-                                   <div className="text-[12px] text-neutral-400">客观题需在 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</div>
-                                 </div>
-                                 <Button className="mt-4 bg-[#2f54eb] hover:bg-[#1d39c4] text-white h-9 px-6 rounded text-[13px] font-medium transition-colors">
-                                   预览客观题
-                                 </Button>
-                               </div>
-                             </div>
-                           </td>
-                         </tr>
-                       </tbody>
-                     </table>
-                     
-                     <div className="flex items-center justify-end mt-6 text-[13px] text-neutral-500 gap-4">
-                       <span>共 1 条</span>
-                       <div className="flex items-center gap-1">
-                         <button className="w-8 h-8 flex items-center justify-center border border-neutral-200 rounded text-neutral-300 cursor-not-allowed">
-                           <ChevronLeft className="w-4 h-4" />
-                         </button>
-                         <button className="w-8 h-8 flex items-center justify-center border border-[#2f54eb] rounded bg-[#2f54eb] text-white">
-                           1
-                         </button>
-                         <button className="w-8 h-8 flex items-center justify-center border border-neutral-200 rounded text-neutral-300 cursor-not-allowed">
-                           <ChevronRight className="w-4 h-4" />
-                         </button>
-                       </div>
-                       <div className="flex items-center gap-1 border border-neutral-200 rounded px-2 h-8 cursor-pointer hover:border-blue-400 transition-colors">
-                         <span>10 条/页</span>
-                         <ChevronDown className="w-3.5 h-3.5" />
-                       </div>
-                     </div>
-                   </div>
-                 </div>
+                </div>
+
+                {/* Workspace Card */}
+                <div className="flex-1 p-4 overflow-y-auto custom-scrollbar bg-[#f5f6f8]">
+                  <div className="w-full bg-white rounded-[16px] shadow-sm border border-neutral-200/80 p-4 min-h-[500px] flex flex-col">
+                    
+                    {/* Title & Description */}
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between pb-4 border-b border-neutral-100 mb-4 gap-4 shrink-0">
+                      <div>
+                        {/* Return/Back button placed directly above title */}
+                        <button 
+                          onClick={() => setTeacherActionMode('detail')} 
+                          className="flex items-center gap-1 text-[13px] text-neutral-500 hover:text-[#fa541c] transition-colors mb-1.5 w-fit font-medium group"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#fa541c] transition-colors" /> 返回
+                        </button>
+                        <h2 className="text-[18px] font-bold text-neutral-800 flex items-center gap-2">
+                          <span className="w-1.5 h-4.5 bg-[#fa541c] rounded-full"></span>
+                          试卷管理
+                        </h2>
+                        <p className="text-[12px] text-neutral-400 mt-1 leading-relaxed">
+                          新建试卷前请先创建可用试题，试卷“启用”后即可用于课程作业或章节测验。您可以对试卷进行编辑、删除或预览客观题内容。
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => setShowCreatePaperModal(true)}
+                        className="bg-[#fa541c] hover:bg-[#ff7a45] text-white hover:shadow-md transition-all h-8.5 px-4 rounded-md text-[13px] font-bold flex items-center gap-1.5 shrink-0 shadow-sm mt-6 md:mt-2"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 新建试卷
+                      </Button>
+                    </div>
+
+                    {/* Table Content */}
+                    <div className="flex-1 overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-[#fafafa] text-[13px] text-neutral-600 font-bold border-b border-neutral-200 select-none">
+                            <th className="py-4 px-6 w-12 text-center">
+                              <input type="checkbox" className="rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer" readOnly checked />
+                            </th>
+                            <th className="py-4 px-4 w-72">
+                              <div className="flex items-center gap-1">
+                                试卷名称 
+                                <Search className="w-3.5 h-3.5 text-[#fa541c] cursor-pointer hover:opacity-80 transition-opacity" />
+                              </div>
+                            </th>
+                            <th className="py-4 px-4">试卷说明</th>
+                            <th className="py-4 px-4 text-center">题目数量</th>
+                            <th className="py-4 px-4">
+                              <div className="flex items-center gap-0.5 cursor-pointer hover:text-neutral-900 transition-colors">
+                                包含题型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                              </div>
+                            </th>
+                            <th className="py-4 px-4">
+                              <div className="flex items-center gap-0.5 cursor-pointer hover:text-neutral-900 transition-colors">
+                                试卷类型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                              </div>
+                            </th>
+                            <th className="py-4 px-4">
+                              <div className="flex items-center gap-0.5 cursor-pointer hover:text-neutral-900 transition-colors">
+                                状态 
+                                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full border border-neutral-400 text-[9px] text-neutral-400 ml-1 font-normal cursor-help" title="试卷启用后方可被课程引用">?</span>
+                                <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                              </div>
+                            </th>
+                            <th className="py-4 px-4">
+                              <div className="flex items-center gap-1">
+                                创建人 
+                                <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer" />
+                              </div>
+                            </th>
+                            <th className="py-4 px-4">
+                              <div className="flex items-center gap-0.5 cursor-pointer hover:text-neutral-900 transition-colors">
+                                更新时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                              </div>
+                            </th>
+                            <th className="py-4 px-6 text-right">操作</th>
+                          </tr>
+                        </thead>
+                        
+                        <tbody>
+                          {papers.map((paper) => {
+                            const isExpanded = expandedRows.includes(paper.id);
+                            return (
+                              <React.Fragment key={paper.id}>
+                                {/* Main Row */}
+                                <tr className="border-b border-neutral-100 hover:bg-[#fff2e8]/10 transition-colors">
+                                  <td className="py-4 px-6 text-center select-none">
+                                    <input type="checkbox" className="rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer" />
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <div className="flex items-center gap-3">
+                                      <button 
+                                        onClick={() => handleToggleRow(paper.id)}
+                                        className={cn(
+                                          "w-4 h-4 border flex items-center justify-center text-xs font-bold transition-all rounded-[3px] select-none",
+                                          isExpanded 
+                                            ? "bg-[#fff2e8] border-[#fa541c] text-[#fa541c]" 
+                                            : "bg-white border-neutral-300 text-neutral-500 hover:border-[#fa541c] hover:text-[#fa541c]"
+                                        )}
+                                      >
+                                        {isExpanded ? "-" : "+"}
+                                      </button>
+                                      <span className="text-[14px] font-semibold text-neutral-800">{paper.name}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-[13px] text-neutral-500 leading-relaxed max-w-xs truncate" title={paper.desc}>
+                                    {paper.desc}
+                                  </td>
+                                  <td className="py-4 px-4 text-[14px] text-neutral-800 font-mono text-center">
+                                    {paper.questionsCount}
+                                  </td>
+                                  <td className="py-4 px-4 text-[13px] text-neutral-600">
+                                    {paper.questionTypes}
+                                  </td>
+                                  <td className="py-4 px-4 text-[13px] text-neutral-600">
+                                    {paper.paperType}
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#f6ffed] border border-[#b7eb8f] text-[#389e0d] text-[11px] font-medium">
+                                      {paper.status}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-[13px] text-neutral-600">
+                                    {paper.creator}
+                                  </td>
+                                  <td className="py-4 px-4 text-[12px] text-neutral-400 font-mono">
+                                    {paper.updatedAt}
+                                  </td>
+                                  <td className="py-4 px-6 text-[13px] font-medium text-right whitespace-nowrap select-none">
+                                    <div className="flex items-center justify-end gap-4">
+                                      <button className="text-[#fa541c] hover:text-[#ff7a45] transition-colors">编辑</button>
+                                      <button 
+                                        onClick={(e) => handleDeletePaper(paper.id, e)}
+                                        className="text-[#fa541c] hover:text-[#ff7a45] transition-colors"
+                                      >
+                                        删除
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+
+                                {/* Expanded Detail Row */}
+                                {isExpanded && (
+                                  <tr className="bg-[#fafafa]/50 border-b border-neutral-100">
+                                    <td colSpan={10} className="p-4">
+                                      <div className="w-full bg-white border border-neutral-200/80 rounded-xl p-4 shadow-sm relative overflow-hidden transition-all duration-300">
+                                        
+                                        <h3 className="flex items-center gap-2 text-[13.5px] font-bold text-neutral-800 mb-4 mt-1">
+                                          <FileText className="w-4 h-4 text-[#fa541c]" /> 客观题配置明细
+                                        </h3>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
+                                          {/* Item 1 */}
+                                          <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-100 hover:bg-white hover:border-[#ffbb96]/60 transition-all group">
+                                            <div className="font-bold text-[13px] text-neutral-800 mb-1 flex items-center gap-1.5">
+                                              <span className="w-1.5 h-1.5 bg-[#fa541c] rounded-full"></span>
+                                              1. 客观题 {paper.questionsCount} 道，共 100 分
+                                            </div>
+                                            <div className="text-[12px] text-neutral-400 pl-3">包含客观选择题以及Python基础编程自动测评题。</div>
+                                          </div>
+                                          
+                                          {/* Item 2 */}
+                                          <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-100 hover:bg-white hover:border-[#ffbb96]/60 transition-all group">
+                                            <div className="font-bold text-[13px] text-neutral-800 mb-1 flex items-center gap-1.5">
+                                              <span className="w-1.5 h-1.5 bg-[#fa541c] rounded-full"></span>
+                                              2. 答题限时：60 分钟
+                                            </div>
+                                            <div className="text-[12px] text-neutral-400 pl-3">客观题需在 60 分钟内完成答题，过程中无法暂停，仅支持提交一次，请提前合理安排时间。</div>
+                                          </div>
+                                        </div>
+
+                                        <div className="mt-6 pt-4 border-t border-neutral-100 flex justify-end pl-4">
+                                          <Button 
+                                            onClick={() => {
+                                              setShowPreviewQuestionsModal(true);
+                                              setSelectedAnswers({});
+                                            }}
+                                            className="bg-white hover:bg-[#fff2e8] text-[#fa541c] border border-[#ffbb96] h-8.5 px-6 rounded-md text-[12px] font-bold transition-all shadow-sm flex items-center gap-1"
+                                          >
+                                            <Eye className="w-3.5 h-3.5" /> 预览客观题
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                          
+                          {papers.length === 0 && (
+                            <tr>
+                              <td colSpan={10} className="py-12 text-center text-neutral-400">
+                                <Database className="w-12 h-12 mx-auto mb-2 text-neutral-200" />
+                                暂无可用试卷，请点击右上角【新建试卷】
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                  </div>
+                </div>
               </div>
+
+              {/* 新建试卷 Modal */}
+              {showCreatePaperModal && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+                  <div className="w-[500px] bg-white rounded-xl shadow-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-neutral-150">
+                    {/* Header */}
+                    <div className="h-14 bg-gradient-to-r from-[#fa541c] to-[#ff7a45] flex items-center justify-between px-6 shrink-0 text-white font-bold text-sm relative">
+                      <div className="flex items-center gap-2">
+                        <PlusCircle className="w-5 h-5" />
+                        <span>新建试卷</span>
+                      </div>
+                      <button 
+                        onClick={() => setShowCreatePaperModal(false)}
+                        className="text-white/80 hover:text-white p-2 transition-colors rounded-full hover:bg-white/10"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    {/* Form */}
+                    <form onSubmit={handleCreatePaper} className="p-6 space-y-4">
+                      <div>
+                        <label className="block text-[13px] font-bold text-neutral-700 mb-1.5">试卷名称 <span className="text-red-500">*</span></label>
+                        <input 
+                          type="text" 
+                          placeholder="请输入试卷名称，例如：Python基础数据类型测试"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all"
+                          value={newPaperForm.name}
+                          onChange={(e) => setNewPaperForm(prev => ({ ...prev, name: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-[13px] font-bold text-neutral-700 mb-1.5">试卷说明</label>
+                        <textarea 
+                          placeholder="请输入试卷的描述性信息..."
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all resize-none h-20"
+                          value={newPaperForm.desc}
+                          onChange={(e) => setNewPaperForm(prev => ({ ...prev, desc: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[13px] font-bold text-neutral-700 mb-1.5">题目数量</label>
+                          <input 
+                            type="number" 
+                            min="1"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all"
+                            value={newPaperForm.questionsCount}
+                            onChange={(e) => setNewPaperForm(prev => ({ ...prev, questionsCount: Number(e.target.value) }))}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-neutral-700 mb-1.5">答题限时 (分钟)</label>
+                          <input 
+                            type="number" 
+                            min="1"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all"
+                            value={newPaperForm.timeLimit}
+                            onChange={(e) => setNewPaperForm(prev => ({ ...prev, timeLimit: Number(e.target.value) }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[13px] font-bold text-neutral-700 mb-1.5">包含题型</label>
+                          <select 
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white"
+                            value={newPaperForm.questionTypes}
+                            onChange={(e) => setNewPaperForm(prev => ({ ...prev, questionTypes: e.target.value }))}
+                          >
+                            <option value="编程题">编程题</option>
+                            <option value="选择题">选择题</option>
+                            <option value="选择题, 编程题">混合题型</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-neutral-700 mb-1.5">试卷类型</label>
+                          <select 
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white"
+                            value={newPaperForm.paperType}
+                            onChange={(e) => setNewPaperForm(prev => ({ ...prev, paperType: e.target.value }))}
+                          >
+                            <option value="测验">测验</option>
+                            <option value="作业">作业</option>
+                            <option value="考试">考试</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4 border-t border-neutral-100 flex items-center justify-end gap-3 shrink-0">
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowCreatePaperModal(false)}
+                          className="h-9 px-5 text-neutral-600 hover:bg-neutral-50 rounded-md text-[13px] font-medium"
+                        >
+                          取消
+                        </Button>
+                        <Button 
+                          type="submit"
+                          className="h-9 px-5 bg-[#fa541c] hover:bg-[#ff7a45] text-white rounded-md text-[13px] font-bold shadow-sm"
+                        >
+                          确认创建
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* 预览客观题 Modal */}
+              {showPreviewQuestionsModal && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+                  <div className="w-[700px] max-w-full bg-white rounded-xl shadow-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-neutral-200 mx-4 h-[550px]">
+                    {/* Header */}
+                    <div className="h-14 bg-gradient-to-r from-[#fa541c] to-[#ff7a45] flex items-center justify-between px-6 shrink-0 text-white font-bold text-sm relative">
+                      <div className="flex items-center gap-2">
+                        <Eye className="w-5 h-5 animate-pulse" />
+                        <span>客观题在线预览（互动答题模式）</span>
+                      </div>
+                      <button 
+                        onClick={() => setShowPreviewQuestionsModal(false)}
+                        className="text-white/80 hover:text-white p-2 transition-colors rounded-full hover:bg-white/10"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#fafafa] custom-scrollbar">
+                      {/* Question Box */}
+                      <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-xs space-y-4">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="px-2 py-0.5 rounded bg-orange-50 text-[#fa541c] font-bold border border-[#ffbb96]/60">单选题</span>
+                          <span className="text-neutral-400 font-mono font-medium">题目 1 / 1</span>
+                        </div>
+                        
+                        <h4 className="text-[15px] font-bold text-neutral-800 leading-relaxed">
+                          问题：在 Python 中，关于数据类型和变量的描述，以下哪一项是错误的？
+                        </h4>
+
+                        <div className="space-y-2.5 pt-2">
+                          {[
+                            { key: 'A', text: "Python 是一种解释型语言，运行前不需要编译成二进制代码。" },
+                            { key: 'B', text: "Python 中的列表（List）是可变的，而元组（Tuple）是不可变的。" },
+                            { key: 'C', text: "Python 中的变量在使用前必须声明其数据类型，否则会报错。" },
+                            { key: 'D', text: "Python 支持面向对象、函数式等多种编程范式。" }
+                          ].map((opt) => {
+                            const isSelected = selectedAnswers[1] === opt.key;
+                            return (
+                              <div 
+                                key={opt.key}
+                                onClick={() => setSelectedAnswers({ 1: opt.key })}
+                                className={cn(
+                                  "p-3 rounded-lg border text-sm cursor-pointer transition-all flex items-start gap-3 select-none",
+                                  isSelected 
+                                    ? "bg-[#fff2e8]/80 border-[#fa541c] text-[#fa541c] shadow-sm font-semibold" 
+                                    : "bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50/50 hover:border-[#ffbb96]/60"
+                                )}
+                              >
+                                <span className={cn(
+                                  "w-5 h-5 rounded-full flex items-center justify-center shrink-0 font-mono text-xs border transition-colors",
+                                  isSelected 
+                                    ? "bg-[#fa541c] border-[#fa541c] text-white font-bold" 
+                                    : "border-neutral-300 text-neutral-400 bg-white"
+                                )}>
+                                  {opt.key}
+                                </span>
+                                <span className="leading-normal">{opt.text}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Explanation Block (Shown when answered) */}
+                      {selectedAnswers[1] && (
+                        <div className={cn(
+                          "p-4 rounded-xl border animate-in slide-in-from-bottom-2 duration-300",
+                          selectedAnswers[1] === 'C' 
+                            ? "bg-[#f6ffed] border-[#b7eb8f] text-[#389e0d]" 
+                            : "bg-red-50 border-red-200 text-red-600"
+                        )}>
+                          <div className="font-bold text-sm mb-1.5 flex items-center gap-1.5">
+                            {selectedAnswers[1] === 'C' ? (
+                              <>
+                                <CheckCircle2 className="w-5 h-5 text-[#52c41a]" />
+                                恭喜你，回答正确！
+                              </>
+                            ) : (
+                              <>
+                                <X className="w-5 h-5 text-red-500 rounded-full border border-red-500 flex items-center justify-center shrink-0" />
+                                回答错误，正确答案是 C。
+                              </>
+                            )}
+                          </div>
+                          <p className="text-[12px] leading-relaxed opacity-90 pl-6.5 mt-1 text-neutral-600">
+                            解析：Python 是动态类型语言，变量不需要显式声明类型，直接赋值即可（例如 `x = 5`），Python 解释器会自动推断变量的数据类型。因此选项 C 的说法是错误的。
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="h-14 border-t border-neutral-200 bg-white flex items-center justify-between px-6 shrink-0 select-none">
+                      <div className="text-[11px] text-neutral-400">
+                        {selectedAnswers[1] ? "您可以关闭预览或重新选择答案" : "点击选项选择您的答案进行测评"}
+                      </div>
+                      <Button 
+                        onClick={() => setShowPreviewQuestionsModal(false)}
+                        className="bg-[#fa541c] hover:bg-[#ff7a45] text-white h-9 px-6 rounded-md text-[13px] font-bold transition-all shadow-sm"
+                      >
+                        关闭预览
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -911,7 +1401,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             </div>
           )}
 
-          {(teacherActionMode === 'edit' || (playingLesson.type === 'experiment' && isExperimentStarted)) && (
+          {((teacherActionMode === 'edit' && playingLesson.type !== 'assignment') || (playingLesson.type === 'experiment' && isExperimentStarted)) && (
             <div className="w-full h-full bg-white relative flex flex-col">
               {/* Top Bar */}
               <div className="h-12 border-b border-neutral-border flex items-center justify-between px-4">

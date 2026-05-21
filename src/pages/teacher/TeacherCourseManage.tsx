@@ -20,8 +20,7 @@ const COURSE_SYLLABUS = [
       { section: "课时2:", title: "认定方案", type: "doc" },
       { section: "课时3:", title: "认定要素细目表", type: "doc" },
       { section: "课时4:", title: "实操平台演示", type: "doc" },
-      { section: "课时5:", title: "代码复习讲义", type: "doc" },
-      { section: "课时6:", title: "第一课随堂作业", type: "assignment" }
+      { section: "课时5:", title: "代码复习讲义", type: "doc" }
     ]
   },
   {
@@ -59,11 +58,16 @@ export default function TeacherCourseManage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('editor');
+  const [editorSubTab, setEditorSubTab] = useState<'directory' | 'assignments'>('directory');
   const [showCourseDetail, setShowCourseDetail] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{title: string, type: string} | null>(null);
   const [showGrading, setShowGrading] = useState(false);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+  const [showSelectPaperModal, setShowSelectPaperModal] = useState(false);
+  const [selectedPaperName, setSelectedPaperName] = useState("");
+  const [expandedPaper, setExpandedPaper] = useState<string | null>("人工智能通讯课-期末考试");
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showScoringRulesModal, setShowScoringRulesModal] = useState(false);
   const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
   const [addMenuOpenIndex, setAddMenuOpenIndex] = useState<number | null>(null);
@@ -183,8 +187,8 @@ export default function TeacherCourseManage() {
                   {/* Top Inner Tabs */}
                   <div className="flex items-center justify-between border-b border-neutral-border px-8 pt-4">
                      <div className="flex gap-8">
-                       <button className="pb-4 text-[15px] font-bold text-[#fa541c] border-b-2 border-[#fa541c] relative bottom-[-1px]">课程目录</button>
-                       <button className="pb-4 text-[15px] font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent relative bottom-[-1px]">课程作业</button>
+                       <button onClick={() => setEditorSubTab('directory')} className={cn("pb-4 text-[15px] relative bottom-[-1px]", editorSubTab === 'directory' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程目录</button>
+                       <button onClick={() => setEditorSubTab('assignments')} className={cn("pb-4 text-[15px] relative bottom-[-1px]", editorSubTab === 'assignments' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程作业</button>
                      </div>
                      <div className="flex items-center gap-4 pb-3">
                        <Button variant="outline" size="sm" onClick={() => setShowCreateLessonModal(true)} className="h-8 text-[#fa541c] border-[#fa541c] bg-transparent hover:bg-[#fa541c] hover:text-white rounded flex items-center gap-1.5 transition-colors">
@@ -197,7 +201,7 @@ export default function TeacherCourseManage() {
                   </div>
 
                   {/* Chapter List Area */}
-                  <div className="p-6 space-y-4">
+                  <div className={cn("p-6 space-y-4", editorSubTab === 'directory' ? "block" : "hidden")}>
                     {COURSE_SYLLABUS.map((chapter, i) => (
                       <div key={i} className="rounded-lg bg-neutral-50 border border-neutral-100 overflow-hidden">
                         <div className="flex items-center justify-between px-6 py-4 bg-neutral-100/50">
@@ -217,8 +221,7 @@ export default function TeacherCourseManage() {
                                     {[
                                       { title: '教学课件', desc: '支持图文、PPT 文档、视频等', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', action: () => {setShowTeachingMaterialModal(true); setAddMenuOpenIndex(null);} },
                                       { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', action: () => {setShowExperimentMaterialModal(true); setAddMenuOpenIndex(null);} },
-                                      { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', action: () => {setShowInteractiveMaterialModal(true); setAddMenuOpenIndex(null);} },
-                                      { title: '随堂作业', desc: '章节测验，客观题、编程题等', icon: CheckSquare, color: 'text-rose-500', bg: 'bg-rose-50', action: () => {setShowAssignmentModal(true); setAddMenuOpenIndex(null);} }
+                                      { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', action: () => {setShowInteractiveMaterialModal(true); setAddMenuOpenIndex(null);} }
                                     ].map((item, idx) => (
                                       <div key={idx} onClick={item.action} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-neutral-50 cursor-pointer transition-colors group">
                                         <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", item.bg, item.color)}>
@@ -300,6 +303,55 @@ export default function TeacherCourseManage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                  
+                  {/* Assignment List Area */}
+                  <div className={cn("p-6 space-y-6", editorSubTab === 'assignments' ? "block" : "hidden")}>
+                    {/* Assignment 1 */}
+                    <div className="rounded-xl bg-neutral-50/50 border border-neutral-100 overflow-hidden">
+                      <div className="flex items-center justify-between px-6 py-4 bg-neutral-100/50 border-b border-neutral-100">
+                        <h3 className="text-[16px] font-bold text-neutral-800">1. 人工智能通讯作业</h3>
+                        <span className="text-[13px] text-neutral-400">截止时间: 2099/02/28 00:00:00</span>
+                      </div>
+                      <div className="p-6">
+                        <div className="flex items-start gap-3 mb-6">
+                          <FileText className="w-5 h-5 text-[#fa541c] mt-0.5" />
+                          <h4 className="text-[15px] font-bold text-neutral-900">客观题</h4>
+                        </div>
+                        
+                        <div className="pl-8 space-y-6">
+                          <div>
+                            <h5 className="text-[14px] font-bold text-neutral-800 mb-2">1. 客观题 18 道，共 100 分</h5>
+                            <p className="text-[12px] text-neutral-400">客观题包括单选题、多选题、判断题、填空题、简答题、思考题、编程题</p>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-[14px] font-bold text-neutral-800 mb-2">2. 答题限时: 90 分钟</h5>
+                            <p className="text-[12px] text-neutral-400">客观题需在 90 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</p>
+                          </div>
+                          
+                          <Button onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-orange-500/20 px-6 h-9 font-bold mt-2">
+                            预览作业
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Assignment 2 */}
+                    <div className="rounded-xl bg-neutral-50/50 border border-neutral-100 overflow-hidden">
+                      <div className="flex items-center justify-between px-6 py-5 bg-neutral-100/50">
+                        <h3 className="text-[15px] font-bold text-neutral-700">2. 搭建 AI 聊天助手智能体作业</h3>
+                        <span className="text-[13px] text-neutral-400">截止时间: 2099/02/28 00:00:00</span>
+                      </div>
+                    </div>
+                    
+                    {/* Assignment 3 */}
+                    <div className="rounded-xl bg-neutral-50/50 border border-neutral-100 overflow-hidden">
+                      <div className="flex items-center justify-between px-6 py-5 bg-neutral-100/50">
+                        <h3 className="text-[15px] font-bold text-neutral-700">3. 实验报告 (理工类): 基于人工神经网络算法的图像分类实践</h3>
+                        <span className="text-[13px] text-neutral-400">截止时间: 2099/02/28 00:00:00</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -846,69 +898,229 @@ export default function TeacherCourseManage() {
         </div>
       </div>
 
-      {/* 创建作业任务 / 编辑作业任务 Modal */}
+      {/* 新建作业 Modal (Figure 1 Design) */}
       {(showCreateTaskModal || showEditTaskModal) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
-                {showCreateTaskModal ? <PlusCircle className="w-5 h-5 text-[#fa541c]" /> : <Edit className="w-5 h-5 text-[#fa541c]" />} 
-                {showCreateTaskModal ? '创建作业任务' : '编辑作业任务'}
-              </h2>
-              <button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/40 backdrop-blur-sm animation-fade-in pr-0">
+          <div className="bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.1)] w-full max-w-[600px] h-full flex flex-col animation-slide-left">
+            <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-[18px] font-bold text-neutral-900">新建作业</h2>
+              <button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 任务标题</label>
-                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="例如：模块 1 综合测验：Python 基础" defaultValue={showEditTaskModal ? "模块 1 综合测验：Python 基础" : ""} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800">任务说明</label>
-                <textarea className="w-full h-24 p-3 text-[14px] rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none" placeholder="填写具体的作业要求与指导..." defaultValue={showEditTaskModal ? "请完成提供的 Python 基础代码填空题，并确保所有测试用例通过。" : ""}></textarea>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 截止时间</label>
-                  <div className="relative">
-                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue={showEditTaskModal ? "2026-05-20T23:59" : ""} />
+            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
+              {/* 基础信息 */}
+              <div className="space-y-6">
+                <h3 className="text-[15px] font-bold text-neutral-900">基础信息</h3>
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 选择试卷：</label>
+                  <div className="text-[14px] flex items-center gap-3">
+                    <span className={selectedPaperName ? "text-neutral-900 font-medium" : "text-neutral-400"}>
+                      {selectedPaperName || "未选择"}
+                    </span>
+                    <span 
+                      onClick={() => setShowSelectPaperModal(true)} 
+                      className="text-[#fa541c] hover:text-[#e84a15] cursor-pointer font-medium"
+                    >
+                      {selectedPaperName ? "重新选择" : "请选择"}
+                    </span>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1"><span className="text-[#fa541c]">*</span> 满分分值</label>
-                  <input type="number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="100" />
+
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 作业名称：</label>
+                  <input type="text" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入" defaultValue={selectedPaperName} />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 发布时间：</label>
+                  <div className="relative">
+                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" defaultValue="2026-05-21T14:29" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 截止时间：</label>
+                  <div className="relative">
+                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-400" />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">提交限制设置</label>
-                <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-200 space-y-4">
-                   <div className="flex items-center justify-between">
-                     <span className="text-[13px] text-neutral-700">开启提交次数限制</span>
-                     <input type="checkbox" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 rounded cursor-pointer" defaultChecked />
-                   </div>
-                   <div className="flex items-center gap-3">
-                     <span className="text-[13px] text-neutral-600">最多允许提交</span>
-                     <input type="number" className="w-20 border border-neutral-200 rounded-md px-3 py-1.5 text-[13px] text-center focus:outline-none focus:border-[#fa541c]" defaultValue="2" />
-                     <span className="text-[13px] text-neutral-600">次</span>
-                   </div>
-                   <div className="pt-2 border-t border-neutral-200">
-                     <label className="flex items-center gap-2 cursor-pointer mt-2">
-                       <input type="checkbox" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 rounded cursor-pointer" defaultChecked />
-                       <span className="text-[13px] text-neutral-700">允许学生提交延期申请（需教师审批）</span>
-                     </label>
-                   </div>
+              {/* 分配人员 */}
+              <div className="space-y-6 pt-6 border-t border-neutral-100">
+                <h3 className="text-[15px] font-bold text-neutral-900">分配人员</h3>
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right mt-1"><span className="text-[#fa541c]">*</span> 分配至：</label>
+                  <div className="space-y-4 text-[14px] text-neutral-700">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <input type="radio" name="assign" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer" defaultChecked />
+                      <span>全部学生</span>
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="assign" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer" />
+                        <span>部分学生</span>
+                      </label>
+                      <span className="text-neutral-400">未选择</span>
+                      <span className="text-[#fa541c] cursor-pointer hover:text-[#e84a15]">添加</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 通知提醒 */}
+              <div className="space-y-6 pt-6 border-t border-neutral-100">
+                <h3 className="text-[15px] font-bold text-neutral-900">通知提醒</h3>
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right">站内通知：</label>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-5 bg-[#fa541c] rounded-full relative cursor-pointer shadow-inner">
+                      <div className="w-4 h-4 bg-white rounded-full absolute top-0.5 right-0.5 shadow-sm"></div>
+                    </div>
+                    <span className="text-[14px] text-neutral-600">推送相关学生和教师</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-5 border-t border-neutral-100 bg-white shrink-0 flex items-center justify-end gap-3">
-              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存设置</Button>
+            <div className="p-6 border-t border-neutral-100 bg-white shrink-0 flex justify-end gap-3">
+              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-6">取消</Button>
+              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className={cn("text-white font-bold h-9 px-6", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>发布作业</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 选择试卷 Modal (Figure 2 Design) */}
+      {showSelectPaperModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[1100px] overflow-hidden flex flex-col h-[600px]">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-neutral-900">选择试卷</h2>
+              <button onClick={() => setShowSelectPaperModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 pb-0 flex justify-end">
+               <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm font-bold h-9 px-5">
+                 <Plus className="w-4 h-4 mr-1.5" /> 新建试卷
+               </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-neutral-100 text-[13px] text-neutral-900 font-bold bg-white">
+                    <th className="py-3 px-2 w-12 text-center"></th>
+                    <th className="py-3 px-2 w-[220px]">
+                      <div className="flex items-center gap-1">试卷名称 <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer hover:text-[#fa541c] transition-colors" /></div>
+                    </th>
+                    <th className="py-3 px-2">试卷描述</th>
+                    <th className="py-3 px-2">题目数量</th>
+                    <th className="py-3 px-2 w-[220px] relative">
+                      <div className="flex items-center justify-between w-full p-1 -m-1 rounded cursor-pointer hover:bg-neutral-50 transition-colors" onClick={() => setShowFilterDropdown(!showFilterDropdown)}>
+                        <span>包含题型</span>
+                        <ChevronDown className="w-4 h-4 text-neutral-400" />
+                      </div>
+                      {showFilterDropdown && (
+                        <>
+                          <div className="fixed inset-0 z-[65]" onClick={(e) => { e.stopPropagation(); setShowFilterDropdown(false); }}></div>
+                          <div className="absolute left-0 top-10 z-[70] w-[200px] bg-white border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-lg overflow-hidden animation-slide-up" onClick={e => e.stopPropagation()}>
+                            <div className="p-4 border-b border-neutral-100">
+                              <div className="font-bold text-[13px] mb-3 text-neutral-800">搜索包含题型</div>
+                              <div className="space-y-2.5">
+                                {['选择全部', '单选题', '多选题', '判断题', '填空题', '简答题', '思考题', '实训题', '编程题'].map((t) => (
+                                  <label key={t} className="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" className="w-3.5 h-3.5 text-[#fa541c] focus:ring-[#fa541c] rounded border-neutral-300 cursor-pointer" />
+                                    <span className="text-[13px] text-neutral-600 group-hover:text-neutral-900 transition-colors">{t}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex text-[13px]">
+                              <button className="flex-1 py-2.5 text-neutral-500 hover:text-neutral-700 bg-neutral-50 hover:bg-neutral-100 transition-colors">重置</button>
+                              <button className="flex-1 py-2.5 text-[#fa541c] font-bold hover:bg-orange-50 transition-colors" onClick={() => setShowFilterDropdown(false)}>确认</button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </th>
+                    <th className="py-3 px-2 w-[120px]">
+                       <div className="flex items-center gap-1">创建人 <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer hover:text-[#fa541c] transition-colors" /></div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { name: '人工智能通讯课-期末考试', desc: '', count: 40, types: '单选题、填空题、多选题、简答题、判断题', creator: 'Momode l' },
+                    { name: '实验报告（理工类）：基于人工神经网...', desc: '该试卷用于「Mo 体验课程」理工类作业使...', count: 1, types: '实训题', creator: '孙昕' },
+                    { name: '搭建 AI 聊天助手智能体作业', desc: '该试卷用于「Mo 体验课程」作业使用', count: 1, types: '实训题', creator: '孙昕' },
+                    { name: '人工智能通讯作业', desc: '用于「Mo 体验课程」的作业试卷', count: 18, types: '单选题、填空题、多选题、简答题、编程题、思考题、判断题', creator: '孙昕' },
+                    { name: 'Python基础编程', desc: 'Python基础编程', count: 7, types: '编程题', creator: 'Momode l' },
+                    { name: '生成式AI与大模型', desc: '面向课程生成式AI与大模型的试题', count: 30, types: '单选题、填空题、简答题、思考题、判断题', creator: 'Momode l' },
+                    { name: '人工智能通讯课', desc: '面向人工智能通讯课的试题', count: 31, types: '单选题、填空题、简答题、编程题、思考题、判断题', creator: 'Momode l' }
+                  ].map((paper, i) => {
+                    const isExpanded = expandedPaper === paper.name;
+                    return (
+                    <React.Fragment key={i}>
+                      <tr 
+                        className={cn("border-b border-neutral-100 hover:bg-orange-50/50 cursor-pointer transition-colors", isExpanded ? "bg-orange-50/20" : "")}
+                        onClick={() => setSelectedPaperName(paper.name)}
+                      >
+                        <td className="py-4 px-2 text-center relative">
+                           <div className="flex items-center gap-3">
+                             <div 
+                               className="w-4 h-4 border border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded text-neutral-400 flex items-center justify-center text-[10px] bg-neutral-50 transition-colors"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setExpandedPaper(isExpanded ? null : paper.name);
+                               }}
+                             >
+                               {isExpanded ? '-' : '+'}
+                             </div>
+                             <input type="radio" name="paperSelect" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer" checked={selectedPaperName === paper.name} readOnly />
+                           </div>
+                        </td>
+                        <td className="py-4 px-2 text-[14px] text-neutral-700 font-medium">{paper.name}</td>
+                        <td className="py-4 px-2 text-[13px] text-neutral-500 max-w-[200px] truncate">{paper.desc}</td>
+                        <td className="py-4 px-2 text-[14px] text-neutral-700">{paper.count}</td>
+                        <td className="py-4 px-2 text-[13px] text-neutral-500 max-w-[200px] truncate">{paper.types}</td>
+                        <td className="py-4 px-2 text-[13px] text-neutral-500">{paper.creator}</td>
+                      </tr>
+                      {isExpanded && (
+                        <tr className="border-b border-neutral-100 bg-neutral-50/30">
+                          <td colSpan={6} className="py-6 px-12">
+                            <div className="flex items-center gap-2 text-neutral-900 font-bold mb-5">
+                               <FileText className="w-5 h-5 text-[#fa541c]" /> 客观题
+                            </div>
+                            <div className="space-y-5 pl-7">
+                               <div>
+                                  <div className="font-bold text-[14px] text-neutral-900 mb-2">1. 客观题 {paper.count} 道，共 100 分</div>
+                                  <div className="text-[12px] text-neutral-500">{paper.types.includes('单选') ? `客观题包括${paper.types}` : `题型包括${paper.types}`}</div>
+                               </div>
+                               <div>
+                                  <div className="font-bold text-[14px] text-neutral-900 mb-2">2. 答题限时: 3600 分钟</div>
+                                  <div className="text-[12px] text-neutral-500">客观题需在 3600 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</div>
+                               </div>
+                               <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-orange-500/20 font-bold h-8 px-5 mt-2">
+                                  预览客观题
+                               </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  )})}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-4 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 shrink-0">
+               <Button onClick={() => setShowSelectPaperModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 h-9 px-6">取消</Button>
+               <Button onClick={() => setShowSelectPaperModal(false)} className={cn("text-white h-9 px-6", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>确定</Button>
             </div>
           </div>
         </div>

@@ -1,170 +1,181 @@
 import React, { useState } from 'react';
-import { Plus, Upload, Globe, Search, Brain, FileQuestion, Copy, Eye, Trash2, Filter } from 'lucide-react';
+import { Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export default function TeacherQuestions() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
 
   const questions = [
     {
       id: 1,
-      name: '什么是机器学习？',
-      bank: '人工智能基础',
-      type: '单选',
+      name: '智能体与传统程序最本质的区别是什么？',
+      bank: '人工智能通识D-uni',
+      type: '单选题',
       status: '启用',
       source: '人工出题',
-      difficulty: '简单',
-      tags: ['概念', '基础'],
+      difficulty: '初级',
+      tags: '智能体',
       grading: '自动评分',
-      creator: '张老师',
-      updateTime: '2026-03-25 10:00',
-      scope: '公开',
-      auditStatus: '审核通过'
+      creator: 'Momodel',
+      updateTime: '2026/05/15 14:45',
+      scope: '已公开',
+      auditStatus: '申请公开已通过'
     },
     {
       id: 2,
-      name: '实现一个简单的线性回归模型',
-      bank: '深度学习进阶',
-      type: '编程',
+      name: '智能体的四个基本组成部分包括哪些？',
+      bank: '人工智能通识D-uni',
+      type: '多选题',
       status: '启用',
-      source: 'AI出题',
-      difficulty: '困难',
-      tags: ['算法', 'Python'],
+      source: '人工出题',
+      difficulty: '初级',
+      tags: '智能体',
       grading: '自动评分',
-      creator: '张老师',
-      updateTime: '2026-03-26 14:30',
-      scope: '私有',
-      auditStatus: '未申请'
+      creator: 'Momodel',
+      updateTime: '2026/05/15 14:45',
+      scope: '已公开',
+      auditStatus: '申请公开已通过'
     },
     {
       id: 3,
-      name: '简述CNN和RNN的区别',
-      bank: '深度学习进阶',
-      type: '简答',
-      status: '禁用',
+      name: '大语言模型是__________是构建生成式各种应用的...',
+      bank: '人工智能通识D-uni',
+      type: '填空题',
+      status: '启用',
       source: '人工出题',
-      difficulty: '中等',
-      tags: ['神经网络', '理论'],
-      grading: '人工评分',
-      creator: '李老师',
-      updateTime: '2026-03-20 09:15',
-      scope: '公开',
-      auditStatus: '审核中'
+      difficulty: '中级',
+      tags: '',
+      grading: '自动评分',
+      creator: 'Momodel',
+      updateTime: '2026/05/15 17:02',
+      scope: '已公开',
+      auditStatus: '申请公开已通过'
     }
   ];
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-title flex items-center gap-2">
-          <FileQuestion className="w-6 h-6 text-[#fa541c]" />
-          试题管理
-        </h1>
-      </div>
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedQuestions(questions.map(q => q.id));
+    } else {
+      setSelectedQuestions([]);
+    }
+  };
 
-      {/* Action Bar */}
-      <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-sm flex flex-col sm:flex-row justify-between gap-4">
+  const toggleSelect = (id: number) => {
+    if (selectedQuestions.includes(id)) {
+      setSelectedQuestions(selectedQuestions.filter(qId => qId !== id));
+    } else {
+      setSelectedQuestions([...selectedQuestions, id]);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
+        <div className="flex items-end gap-4">
+          <h1 className="text-xl font-bold text-neutral-900">试题管理</h1>
+          <p className="text-sm text-neutral-500 mb-0.5">新建试题、仅展示公开或您个人题库内试题，试题“启用”后可用于组卷</p>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm">
+          <Button variant="outline" className="flex items-center gap-1.5 h-9 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white rounded shadow-sm">
+            <Brain className="w-4 h-4" /> 智能出题
+          </Button>
+          <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded">
             <Plus className="w-4 h-4" /> 新建试题
           </Button>
-          <Button variant="outline" className="flex items-center gap-1.5 border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8]">
-            <Brain className="w-4 h-4" /> 智能出题 (AI)
+          <Button variant="outline" className="flex items-center gap-1.5 h-9 rounded border-neutral-200 text-neutral-600">
+            批量公开
           </Button>
-          <Button variant="outline" className="flex items-center gap-1.5">
-            <Globe className="w-4 h-4" /> 批量公开
-          </Button>
-          <Button variant="outline" className="flex items-center gap-1.5">
-            <Upload className="w-4 h-4" /> 导入
-          </Button>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input 
-              type="text" 
-              placeholder="搜索试题名称/标签" 
-              className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-lg focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" className="px-3">
-            <Filter className="w-4 h-4" />
+          <Button variant="outline" className="flex items-center gap-1.5 h-9 rounded border-neutral-200 text-neutral-600">
+            导入
           </Button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-neutral-border shadow-sm overflow-hidden">
+      <div className="bg-white rounded overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="border-b border-neutral-border bg-neutral-50 text-sm text-neutral-caption">
-                <th className="p-4 font-medium">试题名称</th>
-                <th className="p-4 font-medium">所属题库</th>
-                <th className="p-4 font-medium">题型</th>
-                <th className="p-4 font-medium">难度</th>
+              <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                <th className="p-4 font-medium w-12 text-center">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c]" 
+                    checked={selectedQuestions.length === questions.length && questions.length > 0}
+                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                  />
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">试题名称 <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer" /></div>
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">所属试题库 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">题型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">状态 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
                 <th className="p-4 font-medium">来源</th>
-                <th className="p-4 font-medium">状态</th>
-                <th className="p-4 font-medium">范围/审核</th>
-                <th className="p-4 font-medium">更新时间</th>
-                <th className="p-4 font-medium text-right">操作</th>
+                <th className="p-4 font-medium">难度</th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">标签 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">评分方式</th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">创建人 <Search className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">更新时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">试题范围 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">审核状态 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
+                <th className="p-4 font-medium">操作</th>
               </tr>
             </thead>
             <tbody>
               {questions.map(q => (
-                <tr key={q.id} className="border-b border-neutral-border/50 hover:bg-neutral-50/50 transition-colors group text-sm">
-                  <td className="p-4">
-                    <div className="font-medium text-neutral-title max-w-[200px] truncate" title={q.name}>{q.name}</div>
-                    <div className="flex gap-1 mt-1">
-                      {q.tags.map(tag => (
-                        <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-neutral-100 text-neutral-500 rounded">{tag}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-4 text-neutral-body">{q.bank}</td>
-                  <td className="p-4">
-                    <span className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-md border border-blue-100">{q.type}</span>
+                <tr key={q.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                  <td className="p-4 text-center">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c]" 
+                      checked={selectedQuestions.includes(q.id)}
+                      onChange={() => toggleSelect(q.id)}
+                    />
                   </td>
                   <td className="p-4">
-                    <span className={cn(
-                      "text-xs font-medium",
-                      q.difficulty === '简单' ? "text-green-600" : q.difficulty === '中等' ? "text-orange-500" : "text-red-600"
-                    )}>{q.difficulty}</span>
+                    <div className="text-neutral-800 max-w-[180px] truncate" title={q.name}>{q.name}</div>
                   </td>
-                  <td className="p-4 text-neutral-body flex items-center gap-1">
-                    {q.source === 'AI出题' && <Brain className="w-3 h-3 text-purple-500" />}
-                    {q.source}
-                  </td>
+                  <td className="p-4 text-neutral-600">{q.bank}</td>
+                  <td className="p-4 text-neutral-800">{q.type}</td>
                   <td className="p-4">
-                    <span className={cn("px-2 py-1 text-xs rounded-md", q.status === '启用' ? "bg-green-50 text-green-600" : "bg-neutral-100 text-neutral-500")}>
+                    <span className={cn("px-2 py-0.5 text-[12px] rounded border", q.status === '启用' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
                       {q.status}
                     </span>
                   </td>
+                  <td className="p-4 text-neutral-600">{q.source}</td>
+                  <td className="p-4 text-neutral-600">{q.difficulty}</td>
+                  <td className="p-4 text-neutral-600">{q.tags || '-'}</td>
+                  <td className="p-4 text-neutral-600">{q.grading}</td>
+                  <td className="p-4 text-neutral-600">{q.creator}</td>
+                  <td className="p-4 text-neutral-500">{q.updateTime}</td>
+                  <td className="p-4 text-[#fa541c]">
+                    <span className="px-2 py-0.5 bg-[#fff2e8] rounded text-[12px] border border-[#ffbb96]">{q.scope}</span>
+                  </td>
+                  <td className="p-4 text-[#fa541c]">{q.auditStatus}</td>
                   <td className="p-4">
-                    <div className="text-xs text-neutral-title">{q.scope}</div>
-                    <div className={cn("text-[10px] mt-0.5", q.auditStatus === '审核通过' ? "text-green-600" : q.auditStatus === '审核中' ? "text-orange-500" : "text-neutral-400")}>
-                      {q.auditStatus}
-                    </div>
-                  </td>
-                  <td className="p-4 text-xs text-neutral-caption">
-                    <div>{q.updateTime}</div>
-                    <div>{q.creator}</div>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-[#fa541c] hover:bg-[#fff2e8]" title="查看">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-blue-600 hover:bg-blue-50" title="复制">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-red-600 hover:bg-red-50" title="删除">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    <div className="flex items-center gap-2">
+                      <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
+                      <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
+                      <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
                     </div>
                   </td>
                 </tr>
@@ -174,20 +185,18 @@ export default function TeacherQuestions() {
         </div>
         
         {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t border-neutral-border bg-neutral-50/50">
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-caption">共 <span className="font-medium text-neutral-title">{questions.length}</span> 条数据</span>
-            <select className="text-sm border border-neutral-border rounded-md px-2 py-1 focus:outline-none focus:border-[#fa541c]">
-              <option>10条/页</option>
-              <option>20条/页</option>
-              <option>50条/页</option>
-            </select>
+        <div className="flex items-center justify-end p-4 gap-4 mt-2">
+          <span className="text-[13px] text-neutral-500">共 {questions.length} 条</span>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
           </div>
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md" disabled>&lt;</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md">&gt;</Button>
-          </div>
+          <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600">
+            <option>10 条/页</option>
+            <option>20 条/页</option>
+            <option>50 条/页</option>
+          </select>
         </div>
       </div>
     </div>
