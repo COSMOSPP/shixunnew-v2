@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import CourseDetail from '@/components/CourseDetail';
+import TeacherPPTEditor from '@/components/TeacherPPTEditor';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart as BarChartRecharts, Bar } from 'recharts';
 
 const COURSE_SYLLABUS = [
@@ -90,7 +91,11 @@ export default function TeacherCourseManage() {
   ];
 
   if (showCourseDetail) {
-    return <CourseDetail onBack={() => setShowCourseDetail(false)} onShowLearningPath={() => {}} initialLesson={selectedLesson} isTeacher={true} />;
+    return (
+      <div className="flex flex-col h-[calc(100vh-56px)] bg-[#f5f6f8] -mt-6 -mx-6 md:-mx-8 overflow-hidden">
+        <TeacherPPTEditor courseSyllabus={COURSE_SYLLABUS} initialLesson={selectedLesson} onClose={() => setShowCourseDetail(false)} />
+      </div>
+    );
   }
 
   return (

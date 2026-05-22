@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, PlusCircle, Edit, Trash2, Compass } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, PlusCircle, Edit, Trash2, Compass, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import TeacherPPTEditor from './TeacherPPTEditor';
 
 interface CourseDetailProps {
   onBack: () => void;
@@ -45,7 +46,7 @@ const COURSE_SYLLABUS: Chapter[] = [
       { section: "课时1:", title: "职业简介", locked: false, status: "已完成", type: "doc" },
       { section: "课时2:", title: "认定方案", locked: false, status: "未学习", type: "doc" },
       { section: "课时3:", title: "认定要素细目表", locked: false, status: "未学习", type: "doc" },
-      { section: "课时4:", title: "实操平台演示", locked: false, status: "未学习", type: "video" },
+      { section: "课时4:", title: "实操平台演示", locked: false, status: "未学习", type: "doc" },
       { section: "课时5:", title: "代码复习讲义", locked: false, status: "未学习", type: "doc" },
       { section: "课时6:", title: "第一课随堂作业", locked: false, status: "未学习", type: "assignment" }
     ]
@@ -76,6 +77,32 @@ const COURSE_SYLLABUS: Chapter[] = [
 
 export default function CourseDetail({ onBack, onShowLearningPath, initialLesson, isTeacher }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
+  const [showStudentAnswering, setShowStudentAnswering] = useState(false);
+  const [answeringAnswers, setAnsweringAnswers] = useState<Record<number, number>>({});
+  const [expandedAssignment, setExpandedAssignment] = useState<number | null>(1);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 59, seconds: 15 });
+
+  useEffect(() => {
+    if (!showStudentAnswering) return;
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        } else if (prev.days > 0) {
+          return { days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
+        } else {
+          clearInterval(interval);
+          return prev;
+        }
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showStudentAnswering]);
+
   const [playingLesson, setPlayingLesson] = useState<{title: string, type: string} | null>(initialLesson || null);
   const [isExperimentStarted, setIsExperimentStarted] = useState(false);
   const [activeExperimentTab, setActiveExperimentTab] = useState('course');
@@ -86,6 +113,113 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
   const [importedDatasets, setImportedDatasets] = useState<string[]>([]);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
   const isRecommendedMode = (window as any).__RECOMMENDED_MODE === true;
+
+  // Dynamic syllabus state & editing states
+  const [syllabus, setSyllabus] = useState<Chapter[]>(COURSE_SYLLABUS);
+  const [activeLessonMenu, setActiveLessonMenu] = useState<{ cIdx: number, lIdx: number } | null>(null);
+  const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
+  const [showEditLessonModal, setShowEditLessonModal] = useState(false);
+  const [showDeleteLessonModal, setShowDeleteLessonModal] = useState(false);
+  const [newLessonName, setNewLessonName] = useState("");
+  const [editLessonName, setEditLessonName] = useState("");
+  const [lessonToEdit, setLessonToEdit] = useState<{ cIdx: number, lIdx: number } | null>(null);
+  const [lessonToDelete, setLessonToDelete] = useState<{ cIdx: number, lIdx: number } | null>(null);
+
+  const currentChapterIdx = syllabus.findIndex((ch: any) => 
+    ch.lessons.some((l: any) => l.title === (playingLesson?.title || ""))
+  ) !== -1 ? syllabus.findIndex((ch: any) => 
+    ch.lessons.some((l: any) => l.title === (playingLesson?.title || ""))
+  ) : 0;
+
+  const handleCreateLesson = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLessonName.trim()) return;
+    
+    const updatedSyllabus = [...syllabus];
+    const targetChapter = updatedSyllabus[currentChapterIdx];
+    if (targetChapter) {
+      const sectionNum = `课时${targetChapter.lessons.length + 1}:`;
+      targetChapter.lessons = [
+        ...targetChapter.lessons,
+        {
+          section: sectionNum,
+          title: newLessonName,
+          locked: false,
+          status: "未学习",
+          type: "doc"
+        }
+      ];
+      setSyllabus(updatedSyllabus);
+      setPlayingLesson({ title: newLessonName, type: "doc" });
+    }
+    setNewLessonName("");
+    setShowCreateLessonModal(false);
+  };
+
+  const handleOpenEditModal = (cIdx: number, lIdx: number, currentTitle: string) => {
+    setLessonToEdit({ cIdx, lIdx });
+    setEditLessonName(currentTitle);
+    setShowEditLessonModal(true);
+  };
+
+  const handleEditLesson = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editLessonName.trim() || !lessonToEdit) return;
+    
+    const updatedSyllabus = [...syllabus];
+    const targetChapter = updatedSyllabus[lessonToEdit.cIdx];
+    if (targetChapter && targetChapter.lessons[lessonToEdit.lIdx]) {
+      const oldTitle = targetChapter.lessons[lessonToEdit.lIdx].title;
+      targetChapter.lessons[lessonToEdit.lIdx].title = editLessonName;
+      setSyllabus(updatedSyllabus);
+      
+      if (playingLesson?.title === oldTitle) {
+        setPlayingLesson({ title: editLessonName, type: playingLesson.type });
+      }
+    }
+    setShowEditLessonModal(false);
+    setLessonToEdit(null);
+  };
+
+  const handleOpenDeleteModal = (cIdx: number, lIdx: number) => {
+    setLessonToDelete({ cIdx, lIdx });
+    setShowDeleteLessonModal(true);
+  };
+
+  const handleDeleteLesson = () => {
+    if (!lessonToDelete) return;
+    
+    const updatedSyllabus = [...syllabus];
+    const targetChapter = updatedSyllabus[lessonToDelete.cIdx];
+    if (targetChapter) {
+      const deletedTitle = targetChapter.lessons[lessonToDelete.lIdx].title;
+      
+      targetChapter.lessons = targetChapter.lessons.filter((_, idx) => idx !== lessonToDelete.lIdx);
+      targetChapter.lessons = targetChapter.lessons.map((lesson: any, idx: number) => ({
+        ...lesson,
+        section: `课时${idx + 1}:`
+      }));
+      
+      setSyllabus(updatedSyllabus);
+      
+      if (playingLesson?.title === deletedTitle) {
+        let foundNewActive = false;
+        for (const ch of updatedSyllabus) {
+          if (ch.lessons.length > 0) {
+            setPlayingLesson({ title: ch.lessons[0].title, type: ch.lessons[0].type });
+            setIsExperimentStarted(false);
+            foundNewActive = true;
+            break;
+          }
+        }
+        if (!foundNewActive) {
+          setPlayingLesson(null);
+        }
+      }
+    }
+    setShowDeleteLessonModal(false);
+    setLessonToDelete(null);
+  };
 
   // Interactive Paper Management States
   const [expandedRows, setExpandedRows] = useState<number[]>([1]); // Row 1 expanded by default
@@ -189,6 +323,187 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
     }
   };
 
+  if (showStudentAnswering) {
+    const questions = [
+      {
+        id: 1,
+        title: "神经网络中ReLU是？",
+        options: ["A 激活函数", "B 损失函数", "C 优化器", "D 正则化方法"]
+      },
+      {
+        id: 2,
+        title: "以下哪项不是深度学习框架？",
+        options: ["A PyTorch", "B Java", "C Keras", "D Caffe"]
+      },
+      {
+        id: 3,
+        title: "监督学习与无监督学习的主要区别是？",
+        options: ["A 计算设备", "B 算法数据", "C 数据大小", "D 标签存在与否"]
+      },
+      {
+        id: 4,
+        title: "人工智能的英文缩写是？",
+        options: ["A AI", "B UI", "C AR", "D VR"]
+      },
+      {
+        id: 5,
+        title: "训练集、验证集和测试集的比例通常为？",
+        options: ["A 8:2:2", "B 6:2:2", "C 7:2:1", "D 5:5:0"]
+      }
+    ];
+
+    const correctAnswers: Record<number, number> = {
+      1: 0,
+      2: 1,
+      3: 3,
+      4: 0,
+      5: 2
+    };
+
+    const handleSubmit = () => {
+      const unansweredCount = questions.length - Object.keys(answeringAnswers).length;
+      if (unansweredCount > 0) {
+        if (!window.confirm(`您还有 ${unansweredCount} 道题未作答，确定要提交吗？`)) {
+          return;
+        }
+      }
+
+      let score = 0;
+      Object.entries(answeringAnswers).forEach(([qId, selectedIdx]) => {
+        if (correctAnswers[Number(qId)] === selectedIdx) {
+          score += 20;
+        }
+      });
+
+      alert(`作业提交成功！您的得分是：${score}分（共100分）`);
+      setShowStudentAnswering(false);
+    };
+
+    const padZero = (num: number) => String(num).padStart(2, '0');
+
+    return (
+      <div className="min-h-screen bg-[#f5f7fa] flex flex-col font-sans -mt-6 -mx-6 md:-mx-8 animate-in fade-in duration-300">
+        {/* Top Banner (Orange Theme) */}
+        <div className="bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] pt-6 pb-16 px-10 relative overflow-hidden shrink-0">
+          
+          {/* Background decorations */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute -right-20 -top-20 w-[400px] h-[400px] border-[40px] border-white/5 rounded-full"></div>
+            <div className="absolute -right-10 top-10 w-[300px] h-[300px] border-[2px] border-white/10 rounded-full"></div>
+            
+            {/* Decorative cubes representing AI/Tech */}
+            <div className="absolute right-10 top-1/2 -translate-y-1/2 opacity-20 transform rotate-12 flex flex-wrap w-[200px] gap-2">
+              {[...Array(9)].map((_, i) => (
+                <div key={i} className="w-14 h-14 bg-white/40 rounded shadow-lg backdrop-blur-sm"></div>
+              ))}
+            </div>
+          </div>
+
+          <div className="max-w-[1200px] mx-auto relative z-10 flex justify-between items-end">
+            <div className="text-white">
+              <div className="flex items-center gap-2 text-[12px] text-white/70 mb-4 font-medium tracking-wider">
+                <button onClick={() => setShowStudentAnswering(false)} className="hover:text-white transition-colors flex items-center gap-1 bg-transparent border-none outline-none cursor-pointer">
+                  <ArrowLeft className="w-3.5 h-3.5" /> 课程
+                </button>
+                <span>/</span>
+                <span>人工智能基础与实践</span>
+                <span>/</span>
+                <span className="text-white">人工智能通讯课-客观题</span>
+              </div>
+              
+              <h1 className="text-[28px] font-bold mb-4 tracking-wider">人工智能通讯课-客观题</h1>
+              
+              <div className="flex items-center gap-6 text-[13px] text-white/90">
+                <span>学生：张同学</span>
+                <span>作业时长：90分钟</span>
+              </div>
+            </div>
+            
+            <div className="text-white flex flex-col items-end">
+               <div className="text-[12px] text-white/80 mb-2 tracking-widest font-medium">倒计时</div>
+               <div className="flex items-baseline gap-2">
+                 <div className="flex items-baseline gap-1">
+                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{timeLeft.days}</div>
+                   <span className="text-[12px] opacity-80">天</span>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{padZero(timeLeft.hours)}</div>
+                   <span className="text-[12px] opacity-80">时</span>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{padZero(timeLeft.minutes)}</div>
+                   <span className="text-[12px] opacity-80">分</span>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{padZero(timeLeft.seconds)}</div>
+                   <span className="text-[12px] opacity-80">秒</span>
+                 </div>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 -mt-8 relative z-20 pb-20 px-4">
+          <div className="max-w-[1000px] mx-auto bg-white rounded-t-xl rounded-b-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 min-h-[600px] border border-neutral-100 flex flex-col">
+            
+            <div className="flex items-center gap-2 mb-10 pb-4 border-b border-neutral-100">
+              <CheckCircle2 className="w-5 h-5 text-[#fa541c]" />
+              <h2 className="text-[16px] font-bold text-neutral-800">
+                单选题 <span className="text-[13px] text-neutral-400 font-normal ml-2 tracking-wide">(第 1-10 题, 每题 2 分, 共 30 分)</span>
+              </h2>
+            </div>
+
+            <div className="space-y-12 flex-1">
+              {questions.map((q) => (
+                <div key={q.id} className="space-y-4">
+                  <h3 className="text-[15px] font-bold text-neutral-800 leading-relaxed">
+                    {q.id}、{q.title}
+                  </h3>
+                  <div className="space-y-2 pl-6">
+                    {q.options.map((opt, i) => {
+                      const isSelected = answeringAnswers[q.id] === i;
+                      return (
+                        <div 
+                          key={i} 
+                          onClick={() => setAnsweringAnswers({...answeringAnswers, [q.id]: i})}
+                          className={cn(
+                            "text-[14px] cursor-pointer transition-colors flex items-center gap-3 px-4 py-2.5 rounded-lg border",
+                            isSelected 
+                              ? "bg-orange-50/50 border-[#fa541c] text-[#fa541c] font-medium" 
+                              : "border-transparent hover:bg-neutral-50 text-neutral-600 hover:text-[#fa541c]"
+                          )}
+                        >
+                           <span className={cn(
+                             "w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
+                             isSelected ? "border-[#fa541c] bg-[#fa541c]" : "border-neutral-300"
+                           )}>
+                             {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                           </span>
+                           {opt}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end mt-12 pt-6 border-t border-neutral-100">
+              <Button 
+                onClick={handleSubmit}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8 h-10 text-[14px] font-bold shadow-sm rounded-md transition-all flex items-center gap-1.5"
+              >
+                提交作业
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
       {/* Header Section */}
@@ -288,6 +603,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             {[
               { id: 'intro', label: '课程介绍' },
               { id: 'syllabus', label: '课程目录' },
+              { id: 'assignments', label: '课程作业' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -343,7 +659,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                 </Button>
               </div>
             <div className="space-y-6">
-              {COURSE_SYLLABUS.map((chapter, i) => (
+              {syllabus.map((chapter, i) => (
                 <div key={i} className="flex flex-col">
                   {/* Chapter Header */}
                   <div className="flex items-center justify-between bg-[#f5f6f8] px-6 py-4 rounded-[8px]">
@@ -368,10 +684,12 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                         <Code className="w-4 h-4 text-neutral-caption" />
                         <span><span className="font-bold text-neutral-title">{chapter.experiments}</span> 个互动学习课件</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <CheckSquare className="w-4 h-4 text-neutral-caption" />
-                        <span><span className="font-bold text-neutral-title">{chapter.assignments}</span> 个随堂作业</span>
-                      </div>
+                      {isTeacher && chapter.assignments > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          <CheckSquare className="w-4 h-4 text-neutral-caption" />
+                          <span><span className="font-bold text-neutral-title">{chapter.assignments}</span> 个随堂作业</span>
+                        </div>
+                      )}
                       <ChevronDown className="w-4 h-4 ml-2 text-neutral-caption" />
                     </div>
                   </div>
@@ -382,7 +700,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                       <p className="text-[14px] text-neutral-body mb-4">{chapter.description}</p>
                     )}
                     <div className="space-y-1">
-                      {chapter.lessons.map((lesson, idx) => (
+                      {chapter.lessons.filter(l => isTeacher || l.type !== 'assignment').map((lesson, idx) => (
                         <div 
                           key={idx}
                           className={cn(
@@ -447,12 +765,126 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
           </div>
           </div>
           )}
+          {activeTab === 'assignments' && (
+            <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+              {[
+                {
+                  id: 1,
+                  title: "1. 人工智能通讯作业",
+                  deadline: "截止时间: 2099/02/28 00:00:00",
+                  hasDetail: true,
+                  sectionTitle: "客观题",
+                  items: [
+                    {
+                      label: "1. 客观题 18 道，共 100 分",
+                      desc: "客观题包括单选题、多选题、判断题、填空题、简答题、思考题、编程题"
+                    },
+                    {
+                      label: "2. 答题限时: 90 分钟",
+                      desc: "客观题需在 90 分钟内完成答题，过程中无法暂停，仅支持提交一次，请提前合理安排时间"
+                    }
+                  ],
+                  btnText: "开始答题"
+                },
+                {
+                  id: 2,
+                  title: "2. 搭建 AI 聊天助手智能体作业",
+                  deadline: "截止时间: 2099/02/28 00:00:00",
+                  hasDetail: false
+                },
+                {
+                  id: 3,
+                  title: "3. 实验报告 (理工类): 基于人工神经网络算法的图像分类实践",
+                  deadline: "截止时间: 2099/02/28 00:00:00",
+                  hasDetail: false
+                }
+              ].map((assignment) => {
+                const isExpanded = expandedAssignment === assignment.id;
+                return (
+                  <div key={assignment.id} className="bg-white rounded-[16px] shadow-sm overflow-hidden border border-neutral-100/60 transition-all duration-300">
+                    {/* Header Row */}
+                    <div 
+                      onClick={() => {
+                        if (assignment.hasDetail) {
+                          setExpandedAssignment(isExpanded ? null : assignment.id);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center justify-between p-6 select-none transition-colors",
+                        assignment.hasDetail ? "cursor-pointer hover:bg-neutral-50/30" : "cursor-default"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-[15px] font-bold text-neutral-title">{assignment.title}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[13px] text-neutral-caption">{assignment.deadline}</span>
+                        {assignment.hasDetail && (
+                          <ChevronDown className={cn("w-4 h-4 text-neutral-caption transition-transform duration-300", isExpanded && "transform rotate-180")} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Detailed Content */}
+                    {isExpanded && assignment.hasDetail && (
+                      <div className="px-8 pb-8 pt-2 border-t border-neutral-100/60 animate-in slide-in-from-top-2 duration-300">
+                        <div className="mt-4 bg-[#fafafa] rounded-[12px] p-6 border border-neutral-100 flex flex-col gap-6">
+                          <div className="flex items-start gap-4">
+                            <div className="w-9 h-9 rounded-lg bg-[#fff2e8] flex items-center justify-center text-[#fa541c] shrink-0 mt-0.5 shadow-xs">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 space-y-4">
+                              <h3 className="text-[15px] font-bold text-neutral-title flex items-center gap-2">
+                                {assignment.sectionTitle}
+                              </h3>
+                              
+                              <div className="space-y-4 pl-1">
+                                {assignment.items?.map((item, idx) => (
+                                  <div key={idx} className="space-y-1.5">
+                                    <div className="text-[14px] font-bold text-neutral-title">{item.label}</div>
+                                    <div className="text-[13px] text-neutral-body leading-relaxed pl-4">{item.desc}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 pl-[52px]">
+                            <Button 
+                              onClick={() => {
+                                setShowStudentAnswering(true);
+                                setAnsweringAnswers({});
+                              }}
+                              className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-md transition-all flex items-center gap-1.5"
+                            >
+                              {assignment.btnText}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Modals */}
       {playingLesson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
+          {/* PPT Editor UI */}
+          {isTeacher && playingLesson.type === 'doc' && (
+            <TeacherPPTEditor 
+              courseSyllabus={syllabus}
+              initialLesson={playingLesson}
+              onSyllabusChange={(updatedSyllabus) => setSyllabus(updatedSyllabus)}
+              onActiveLessonChange={(newTitle) => setPlayingLesson(prev => prev ? { ...prev, title: newTitle } : prev)}
+              onClose={() => { setTeacherActionMode('detail'); setPlayingLesson(null); }}
+            />
+          )}
+
           {/* Assignment Edit UI */}
           {teacherActionMode === 'edit' && playingLesson.type === 'assignment' && (
             <div className="w-full h-full bg-[#f5f6f8] relative flex font-sans animation-fade-in">
@@ -956,13 +1388,15 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-[#fa541c] rounded-sm flex items-center justify-center text-white text-[10px]">
-                          <BookOpen className="w-2.5 h-2.5" />
-                        </div>
                         <h2 className="text-[14px] font-bold text-neutral-title">课程目录</h2>
                       </div>
-                      <Button variant="outline" size="sm" className="h-7 px-2 text-[#fa541c] border-[#fa541c] hover:bg-[#fff2e8] flex items-center gap-1 text-xs shadow-sm">
-                        <PlusCircle className="w-3.5 h-3.5" /> 新建章
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 px-2 text-[#fa541c] border-[#fa541c] hover:bg-[#fff2e8] flex items-center gap-1 text-xs shadow-sm"
+                        onClick={() => setShowCreateLessonModal(true)}
+                      >
+                        <PlusCircle className="w-3.5 h-3.5" /> 新建课节
                       </Button>
                     </div>
                   </div>
@@ -995,7 +1429,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                   
                   {/* Syllabus List */}
                 <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
-                  {COURSE_SYLLABUS.map((chapter, i) => (
+                  {syllabus.map((chapter, i) => (
                     <div key={i} className="mb-4">
                       <div className="px-4 py-2 flex items-center gap-2">
                         <span className="font-bold text-neutral-title text-[14px]">{i + 1} {chapter.title}</span>
@@ -1007,7 +1441,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                             <div 
                               key={idx} 
                               className={cn(
-                                "flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors cursor-pointer border-r-2",
+                                "flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors cursor-pointer border-r-2 relative group",
                                 isActive ? "bg-[#fff2e8] text-[#fa541c] border-[#fa541c]" : "text-neutral-body hover:bg-neutral-100 border-transparent",
                                 lesson.locked && "opacity-50 cursor-not-allowed hover:bg-transparent"
                               )}
@@ -1025,7 +1459,52 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                               {lesson.locked ? (
                                 <Lock className="w-3.5 h-3.5 shrink-0 text-neutral-caption" />
                               ) : (
-                                <div className={cn("w-3.5 h-3.5 shrink-0 rounded-full border border-neutral-300", isActive && "border-[#fa541c] border-2")}></div>
+                                isTeacher && teacherActionMode !== 'preview' ? (
+                                  <div className="shrink-0 relative">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveLessonMenu(activeLessonMenu?.cIdx === i && activeLessonMenu?.lIdx === idx ? null : { cIdx: i, lIdx: idx });
+                                      }}
+                                      className={cn(
+                                        "w-6 h-6 rounded hover:bg-neutral-200/60 flex items-center justify-center text-neutral-400 hover:text-neutral-600 transition-colors",
+                                        activeLessonMenu?.cIdx === i && activeLessonMenu?.lIdx === idx && "text-[#fa541c]"
+                                      )}
+                                    >
+                                      <MoreHorizontal className="w-4 h-4" />
+                                    </button>
+                                    
+                                    {activeLessonMenu?.cIdx === i && activeLessonMenu?.lIdx === idx && (
+                                      <>
+                                        <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveLessonMenu(null); }}></div>
+                                        <div className="absolute right-0 top-7 w-24 bg-white rounded-lg shadow-lg border border-neutral-100 z-50 py-1 flex flex-col">
+                                          <button 
+                                            className="px-4 py-2 text-[12px] text-left text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] font-medium"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleOpenEditModal(i, idx, lesson.title);
+                                              setActiveLessonMenu(null);
+                                            }}
+                                          >
+                                            设置
+                                          </button>
+                                          <button 
+                                            className="px-4 py-2 text-[12px] text-left text-red-600 hover:bg-red-50 font-medium"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleOpenDeleteModal(i, idx);
+                                              setActiveLessonMenu(null);
+                                            }}
+                                          >
+                                            删除
+                                          </button>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className={cn("w-3.5 h-3.5 shrink-0 rounded-full border border-neutral-300", isActive && "border-[#fa541c] border-2")}></div>
+                                )
                               )}
                             </div>
                           );
@@ -2035,8 +2514,107 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                   </Button>
                </div>
              </div>
-           </div>
-         </div>
+            </div>
+          </div>
+       )}
+
+      {/* 新建课节 Modal */}
+      {showCreateLessonModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建课节
+              </h2>
+              <button onClick={() => setShowCreateLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateLesson}>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 课节名称
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    placeholder="请输入课节名称" 
+                    value={newLessonName}
+                    onChange={(e) => setNewLessonName(e.target.value)}
+                    autoFocus 
+                    required
+                  />
+                </div>
+              </div>
+              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+                <Button type="button" onClick={() => setShowCreateLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+                <Button type="submit" className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 修改课节 Modal */}
+      {showEditLessonModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-[#fa541c]" /> 修改课节
+              </h2>
+              <button onClick={() => setShowEditLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditLesson}>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 课节名称
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    placeholder="请输入课节名称" 
+                    value={editLessonName}
+                    onChange={(e) => setEditLessonName(e.target.value)}
+                    autoFocus 
+                    required
+                  />
+                </div>
+              </div>
+              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+                <Button type="button" onClick={() => setShowEditLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+                <Button type="submit" className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 删除课节确认 Modal */}
+      {showDeleteLessonModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-red-600 flex items-center gap-2">
+                提示
+              </h2>
+              <button onClick={() => setShowDeleteLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-[14px] text-neutral-700 font-medium">确定要删除该课节吗？删除后不可恢复。</p>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button type="button" onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button type="button" onClick={handleDeleteLesson} className="bg-red-600 hover:bg-red-700 text-white font-bold h-10 px-8 shadow-md shadow-red-500/20">确定删除</Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

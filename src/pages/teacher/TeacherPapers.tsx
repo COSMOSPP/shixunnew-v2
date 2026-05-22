@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 
 export default function TeacherPapers() {
   const [expandedRow, setExpandedRow] = useState<number | null>(1);
+  const [selectedPapers, setSelectedPapers] = useState<number[]>([]);
 
   const papers = [
     {
@@ -35,16 +36,39 @@ export default function TeacherPapers() {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedPapers(papers.map(p => p.id));
+    } else {
+      setSelectedPapers([]);
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    if (selectedPapers.includes(id)) {
+      setSelectedPapers(selectedPapers.filter(pId => pId !== id));
+    } else {
+      setSelectedPapers([...selectedPapers, id]);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
         <div className="flex items-end gap-4">
           <h1 className="text-xl font-bold text-neutral-900">试卷管理</h1>
           <p className="text-sm text-neutral-500 mb-0.5">新建试卷前请先创建可用试题，试卷“启用”后即可用于课程作业或章节测验</p>
         </div>
-        <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm rounded">
-          <Plus className="w-4 h-4" /> 新建试卷
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {selectedPapers.length > 0 && (
+            <Button variant="outline" className="flex items-center gap-1.5 h-9 rounded border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors shadow-sm">
+              批量删除 ({selectedPapers.length})
+            </Button>
+          )}
+          <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded">
+            <Plus className="w-4 h-4" /> 新建试卷
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
@@ -53,9 +77,17 @@ export default function TeacherPapers() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                <th className="p-4 font-medium w-12 text-center"></th>
+                <th className="p-4 font-medium w-12 text-center">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c]" 
+                    checked={selectedPapers.length === papers.length && papers.length > 0}
+                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                  />
+                </th>
+                <th className="p-4 font-medium w-10 text-center"></th>
                 <th className="p-4 font-medium">
-                  <div className="flex items-center gap-1.5">试卷名称 <Search className="w-3.5 h-3.5 text-[#fa541c] cursor-pointer" /></div>
+                  <div className="flex items-center gap-1.5">试卷名称 <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer" /></div>
                 </th>
                 <th className="p-4 font-medium">试卷说明</th>
                 <th className="p-4 font-medium">题目数量</th>
@@ -71,7 +103,9 @@ export default function TeacherPapers() {
                 <th className="p-4 font-medium">
                   <div className="flex items-center gap-1.5">创建人 <Search className="w-3.5 h-3.5 text-neutral-400" /></div>
                 </th>
-                <th className="p-4 font-medium">更新时间</th>
+                <th className="p-4 font-medium">
+                  <div className="flex items-center gap-1.5">更新时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                </th>
                 <th className="p-4 font-medium">操作</th>
               </tr>
             </thead>
@@ -83,17 +117,27 @@ export default function TeacherPapers() {
                     expandedRow === p.id ? "bg-neutral-50/30" : ""
                   )}>
                     <td className="p-4 text-center">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c]" 
+                        checked={selectedPapers.includes(p.id)}
+                        onChange={() => toggleSelect(p.id)}
+                      />
+                    </td>
+                    <td className="p-4 text-center">
                       <button 
                         onClick={() => toggleRow(p.id)}
-                        className="w-4 h-4 inline-flex items-center justify-center border border-neutral-300 rounded-sm text-neutral-500 hover:border-[#fa541c] hover:text-[#fa541c] transition-colors"
+                        className="text-neutral-400 hover:text-[#fa541c] transition-colors p-1"
                       >
-                        {expandedRow === p.id ? "-" : "+"}
+                        <ChevronRight className={cn("w-4 h-4 transition-transform duration-200", expandedRow === p.id && "transform rotate-90 text-[#fa541c]")} />
                       </button>
                     </td>
-                    <td className="p-4 text-neutral-800">{p.name}</td>
+                    <td className="p-4">
+                      <div className="text-neutral-800 max-w-[220px] truncate font-medium" title={p.name}>{p.name}</div>
+                    </td>
                     <td className="p-4 text-neutral-500 max-w-[200px] truncate" title={p.description}>{p.description}</td>
-                    <td className="p-4 text-neutral-800">{p.questionCount}</td>
-                    <td className="p-4 text-neutral-800">{p.types}</td>
+                    <td className="p-4 text-neutral-600">{p.questionCount}</td>
+                    <td className="p-4 text-neutral-600">{p.types}</td>
                     <td className="p-4 text-neutral-800">{p.type}</td>
                     <td className="p-4">
                       <span className={cn(
@@ -103,12 +147,13 @@ export default function TeacherPapers() {
                         {p.status}
                       </span>
                     </td>
-                    <td className="p-4 text-neutral-800">{p.creator}</td>
+                    <td className="p-4 text-neutral-600">{p.creator}</td>
                     <td className="p-4 text-neutral-500">{p.updateTime}</td>
                     <td className="p-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">编辑</button>
-                        <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">删除</button>
+                        <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
+                        <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
                       </div>
                     </td>
                   </tr>
@@ -116,7 +161,7 @@ export default function TeacherPapers() {
                   {/* Expanded Row Content */}
                   {expandedRow === p.id && (
                     <tr className="bg-neutral-50/30 border-b border-neutral-100">
-                      <td colSpan={10} className="p-0">
+                      <td colSpan={11} className="p-0">
                         <div className="py-6 pl-[88px] pr-8 animate-in fade-in duration-200">
                           <div className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm max-w-3xl">
                             <h3 className="text-[15px] font-bold text-neutral-900 flex items-center gap-2 mb-6">
