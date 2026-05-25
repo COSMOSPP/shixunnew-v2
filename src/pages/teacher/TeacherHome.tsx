@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import TeacherProjects from './TeacherProjects';
+import TeacherExams from './TeacherExams';
 
 export default function TeacherHome() {
-  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project'>('course');
+  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'exam'>('course');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [selectedCourseName, setSelectedCourseName] = useState<string | null>(null);
 
@@ -219,8 +220,15 @@ export default function TeacherHome() {
             项目
           </button>
           <button 
-            onClick={() => navigate('/teacher/papers')}
-            className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px] font-bold text-[13px]"
+            onClick={() => {
+              setSelectedCourseId(null);
+              setSelectedCourseName(null);
+              setActiveSubTab('exam');
+            }}
+            className={cn(
+              "pb-3 font-bold border-b-2 whitespace-nowrap relative bottom-[-1px] transition-all text-[13px]",
+              activeSubTab === 'exam' ? "text-[#fa541c] border-[#fa541c]" : "text-neutral-body border-transparent hover:text-[#fa541c]"
+            )}
           >
             考试
           </button>
@@ -364,15 +372,19 @@ export default function TeacherHome() {
               </select>
             </div>
           </>
+        ) : activeSubTab === 'project' ? (
+          <TeacherProjects 
+            embedded={true} 
+            defaultCourseId={selectedCourseId} 
+            defaultCourseName={selectedCourseName}
+            onBackToCourses={() => {
+              setSelectedCourseId(null);
+              setSelectedCourseName(null);
+              setActiveSubTab('course');
+            }}
+          />
         ) : (
-          <div className="p-6 bg-white rounded-b-2xl border-t border-neutral-100">
-            <TeacherProjects 
-              embedded={true} 
-              defaultCourseId={selectedCourseId} 
-              defaultCourseName={selectedCourseName}
-              onBackToCourses={() => setActiveSubTab('course')}
-            />
-          </div>
+          <TeacherExams embedded={true} />
         )}
       </div>
 
