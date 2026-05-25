@@ -1,17 +1,22 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { GraduationCap, User, LayoutDashboard, ChevronDown } from "lucide-react";
+import { GraduationCap, User, LayoutDashboard, ChevronDown, HelpCircle, FileText, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function TeacherLayout() {
   const location = useLocation();
   const [isModuleMenuOpen, setIsModuleMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsModuleMenuOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -90,18 +95,57 @@ export default function TeacherLayout() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 cursor-pointer hover:bg-white/10 px-3 py-1.5 rounded-md transition-colors">
-            <div className="w-7 h-7 bg-[#fa541c] rounded-full flex items-center justify-center text-white">
-              <User className="w-4 h-4" />
+          <div className="flex items-center gap-3 mr-2">
+            <div className="text-gray-300 hover:text-white cursor-pointer transition-colors" title="操作日志">
+              <FileText className="w-5 h-5" />
             </div>
-            <span className="text-sm font-medium text-gray-200">张老师</span>
+            <div className="text-gray-300 hover:text-white cursor-pointer transition-colors" title="帮助教程">
+              <HelpCircle className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="relative" ref={profileRef}>
+            <div 
+              className="flex items-center gap-2 cursor-pointer hover:bg-white/10 px-3 py-1.5 rounded-md transition-colors"
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            >
+              <div className="w-7 h-7 bg-[#fa541c] rounded-full flex items-center justify-center text-white">
+                <User className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-medium text-gray-200">张老师</span>
+              <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200 ml-1", isProfileMenuOpen ? "rotate-180" : "")} />
+            </div>
+
+            {isProfileMenuOpen && (
+              <div className="absolute top-12 right-0 w-36 bg-[#1f1f1f] border border-gray-800 rounded-md shadow-xl py-1 z-50">
+                <div className="flex flex-col">
+                  <Link 
+                    to="/teacher/center" 
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors" 
+                    onClick={() => setIsProfileMenuOpen(false)}
+                  >
+                    <Settings className="w-4 h-4" />
+                    个人中心
+                  </Link>
+                  <Link 
+                    to="/login/teacher" 
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors border-t border-gray-800"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    退出登录
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <div className="flex flex-1 min-h-0">
-        <main className="flex-1 overflow-auto p-6 bg-[#f5f6f8]">
+        <main className={cn(
+          "flex flex-col flex-1 overflow-auto bg-[#f5f6f8]",
+          location.pathname.startsWith("/teacher/center") ? "p-0" : "p-6"
+        )}>
           <Outlet />
         </main>
       </div>

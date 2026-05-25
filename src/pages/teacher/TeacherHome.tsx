@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search, Trash2, Edit, Check, X } from 'lucide-react';
+import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search, Trash2, Edit, Check, X, Users, CreditCard, Cpu, ShieldCheck, AlertCircle, CheckCircle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,9 +7,12 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import TeacherProjects from './TeacherProjects';
 import TeacherExams from './TeacherExams';
+import TeacherDatasets from './TeacherDatasets';
+import TeacherPractices from './TeacherPractices';
+import TeacherAICenter from './TeacherAICenter';
 
 export default function TeacherHome() {
-  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'exam'>('course');
+  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'dataset' | 'exam' | 'practice' | 'aicenter'>('course');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [selectedCourseName, setSelectedCourseName] = useState<string | null>(null);
 
@@ -18,6 +21,19 @@ export default function TeacherHome() {
   const [courseModalMode, setCourseModalMode] = useState<'create' | 'edit'>('create');
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [selectedCover, setSelectedCover] = useState('');
+  
+  const [isApplyPublicModalOpen, setIsApplyPublicModalOpen] = useState(false);
+  const [applyPublicCourse, setApplyPublicCourse] = useState<any>(null);
+  const [applyReason, setApplyReason] = useState('');
+  const [applyTarget, setApplyTarget] = useState('');
+  
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+  
   const navigate = useNavigate();
 
   const defaultCovers = [
@@ -32,8 +48,13 @@ export default function TeacherHome() {
   const teachingTools = [
     { icon: FileQuestion, title: '试题管理', desc: '进入试题管理页面', bgColor: 'bg-blue-50', textColor: 'text-blue-600', path: '/teacher/questions' },
     { icon: FileText, title: '试卷管理', desc: '进入试卷管理页面', bgColor: 'bg-indigo-50', textColor: 'text-indigo-600', path: '/teacher/papers' },
+    { icon: ShieldAlert, title: '防作弊管理', desc: '考试竞赛过程监控与策略', bgColor: 'bg-red-50', textColor: 'text-red-600', path: '/teacher/anticheat' },
     { icon: Database, title: '资源分配', desc: '进入学生资源分配页面', bgColor: 'bg-purple-50', textColor: 'text-purple-600', path: '/teacher/resources' },
     { icon: User, title: '学生管理', desc: '学生信息与成绩管理', bgColor: 'bg-teal-50', textColor: 'text-teal-600', path: '/teacher/students' },
+    { icon: Users, title: '教师管理', desc: '教师团队与权限管理', bgColor: 'bg-orange-50', textColor: 'text-orange-600', path: '#' },
+    { icon: CreditCard, title: '计费账单', desc: '查看平台资源消费情况', bgColor: 'bg-green-50', textColor: 'text-green-600', path: '#' },
+    { icon: Cpu, title: 'AI配额管理', desc: '设置与分配AI使用配额', bgColor: 'bg-sky-50', textColor: 'text-sky-600', path: '#' },
+    { icon: ShieldCheck, title: '审核中心', desc: '课程与项目上架审核', bgColor: 'bg-rose-50', textColor: 'text-rose-600', path: '#' },
   ];
 
   const courses = [
@@ -82,6 +103,18 @@ export default function TeacherHome() {
 
   return (
     <div className="space-y-8 pb-12 relative">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-4 py-2 bg-white border border-neutral-200 rounded-lg shadow-lg animate-in slide-in-from-top-4">
+          {toast.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-red-500" />
+          )}
+          <span className="text-[14px] font-medium text-neutral-800">{toast.message}</span>
+        </div>
+      )}
+
       {/* Welcome Banner */}
       <div className="relative bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] rounded-2xl overflow-hidden shadow-lg group h-auto md:h-[240px]">
         
@@ -123,49 +156,7 @@ export default function TeacherHome() {
         </div>
       </div>
 
-      {/* Quick Actions & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-2 bg-white rounded-2xl p-6 border border-neutral-border shadow-sm flex items-center justify-between relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 hover:border-[#fa541c]/30">
-          <div className="relative z-10">
-            <div className="w-12 h-12 bg-[#fff2e8] text-[#fa541c] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
-              <Plus className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-neutral-title mb-1">新建课程</h3>
-            <p className="text-sm text-neutral-caption">开启一段新的教学旅程</p>
-          </div>
-          <div className="relative z-10">
-             <Button onClick={() => { setEditingCourse(null); setSelectedCover(defaultCovers[0]); setCourseModalMode('create'); setIsCourseModalOpen(true); }} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-6 shadow-sm shadow-[#fa541c]/20">立即创建</Button>
-          </div>
-          <div className="absolute right-0 bottom-0 w-40 h-40 bg-gradient-to-tl from-[#fff2e8] to-transparent rounded-tl-full opacity-50 transition-transform group-hover:scale-110"></div>
-        </div>
 
-        <div 
-          onClick={() => {
-            setSelectedCourseId(null);
-            setSelectedCourseName(null);
-            setActiveSubTab('project');
-          }}
-          className="bg-white rounded-2xl p-6 border border-neutral-border shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 hover:border-blue-200"
-        >
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
-            <FolderKanban className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-neutral-title mb-1 group-hover:text-blue-600 transition-colors">我的项目</h3>
-            <p className="text-xs text-neutral-caption">管理数据集与模块</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 hover:border-green-200">
-          <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
-            <HelpCircle className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-neutral-title mb-1 group-hover:text-green-600 transition-colors">帮助教程</h3>
-            <p className="text-xs text-neutral-caption">使用指南与常见问题</p>
-          </div>
-        </div>
-      </div>
 
       {/* Teaching Tools */}
       <div>
@@ -223,6 +214,19 @@ export default function TeacherHome() {
             onClick={() => {
               setSelectedCourseId(null);
               setSelectedCourseName(null);
+              setActiveSubTab('dataset');
+            }}
+            className={cn(
+              "pb-3 font-bold border-b-2 whitespace-nowrap relative bottom-[-1px] transition-all text-[13px]",
+              activeSubTab === 'dataset' ? "text-[#fa541c] border-[#fa541c]" : "text-neutral-body border-transparent hover:text-[#fa541c]"
+            )}
+          >
+            数据集
+          </button>
+          <button 
+            onClick={() => {
+              setSelectedCourseId(null);
+              setSelectedCourseName(null);
               setActiveSubTab('exam');
             }}
             className={cn(
@@ -232,8 +236,32 @@ export default function TeacherHome() {
           >
             考试
           </button>
-          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px] font-bold text-[13px]">最佳实践</button>
-          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px] font-bold text-[13px]">ai能力中心</button>
+          <button 
+            onClick={() => {
+              setSelectedCourseId(null);
+              setSelectedCourseName(null);
+              setActiveSubTab('practice');
+            }}
+            className={cn(
+              "pb-3 font-bold border-b-2 whitespace-nowrap relative bottom-[-1px] transition-all text-[13px]",
+              activeSubTab === 'practice' ? "text-[#fa541c] border-[#fa541c]" : "text-neutral-body border-transparent hover:text-[#fa541c]"
+            )}
+          >
+            最佳实践
+          </button>
+          <button 
+            onClick={() => {
+              setSelectedCourseId(null);
+              setSelectedCourseName(null);
+              setActiveSubTab('aicenter');
+            }}
+            className={cn(
+              "pb-3 font-bold border-b-2 whitespace-nowrap relative bottom-[-1px] transition-all text-[13px]",
+              activeSubTab === 'aicenter' ? "text-[#fa541c] border-[#fa541c]" : "text-neutral-body border-transparent hover:text-[#fa541c]"
+            )}
+          >
+            ai能力中心
+          </button>
         </div>
         {activeSubTab === 'course' ? (
           <>
@@ -301,7 +329,6 @@ export default function TeacherHome() {
                       </td>
                       <td className="p-4 text-neutral-600">
                         <div className="text-neutral-800 font-medium">{course.teacher}</div>
-                        <div className="text-[12px] text-neutral-500 mt-0.5">助教: {course.ta}</div>
                       </td>
                       <td className="p-4">
                         {course.scope === '公开' ? (
@@ -323,22 +350,25 @@ export default function TeacherHome() {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
-                          <button 
-                            onClick={() => {
-                              setSelectedCourseId(course.id);
-                              setSelectedCourseName(course.name);
-                              setActiveSubTab('project');
-                            }} 
-                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
-                          >
-                            项目
-                          </button>
                           <button onClick={() => {
                             setEditingCourse(course);
                             setSelectedCover(course.image);
                             setCourseModalMode('edit');
                             setIsCourseModalOpen(true);
                           }} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">编辑</button>
+                          {course.scope === '私有' && (
+                            <button 
+                              onClick={() => {
+                                setApplyPublicCourse(course);
+                                setApplyReason('');
+                                setApplyTarget('');
+                                setIsApplyPublicModalOpen(true);
+                              }} 
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
+                            >
+                              申请公开
+                            </button>
+                          )}
                           <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
                           {index === 1 && (
                             <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
@@ -383,6 +413,16 @@ export default function TeacherHome() {
               setActiveSubTab('course');
             }}
           />
+        ) : activeSubTab === 'dataset' ? (
+          <TeacherDatasets 
+            embedded={true} 
+            defaultCourseId={selectedCourseId}
+            defaultCourseName={selectedCourseName}
+          />
+        ) : activeSubTab === 'practice' ? (
+          <TeacherPractices embedded={true} />
+        ) : activeSubTab === 'aicenter' ? (
+          <TeacherAICenter />
         ) : (
           <TeacherExams embedded={true} />
         )}
@@ -464,6 +504,74 @@ export default function TeacherHome() {
           </div>
         </div>
       )}
+
+      {/* Apply for Public Modal */}
+      {isApplyPublicModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[500px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900">
+                申请公开课程资源
+              </h2>
+              <button onClick={() => setIsApplyPublicModalOpen(false)} className="text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              <div className="bg-orange-50 text-orange-600 p-3 rounded-lg text-[13px] flex items-start gap-2 border border-orange-100">
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>申请公开后，课程需经过超管审核。审核通过将加入平台公共课程库，全平台师生可见可用。</span>
+              </div>
+              
+              <div>
+                <label className="text-[13px] font-bold text-neutral-700 block mb-2">
+                  <span className="text-[#fa541c]">*</span> 公开说明（适用对象）
+                </label>
+                <input 
+                  type="text" 
+                  value={applyTarget}
+                  onChange={(e) => setApplyTarget(e.target.value)}
+                  placeholder="例如：适用于计算机类专业本科二、三年级学生..." 
+                  className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-[13px] font-bold text-neutral-700 block mb-2">
+                  <span className="text-[#fa541c]">*</span> 推荐使用建议
+                </label>
+                <textarea 
+                  value={applyReason}
+                  onChange={(e) => setApplyReason(e.target.value)}
+                  placeholder="请简述该课程的亮点或推荐使用的场景..." 
+                  className="w-full h-28 border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none transition-all"
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/30 flex items-center justify-end gap-3">
+              <Button onClick={() => setIsApplyPublicModalOpen(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 rounded-full text-[13px]">
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!applyTarget || !applyReason) {
+                    showToast('请填写所有的公开说明与建议', 'error');
+                    return;
+                  }
+                  showToast('申请提交成功，等待超管审核');
+                  setIsApplyPublicModalOpen(false);
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 rounded-full shadow-sm text-[13px]"
+              >
+                提交申请
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

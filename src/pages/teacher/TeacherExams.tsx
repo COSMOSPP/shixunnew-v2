@@ -74,11 +74,25 @@ export default function TeacherExams({ embedded = false }) {
     }
   ]);
 
+  const [examTab, setExamTab] = useState('all'); // all, active, draft
   const [expandedRow, setExpandedRow] = useState<number | null>(2);
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    setToastMessage({ message, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   // New Exam Form states
   const [examName, setExamName] = useState('');
+  const [examRule, setExamRule] = useState('仅能提交1次');
+  const [enrollCount, setEnrollCount] = useState(0);
+  const [organizer, setOrganizer] = useState('');
+  const [coOrganizer, setCoOrganizer] = useState('');
+  const [intro, setIntro] = useState('');
+  const [notice, setNotice] = useState('test');
+  const [paperConfig, setPaperConfig] = useState('随机抽题');
   
   // AI Disable Config states
   const [disableAI, setDisableAI] = useState(false);
@@ -106,34 +120,152 @@ export default function TeacherExams({ embedded = false }) {
     }, ...exams]);
     setIsCreateDrawerOpen(false);
     setExamName('');
+    setExamRule('仅能提交1次');
+    setEnrollCount(0);
+    setOrganizer('');
+    setCoOrganizer('');
+    setIntro('');
+    setNotice('test');
+    setPaperConfig('随机抽题');
     setDisableAI(false);
+    showToast('新建考试成功');
+  };
+
+  // Exam Actions
+  const handleToggleExamStatus = (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === '启用' ? '草稿' : '启用';
+    setExams(exams.map(e => e.id === id ? { ...e, status: newStatus } : e));
+    showToast(`考试已${newStatus}`);
+  };
+
+  const handleDeleteExam = (id: number) => {
+    if (window.confirm('确定要删除该考试吗？此操作不可恢复。')) {
+      setExams(exams.filter(e => e.id !== id));
+      showToast('考试已删除');
+    }
+  };
+
+  const handleAddSession = (examId: number) => {
+    setExams(exams.map(e => {
+      if (e.id === examId) {
+        return {
+          ...e,
+          sessionsCount: e.sessionsCount + 1,
+          sessions: [
+            ...e.sessions,
+            {
+              id: Date.now(),
+              name: `新增测试场次${e.sessionsCount + 1}`,
+              type: '测试场次',
+              location: '未分配',
+              status: '未开始',
+              invigilator: '未指定',
+              startTime: '--',
+              endTime: '--',
+              visibility: '隐藏'
+            }
+          ]
+        };
+      }
+      return e;
+    }));
+    setExpandedRow(examId);
+    showToast('已添加新场次');
+  };
+
+  const handleMockNavigate = (action: string) => {
+    showToast(`正在跳转至：${action}`, 'info');
+  };
+
+  // Session Actions
+  const handleToggleSessionVisibility = (examId: number, sessionId: number, currentVisibility: string) => {
+    const newVisibility = currentVisibility === '显示' ? '隐藏' : '显示';
+    setExams(exams.map(e => {
+      if (e.id === examId) {
+        return {
+          ...e,
+          sessions: e.sessions.map(s => s.id === sessionId ? { ...s, visibility: newVisibility } : s)
+        };
+      }
+      return e;
+    }));
+    showToast(`场次已${newVisibility}`);
+  };
+
+  const handleEndSession = (examId: number, sessionId: number) => {
+    if (window.confirm('确定要结束该场考试吗？结束后学生将无法继续答题。')) {
+      setExams(exams.map(e => {
+        if (e.id === examId) {
+          return {
+            ...e,
+            sessions: e.sessions.map(s => s.id === sessionId ? { ...s, status: '已结束' } : s)
+          };
+        }
+        return e;
+      }));
+      showToast('考试已结束');
+    }
+  };
+
+  const handleCopySession = (examId: number, session: any) => {
+    setExams(exams.map(e => {
+      if (e.id === examId) {
+        return {
+          ...e,
+          sessionsCount: e.sessionsCount + 1,
+          sessions: [
+            ...e.sessions,
+            { ...session, id: Date.now(), name: `${session.name} (副本)` }
+          ]
+        };
+      }
+      return e;
+    }));
+    showToast('场次复制成功');
   };
 
   return (
     <div className={cn("space-y-4", embedded ? "" : "p-6")}>
       
       {/* Top Controller */}
-      <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4", embedded ? "p-5" : "")}>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-neutral-800">考试名称:</span>
-            <input 
-              type="text" 
-              placeholder="请输入考试名称" 
-              className="px-3 py-1.5 text-sm border border-neutral-200 rounded text-neutral-600 focus:outline-none focus:border-[#fa541c] w-64 transition-colors"
-            />
-          </div>
-          <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded font-bold px-6 shadow-sm border-0 h-8 text-xs cursor-pointer">
-            查询
-          </Button>
+      <div className={cn("flex items-center justify-between gap-4", embedded ? "p-5 pb-4" : "")}>
+        <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-border/50">
+          <button 
+            className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", examTab === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+            onClick={() => setExamTab('all')}
+          >
+            全部
+          </button>
+          <button 
+            className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", examTab === 'active' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+            onClick={() => setExamTab('active')}
+          >
+            启用
+          </button>
+          <button 
+            className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", examTab === 'draft' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+            onClick={() => setExamTab('draft')}
+          >
+            草稿
+          </button>
         </div>
         
-        <Button 
-          onClick={() => setIsCreateDrawerOpen(true)}
-          className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded font-bold px-6 shadow-sm border-0 h-8 text-xs cursor-pointer"
-        >
-          新建
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input 
+              type="text" 
+              placeholder="搜索考试名称" 
+              className="pl-9 pr-4 py-2 text-sm border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
+            />
+          </div>
+          <Button 
+            onClick={() => setIsCreateDrawerOpen(true)}
+            className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm border-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 mr-1" /> 新建考试
+          </Button>
+        </div>
       </div>
 
       {/* Main Table */}
@@ -188,14 +320,14 @@ export default function TeacherExams({ embedded = false }) {
                     <div className="flex items-center gap-3">
                       {exam.status === '启用' ? (
                         <>
-                          <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">添加场次</button>
-                          <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">取消启用</button>
+                          <button onClick={() => handleAddSession(exam.id)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">添加场次</button>
+                          <button onClick={() => handleToggleExamStatus(exam.id, exam.status)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">取消启用</button>
                         </>
                       ) : (
                         <>
-                          <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">编辑</button>
-                          <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">删除</button>
-                          <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">启用</button>
+                          <button onClick={() => handleMockNavigate('编辑考试')} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">编辑</button>
+                          <button onClick={() => handleDeleteExam(exam.id)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">删除</button>
+                          <button onClick={() => handleToggleExamStatus(exam.id, exam.status)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">启用</button>
                         </>
                       )}
                     </div>
@@ -238,12 +370,16 @@ export default function TeacherExams({ embedded = false }) {
                                 <td className="p-3 text-neutral-600">{session.visibility}</td>
                                 <td className="p-3">
                                   <div className="flex flex-wrap items-center gap-2 max-w-[160px]">
-                                    <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">编辑</button>
-                                    <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">复制</button>
-                                    <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">考生名单</button>
-                                    <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">监考信息</button>
-                                    <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">结束考试</button>
-                                    <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">隐藏</button>
+                                    <button onClick={() => handleMockNavigate('编辑场次')} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">编辑</button>
+                                    <button onClick={() => handleCopySession(exam.id, session)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">复制</button>
+                                    <button onClick={() => handleMockNavigate('考生名单管理')} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">考生名单</button>
+                                    <button onClick={() => handleMockNavigate('监考信息管理')} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">监考信息</button>
+                                    {session.status !== '已结束' && (
+                                      <button onClick={() => handleEndSession(exam.id, session.id)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">结束考试</button>
+                                    )}
+                                    <button onClick={() => handleToggleSessionVisibility(exam.id, session.id, session.visibility)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">
+                                      {session.visibility === '显示' ? '隐藏' : '显示'}
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
@@ -293,6 +429,16 @@ export default function TeacherExams({ embedded = false }) {
         </div>
       </div>
 
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="bg-white px-6 py-3 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            <span className="text-sm font-bold text-neutral-800">{toastMessage.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Create Exam Drawer */}
       {isCreateDrawerOpen && (
         <div 
@@ -300,68 +446,172 @@ export default function TeacherExams({ embedded = false }) {
           onClick={() => setIsCreateDrawerOpen(false)}
         >
           <div 
-            className="bg-[#f8f9fc] w-full max-w-[500px] h-screen flex flex-col shadow-2xl border-l border-neutral-200 animate-in slide-in-from-right duration-300 relative"
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-5 bg-white border-b border-neutral-100 flex justify-between items-center z-10 shadow-sm relative">
-              <h2 className="text-[17px] font-bold text-neutral-800">新增考试配置</h2>
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
+              <h2 className="text-[15px] font-bold text-neutral-850">新增考试配置</h2>
               <button 
                 onClick={() => setIsCreateDrawerOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Drawer Body */}
-            <div className="p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1 relative">
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white relative">
               
-              {/* Basic Info Section */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-neutral-100 space-y-5">
-                <div className="flex items-center gap-2 border-b border-neutral-50 pb-3">
-                  <span className="w-1 h-4 bg-[#fa541c] rounded-full"></span>
-                  <h3 className="font-bold text-neutral-800 text-[15px]">基础信息</h3>
-                </div>
+              {/* Exam Name */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1">
+                  考试名称 <span className="text-[#fa541c]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={examName}
+                  onChange={(e) => setExamName(e.target.value)}
+                  placeholder="请输入考试名称"
+                  className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-700 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 考试名称
-                  </label>
-                  <input
-                    type="text"
-                    value={examName}
-                    onChange={(e) => setExamName(e.target.value)}
-                    placeholder="请输入考试名称，如：2026年春季期末测试"
-                    className="w-full border border-neutral-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-neutral-50/50 hover:bg-white focus:bg-white"
+              {/* 规则 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1">
+                  规则 <span className="text-[#fa541c]">*</span>
+                </label>
+                <select 
+                  value={examRule}
+                  onChange={(e) => setExamRule(e.target.value)}
+                  className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800 bg-white"
+                >
+                  <option value="仅能提交1次">仅能提交1次</option>
+                  <option value="无限次提交">无限次提交</option>
+                </select>
+              </div>
+
+              {/* 报名人数 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1">
+                  报名人数
+                </label>
+                <div className="flex items-center border border-neutral-200 rounded w-fit h-9">
+                  <button 
+                    onClick={() => setEnrollCount(Math.max(0, enrollCount - 1))}
+                    className="w-9 h-full flex items-center justify-center text-neutral-400 hover:text-[#fa541c] border-r border-neutral-200 transition-colors bg-[#fbfbfb] cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input 
+                    type="number" 
+                    min={0}
+                    value={enrollCount}
+                    onChange={(e) => setEnrollCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-16 h-full text-center text-[13px] font-medium text-neutral-800 focus:outline-none focus:bg-orange-50/30"
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-700 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 关联课程
-                    </label>
-                    <select className="w-full border border-neutral-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#fa541c] transition-all bg-neutral-50/50 hover:bg-white">
-                      <option>请选择关联课程</option>
-                      <option>生成式AI与大模型应用</option>
-                      <option>云计算基础与实践</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-700 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 考试模式
-                    </label>
-                    <select className="w-full border border-neutral-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#fa541c] transition-all bg-neutral-50/50 hover:bg-white">
-                      <option>严格闭卷</option>
-                      <option>开卷测试</option>
-                    </select>
-                  </div>
+                  <button 
+                    onClick={() => setEnrollCount(enrollCount + 1)}
+                    className="w-9 h-full flex items-center justify-center text-neutral-400 hover:text-[#fa541c] border-l border-neutral-200 transition-colors bg-[#fbfbfb] cursor-pointer"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
+              {/* 主办方 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1">
+                  主办方
+                </label>
+                <input
+                  type="text"
+                  value={organizer}
+                  onChange={(e) => setOrganizer(e.target.value)}
+                  placeholder="请输入主办方"
+                  className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800"
+                />
+              </div>
+
+              {/* 协办方 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1">
+                  协办方
+                </label>
+                <input
+                  type="text"
+                  value={coOrganizer}
+                  onChange={(e) => setCoOrganizer(e.target.value)}
+                  placeholder="请输入协办方"
+                  className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800"
+                />
+              </div>
+
+              {/* 介绍 */}
+              <div className="grid grid-cols-[80px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1 pt-2">
+                  介绍
+                </label>
+                <textarea
+                  value={intro}
+                  onChange={(e) => setIntro(e.target.value)}
+                  placeholder="请输入介绍"
+                  className="w-full h-24 border border-neutral-200 rounded px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800 resize-none"
+                />
+              </div>
+
+              {/* 须知 */}
+              <div className="grid grid-cols-[80px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1 pt-2">
+                  须知 <span className="text-[#fa541c]">*</span>
+                </label>
+                <textarea
+                  value={notice}
+                  onChange={(e) => setNotice(e.target.value)}
+                  placeholder="请输入须知"
+                  className="w-full h-24 border border-neutral-200 rounded px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800 resize-none"
+                />
+              </div>
+
+              {/* 试卷配置 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-400 text-right flex items-center justify-end gap-1">
+                  试卷配置 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div className="flex items-center gap-6">
+                  {['随机抽题', '手动选题', '千人千卷'].map((cfg) => (
+                    <label key={cfg} className="flex items-center gap-2 cursor-pointer group text-[13px] text-neutral-500 select-none font-bold">
+                      <span className="relative flex items-center justify-center">
+                        <input
+                          type="radio"
+                          name="paperConfig"
+                          value={cfg}
+                          checked={paperConfig === cfg}
+                          onChange={() => setPaperConfig(cfg)}
+                          className="sr-only"
+                        />
+                        <span className={cn(
+                          "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                          paperConfig === cfg 
+                            ? "border-neutral-300 bg-white" 
+                            : "border-neutral-200 group-hover:border-[#fa541c]"
+                        )}>
+                          {paperConfig === cfg && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
+                          )}
+                        </span>
+                      </span>
+                      <span>{cfg}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-100 mt-2 pt-6"></div>
+
               {/* AI Config Section (The Core Feature) */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-neutral-100 space-y-4 relative overflow-hidden group">
+              <div className="bg-white rounded-xl p-5 border border-neutral-100 shadow-sm space-y-4 relative overflow-hidden group mx-1">
                 <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-100/40 to-orange-100/20 rounded-bl-full -z-0 pointer-events-none transition-transform duration-500 group-hover:scale-110"></div>
                 
                 <div className="flex items-center justify-between border-b border-neutral-50 pb-3 relative z-10">
@@ -475,17 +725,17 @@ export default function TeacherExams({ embedded = false }) {
             </div>
 
             {/* Drawer Footer */}
-            <div className="p-5 bg-white border-t border-neutral-100 flex justify-end gap-3 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 z-10">
               <Button 
                 onClick={() => setIsCreateDrawerOpen(false)}
                 variant="outline"
-                className="border-neutral-200 text-neutral-600 font-bold px-6 h-9"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer bg-white"
               >
                 取消
               </Button>
               <Button 
                 onClick={handleCreate}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-8 shadow-md shadow-[#fa541c]/20 border-0 h-9"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm border-0 cursor-pointer"
               >
                 保存并配置场次
               </Button>

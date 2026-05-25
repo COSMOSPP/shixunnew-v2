@@ -72,6 +72,8 @@ import TeacherCourseManage from "./pages/teacher/TeacherCourseManage";
 import TeacherExperimentIDE from "./pages/teacher/TeacherExperimentIDE";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssignmentPreview from "./pages/teacher/TeacherAssignmentPreview";
+import TeacherAntiCheat from "./pages/teacher/TeacherAntiCheat";
+import TeacherCenter from "./pages/teacher/TeacherCenter";
 
 export default function App() {
   return (
@@ -103,6 +105,8 @@ export default function App() {
           <Route path="papers" element={<TeacherPapers />} />
           <Route path="resources" element={<TeacherResources />} />
           <Route path="students" element={<TeacherStudents />} />
+          <Route path="anticheat" element={<TeacherAntiCheat />} />
+          <Route path="center" element={<TeacherCenter />} />
         </Route>
 
         {/* User Dashboard */}
