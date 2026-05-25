@@ -133,7 +133,10 @@ export default function TeacherHome() {
           <div className="absolute right-0 bottom-0 w-40 h-40 bg-gradient-to-tl from-[#fff2e8] to-transparent rounded-tl-full opacity-50 transition-transform group-hover:scale-110"></div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 hover:border-blue-200">
+        <div 
+          onClick={() => navigate('/teacher/projects')}
+          className="bg-white rounded-2xl p-6 border border-neutral-border shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 hover:border-blue-200"
+        >
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
             <FolderKanban className="w-6 h-6" />
           </div>
@@ -185,8 +188,18 @@ export default function TeacherHome() {
       <div className="bg-white rounded-2xl border border-neutral-border shadow-sm overflow-hidden">
         <div className="border-b border-neutral-border/50 px-6 pt-4 flex gap-6 overflow-x-auto no-scrollbar">
           <button className="pb-3 text-[#fa541c] font-bold border-b-2 border-[#fa541c] whitespace-nowrap relative bottom-[-1px]">课程</button>
-          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">项目</button>
-          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">考试</button>
+          <button 
+            onClick={() => navigate('/teacher/projects')}
+            className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]"
+          >
+            项目
+          </button>
+          <button 
+            onClick={() => navigate('/teacher/papers')}
+            className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]"
+          >
+            考试
+          </button>
           <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">最佳实践</button>
           <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">ai能力中心</button>
         </div>
@@ -276,6 +289,7 @@ export default function TeacherHome() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
+                      <button onClick={() => navigate(`/teacher/projects`, { state: { courseId: course.id, courseName: course.name } })} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">项目</button>
                       <button onClick={() => {
                         setEditingCourse(course);
                         setSelectedCover(course.image);
