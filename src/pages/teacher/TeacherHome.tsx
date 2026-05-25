@@ -5,8 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import TeacherProjects from './TeacherProjects';
 
 export default function TeacherHome() {
+  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project'>('course');
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedCourseName, setSelectedCourseName] = useState<string | null>(null);
+
   const [courseTab, setCourseTab] = useState('all'); // all, active, ended
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [courseModalMode, setCourseModalMode] = useState<'create' | 'edit'>('create');
@@ -134,7 +139,11 @@ export default function TeacherHome() {
         </div>
 
         <div 
-          onClick={() => navigate('/teacher/projects')}
+          onClick={() => {
+            setSelectedCourseId(null);
+            setSelectedCourseName(null);
+            setActiveSubTab('project');
+          }}
           className="bg-white rounded-2xl p-6 border border-neutral-border shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 hover:border-blue-200"
         >
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
@@ -187,147 +196,184 @@ export default function TeacherHome() {
       {/* Course Management - Table Layout */}
       <div className="bg-white rounded-2xl border border-neutral-border shadow-sm overflow-hidden">
         <div className="border-b border-neutral-border/50 px-6 pt-4 flex gap-6 overflow-x-auto no-scrollbar">
-          <button className="pb-3 text-[#fa541c] font-bold border-b-2 border-[#fa541c] whitespace-nowrap relative bottom-[-1px]">课程</button>
           <button 
-            onClick={() => navigate('/teacher/projects')}
-            className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]"
+            onClick={() => setActiveSubTab('course')}
+            className={cn(
+              "pb-3 font-bold border-b-2 whitespace-nowrap relative bottom-[-1px] transition-all text-[13px]",
+              activeSubTab === 'course' ? "text-[#fa541c] border-[#fa541c]" : "text-neutral-body border-transparent hover:text-[#fa541c]"
+            )}
+          >
+            课程
+          </button>
+          <button 
+            onClick={() => {
+              setSelectedCourseId(null);
+              setSelectedCourseName(null);
+              setActiveSubTab('project');
+            }}
+            className={cn(
+              "pb-3 font-bold border-b-2 whitespace-nowrap relative bottom-[-1px] transition-all text-[13px]",
+              activeSubTab === 'project' ? "text-[#fa541c] border-[#fa541c]" : "text-neutral-body border-transparent hover:text-[#fa541c]"
+            )}
           >
             项目
           </button>
           <button 
             onClick={() => navigate('/teacher/papers')}
-            className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]"
+            className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px] font-bold text-[13px]"
           >
             考试
           </button>
-          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">最佳实践</button>
-          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px]">ai能力中心</button>
+          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px] font-bold text-[13px]">最佳实践</button>
+          <button className="pb-3 text-neutral-body hover:text-[#fa541c] transition-colors border-b-2 border-transparent whitespace-nowrap relative bottom-[-1px] font-bold text-[13px]">ai能力中心</button>
         </div>
-        <div className="p-5 flex items-center justify-between">
-          <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-border/50">
-            <button 
-              className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-              onClick={() => setCourseTab('all')}
-            >
-              全部
-            </button>
-            <button 
-              className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'active' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-              onClick={() => setCourseTab('active')}
-            >
-              进行中
-            </button>
-            <button 
-              className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'ended' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-              onClick={() => setCourseTab('ended')}
-            >
-              已结束
-            </button>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input 
-                type="text" 
-                placeholder="搜索课程名称/代码" 
-                className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
-              />
+        {activeSubTab === 'course' ? (
+          <>
+            <div className="p-5 flex items-center justify-between">
+              <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-border/50">
+                <button 
+                  className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
+                  onClick={() => setCourseTab('all')}
+                >
+                  全部
+                </button>
+                <button 
+                  className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'active' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
+                  onClick={() => setCourseTab('active')}
+                >
+                  进行中
+                </button>
+                <button 
+                  className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'ended' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
+                  onClick={() => setCourseTab('ended')}
+                >
+                  已结束
+                </button>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input 
+                    type="text" 
+                    placeholder="搜索课程名称/代码" 
+                    className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
+                  />
+                </div>
+                <Button onClick={() => { setEditingCourse(null); setSelectedCover(defaultCovers[0]); setCourseModalMode('create'); setIsCourseModalOpen(true); }} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm">
+                  <Plus className="w-4 h-4 mr-1" /> 新建课程
+                </Button>
+              </div>
             </div>
-            <Button onClick={() => { setEditingCourse(null); setSelectedCover(defaultCovers[0]); setCourseModalMode('create'); setIsCourseModalOpen(true); }} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm">
-              <Plus className="w-4 h-4 mr-1" /> 新建课程
-            </Button>
-          </div>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse whitespace-nowrap">
-            <thead>
-              <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                <th className="p-4 font-medium w-[35%]">课程信息</th>
-                <th className="p-4 font-medium">授课教师</th>
-                <th className="p-4 font-medium">课程范围</th>
-                <th className="p-4 font-medium">状态</th>
-                <th className="p-4 font-medium">审核状态</th>
-                <th className="p-4 font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCourses.map((course, index) => (
-                <tr key={course.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                  <td className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-20 h-14 rounded-md overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative">
-                        <img src={course.image} alt={course.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer">{course.name}</div>
-                        <div className="text-xs text-neutral-500 font-mono mt-0.5">{course.code}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4 text-neutral-600">
-                    <div className="text-neutral-800 font-medium">{course.teacher}</div>
-                    <div className="text-[12px] text-neutral-500 mt-0.5">助教: {course.ta}</div>
-                  </td>
-                  <td className="p-4">
-                    {course.scope === '公开' ? (
-                      <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded text-[12px] border border-[#ffbb96]">{course.scope}</span>
-                    ) : (
-                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200">{course.scope}</span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <span className={cn("px-2 py-0.5 text-[12px] rounded border", course.status === '已上线' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
-                      {course.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className={cn("font-medium", course.auditStatus === '审核通过' ? "text-green-600" : "text-[#fa541c]")}>
-                      {course.auditStatus}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
-                      <button onClick={() => navigate(`/teacher/projects`, { state: { courseId: course.id, courseName: course.name } })} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">项目</button>
-                      <button onClick={() => {
-                        setEditingCourse(course);
-                        setSelectedCover(course.image);
-                        setCourseModalMode('edit');
-                        setIsCourseModalOpen(true);
-                      }} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">编辑</button>
-                      <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
-                      {index === 1 && (
-                        <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {filteredCourses.length === 0 && (
-            <div className="p-12 text-center text-neutral-caption">
-              暂无符合条件的课程
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                    <th className="p-4 font-medium w-[35%]">课程信息</th>
+                    <th className="p-4 font-medium">授课教师</th>
+                    <th className="p-4 font-medium">课程范围</th>
+                    <th className="p-4 font-medium">状态</th>
+                    <th className="p-4 font-medium">审核状态</th>
+                    <th className="p-4 font-medium">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCourses.map((course, index) => (
+                    <tr key={course.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                      <td className="p-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-20 h-14 rounded-md overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative">
+                            <img src={course.image} alt={course.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer">{course.name}</div>
+                            <div className="text-xs text-neutral-500 font-mono mt-0.5">{course.code}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-neutral-600">
+                        <div className="text-neutral-800 font-medium">{course.teacher}</div>
+                        <div className="text-[12px] text-neutral-500 mt-0.5">助教: {course.ta}</div>
+                      </td>
+                      <td className="p-4">
+                        {course.scope === '公开' ? (
+                          <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded text-[12px] border border-[#ffbb96]">{course.scope}</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200">{course.scope}</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span className={cn("px-2 py-0.5 text-[12px] rounded border", course.status === '已上线' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
+                          {course.status}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className={cn("font-medium", course.auditStatus === '审核通过' ? "text-green-600" : "text-[#fa541c]")}>
+                          {course.auditStatus}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
+                          <button 
+                            onClick={() => {
+                              setSelectedCourseId(course.id);
+                              setSelectedCourseName(course.name);
+                              setActiveSubTab('project');
+                            }} 
+                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
+                          >
+                            项目
+                          </button>
+                          <button onClick={() => {
+                            setEditingCourse(course);
+                            setSelectedCover(course.image);
+                            setCourseModalMode('edit');
+                            setIsCourseModalOpen(true);
+                          }} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">编辑</button>
+                          <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
+                          {index === 1 && (
+                            <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {filteredCourses.length === 0 && (
+                <div className="p-12 text-center text-neutral-caption">
+                  暂无符合条件的课程
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        
-        {/* Pagination */}
-        <div className="flex items-center justify-end p-4 gap-4 mt-2 border-t border-neutral-100">
-          <span className="text-[13px] text-neutral-500">共 {filteredCourses.length} 条</span>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
+            
+            {/* Pagination */}
+            <div className="flex items-center justify-end p-4 gap-4 mt-2 border-t border-neutral-100">
+              <span className="text-[13px] text-neutral-500">共 {filteredCourses.length} 条</span>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
+              </div>
+              <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600">
+                <option>10 条/页</option>
+                <option>20 条/页</option>
+                <option>50 条/页</option>
+              </select>
+            </div>
+          </>
+        ) : (
+          <div className="p-6 bg-white rounded-b-2xl border-t border-neutral-100">
+            <TeacherProjects 
+              embedded={true} 
+              defaultCourseId={selectedCourseId} 
+              defaultCourseName={selectedCourseName}
+              onBackToCourses={() => setActiveSubTab('course')}
+            />
           </div>
-          <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600">
-            <option>10 条/页</option>
-            <option>20 条/页</option>
-            <option>50 条/页</option>
-          </select>
-        </div>
+        )}
       </div>
 
       {/* Course Dialog (Create/Edit) */}

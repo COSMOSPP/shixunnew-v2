@@ -48,13 +48,25 @@ interface Project {
   updateTime: string;
 }
 
-export default function TeacherProjects() {
+interface TeacherProjectsProps {
+  embedded?: boolean;
+  defaultCourseId?: number | null;
+  defaultCourseName?: string | null;
+  onBackToCourses?: () => void;
+}
+
+export default function TeacherProjects({
+  embedded = false,
+  defaultCourseId = null,
+  defaultCourseName = null,
+  onBackToCourses
+}: TeacherProjectsProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Route states
-  const incomingCourseId = location.state?.courseId;
-  const incomingCourseName = location.state?.courseName;
+  // Route states / Props fallback
+  const incomingCourseId = defaultCourseId || location.state?.courseId;
+  const incomingCourseName = defaultCourseName || location.state?.courseName;
 
   // View states
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
@@ -421,6 +433,15 @@ export default function TeacherProjects() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
+                {embedded && onBackToCourses && (
+                  <button 
+                    onClick={onBackToCourses}
+                    className="p-1 text-neutral-400 hover:text-[#fa541c] hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer mr-1 border-0 bg-transparent flex items-center justify-center"
+                    title="返回课程列表"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                )}
                 <h1 className="text-xl font-bold text-neutral-900">实战项目管理</h1>
                 {incomingCourseName && (
                   <span className="px-2.5 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded-md text-[11px] font-bold border border-[#ffbb96] flex items-center">
