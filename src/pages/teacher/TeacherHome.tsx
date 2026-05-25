@@ -113,21 +113,6 @@ export default function TeacherHome() {
               </div>
             </div>
             
-            {/* Outline Tags */}
-            <div className="flex flex-wrap gap-6 items-center pl-4">
-              <div className="border-[1.5px] border-white/80 rounded-md pl-3 pr-5 py-1.5 text-white font-bold flex items-center gap-2.5 transform -skew-x-12 backdrop-blur-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-white transform skew-x-12"></div>
-                <span className="italic transform skew-x-12 block text-sm tracking-widest">待批改作业 <span className="ml-1 text-[#fff0e6] text-lg">2</span></span>
-              </div>
-              <div className="border-[1.5px] border-white/80 rounded-md pl-3 pr-5 py-1.5 text-white font-bold flex items-center gap-2.5 transform -skew-x-12 backdrop-blur-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-white transform skew-x-12"></div>
-                <span className="italic transform skew-x-12 block text-sm tracking-widest">进行中课程 <span className="ml-1 text-[#fff0e6] text-lg">3</span></span>
-              </div>
-              <div className="border-[1.5px] border-white/80 rounded-md pl-3 pr-5 py-1.5 text-white font-bold flex items-center gap-2.5 transform -skew-x-12 backdrop-blur-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-white transform skew-x-12"></div>
-                <span className="italic transform skew-x-12 block text-sm tracking-widest">互动提问 <span className="ml-1 text-[#fff0e6] text-lg">5</span></span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -242,71 +227,64 @@ export default function TeacherHome() {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="border-b border-neutral-border/50 bg-neutral-100 text-sm text-neutral-500">
-                <th className="p-5 font-medium w-[35%]">课程信息</th>
-                <th className="p-5 font-medium">授课教师</th>
-                <th className="p-5 font-medium">课程范围</th>
-                <th className="p-5 font-medium">状态</th>
-                <th className="p-5 font-medium">审核状态</th>
-                <th className="p-5 font-medium">操作</th>
+              <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                <th className="p-4 font-medium w-[35%]">课程信息</th>
+                <th className="p-4 font-medium">授课教师</th>
+                <th className="p-4 font-medium">课程范围</th>
+                <th className="p-4 font-medium">状态</th>
+                <th className="p-4 font-medium">审核状态</th>
+                <th className="p-4 font-medium">操作</th>
               </tr>
             </thead>
             <tbody>
               {filteredCourses.map((course, index) => (
-                <tr key={course.id} className="border-b border-neutral-border/30 hover:bg-[#fff2e8]/30 transition-colors group">
-                  <td className="p-5">
+                <tr key={course.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                  <td className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-14 rounded-md overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative">
                         <img src={course.image} alt={course.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
                       </div>
                       <div>
-                        <div className="font-bold text-neutral-title group-hover:text-[#fa541c] transition-colors cursor-pointer">{course.name}</div>
-                        <div className="text-xs text-neutral-caption font-mono mt-1">{course.code}</div>
+                        <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer">{course.name}</div>
+                        <div className="text-xs text-neutral-500 font-mono mt-0.5">{course.code}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="p-5">
-                    <div className="text-sm text-neutral-title font-medium">{course.teacher}</div>
-                    <div className="text-xs text-neutral-caption mt-1">助教: {course.ta}</div>
+                  <td className="p-4 text-neutral-600">
+                    <div className="text-neutral-800 font-medium">{course.teacher}</div>
+                    <div className="text-[12px] text-neutral-500 mt-0.5">助教: {course.ta}</div>
                   </td>
-                  <td className="p-5">
-                    <span className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 text-neutral-body border border-neutral-border/50">
-                      {course.scope}
-                    </span>
+                  <td className="p-4">
+                    {course.scope === '公开' ? (
+                      <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded text-[12px] border border-[#ffbb96]">{course.scope}</span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200">{course.scope}</span>
+                    )}
                   </td>
-                  <td className="p-5">
-                    <span className={cn("px-2.5 py-1 text-xs rounded-md font-medium", course.status === '已上线' ? "bg-green-50 text-green-600 border border-green-200" : "bg-neutral-100 text-neutral-500 border border-neutral-200")}>
+                  <td className="p-4">
+                    <span className={cn("px-2 py-0.5 text-[12px] rounded border", course.status === '已上线' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
                       {course.status}
                     </span>
                   </td>
-                  <td className="p-5">
-                    <span className={cn("text-sm font-medium flex items-center gap-1.5", course.auditStatus === '审核通过' ? "text-green-600" : "text-orange-500")}>
-                      <span className={cn("w-1.5 h-1.5 rounded-full", course.auditStatus === '审核通过' ? "bg-green-600" : "bg-orange-500")}></span>
+                  <td className="p-4">
+                    <span className={cn("font-medium", course.auditStatus === '审核通过' ? "text-green-600" : "text-[#fa541c]")}>
                       {course.auditStatus}
                     </span>
                   </td>
-                  <td className="p-5">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full">
-                        <Copy className="w-3.5 h-3.5 mr-1" /> 复制
-                      </Button>
-                      <Button onClick={() => {
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
+                      <button onClick={() => {
                         setEditingCourse(course);
                         setSelectedCover(course.image);
                         setCourseModalMode('edit');
                         setIsCourseModalOpen(true);
-                      }} variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full px-4">
-                        <Edit className="w-3.5 h-3.5 mr-1" /> 编辑
-                      </Button>
-                      <Button onClick={() => navigate(`/teacher/course/${course.id}`)} variant="ghost" size="sm" className="h-8 text-xs text-neutral-body hover:text-[#fa541c] hover:bg-[#fff2e8] rounded-full px-4">
-                        <Eye className="w-3.5 h-3.5 mr-1" /> 查看
-                      </Button>
+                      }} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">编辑</button>
+                      <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
                       {index === 1 && (
-                        <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full px-4">
-                          <Trash2 className="w-3.5 h-3.5 mr-1" /> 删除
-                        </Button>
+                        <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
                       )}
                     </div>
                   </td>
@@ -323,14 +301,18 @@ export default function TeacherHome() {
         </div>
         
         {/* Pagination */}
-        <div className="flex items-center justify-between p-5 border-t border-neutral-border/50 bg-neutral-50/30">
-          <span className="text-sm text-neutral-caption">共 <span className="font-medium text-neutral-title">{filteredCourses.length}</span> 条数据</span>
+        <div className="flex items-center justify-end p-4 gap-4 mt-2 border-t border-neutral-100">
+          <span className="text-[13px] text-neutral-500">共 {filteredCourses.length} 条</span>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-white" disabled>&lt;</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-[#fa541c] text-white border-[#fa541c] shadow-sm">1</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-white hover:bg-neutral-50">2</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-md bg-white hover:bg-neutral-50">&gt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
           </div>
+          <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600">
+            <option>10 条/页</option>
+            <option>20 条/页</option>
+            <option>50 条/页</option>
+          </select>
         </div>
       </div>
 
