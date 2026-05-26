@@ -266,21 +266,27 @@ export default function TeacherStudents() {
         </div>
       </div>
 
-      {/* Main Lists and Tables */}
-      <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden mt-4">
+      {/* Main Lists and Tables - Reference TeacherQuestions flat card style */}
+      <div className="bg-white rounded overflow-hidden mt-4">
         {activeTab === 'student' ? (
           /* Student Management Table */
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
-                <tr className="border-b border-neutral-150 bg-neutral-50/70 text-[12px] text-neutral-600 font-bold">
+                <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
                   <th className="p-4 w-12 text-center">
-                    <input 
-                      type="checkbox" 
-                      className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c]" 
-                      checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
-                      onChange={(e) => toggleSelectAll(e.target.checked)}
-                    />
+                    <button 
+                      type="button"
+                      onClick={() => toggleSelectAll(selectedStudents.length !== filteredStudents.length || filteredStudents.length === 0)}
+                      className={cn(
+                        "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                        selectedStudents.length === filteredStudents.length && filteredStudents.length > 0
+                          ? "bg-[#fa541c] border-[#fa541c] text-white"
+                          : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                      )}
+                    >
+                      {selectedStudents.length === filteredStudents.length && filteredStudents.length > 0 && <span className="text-[10px] font-bold">✓</span>}
+                    </button>
                   </th>
                   <th className="p-4">学生基本信息</th>
                   <th className="p-4">所选课程</th>
@@ -297,12 +303,18 @@ export default function TeacherStudents() {
                   filteredStudents.map(s => (
                     <tr key={s.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
                       <td className="p-4 text-center">
-                        <input 
-                          type="checkbox" 
-                          className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c]" 
-                          checked={selectedStudents.includes(s.id)}
-                          onChange={() => toggleSelect(s.id)}
-                        />
+                        <button 
+                          type="button"
+                          onClick={() => toggleSelect(s.id)}
+                          className={cn(
+                            "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                            selectedStudents.includes(s.id)
+                              ? "bg-[#fa541c] border-[#fa541c] text-white"
+                              : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                          )}
+                        >
+                          {selectedStudents.includes(s.id) && <span className="text-[10px] font-bold">✓</span>}
+                        </button>
                       </td>
                       <td className="p-4">
                         <div className="font-bold text-neutral-800">{s.name}</div>
@@ -359,7 +371,7 @@ export default function TeacherStudents() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
-                <tr className="border-b border-neutral-150 bg-neutral-50/70 text-[12px] text-neutral-600 font-bold">
+                <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
                   <th className="p-4">教师基本信息</th>
                   <th className="p-4">所授课程</th>
                   <th className="p-4">协同授课班级</th>
@@ -418,17 +430,17 @@ export default function TeacherStudents() {
           </div>
         )}
 
-        {/* Footer/Pagination for active Tab */}
-        <div className="flex items-center justify-end p-4 border-t border-neutral-100 gap-4">
-          <span className="text-[12px] text-neutral-500 font-bold">
-            共 {activeTab === 'student' ? filteredStudents.length : filteredTeachers.length} 条记录
+        {/* Footer/Pagination for active Tab - styled exactly like TeacherQuestions */}
+        <div className="flex items-center justify-end p-4 gap-4 mt-2">
+          <span className="text-[13px] text-neutral-500">
+            共 {activeTab === 'student' ? filteredStudents.length : filteredTeachers.length} 条
           </span>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-lg text-xs" disabled>&lt;</Button>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-lg text-xs bg-[#fa541c] text-white border-[#fa541c] font-bold">1</Button>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-lg text-xs" disabled>&gt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&gt;</Button>
           </div>
-          <select className="text-[12px] border border-neutral-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 font-bold">
+          <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600">
             <option>10 条/页</option>
             <option>20 条/页</option>
             <option>50 条/页</option>
