@@ -22,10 +22,14 @@ export default function TeacherStudents() {
   
   // Search & Filter States
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchPhone, setSearchPhone] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | '学生' | '教师' | '管理员'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | '正常' | '禁用'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
+
+  // Single User Quota adjustments
+  const [isQuotaOpen, setIsQuotaOpen] = useState(false);
+  const [quotaUser, setQuotaUser] = useState<UserItem | null>(null);
+  const [singleQuotaValue, setSingleQuotaValue] = useState(300);
 
   // Master Users Mock Data
   const [users, setUsers] = useState<UserItem[]>([
@@ -86,9 +90,13 @@ export default function TeacherStudents() {
     if (activeTab === 'student' && u.role !== '学生') return false;
     if (activeTab === 'teacher' && u.role === '学生') return false;
 
-    // Search filters
-    if (searchTerm && !u.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    if (searchPhone && !u.phone.includes(searchPhone)) return false;
+    // Search filters (merge name and phone into a single search query)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchName = u.name.toLowerCase().includes(term);
+      const matchPhone = u.phone.includes(term);
+      if (!matchName && !matchPhone) return false;
+    }
 
     // Status filter
     if (statusFilter !== 'all' && u.status !== statusFilter) return false;
@@ -187,6 +195,15 @@ export default function TeacherStudents() {
       setSelectedUserIds(selectedUserIds.filter(uid => uid !== id));
       showToast(`用户“${name}”已被安全注销`);
     }
+  };
+
+  const handleSaveSingleQuota = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!quotaUser) return;
+    setUsers(users.map(u => u.id === quotaUser.id ? { ...u, quota: singleQuotaValue } : u));
+    setIsQuotaOpen(false);
+    setQuotaUser(null);
+    showToast(`成功调整用户“${quotaUser.name}”的算力配额为 ${singleQuotaValue}M`);
   };
 
   // Bulk Operations Simulation
@@ -323,32 +340,8 @@ export default function TeacherStudents() {
             用户管理中心
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            支持完整学生增删改查、账号冻结、多维度信息检索，并提供基于标准模板的 Excel 增量双向导入导出与二次确认回滚操作日志
+            支持完整学生增删改查、账号冻结、多维度信息检索，并提供基于标准模板的 Excel 增量双向导入导出
           </p>
-        </div>
-
-        {/* Global Toolbar buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button 
-            onClick={() => setIsImportOpen(true)}
-            variant="outline" 
-            className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-xl shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-4 cursor-pointer"
-          >
-            <FileSpreadsheet className="w-4 h-4" /> 批量导入
-          </Button>
-          <Button 
-            onClick={() => setIsExportOpen(true)}
-            variant="outline" 
-            className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-xl shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-4 cursor-pointer"
-          >
-            <Download className="w-4 h-4" /> 批量导出
-          </Button>
-          <Button 
-            onClick={() => setIsAddUserOpen(true)}
-            className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-md shadow-orange-500/10 h-9 rounded-xl text-xs font-bold px-4 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> 新建用户
-          </Button>
         </div>
       </div>
 
@@ -381,85 +374,101 @@ export default function TeacherStudents() {
       </div>
 
       {/* Search and Filters Toolbar (Transparent flow style) */}
-      <div className="flex flex-wrap items-center gap-4 py-1 bg-transparent w-full">
+      <div className="flex flex-wrap items-center justify-between gap-4 py-1 bg-transparent w-full">
         
-        {/* Name search input */}
-        <div className="relative w-full sm:w-48">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-          <input 
-            type="text" 
-            placeholder="搜索姓名..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-3 py-2 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:border-[#fa541c] w-full bg-white transition-all text-neutral-700"
-          />
-        </div>
-
-        {/* Phone search input */}
-        <div className="relative w-full sm:w-48">
-          <input 
-            type="text" 
-            placeholder="搜索手机号..."
-            value={searchPhone}
-            onChange={(e) => setSearchPhone(e.target.value)}
-            className="px-3 py-2 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:border-[#fa541c] w-full bg-white transition-all text-neutral-700"
-          />
-        </div>
-
-        {/* Status Filter */}
-        <div className="relative w-full sm:w-40">
-          <select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
-          >
-            <option value="all">所有状态</option>
-            <option value="正常">正常正常</option>
-            <option value="禁用">禁用账号</option>
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-        </div>
-
-        {/* Date Filter */}
-        <div className="relative w-full sm:w-40">
-          <select 
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value as any)}
-            className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
-          >
-            <option value="all">注册时间</option>
-            <option value="week">本周注册</option>
-            <option value="month">本月注册</option>
-            <option value="year">本学期注册</option>
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-        </div>
-
-        {/* Bulk action selection - Shows only when checkboxes are ticked */}
-        {selectedUserIds.length > 0 && (
-          <div className="flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-xl border border-orange-200 animate-slide-up ml-auto">
-            <span className="text-xs font-bold text-orange-700">已选中 {selectedUserIds.length} 个账号</span>
-            <div className="w-px h-4 bg-orange-200"></div>
-            <select
-              onChange={(e) => {
-                const action = e.target.value as any;
-                if(action) {
-                  setBulkActionType(action);
-                  setIsBulkActionOpen(true);
-                  e.target.value = '';
-                }
-              }}
-              className="text-xs font-bold bg-transparent text-[#fa541c] focus:outline-none cursor-pointer"
-            >
-              <option value="">-- 选择批量操作 --</option>
-              <option value="status_enable">批量启用账号</option>
-              <option value="status_disable">批量禁用账号</option>
-              <option value="reset_pwd">批量重置密码</option>
-              <option value="adjust_quota">批量调整AI配额</option>
-              <option value="adjust_role">批量变更角色</option>
-            </select>
+        {/* Left side: Merged search, status, and date filters */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Merged search input */}
+          <div className="relative w-full sm:w-64">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input 
+              type="text" 
+              placeholder="搜索姓名、手机号..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-3 py-2 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:border-[#fa541c] w-full bg-white transition-all text-neutral-700"
+            />
           </div>
-        )}
+
+          {/* Status Filter */}
+          <div className="relative w-full sm:w-36">
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
+            >
+              <option value="all">所有状态</option>
+              <option value="正常">正常正常</option>
+              <option value="禁用">禁用账号</option>
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+          </div>
+
+          {/* Date Filter */}
+          <div className="relative w-full sm:w-36">
+            <select 
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as any)}
+              className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
+            >
+              <option value="all">注册时间</option>
+              <option value="week">本周注册</option>
+              <option value="month">本月注册</option>
+              <option value="year">本学期注册</option>
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Right side: Bulk Action Indicator & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 ml-auto sm:ml-0">
+          {/* Bulk action selection - Shows only when checkboxes are ticked */}
+          {selectedUserIds.length > 0 && (
+            <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 animate-slide-up">
+              <span className="text-xs font-bold text-orange-700">已选中 {selectedUserIds.length} 个账号</span>
+              <div className="w-px h-4 bg-orange-200"></div>
+              <select
+                onChange={(e) => {
+                  const action = e.target.value as any;
+                  if(action) {
+                    setBulkActionType(action);
+                    setIsBulkActionOpen(true);
+                    e.target.value = '';
+                  }
+                }}
+                className="text-xs font-bold bg-transparent text-[#fa541c] focus:outline-none cursor-pointer"
+              >
+                <option value="">-- 选择批量操作 --</option>
+                <option value="status_enable">批量启用账号</option>
+                <option value="status_disable">批量禁用账号</option>
+                <option value="reset_pwd">批量重置密码</option>
+                <option value="adjust_quota">批量调整AI配额</option>
+                <option value="adjust_role">批量变更角色</option>
+              </select>
+            </div>
+          )}
+
+          <Button 
+            onClick={() => setIsImportOpen(true)}
+            variant="outline" 
+            className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-lg shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-3.5 cursor-pointer transition-colors"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" /> 批量导入
+          </Button>
+          <Button 
+            onClick={() => setIsExportOpen(true)}
+            variant="outline" 
+            className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-lg shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-3.5 cursor-pointer transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" /> 批量导出
+          </Button>
+          <Button 
+            onClick={() => setIsAddUserOpen(true)}
+            className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded-lg text-xs font-bold px-3.5 cursor-pointer transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> 新建用户
+          </Button>
+        </div>
       </div>
 
       {/* Main List Table (Question management flat card style) */}
@@ -539,25 +548,31 @@ export default function TeacherStudents() {
                       <div className="flex items-center justify-center gap-3">
                         <button 
                           onClick={() => { setSelectedUser(u); setIsDetailUserOpen(true); }}
-                          className="text-indigo-600 hover:text-indigo-800 font-bold transition-colors"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
                         >
-                          详情
+                          查看详情
                         </button>
                         <button 
                           onClick={() => { setEditingUser(u); setIsEditUserOpen(true); }}
-                          className="text-blue-600 hover:text-blue-800 font-bold transition-colors"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
                         >
-                          编辑
+                          编辑信息
+                        </button>
+                        <button 
+                          onClick={() => { setQuotaUser(u); setSingleQuotaValue(u.quota); setIsQuotaOpen(true); }}
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          调整配额
                         </button>
                         <button 
                           onClick={() => handleToggleSingleStatus(u.id, u.status)}
-                          className={cn("font-bold transition-colors", u.status === '正常' ? "text-amber-600 hover:text-amber-800" : "text-emerald-600 hover:text-emerald-800")}
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
                         >
                           {u.status === '正常' ? '禁用' : '启用'}
                         </button>
                         <button 
                           onClick={() => handleDeleteSingleUser(u.id, u.name)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
                         >
                           删除
                         </button>
@@ -592,55 +607,7 @@ export default function TeacherStudents() {
         </div>
       </div>
 
-      {/* Safety Logs Section - Shows action logging and rollbacks */}
-      <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-          <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-indigo-500" />
-            <h3 className="font-bold text-neutral-800 text-[15px]">批量操作历史与安全机制</h3>
-          </div>
-          <span className="text-[11px] text-neutral-400 font-bold flex items-center gap-1">
-            <Info className="w-3.5 h-3.5 text-neutral-400" />
-            所有高敏感批量操作均支持二次确认和24小时内一键撤销
-          </span>
-        </div>
-        
-        <div className="space-y-3">
-          {operationLogs.map(log => (
-            <div key={log.id} className="p-3.5 bg-neutral-50 hover:bg-neutral-100/50 border border-neutral-200/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-600 rounded font-bold text-[10px]">{log.type}</span>
-                  <span className="text-neutral-400 font-mono">{log.time}</span>
-                  <span className="font-bold text-neutral-700">· {log.detail}</span>
-                </div>
-                <div className="text-[11px] text-neutral-500 max-w-2xl truncate font-mono">
-                  操作对象(账号组)：{log.targets}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 self-end sm:self-center">
-                <span className={cn(
-                  "text-xs font-bold px-2 py-0.5 rounded",
-                  log.status === '已生效' ? "text-green-600 bg-green-50" : "text-neutral-400 bg-neutral-100"
-                )}>
-                  {log.status}
-                </span>
-                
-                {log.reversible && log.status === '已生效' && (
-                  <button
-                    onClick={() => handleRollbackLog(log.id)}
-                    className="flex items-center gap-1 text-[11px] font-black text-indigo-600 hover:text-indigo-800 border border-indigo-200 bg-white hover:bg-indigo-50 px-2.5 py-1 rounded-lg shadow-sm transition-all cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    安全撤销
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       {/* Modal 1: Add User Modal */}
       {isAddUserOpen && (
@@ -1209,6 +1176,48 @@ export default function TeacherStudents() {
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal 7: Adjust Quota Modal */}
+      {isQuotaOpen && quotaUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <form onSubmit={handleSaveSingleQuota} className="bg-white rounded-2xl shadow-xl w-full max-w-[420px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[15px] font-black text-neutral-900 flex items-center gap-2">
+                <Cpu className="w-5 h-5 text-[#fa541c]" /> 调整用户算力配额
+              </h2>
+              <button type="button" onClick={() => { setIsQuotaOpen(false); setQuotaUser(null); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-full transition-colors cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="p-3.5 bg-neutral-50 rounded-xl border border-neutral-200/50 text-xs text-neutral-600 space-y-1">
+                <div>用户姓名：<strong className="text-neutral-800">{quotaUser.name}</strong></div>
+                <div>当前配额：<strong className="text-neutral-800">{quotaUser.quota} M</strong></div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[12px] font-bold text-[#fa541c] block">新算力配额值 (M)</label>
+                <input 
+                  type="number" 
+                  value={singleQuotaValue}
+                  onChange={(e) => setSingleQuotaValue(Number(e.target.value))}
+                  className="w-full border border-neutral-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800" 
+                />
+                <span className="text-[10px] text-neutral-400 mt-1 block">配额单位为M（兆 Token），代表大模型最大使用资源边界</span>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/20 flex items-center justify-end gap-3">
+              <Button type="button" onClick={() => { setIsQuotaOpen(false); setQuotaUser(null); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 rounded-xl text-xs">
+                取消
+              </Button>
+              <Button type="submit" className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-xl shadow-md shadow-orange-500/10 text-xs">
+                确认调整
+              </Button>
+            </div>
+          </form>
         </div>
       )}
 
