@@ -464,12 +464,6 @@ export default function TeacherAntiCheat() {
         </div>
       )}
 
-      {/* Breadcrumb - matches TeacherHome / TeacherStatistics */}
-      <div className="text-sm text-neutral-500 mb-2 flex items-center gap-1.5">
-        <span className="hover:text-[#fa541c] cursor-pointer" onClick={() => navigate('/teacher')}>首页</span>
-        <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
-        <span className="text-neutral-900">防作弊管理</span>
-      </div>
 
       {/* Header Section - styled exactly like TeacherQuestions.tsx */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
