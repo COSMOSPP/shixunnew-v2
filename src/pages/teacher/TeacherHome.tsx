@@ -102,7 +102,7 @@ export default function TeacherHome() {
   const filteredCourses = courses.filter(c => courseTab === 'all' || c.state === courseTab);
 
   return (
-    <div className="space-y-8 pb-12 relative">
+    <div className="-m-6 p-6 bg-gradient-to-br from-[#fffcfb] via-[#fffdfc] to-[#fff6f2] min-h-full space-y-8 pb-12 relative flex-1">
       {/* Toast */}
       {toast && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-4 py-2 bg-white border border-neutral-200 rounded-lg shadow-lg animate-in slide-in-from-top-4">
