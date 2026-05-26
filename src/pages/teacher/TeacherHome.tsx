@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search, Trash2, Edit, Check, X, Users, CreditCard, Cpu, ShieldCheck, AlertCircle, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search, Trash2, Edit, Check, X, Users, CreditCard, Cpu, ShieldCheck, AlertCircle, CheckCircle, ShieldAlert, BarChart3, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,15 +46,16 @@ export default function TeacherHome() {
   ];
 
   const teachingTools = [
-    { icon: FileQuestion, title: '试题管理', desc: '进入试题管理页面', bgColor: 'bg-blue-50', textColor: 'text-blue-600', path: '/teacher/questions' },
-    { icon: FileText, title: '试卷管理', desc: '进入试卷管理页面', bgColor: 'bg-indigo-50', textColor: 'text-indigo-600', path: '/teacher/papers' },
-    { icon: ShieldAlert, title: '防作弊管理', desc: '考试竞赛过程监控与策略', bgColor: 'bg-red-50', textColor: 'text-red-600', path: '/teacher/anticheat' },
-    { icon: Database, title: '资源分配', desc: '进入学生资源分配页面', bgColor: 'bg-purple-50', textColor: 'text-purple-600', path: '/teacher/resources' },
-    { icon: User, title: '学生管理', desc: '学生信息与成绩管理', bgColor: 'bg-teal-50', textColor: 'text-teal-600', path: '/teacher/students' },
-    { icon: Users, title: '教师管理', desc: '教师团队与权限管理', bgColor: 'bg-orange-50', textColor: 'text-orange-600', path: '#' },
-    { icon: CreditCard, title: '计费账单', desc: '查看平台资源消费情况', bgColor: 'bg-green-50', textColor: 'text-green-600', path: '#' },
-    { icon: Cpu, title: 'AI配额管理', desc: '设置与分配AI使用配额', bgColor: 'bg-sky-50', textColor: 'text-sky-600', path: '#' },
-    { icon: ShieldCheck, title: '审核中心', desc: '课程与项目上架审核', bgColor: 'bg-rose-50', textColor: 'text-rose-600', path: '#' },
+    { icon: FileQuestion, title: '试题管理', desc: '试题库录入与智能标签', bgGradient: 'bg-gradient-to-br from-blue-50/60 via-indigo-50/30 to-white hover:from-blue-100/50 hover:to-indigo-50/60', borderClass: 'border-blue-100/70 hover:border-blue-200/80', titleColor: 'text-blue-950', descColor: 'text-neutral-500', iconBg: 'bg-blue-600', iconTextColor: 'text-blue-600', shadowColor: 'hover:shadow-blue-500/5 hover:shadow-md', path: '/teacher/questions' },
+    { icon: FileText, title: '试卷管理', desc: '智能组卷与作业分发', bgGradient: 'bg-gradient-to-br from-violet-50/60 via-purple-50/30 to-white hover:from-violet-100/50 hover:to-purple-50/60', borderClass: 'border-violet-100/70 hover:border-violet-200/80', titleColor: 'text-violet-950', descColor: 'text-neutral-500', iconBg: 'bg-violet-600', iconTextColor: 'text-violet-600', shadowColor: 'hover:shadow-violet-500/5 hover:shadow-md', path: '/teacher/papers' },
+    { icon: ShieldAlert, title: '防作弊管理', desc: '考试竞赛过程监控策略', bgGradient: 'bg-gradient-to-br from-rose-50/60 via-red-50/30 to-white hover:from-rose-100/50 hover:to-red-50/60', borderClass: 'border-rose-100/70 hover:border-rose-200/80', titleColor: 'text-rose-950', descColor: 'text-neutral-500', iconBg: 'bg-rose-600', iconTextColor: 'text-rose-600', shadowColor: 'hover:shadow-rose-500/5 hover:shadow-md', path: '/teacher/anticheat' },
+    { icon: Database, title: '资源分配', desc: '学生实训算力资源配置', bgGradient: 'bg-gradient-to-br from-emerald-50/60 via-teal-50/30 to-white hover:from-emerald-100/50 hover:to-teal-50/60', borderClass: 'border-emerald-100/70 hover:border-emerald-200/80', titleColor: 'text-emerald-950', descColor: 'text-neutral-500', iconBg: 'bg-emerald-600', iconTextColor: 'text-emerald-600', shadowColor: 'hover:shadow-emerald-500/5 hover:shadow-md', path: '/teacher/resources' },
+    { icon: Users, title: '用户管理', desc: '学生与协作教师团队管理', bgGradient: 'bg-gradient-to-br from-cyan-50/60 via-blue-50/30 to-white hover:from-cyan-100/50 hover:to-blue-50/60', borderClass: 'border-cyan-100/70 hover:border-cyan-200/80', titleColor: 'text-cyan-950', descColor: 'text-neutral-500', iconBg: 'bg-cyan-600', iconTextColor: 'text-cyan-600', shadowColor: 'hover:shadow-cyan-500/5 hover:shadow-md', path: '/teacher/students' },
+    { icon: BarChart3, title: '学习数据统计', desc: '学生学习曲线进度大盘', bgGradient: 'bg-gradient-to-br from-amber-50/60 via-orange-50/30 to-white hover:from-amber-100/50 hover:to-orange-50/60', borderClass: 'border-amber-100/70 hover:border-amber-200/80', titleColor: 'text-amber-950', descColor: 'text-neutral-500', iconBg: 'bg-amber-600', iconTextColor: 'text-amber-600', shadowColor: 'hover:shadow-amber-500/5 hover:shadow-md', path: '/teacher/statistics' },
+    { icon: CreditCard, title: '计费账单', desc: '查看算力与存储消费', bgGradient: 'bg-gradient-to-br from-fuchsia-50/60 via-pink-50/30 to-white hover:from-fuchsia-100/50 hover:to-pink-50/60', borderClass: 'border-fuchsia-100/70 hover:border-fuchsia-200/80', titleColor: 'text-fuchsia-950', descColor: 'text-neutral-500', iconBg: 'bg-fuchsia-600', iconTextColor: 'text-fuchsia-600', shadowColor: 'hover:shadow-fuchsia-500/5 hover:shadow-md', path: '#' },
+    { icon: Cpu, title: 'AI配额管理', desc: '大模型GPU算力配额设置', bgGradient: 'bg-gradient-to-br from-indigo-50/60 via-violet-50/30 to-white hover:from-indigo-100/50 hover:to-violet-50/60', borderClass: 'border-indigo-100/70 hover:border-indigo-200/80', titleColor: 'text-indigo-950', descColor: 'text-neutral-500', iconBg: 'bg-indigo-600', iconTextColor: 'text-indigo-600', shadowColor: 'hover:shadow-indigo-500/5 hover:shadow-md', path: '#' },
+    { icon: ShieldCheck, title: '审核中心', desc: '自建课程项目上架审核', bgGradient: 'bg-gradient-to-br from-pink-50/60 via-rose-50/30 to-white hover:from-pink-100/50 hover:to-rose-50/60', borderClass: 'border-pink-100/70 hover:border-pink-200/80', titleColor: 'text-pink-950', descColor: 'text-neutral-500', iconBg: 'bg-pink-600', iconTextColor: 'text-pink-600', shadowColor: 'hover:shadow-pink-500/5 hover:shadow-md', path: '#' },
+    { icon: School, title: '班级管理', desc: '教学班级信息选课管理', bgGradient: 'bg-gradient-to-br from-teal-50/60 via-green-50/30 to-white hover:from-teal-100/50 hover:to-green-50/60', borderClass: 'border-teal-100/70 hover:border-teal-200/80', titleColor: 'text-teal-950', descColor: 'text-neutral-500', iconBg: 'bg-teal-600', iconTextColor: 'text-teal-600', shadowColor: 'hover:shadow-teal-500/5 hover:shadow-md', path: '#' },
   ];
 
   const courses = [
@@ -116,7 +117,7 @@ export default function TeacherHome() {
       )}
 
       {/* Welcome Banner */}
-      <div className="relative bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] rounded-2xl overflow-hidden shadow-lg group h-auto md:h-[240px]">
+      <div className="relative bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] rounded-2xl overflow-hidden shadow-lg group h-auto md:h-[165px]">
         
         {/* Diagonal light rays */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.07]">
@@ -134,20 +135,20 @@ export default function TeacherHome() {
         </div>
         
         <div className="relative z-10 flex flex-col md:flex-row h-full">
-          <div className="p-6 md:p-8 md:pl-12 w-full flex flex-col justify-center">
+          <div className="p-5 md:py-6 md:pl-10 w-full flex flex-col justify-center">
             {/* Bold slanted Title */}
-            <div className="transform -skew-x-12 origin-left mb-5 flex flex-wrap items-end gap-3 md:gap-5">
-              <h1 className="text-3xl md:text-[36px] font-black text-white leading-none drop-shadow-[2px_3px_0px_rgba(212,56,13,0.5)] italic tracking-wider">
+            <div className="transform -skew-x-12 origin-left mb-2 flex flex-wrap items-end gap-3 md:gap-5">
+              <h1 className="text-2xl md:text-[30px] font-black text-white leading-none drop-shadow-[2px_3px_0px_rgba(212,56,13,0.5)] italic tracking-wider">
                 欢迎回来，张老师
               </h1>
-              <h2 className="text-xl md:text-[26px] font-bold text-white/90 leading-none drop-shadow-[1px_2px_0px_rgba(212,56,13,0.5)] italic tracking-wide md:pb-0.5">
+              <h2 className="text-lg md:text-[22px] font-bold text-white/90 leading-none drop-shadow-[1px_2px_0px_rgba(212,56,13,0.5)] italic tracking-wide">
                 智云实战教学空间
               </h2>
             </div>
             
             {/* White highlighted Subtitle */}
-            <div className="transform -skew-x-12 origin-left mb-6 inline-block max-w-max">
-              <div className="bg-gradient-to-r from-white via-white to-transparent text-[#fa541c] text-base md:text-lg font-black pl-8 pr-16 py-1.5 md:py-2">
+            <div className="transform -skew-x-12 origin-left mb-2 inline-block max-w-max">
+              <div className="bg-gradient-to-r from-white via-white to-transparent text-[#fa541c] text-xs md:text-sm font-black pl-6 pr-12 py-1 md:py-1.5">
                 <span className="transform skew-x-12 block italic tracking-wide">带你轻松管理今日教学任务</span>
               </div>
             </div>
@@ -166,19 +167,34 @@ export default function TeacherHome() {
             教学利器
           </h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
           {teachingTools.map((tool, idx) => (
             <div 
               key={idx} 
-              onClick={() => navigate(tool.path)}
-              className="bg-white p-5 rounded-2xl border border-neutral-border shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-[#fa541c]/30 transition-all group"
+              onClick={() => {
+                if (tool.path !== '#') {
+                  navigate(tool.path);
+                } else {
+                  showToast(`"${tool.title}" 功能模块正在升级配置中...`);
+                }
+              }}
+              className={cn(
+                "p-5 rounded-2xl border flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 group bg-white",
+                tool.bgGradient,
+                tool.borderClass,
+                tool.shadowColor
+              )}
             >
-              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm", tool.bgColor, tool.textColor)}>
-                <tool.icon className="w-6 h-6" />
+              {/* Microsoft Glassmorphism Icon container */}
+              <div className="relative w-12 h-12 rounded-xl flex items-center justify-center bg-white/90 border border-white shadow-[0_4px_12px_rgba(0,0,0,0.03),inset_0_1px_2px_rgba(255,255,255,0.85)] overflow-hidden group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                {/* Visual refraction element - blurry backing sphere */}
+                <div className={cn("absolute inset-2 blur-[3px] rounded-full opacity-20 pointer-events-none", tool.iconBg)}></div>
+                <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/60 blur-[1px] pointer-events-none"></div>
+                <tool.icon className={cn("w-5 h-5 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.08)] relative z-10", tool.iconTextColor)} />
               </div>
-              <div>
-                <h4 className="font-bold text-neutral-title group-hover:text-[#fa541c] transition-colors">{tool.title}</h4>
-                <p className="text-xs text-neutral-caption mt-0.5">{tool.desc}</p>
+              <div className="flex-1 min-w-0">
+                <h4 className={cn("font-bold text-sm tracking-wide truncate group-hover:text-[#fa541c] transition-colors", tool.titleColor)}>{tool.title}</h4>
+                <p className={cn("text-[11px] mt-0.5 leading-tight truncate", tool.descColor)}>{tool.desc}</p>
               </div>
             </div>
           ))}

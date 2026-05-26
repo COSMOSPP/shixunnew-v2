@@ -74,6 +74,7 @@ import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherAssignmentPreview from "./pages/teacher/TeacherAssignmentPreview";
 import TeacherAntiCheat from "./pages/teacher/TeacherAntiCheat";
 import TeacherCenter from "./pages/teacher/TeacherCenter";
+import TeacherStatistics from "./pages/teacher/TeacherStatistics";
 
 export default function App() {
   return (
@@ -105,6 +106,7 @@ export default function App() {
           <Route path="papers" element={<TeacherPapers />} />
           <Route path="resources" element={<TeacherResources />} />
           <Route path="students" element={<TeacherStudents />} />
+          <Route path="statistics" element={<TeacherStatistics />} />
           <Route path="anticheat" element={<TeacherAntiCheat />} />
           <Route path="center" element={<TeacherCenter />} />
         </Route>
