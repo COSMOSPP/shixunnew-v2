@@ -498,7 +498,7 @@ export default function TeacherStudents() {
                 <th className="p-4">状态</th>
                 <th className="p-4">最后登录时间</th>
                 <th className="p-4">综合学习时长</th>
-                <th className="p-4 text-center">操作入口</th>
+                <th className="p-4 text-left">操作入口</th>
               </tr>
             </thead>
             <tbody>
@@ -544,19 +544,19 @@ export default function TeacherStudents() {
                     </td>
                     <td className="p-4 text-neutral-500 font-mono">{u.lastLogin}</td>
                     <td className="p-4 text-neutral-700 font-bold font-mono">{u.duration} 小时</td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-3">
+                    <td className="p-4 text-left">
+                      <div className="flex items-center justify-start gap-3">
                         <button 
                           onClick={() => { setSelectedUser(u); setIsDetailUserOpen(true); }}
                           className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
                         >
-                          查看详情
+                          查看
                         </button>
                         <button 
                           onClick={() => { setEditingUser(u); setIsEditUserOpen(true); }}
                           className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
                         >
-                          编辑信息
+                          编辑
                         </button>
                         <button 
                           onClick={() => { setQuotaUser(u); setSingleQuotaValue(u.quota); setIsQuotaOpen(true); }}
