@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Monitor, Settings, AlertOctagon, History, Camera, User, Search, Filter, AlertTriangle, Shield, Laptop, Copy, Smartphone, Globe, UploadCloud, Video, Download, Trash2, Edit3, Plus, Check, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { ShieldAlert, Monitor, Settings, AlertOctagon, History, Camera, User, Search, Filter, AlertTriangle, Shield, Laptop, Copy, Smartphone, Globe, UploadCloud, Video, Download, Trash2, Edit3, Plus, Check, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 // --- Mock Data ---
 
@@ -29,6 +30,7 @@ const cheatLogs = [
 ];
 
 export default function TeacherAntiCheat() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'monitor' | 'policy' | 'penalty' | 'reports'>('monitor');
   const [selectedExam, setSelectedExam] = useState(ongoingExams[0].id);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
@@ -60,36 +62,49 @@ export default function TeacherAntiCheat() {
   const renderMonitor = () => {
     return (
       <div className="animate-fade-in space-y-6">
-        <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-neutral-200 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <Video className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-[13px] text-neutral-500 mb-0.5 font-medium">当前监控场次</div>
+        {/* Optimized Session Selector - flat, clean style referencing TeacherQuestions */}
+        <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">选择监控场次</span>
+            <div className="relative">
               <select 
                 value={selectedExam}
                 onChange={(e) => setSelectedExam(Number(e.target.value))}
-                className="appearance-none font-bold text-[15px] text-neutral-800 focus:outline-none bg-transparent cursor-pointer"
+                className="appearance-none border border-neutral-200 hover:border-[#fa541c] rounded-xl pl-4 pr-10 py-2 text-xs font-bold text-neutral-800 bg-white focus:outline-none transition-all cursor-pointer shadow-sm min-w-[260px]"
               >
                 {ongoingExams.map(ex => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
               </select>
+              <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
             </div>
+            
+            {/* Live Indicator */}
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 border border-green-200 rounded-full text-[11px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+              实时监测中
+            </span>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <div className="text-[20px] font-bold text-neutral-800">120</div>
-              <div className="text-[12px] text-neutral-500">在线考生</div>
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-[11px] text-neutral-400 font-bold">在线考生</div>
+                <div className="text-[16px] font-black text-neutral-800">120 <span className="text-xs font-normal text-neutral-400">/ 122人</span></div>
+              </div>
             </div>
-            <div className="w-px h-8 bg-neutral-200"></div>
-            <div className="text-center">
-              <div className="text-[20px] font-bold text-orange-500">3</div>
-              <div className="text-[12px] text-neutral-500">异常报警</div>
+            
+            <div className="w-px h-8 bg-neutral-200 hidden sm:block"></div>
+            
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-[11px] text-neutral-400 font-bold">异常报警</div>
+                <div className="text-[16px] font-black text-red-500 animate-pulse">3 <span className="text-xs font-normal text-neutral-400">起</span></div>
+              </div>
             </div>
-            <div className="w-px h-8 bg-neutral-200"></div>
-            <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-6 shadow-sm font-bold text-[13px]">
-              全局广播
+            
+            <div className="w-px h-8 bg-neutral-200 hidden sm:block"></div>
+            
+            <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-xl px-5 h-9 shadow-md shadow-orange-500/10 font-bold text-xs">
+              发送群组通知
             </Button>
           </div>
         </div>
@@ -436,7 +451,7 @@ export default function TeacherAntiCheat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-neutral-50/30 overflow-y-auto">
+    <div className="space-y-6 pb-12 relative">
       {/* Toast */}
       {toast && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 px-5 py-2.5 bg-white border border-neutral-200 rounded-xl shadow-xl animate-in slide-in-from-top-4">
@@ -449,50 +464,44 @@ export default function TeacherAntiCheat() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-8 py-6 shrink-0 sticky top-0 z-40 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-500 shrink-0">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-neutral-900">防作弊管理</h1>
-              <p className="text-[13px] text-neutral-500 mt-1">考试/竞赛期间的防作弊监控与自动化策略执行</p>
-            </div>
-          </div>
+      {/* Breadcrumb - matches TeacherHome / TeacherStatistics */}
+      <div className="text-sm text-neutral-500 mb-2 flex items-center gap-1.5">
+        <span className="hover:text-[#fa541c] cursor-pointer" onClick={() => navigate('/teacher')}>首页</span>
+        <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+        <span className="text-neutral-900">防作弊管理</span>
+      </div>
 
-          <div className="flex items-center gap-2 bg-neutral-100/80 p-1 rounded-full border border-neutral-200/60">
-            <button 
-              onClick={() => setActiveTab('monitor')}
-              className={cn("px-6 py-2 rounded-full text-[13px] font-bold transition-all", activeTab === 'monitor' ? "bg-white text-[#fa541c] shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+      {/* Header Section - styled exactly like TeacherQuestions.tsx */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
+        <div className="flex items-end gap-4">
+          <h1 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+            <div className="w-1.5 h-6 bg-[#fa541c] rounded-full"></div>
+            防作弊管理
+          </h1>
+          <p className="text-sm text-neutral-500 mb-0.5">考试/竞赛期间的防作弊监控与自动化策略执行</p>
+        </div>
+        
+        {/* Tab switchers in flat button pill style - matches TeacherQuestions page controls */}
+        <div className="flex bg-white border border-neutral-200/80 p-1 rounded-xl shadow-sm self-start sm:self-center">
+          {(['monitor', 'policy', 'penalty', 'reports'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "px-5 py-1.5 text-xs font-bold rounded-lg transition-all",
+                activeTab === tab 
+                  ? "bg-[#fa541c] text-white shadow-sm" 
+                  : "text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50"
+              )}
             >
-              实时监控
+              {tab === 'monitor' ? '实时监控' : tab === 'policy' ? '策略配置' : tab === 'penalty' ? '处罚设置' : '行为汇总'}
             </button>
-            <button 
-              onClick={() => setActiveTab('policy')}
-              className={cn("px-6 py-2 rounded-full text-[13px] font-bold transition-all", activeTab === 'policy' ? "bg-white text-[#fa541c] shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
-            >
-              策略配置
-            </button>
-            <button 
-              onClick={() => setActiveTab('penalty')}
-              className={cn("px-6 py-2 rounded-full text-[13px] font-bold transition-all", activeTab === 'penalty' ? "bg-white text-[#fa541c] shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
-            >
-              处罚设置
-            </button>
-            <button 
-              onClick={() => setActiveTab('reports')}
-              className={cn("px-6 py-2 rounded-full text-[13px] font-bold transition-all", activeTab === 'reports' ? "bg-white text-[#fa541c] shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
-            >
-              行为汇总
-            </button>
-          </div>
+          ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-8 pb-20">
+      <div className="mt-4">
         {activeTab === 'monitor' && renderMonitor()}
         {activeTab === 'policy' && renderPolicy()}
         {activeTab === 'penalty' && renderPenalty()}
