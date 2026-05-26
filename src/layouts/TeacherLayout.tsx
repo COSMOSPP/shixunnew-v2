@@ -96,9 +96,13 @@ export default function TeacherLayout() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3 mr-2">
-            <div className="text-gray-300 hover:text-white cursor-pointer transition-colors" title="操作日志">
+            <Link to="/teacher/logs" className="text-gray-300 hover:text-white cursor-pointer transition-colors relative group block" title="操作日志">
               <FileText className="w-5 h-5" />
-            </div>
+              {/* Premium custom floating tooltip */}
+              <span className="absolute bottom-[-32px] left-1/2 -translate-x-1/2 bg-[#1f1f1f] text-white text-[10px] px-2 py-0.5 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap border border-gray-800 z-50">
+                操作日志
+              </span>
+            </Link>
             <div className="text-gray-300 hover:text-white cursor-pointer transition-colors" title="帮助教程">
               <HelpCircle className="w-5 h-5" />
             </div>
