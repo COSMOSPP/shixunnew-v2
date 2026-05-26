@@ -76,6 +76,7 @@ import TeacherAntiCheat from "./pages/teacher/TeacherAntiCheat";
 import TeacherCenter from "./pages/teacher/TeacherCenter";
 import TeacherStatistics from "./pages/teacher/TeacherStatistics";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
+import TeacherAIQuota from "./pages/teacher/TeacherAIQuota";
 
 export default function App() {
   return (
@@ -111,6 +112,7 @@ export default function App() {
           <Route path="anticheat" element={<TeacherAntiCheat />} />
           <Route path="center" element={<TeacherCenter />} />
           <Route path="billing" element={<TeacherBilling />} />
+          <Route path="aiquota" element={<TeacherAIQuota />} />
         </Route>
 
         {/* User Dashboard */}
