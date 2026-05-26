@@ -166,7 +166,7 @@ export default function TeacherHome() {
             教学利器
           </h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
           {teachingTools.map((tool, idx) => (
             <div 
               key={idx} 
