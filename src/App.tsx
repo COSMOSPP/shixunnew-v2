@@ -77,6 +77,7 @@ import TeacherCenter from "./pages/teacher/TeacherCenter";
 import TeacherStatistics from "./pages/teacher/TeacherStatistics";
 import TeacherBilling from "./pages/teacher/TeacherBilling";
 import TeacherAIQuota from "./pages/teacher/TeacherAIQuota";
+import TeacherAudit from "./pages/teacher/TeacherAudit";
 
 export default function App() {
   return (
@@ -113,6 +114,7 @@ export default function App() {
           <Route path="center" element={<TeacherCenter />} />
           <Route path="billing" element={<TeacherBilling />} />
           <Route path="aiquota" element={<TeacherAIQuota />} />
+          <Route path="audit" element={<TeacherAudit />} />
         </Route>
 
         {/* User Dashboard */}
