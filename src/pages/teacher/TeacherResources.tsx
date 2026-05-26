@@ -406,19 +406,11 @@ export default function TeacherResources() {
         <div>
           <h1 className="text-2xl font-black text-neutral-900 flex items-center gap-2">
             <div className="w-1.5 h-6 bg-[#fa541c] rounded-full"></div>
-            算力与项目资源分配中心
+            资源配额
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
             实时监控GPU卡时与LLM大语言模型Token水位。通过多级预警机制和快捷模版对学生/协同协作教师进行配额动态分配、秒级追补或自动回收
           </p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <Button 
-            onClick={() => setIsBulkOpen(true)}
-            className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-md shadow-orange-500/10 h-9 rounded-xl text-xs font-bold px-4 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> 批量增配资源
-          </Button>
         </div>
       </div>
 
@@ -764,6 +756,14 @@ export default function TeacherResources() {
                     ⚡ 一键批量增配已选
                   </button>
                 </div>
+              )}
+              {activeTab === 'student' && (
+                <Button 
+                  onClick={() => setIsBulkOpen(true)}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded-lg text-xs font-bold px-3.5 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> 批量增配资源
+                </Button>
               )}
             </div>
           </div>
