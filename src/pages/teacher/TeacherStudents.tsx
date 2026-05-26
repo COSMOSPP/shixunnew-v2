@@ -150,13 +150,6 @@ export default function TeacherStudents() {
         </div>
       )}
 
-      {/* Breadcrumbs */}
-      <div className="text-sm text-neutral-500 mb-2">
-        用户管理 / <span className="text-neutral-900 font-medium">
-          {activeTab === 'student' ? '学生管理' : '教师团队'}
-        </span>
-      </div>
-
       {/* Header and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -173,16 +166,7 @@ export default function TeacherStudents() {
 
         {/* Global Toolbar buttons */}
         <div className="flex flex-wrap items-center gap-3">
-          {activeTab === 'student' ? (
-            <>
-              <Button variant="outline" className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-xl shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-4">
-                <Download className="w-4 h-4" /> 导出成绩
-              </Button>
-              <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-md shadow-orange-500/10 h-9 rounded-xl text-xs font-bold px-4">
-                <UserPlus className="w-4 h-4" /> 导入学生
-              </Button>
-            </>
-          ) : (
+          {activeTab === 'teacher' && (
             <Button 
               onClick={() => setIsAddTeacherOpen(true)}
               className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-md shadow-orange-500/10 h-9 rounded-xl text-xs font-bold px-4"
@@ -221,14 +205,14 @@ export default function TeacherStudents() {
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center gap-4 py-4 px-5 bg-white rounded-2xl border border-neutral-200 shadow-sm">
+      {/* Filter and Search Bar - transparent, flat style referencing TeacherQuestions */}
+      <div className="flex flex-col md:flex-row items-center gap-4 py-2 bg-transparent w-full">
         
         {/* Dropdown Filters based on active Tab */}
         {activeTab === 'student' ? (
           <div className="relative w-full md:w-64">
             <select 
-              className="w-full text-xs border border-neutral-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
+              className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
             >
@@ -242,7 +226,7 @@ export default function TeacherStudents() {
         ) : (
           <div className="relative w-full md:w-64">
             <select 
-              className="w-full text-xs border border-neutral-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
+              className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
               value={teacherRoleFilter}
               onChange={(e) => setTeacherRoleFilter(e.target.value)}
             >
@@ -261,7 +245,7 @@ export default function TeacherStudents() {
           <input 
             type="text" 
             placeholder={activeTab === 'student' ? "搜索学生姓名或学号" : "搜索教师姓名或邮箱"} 
-            className="pl-9 pr-4 py-2.5 text-xs border border-neutral-200 rounded-xl focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-full transition-all text-neutral-700"
+            className="pl-9 pr-4 py-2 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-full transition-all text-neutral-700"
           />
         </div>
       </div>
