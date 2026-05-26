@@ -263,10 +263,10 @@ export default function TeacherAIQuota() {
         <div>
           <h1 className="text-2xl font-black text-neutral-900 flex items-center gap-2">
             <div className="w-1.5 h-6 bg-[#fa541c] rounded-full"></div>
-            AI大模型 Token 配额与能力限制中心
+            AI配额管理
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            租户管理员可对师生进行Token细粒度分配，精细配置各类AI能力的并发和调用上限，审批临时增配申请并监控大盘水位
+            租户管理员可对师生进行Token细粒度分配，精细配置各类AI能力的并发和调用上限，审批临时增配申请并监控大盘用量
           </p>
         </div>
       </div>
@@ -281,7 +281,7 @@ export default function TeacherAIQuota() {
           )}
         >
           <Sliders className="w-4 h-4" />
-          Token 用量水位监控
+          Token 用量监控
         </button>
         <button
           onClick={() => { setActiveTab('allocate'); }}
@@ -350,7 +350,7 @@ export default function TeacherAIQuota() {
 
             <div className="bg-white p-5 rounded-2xl border border-neutral-200/60 shadow-sm flex items-center justify-between group hover:border-[#fa541c]/40 transition-all">
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-neutral-400 block uppercase tracking-wider">总分配 Token 水位</span>
+                <span className="text-[11px] font-bold text-neutral-400 block uppercase tracking-wider">总分配 Token</span>
                 <strong className="text-2xl font-black text-neutral-800 block tracking-tight">{globalTokenUsage.allocated} M</strong>
                 <span className="text-[10px] text-neutral-400 block">已分配占比: {getPercent(globalTokenUsage.allocated, globalTokenUsage.totalLimit)}%</span>
               </div>
@@ -401,43 +401,62 @@ export default function TeacherAIQuota() {
               </div>
 
               <div className="relative pt-4">
-                <svg viewBox="0 0 600 160" className="w-full h-36 overflow-visible">
+                <svg viewBox="0 0 600 180" className="w-full h-36 overflow-visible">
                   <defs>
                     <linearGradient id="area-grad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#fa541c" stopOpacity="0.2" />
                       <stop offset="100%" stopColor="#fa541c" stopOpacity="0.0" />
                     </linearGradient>
+                    <linearGradient id="peak-grad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#fa541c" />
+                      <stop offset="100%" stopColor="#f5222d" />
+                    </linearGradient>
                   </defs>
-                  <line x1="0" y1="20" x2="600" y2="20" stroke="#f3f4f6" strokeDasharray="3,3" />
-                  <line x1="0" y1="60" x2="600" y2="60" stroke="#f3f4f6" strokeDasharray="3,3" />
-                  <line x1="0" y1="100" x2="600" y2="100" stroke="#f3f4f6" strokeDasharray="3,3" />
-                  <line x1="0" y1="140" x2="600" y2="140" stroke="#eaeaea" />
+                  <line x1="0" y1="30" x2="600" y2="30" stroke="#f3f4f6" strokeDasharray="3,3" />
+                  <line x1="0" y1="70" x2="600" y2="70" stroke="#f3f4f6" strokeDasharray="3,3" />
+                  <line x1="0" y1="110" x2="600" y2="110" stroke="#f3f4f6" strokeDasharray="3,3" />
+                  <line x1="0" y1="150" x2="600" y2="150" stroke="#eaeaea" />
 
-                  <path d="M 50 140 L 50 110 L 150 70 L 250 120 L 350 40 L 450 85 L 550 20 L 550 140 Z" fill="url(#area-grad)" />
-                  <path d="M 50 110 L 150 70 L 250 120 L 350 40 L 450 85 L 550 20" fill="none" stroke="#fa541c" strokeWidth="3" strokeLinecap="round" />
+                  {/* Beautiful Smooth Bezier Area */}
+                  <path d="M 50 150 L 50 120 C 100 100, 100 85, 150 85 C 200 85, 200 115, 250 115 C 300 115, 300 60, 350 60 C 400 60, 400 95, 450 95 C 500 95, 500 40, 550 40 L 550 150 Z" fill="url(#area-grad)" />
                   
-                  <circle cx="150" cy="70" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" />
-                  <circle cx="350" cy="40" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" />
-                  <circle cx="550" cy="20" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" className="animate-ping" />
-                  <circle cx="550" cy="20" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" />
+                  {/* Beautiful Smooth Bezier Stroke */}
+                  <path d="M 50 120 C 100 100, 100 85, 150 85 C 200 85, 200 115, 250 115 C 300 115, 300 60, 350 60 C 400 60, 400 95, 450 95 C 500 95, 500 40, 550 40" fill="none" stroke="#fa541c" strokeWidth="3" strokeLinecap="round" />
+                  
+                  {/* Data Point Circles */}
+                  <circle cx="150" cy="85" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" />
+                  <circle cx="350" cy="60" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" />
+                  
+                  {/* Pulsing Warning Radar Circle using SVG standard animations */}
+                  <circle cx="550" cy="40" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5">
+                    <animate attributeName="r" values="4.5;12;4.5" dur="2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="550" cy="40" r="4.5" fill="#fa541c" stroke="#fff" strokeWidth="1.5" />
 
-                  <text x="50" y="156" fill="#888" fontSize="10" textAnchor="middle">W1</text>
-                  <text x="150" y="156" fill="#888" fontSize="10" textAnchor="middle">W2</text>
-                  <text x="250" y="156" fill="#888" fontSize="10" textAnchor="middle">W3</text>
-                  <text x="350" y="156" fill="#888" fontSize="10" textAnchor="middle">W4</text>
-                  <text x="450" y="156" fill="#888" fontSize="10" textAnchor="middle">W5</text>
-                  <text x="550" y="156" fill="#888" fontSize="10" textAnchor="end">W6 (本周)</text>
+                  {/* SVG Native Floating Tooltips/Labels (100% vector precise and responsive!) */}
+                  <g transform="translate(150, 50)">
+                    <rect x="-26" y="-12" width="52" height="18" rx="5" fill="#fff" stroke="#fa541c" strokeWidth="1" />
+                    <text x="0" y="0" fill="#fa541c" fontSize="9" fontWeight="bold" textAnchor="middle" dy="0.3em">350M</text>
+                  </g>
+
+                  <g transform="translate(350, 25)">
+                    <rect x="-26" y="-12" width="52" height="18" rx="5" fill="#fff" stroke="#fa541c" strokeWidth="1" />
+                    <text x="0" y="0" fill="#fa541c" fontSize="9" fontWeight="bold" textAnchor="middle" dy="0.3em">480M</text>
+                  </g>
+
+                  <g transform="translate(550, 5)">
+                    <rect x="-70" y="-13" width="70" height="20" rx="5" fill="url(#peak-grad)" stroke="#fff" strokeWidth="1" />
+                    <text x="-35" y="0" fill="#fff" fontSize="9" fontWeight="black" textAnchor="middle" dy="0.3em">峰值: 680M</text>
+                  </g>
+
+                  <text x="50" y="168" fill="#888" fontSize="10" textAnchor="middle">W1</text>
+                  <text x="150" y="168" fill="#888" fontSize="10" textAnchor="middle">W2</text>
+                  <text x="250" y="168" fill="#888" fontSize="10" textAnchor="middle">W3</text>
+                  <text x="350" y="168" fill="#888" fontSize="10" textAnchor="middle">W4</text>
+                  <text x="450" y="168" fill="#888" fontSize="10" textAnchor="middle">W5</text>
+                  <text x="550" y="168" fill="#888" fontSize="10" textAnchor="end">W6 (本周)</text>
                 </svg>
-
-                <div className="absolute top-2 left-16 bg-white border border-neutral-100 shadow-sm rounded-lg px-2 py-0.5 text-[9px] font-bold text-neutral-500 pointer-events-none">
-                  W2: 350M
-                </div>
-                <div className="absolute top-8 left-1/2 bg-white border border-neutral-100 shadow-sm rounded-lg px-2 py-0.5 text-[9px] font-bold text-neutral-500 pointer-events-none">
-                  W4: 480M
-                </div>
-                <div className="absolute top-1 right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-sm rounded-lg px-2.5 py-1 text-[10px] font-black pointer-events-none animate-bounce">
-                  峰值: 680M Token
-                </div>
               </div>
             </div>
 
@@ -542,7 +561,7 @@ export default function TeacherAIQuota() {
                     <th className="p-4">所属学院/专业</th>
                     <th className="p-4 text-right">已分配 Token</th>
                     <th className="p-4 text-right">已使用 Token</th>
-                    <th className="p-4 text-right">用量水位线</th>
+                    <th className="p-4 text-right">用量占比</th>
                     <th className="p-4">配额预警状态</th>
                     <th className="p-4 text-left">操作入口</th>
                   </tr>
@@ -581,7 +600,7 @@ export default function TeacherAIQuota() {
                             u.status === '正常' ? "bg-green-50 text-green-600 border-green-200" :
                             u.status === '接近上限' ? "bg-amber-50 text-amber-600 border-amber-200" : "bg-red-50 text-red-600 border-red-200"
                           )}>
-                            {u.status === '正常' ? '额度充足' : u.status === '接近上限' ? '水位预警' : '配额耗尽'}
+                            {u.status === '正常' ? '额度充足' : u.status === '接近上限' ? '用量预警' : '配额耗尽'}
                           </span>
                         </td>
                         <td className="p-4 text-left">
