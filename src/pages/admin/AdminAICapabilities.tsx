@@ -548,9 +548,9 @@ export default function AdminAICapabilities() {
       {/* ========================================================================= */}
       {activeTab === "auth" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Side: Tenant List Selector */}
-          <div className="lg:col-span-4 bg-white border border-neutral-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-neutral-100 bg-neutral-50/50 flex justify-between items-center">
+          {/* Left Side: Tenant List Selector (removed background and shadow, added border) */}
+          <div className="lg:col-span-4 border border-neutral-200 rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-neutral-200 bg-neutral-50/50 flex justify-between items-center">
               <span className="font-bold text-neutral-800 text-xs tracking-wider uppercase">选择租户进行授权</span>
               <Building className="w-4 h-4 text-neutral-400" />
             </div>
@@ -617,7 +617,8 @@ export default function AdminAICapabilities() {
               </div>
             )}
 
-            <div className="bg-white border border-neutral-100 rounded-xl overflow-hidden shadow-sm p-6 space-y-6">
+            {/* Right Side: Step-by-Step Authorization Configurator (removed shadow) */}
+            <div className="bg-white border border-neutral-100 rounded-xl overflow-hidden p-6 space-y-6">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-[#fff2e8] flex items-center justify-center text-[#fa541c]">
@@ -1200,9 +1201,9 @@ export default function AdminAICapabilities() {
       {/* ========================================================================= */}
       {activeTab === "agents" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left panel: Agent selection and Environment Switcher */}
-          <div className="lg:col-span-4 bg-white border border-neutral-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-neutral-100 bg-neutral-50/50 flex justify-between items-center">
+          {/* Left panel: Agent selection and Environment Switcher (removed background and shadow, added border) */}
+          <div className="lg:col-span-4 border border-neutral-200 rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-neutral-200 bg-neutral-50/50 flex justify-between items-center">
               <span className="font-bold text-neutral-800 text-xs tracking-wider uppercase">智能体配置列表</span>
               <span className="text-[10px] font-bold text-[#fa541c] bg-[#fff2e8] border border-[#ffbb96] rounded px-1.5 py-0.5">多环境</span>
             </div>
@@ -1256,7 +1257,8 @@ export default function AdminAICapabilities() {
               </div>
             )}
 
-            <div className="bg-white border border-neutral-100 rounded-xl shadow-sm p-6 space-y-6">
+            {/* Right panel: Deep parameters config and Publish trigger (removed shadow) */}
+            <div className="bg-white border border-neutral-100 rounded-xl p-6 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-4 gap-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-[#fff2e8] flex items-center justify-center text-[#fa541c]">
