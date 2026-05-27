@@ -489,16 +489,15 @@ export default function AdminAICapabilities() {
 
   return (
     <div className="space-y-6 min-h-full">
-      {/* Title Header with top-tab links style referencing teacher datasets tab bar */}
-      <div className="flex flex-col gap-5 bg-white p-6 border border-neutral-100 rounded-xl shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-neutral-900">AI能力管理</h1>
-            <p className="text-sm text-neutral-500 mt-1">管理各租户的AI工具和模型授权配额，编排复用Skills包，并对智能体触发和多环境配置进行一键灰度发布发布与回收控制</p>
-          </div>
-        </div>
-        
-        {/* Top flat tabs (referencing the mockup) */}
+      {/* Clean text Header without background */}
+      <div className="pb-1">
+        <h1 className="text-xl font-bold text-neutral-900">AI能力管理</h1>
+        <p className="text-sm text-neutral-500 mt-1">管理各租户的AI工具和模型授权配额，编排复用Skills包，并对智能体触发和多环境配置进行一键灰度发布与回收控制</p>
+      </div>
+
+      {/* Unified Module Container (White background, borders, rounded corners, p-6, space-y-6) */}
+      <div className="bg-white p-6 border border-neutral-100 rounded-xl shadow-sm space-y-6">
+        {/* Top flat tabs */}
         <div className="flex items-center gap-8 border-b border-neutral-200/60 pb-3 shrink-0">
           <button 
             onClick={() => setActiveTab("auth")}
@@ -543,7 +542,6 @@ export default function AdminAICapabilities() {
             )}
           </button>
         </div>
-      </div>
 
       {/* ========================================================================= */}
       {/* 1. AI工具授权 Tab Content */}
@@ -1641,6 +1639,7 @@ export default function AdminAICapabilities() {
           </div>
         </div>
       )}
+      </div> {/* <-- This closes the unified white background module container */}
     </div>
   );
 }
