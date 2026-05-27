@@ -489,12 +489,12 @@ export default function AdminAICapabilities() {
   return (
     <div className="space-y-6 min-h-full">
       {/* Title Header */}
-      <div className="flex justify-between items-center bg-white p-5 border border-neutral-100 rounded-xl">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-xl font-bold text-neutral-900">AI能力管理</h1>
           <p className="text-sm text-neutral-500 mt-1">管理各租户的AI工具和模型授权配额，编排复用Skills包，并对智能体触发和多环境配置进行一键灰度发布发布与回收控制</p>
         </div>
-        <div className="flex items-center gap-2 border border-neutral-200 rounded-lg p-1 bg-neutral-50">
+        <div className="flex items-center gap-2 border border-neutral-200 rounded-lg p-1 bg-neutral-50 self-start">
           <button 
             onClick={() => setActiveTab("auth")}
             className={cn(
