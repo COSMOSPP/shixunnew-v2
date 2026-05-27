@@ -32,7 +32,8 @@ import MyLearning from "./pages/user/MyLearning";
 import AdminAILayout from "./layouts/AdminAILayout";
 import AdminAICourses from "./pages/admin/AdminAICourses";
 import AdminAIExperiments from "./pages/admin/AdminAIExperiments";
-import AdminAICompetitions from "./pages/admin/AdminAICompetitions";
+import AdminAICapabilities from "./pages/admin/AdminAICapabilities";
+import AdminAIPractices from "./pages/admin/AdminAIPractices";
 import { 
   AdminAI, 
   AdminSecurity, 
@@ -41,7 +42,13 @@ import {
   AdminIT, 
   AdminIP, 
   AdminPermissions, 
-  AdminSystem 
+  AdminSystem,
+  AdminAudit,
+  AdminResources,
+  AdminTenants,
+  AdminAIQuota,
+  AdminCompetitions,
+  AdminAICenter
 } from "./pages/admin/AdminPages";
 import { 
   SecurityLayout, PublicCloudLayout, PrivateCloudLayout, 
@@ -155,7 +162,8 @@ export default function App() {
             <Route index element={<AdminAI />} />
             <Route path="courses" element={<AdminAICourses />} />
             <Route path="experiments" element={<AdminAIExperiments />} />
-            <Route path="competitions" element={<AdminAICompetitions />} />
+            <Route path="capabilities" element={<AdminAICapabilities />} />
+            <Route path="practices" element={<AdminAIPractices />} />
           </Route>
           <Route path="security" element={<SecurityLayout />}>
             <Route index element={<AdminSecurity />} />
@@ -187,6 +195,12 @@ export default function App() {
             <Route path="allocations" element={<IPAllocations />} />
             <Route path="conflicts" element={<IPConflicts />} />
           </Route>
+          <Route path="audit" element={<AdminAudit />} />
+          <Route path="resources" element={<AdminResources />} />
+          <Route path="tenants" element={<AdminTenants />} />
+          <Route path="ai-quota" element={<AdminAIQuota />} />
+          <Route path="competitions" element={<AdminCompetitions />} />
+          <Route path="ai-center" element={<AdminAICenter />} />
           <Route path="permissions" element={<PermissionsLayout />}>
             <Route index element={<AdminPermissions />} />
             <Route path="users" element={<PermissionsUsers />} />
