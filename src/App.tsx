@@ -34,6 +34,7 @@ import AdminAICourses from "./pages/admin/AdminAICourses";
 import AdminAIExperiments from "./pages/admin/AdminAIExperiments";
 import AdminAICapabilities from "./pages/admin/AdminAICapabilities";
 import AdminAIPractices from "./pages/admin/AdminAIPractices";
+import AdminAudit from "./pages/admin/AdminAudit";
 import { 
   AdminAI, 
   AdminSecurity, 
@@ -43,7 +44,6 @@ import {
   AdminIP, 
   AdminPermissions, 
   AdminSystem,
-  AdminAudit,
   AdminResources,
   AdminTenants,
   AdminAIQuota,

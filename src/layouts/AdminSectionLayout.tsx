@@ -17,9 +17,9 @@ export default function AdminSectionLayout({ title, menuItems }: AdminSectionLay
   const location = useLocation();
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full bg-white overflow-hidden shadow-sm">
       {/* Left Sidebar */}
-      <div className="w-[180px] bg-white border-r border-neutral-border flex-shrink-0 flex flex-col h-full">
+      <div className="w-[200px] border-r border-neutral-border flex-shrink-0 flex flex-col h-full bg-white">
         <div className="p-5 border-b border-neutral-border">
           <h2 className="text-lg font-semibold text-neutral-title">{title}</h2>
         </div>
@@ -46,7 +46,7 @@ export default function AdminSectionLayout({ title, menuItems }: AdminSectionLay
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-4">
+      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-6">
         <Outlet />
       </div>
     </div>

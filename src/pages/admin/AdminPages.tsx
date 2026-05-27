@@ -185,3 +185,121 @@ export function AdminSystem() {
     />
   );
 }
+
+
+
+export function AdminResources() {
+  return (
+    <AdminStandardPage 
+      title="公共资源管理" 
+      description="管理实训平台的课件、数据集、实验模板等公共资源"
+      primaryAction="上传新资源"
+      stats={[
+        { title: "资源总数", value: "482", icon: Database, trend: "24", trendUp: true },
+        { title: "累计下载", value: "45.2k", icon: Activity, trend: "18%", trendUp: true },
+        { title: "上架状态", value: "450", icon: CheckCircle },
+        { title: "存储消耗", value: "4.2TB", icon: Server, trend: "8%", trendUp: true }
+      ]}
+      columns={["资源编号", "资源名称", "类型", "上传者", "状态"]}
+      data={[
+        ["RES-2026-001", "Python数据分析课件", "课件", "系统管理员", "已上架"],
+        ["RES-2026-002", "MNIST手写数字数据集", "数据集", "深度学习助教", "已上架"],
+        ["RES-2026-003", "大语言模型微调模板", "实验模板", "系统管理员", "下架中"],
+        ["RES-2026-004", "计算机网络抓包实验包", "实验包", "李瑞 讲师", "已上架"]
+      ]}
+    />
+  );
+}
+
+export function AdminTenants() {
+  return (
+    <AdminStandardPage 
+      title="租户管理" 
+      description="管理加入实训平台的高校、企业等租户及配额限制"
+      primaryAction="创建新租户"
+      stats={[
+        { title: "活跃租户", value: "148", icon: Users, trend: "5", trendUp: true },
+        { title: "本月续约", value: "12", icon: Clock, trend: "100%", trendUp: true },
+        { title: "服务中席位", value: "12.4k", icon: Laptop, trend: "10%", trendUp: true },
+        { title: "系统可用性", value: "99.99%", icon: CheckCircle }
+      ]}
+      columns={["租户名称", "管理员", "联系电话", "租期状态", "配额剩余"]}
+      data={[
+        ["北京大学信息学院", "王院长", "13800000001", "服务中", "87%"],
+        ["清华大学计算机系", "李教授", "13800000002", "服务中", "92%"],
+        ["百度智能云研发部", "张经理", "13800000003", "已过期", "0%"],
+        ["复旦大学软件学院", "陈主任", "13800000004", "服务中", "78%"]
+      ]}
+    />
+  );
+}
+
+export function AdminAIQuota() {
+  return (
+    <AdminStandardPage 
+      title="AI 配额管理" 
+      description="管理各租户与用户的 AI Token 额度、并发限制与使用统计"
+      primaryAction="调整配额"
+      stats={[
+        { title: "Token总发量", value: "120M", icon: Activity, trend: "15%", trendUp: true },
+        { title: "月活调用数", value: "45.2M", icon: Server, trend: "22%", trendUp: true },
+        { title: "GPU活跃卡数", value: "128卡", icon: Cpu, trend: "8卡", trendUp: true },
+        { title: "平均QPS上限", value: "500", icon: CheckCircle }
+      ]}
+      columns={["租户/用户", "配额类型", "已使用", "总额度", "使用占比"]}
+      data={[
+        ["北京大学信息学院", "GPU算力配额", "4,500小时", "5,000小时", "90%"],
+        ["清华大学计算机系", "LLM Token配额", "18.2M", "20.0M", "91%"],
+        ["张旭东 教授", "个人Token配额", "1.2M", "2.0M", "60%"],
+        ["百度智能云研发部", "企业并发QPS", "12", "50", "24%"]
+      ]}
+    />
+  );
+}
+
+export function AdminCompetitions() {
+  return (
+    <AdminStandardPage 
+      title="竞赛管理" 
+      description="管理实训平台举办的AI挑战赛、云计算大赛等竞赛项目"
+      primaryAction="新建竞赛"
+      stats={[
+        { title: "举办比赛", value: "32", icon: Trophy, trend: "4", trendUp: true },
+        { title: "参赛人数", value: "8.4k", icon: Users, trend: "18%", trendUp: true },
+        { title: "提报作品", value: "1,204", icon: Database, trend: "15%", trendUp: true },
+        { title: "发放奖金", value: "¥450k", icon: Activity }
+      ]}
+      columns={["竞赛名称", "参赛人数", "开始时间", "结束时间", "竞赛状态"]}
+      data={[
+        ["首届全国高校大模型应用挑战赛", "1,204人", "2026-05-01", "2026-06-01", "进行中"],
+        ["2026年云原生架构设计大赛", "850人", "2026-04-10", "2026-05-10", "已结束"],
+        ["第三届网络安全渗透对抗赛", "640人", "2026-06-15", "2026-07-15", "筹备中"],
+        ["智能算法校园选拔赛", "480人", "2026-05-20", "2026-05-27", "进行中"]
+      ]}
+    />
+  );
+}
+
+export function AdminAICenter() {
+  return (
+    <AdminStandardPage 
+      title="AI 能力中心" 
+      description="管理平台的公共AI接口、NLP模型与视觉大模型等基础服务"
+      primaryAction="接入新模型"
+      stats={[
+        { title: "接入服务", value: "18", icon: Brain, trend: "2", trendUp: true },
+        { title: "核心成功率", value: "99.85%", icon: CheckCircle, trend: "0.05%", trendUp: true },
+        { title: "拦截并发数", value: "1,204", icon: Shield, trend: "12%", trendUp: true },
+        { title: "平均QPS上限", value: "800", icon: Cpu }
+      ]}
+      columns={["接口名称", "类别", "成功率", "QPS限制", "服务状态"]}
+      data={[
+        ["ChatCompletions API", "大语言模型", "99.8%", "100", "运行中"],
+        ["TextToImage API", "图像生成", "98.5%", "20", "运行中"],
+        ["Embeddings API", "向量化", "100%", "200", "运行中"],
+        ["SpeechToText API", "语音识别", "99.2%", "50", "运行中"]
+      ]}
+    />
+  );
+}
+

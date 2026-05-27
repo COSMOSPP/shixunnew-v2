@@ -28,7 +28,12 @@ import {
   Key,
   Settings,
   Bell,
-  Star
+  Star,
+  CheckSquare,
+  Globe,
+  Building,
+  Activity,
+  Zap
 } from "lucide-react";
 
 interface NavItem {
@@ -92,6 +97,12 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
     { title: "私有云", icon: Server, href: "/admin/private-cloud" },
     { title: "IT", icon: Laptop, href: "/admin/it" },
     { title: "IP", icon: Network, href: "/admin/ip" },
+    { title: "审核中心", icon: CheckSquare, href: "/admin/audit" },
+    { title: "公共资源管理", icon: Globe, href: "/admin/resources" },
+    { title: "租户管理", icon: Building, href: "/admin/tenants" },
+    { title: "ai配额管理", icon: Activity, href: "/admin/ai-quota" },
+    { title: "竞赛管理", icon: Trophy, href: "/admin/competitions" },
+    { title: "ai能力中心", icon: Zap, href: "/admin/ai-center" },
     { title: "权限管理", icon: Key, href: "/admin/permissions" },
     { title: "系统管理", icon: Settings, href: "/admin/system" },
   ];
@@ -138,7 +149,6 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
                   )}
                   onClick={() => setIsModuleOpen(!isModuleOpen)}
                 >
-                  <Brain className="w-4 h-4 text-[#fa541c]" />
                   <span className="text-[14px]">人工智能</span>
                   <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isModuleOpen ? "rotate-180" : "")} />
                   {isAnyModuleActive && (
@@ -153,20 +163,19 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
                       {mergedModules.map((mod) => {
                         const isActive = location.pathname === mod.href || location.pathname.startsWith(mod.href + "/");
                         return (
-                          <Link 
-                            key={mod.href}
-                            to={mod.href} 
-                            className={cn(
-                              "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
-                              isActive 
-                                ? "bg-white/5 text-[#fa541c] font-semibold" 
-                                : "text-gray-300 hover:text-white hover:bg-white/10"
-                            )}
-                            onClick={() => setIsModuleOpen(false)}
-                          >
-                            <mod.icon className="w-4 h-4 shrink-0" />
-                            {mod.title}
-                          </Link>
+                            <Link 
+                              key={mod.href}
+                              to={mod.href} 
+                              className={cn(
+                                "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
+                                isActive 
+                                  ? "bg-white/5 text-[#fa541c] font-semibold" 
+                                  : "text-gray-300 hover:text-white hover:bg-white/10"
+                              )}
+                              onClick={() => setIsModuleOpen(false)}
+                            >
+                              {mod.title}
+                            </Link>
                         );
                       })}
                     </div>
