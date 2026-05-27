@@ -47,17 +47,15 @@ export default function PublicLayout() {
                   </div>
                 </div>
               </div>
-              <div className="group relative cursor-pointer text-neutral-body hover:text-primary transition-colors h-16 flex items-center">
-                <span className="flex items-center gap-1">
-                  竞赛 <ChevronDown className="w-4 h-4" />
-                </span>
-                <div className="absolute top-full left-0 hidden group-hover:block">
-                  <div className="w-48 rounded-[6px] border border-neutral-border bg-neutral-surface p-2 shadow-sm">
-                    <Link to="/competition/ai" className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">实战竞赛</Link>
-                    <Link to="/competition/cloud" className="block px-3 py-2 hover:bg-neutral-bg rounded-[4px] text-neutral-title transition-colors">挑战竞赛</Link>
-                  </div>
-                </div>
-              </div>
+              <Link 
+                to="/competition" 
+                className={cn(
+                  "text-neutral-body hover:text-primary transition-colors h-16 flex items-center",
+                  location.pathname.startsWith("/competition") ? "text-primary border-b-2 border-primary font-medium" : ""
+                )}
+              >
+                竞赛
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2 h-16">

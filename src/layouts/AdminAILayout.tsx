@@ -14,13 +14,13 @@ export default function AdminAILayout() {
   ];
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full bg-white overflow-hidden shadow-sm">
       {/* Left Sidebar */}
-      <div className="w-[180px] bg-white border-r border-neutral-border flex-shrink-0 flex flex-col h-full">
+      <div className="w-[200px] border-r border-neutral-border flex-shrink-0 flex flex-col bg-white">
         <div className="p-5 border-b border-neutral-border">
           <h2 className="text-lg font-semibold text-neutral-title">人工智能管理</h2>
         </div>
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
@@ -43,7 +43,7 @@ export default function AdminAILayout() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-4">
+      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-6">
         <Outlet />
       </div>
     </div>

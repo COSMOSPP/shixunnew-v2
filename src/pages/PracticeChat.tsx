@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   MessageSquare, Info, Download, ArrowLeft, 
@@ -8,6 +8,7 @@ import {
 
 export default function PracticeChat() {
   const navigate = useNavigate();
+  const [input, setInput] = useState("");
 
   const historyChats = [
     "根据主页描述设计理念",
@@ -110,6 +111,17 @@ export default function PracticeChat() {
         <div className="p-6 pt-0 w-full max-w-[800px] mx-auto">
           <div className="border border-neutral-200 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-within:border-blue-400 transition-all flex flex-col relative overflow-hidden">
             <textarea 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  if (e.nativeEvent.isComposing) return;
+                  e.preventDefault();
+                  if (input.trim()) {
+                    navigate('/skill-builder');
+                  }
+                }
+              }}
               className="w-full min-h-[80px] max-h-[200px] p-4 pb-12 outline-none resize-none text-[15px] placeholder:text-neutral-400 bg-transparent"
               placeholder="发送消息或输入'/'选择技能"
             />
@@ -148,7 +160,17 @@ export default function PracticeChat() {
                 <button className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 transition-colors">
                   <Mic className="w-4 h-4" />
                 </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-400 transition-colors">
+                <button 
+                  onClick={() => {
+                    if (input.trim()) {
+                      navigate('/skill-builder');
+                    }
+                  }}
+                  disabled={!input.trim()}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                    input.trim() ? "bg-[#fa541c] text-white hover:bg-[#e64a19]" : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                  }`}
+                >
                   <Send className="w-4 h-4" />
                 </button>
               </div>

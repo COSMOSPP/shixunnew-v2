@@ -1001,8 +1001,8 @@ export default function UserPractices() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[15px] text-neutral-800">创建最佳实践</span>
-              <span className="text-[11px] text-neutral-400">通过对话生成</span>
+              <span className="font-bold text-[15px] text-neutral-800">使用最佳实践</span>
+              <span className="text-[11px] text-neutral-400">通过对话运行与体验</span>
             </div>
           </div>
 
@@ -1037,7 +1037,7 @@ export default function UserPractices() {
                       e.preventDefault();
                       if (builderInput.trim()) {
                         setShowChat(false);
-                        navigate('/skill-builder');
+                        navigate('/practice-chat');
                       }
                     }
                   }}
@@ -1082,7 +1082,7 @@ export default function UserPractices() {
                       onClick={() => {
                         if (builderInput.trim()) {
                           setShowChat(false);
-                          navigate('/skill-builder');
+                          navigate('/practice-chat');
                         }
                       }}
                       className={cn(
@@ -1120,7 +1120,10 @@ export default function UserPractices() {
             {createStep === 1 ? (
               <div className="flex flex-col gap-4">
                 <div 
-                  onClick={() => setCreateStep(2)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    navigate('/practice-chat');
+                  }}
                   className="bg-white border border-neutral-200 rounded-2xl p-5 flex items-start gap-5 cursor-pointer hover:border-[#fa541c] hover:shadow-md transition-all group"
                 >
                   <div className="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">

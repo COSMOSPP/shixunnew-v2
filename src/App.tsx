@@ -18,6 +18,7 @@ import SkillBuilder from "./pages/SkillBuilder";
 import PracticeChat from "./pages/PracticeChat";
 import AICompetition from "./pages/AICompetition";
 import CloudCompetition from "./pages/CloudCompetition";
+import CompetitionList from "./pages/CompetitionList";
 import UserCenterLayout from "./layouts/UserCenterLayout";
 import UserCenterProfile from "./pages/user/UserCenterProfile";
 import UserCenterQuota from "./pages/user/UserCenterQuota";
@@ -87,6 +88,7 @@ export default function App() {
         {/* Public Website */}
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<Home />} />
+          <Route path="competition" element={<CompetitionList />} />
           <Route path="competition/ai" element={<AICompetition />} />
           <Route path="competition/cloud" element={<CloudCompetition />} />
         </Route>

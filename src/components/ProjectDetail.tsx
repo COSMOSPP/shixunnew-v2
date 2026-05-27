@@ -22,7 +22,7 @@ interface ProjectDetailProps {
 }
 
 export default function ProjectDetail({ project, onBack, onStart }: ProjectDetailProps) {
-  const [activeTab, setActiveTab] = useState('detail');
+  const [activeTab, setActiveTab] = useState('source');
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
@@ -125,7 +125,6 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
           <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               {[
-                { id: 'detail', label: '使用', icon: List },
                 { id: 'source', label: '源码', icon: Code },
               ].map((tab) => (
                 <button
@@ -148,143 +147,7 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
             </div>
           </div>
 
-          {/* Project Details Section */}
-          {activeTab === 'detail' && (
-            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-              <div className="bg-white rounded-[16px] shadow-sm p-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl font-bold text-neutral-title">API</h2>
-                  <span className="text-[13px] text-neutral-caption">(4278 次被调用)</span>
-                  <Info className="w-4 h-4 text-neutral-caption cursor-pointer" />
-                </div>
-                
-                <div className="flex items-center bg-[#fafafa] rounded-md mb-12">
-                  <div className="flex-1 px-4 py-3 text-[14px] text-neutral-500 font-mono overflow-x-auto">
-                    https://mo.zju.edu.cn/pyapi/apps/run/5f7856b9878cb398519d2063
-                  </div>
-                  <button className="p-3 bg-neutral-200/50 hover:bg-neutral-200 text-neutral-400 hover:text-neutral-600 rounded-r-md transition-colors">
-                    <Copy className="w-5 h-5" />
-                  </button>
-                </div>
 
-                <div className="flex items-center justify-between mb-6 border-b border-neutral-100 pb-2">
-                  <h2 className="text-xl font-bold text-neutral-title">API 参数</h2>
-                  <div className="flex items-center gap-1 text-[#fa541c] text-[14px] cursor-pointer hover:text-[#e84a15]">
-                    收起 <ChevronDown className="w-4 h-4 rotate-180" />
-                  </div>
-                </div>
-
-                <div className="mb-10">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
-                    <span className="font-bold text-neutral-title">输入</span>
-                  </div>
-                  <div className="border border-neutral-100 rounded-lg overflow-hidden">
-                    <table className="w-full text-left text-[14px]">
-                      <thead className="bg-[#fafafa] text-neutral-500">
-                        <tr>
-                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">参数</th>
-                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">类型</th>
-                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">范围</th>
-                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-1/5 text-center">默认值</th>
-                          <th className="px-6 py-4 font-medium border-b border-neutral-100 w-1/5 text-center">说明</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="px-6 py-4 border-r border-neutral-100 text-[#52c41a] text-center">request</td>
-                          <td className="px-6 py-4 border-r border-neutral-100 text-[#eb2f96] font-mono text-center">str</td>
-                          <td className="px-6 py-4 border-r border-neutral-100 text-center text-neutral-caption">-</td>
-                          <td className="px-6 py-4 border-r border-neutral-100 text-center text-neutral-caption">-</td>
-                          <td className="px-6 py-4 text-neutral-title text-center">对模型说话</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
-                    <span className="font-bold text-neutral-title">输出</span>
-                  </div>
-                  <div className="border border-neutral-100 rounded-lg overflow-hidden">
-                    <table className="w-full text-left text-[14px]">
-                      <thead className="bg-[#fafafa] text-neutral-500">
-                        <tr>
-                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-[20%] text-center">参数</th>
-                          <th className="px-6 py-4 font-medium border-b border-r border-neutral-100 w-[20%] text-center">类型</th>
-                          <th className="px-6 py-4 font-medium border-b border-neutral-100 w-[60%] text-center">说明</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="px-6 py-4 border-r border-neutral-100 text-neutral-title text-center">response</td>
-                          <td className="px-6 py-4 border-r border-neutral-100 text-[#eb2f96] font-mono text-center">str</td>
-                          <td className="px-6 py-4 text-neutral-500 text-center">模型的回答</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-[16px] shadow-sm flex overflow-hidden min-h-[400px]">
-                <div className="w-16 bg-white border-r border-neutral-100 py-6 flex flex-col items-center gap-4 shrink-0">
-                  <div className="w-10 h-10 rounded-md bg-[#8ce196] text-white flex items-center justify-center shadow-sm">
-                    <Activity className="w-5 h-5" />
-                  </div>
-                  <div className="w-10 h-10 rounded-md bg-neutral-200 text-white flex items-center justify-center font-bold text-xs">
-                    JS
-                  </div>
-                  <div className="w-10 h-10 rounded-md bg-neutral-200 text-white flex items-center justify-center font-bold text-[10px]">
-                    curl
-                  </div>
-                  <div className="w-10 h-10 rounded-md bg-neutral-200 text-white flex items-center justify-center">
-                    <Code className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="flex-1 p-10">
-                  <h2 className="text-xl font-bold text-neutral-title mb-10">在线使用</h2>
-                  <div className="flex gap-16">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-8">
-                        <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
-                        <span className="font-bold text-neutral-title">输入</span>
-                      </div>
-                      <div className="mb-3">
-                        <span className="text-[#fa541c] mr-1">*</span>
-                        <span className="text-[14px] text-neutral-title font-medium">request</span>
-                      </div>
-                      <input 
-                        type="text" 
-                        placeholder="对模型说话" 
-                        className="w-full bg-[#fafafa] border border-neutral-100 rounded-md px-4 py-3 text-[14px] outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] mb-8 transition-all"
-                      />
-                      <div className="flex justify-end">
-                        <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8 h-10">提交</Button>
-                      </div>
-                    </div>
-                    
-                    <div className="w-px bg-neutral-100"></div>
-
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-8">
-                        <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div>
-                        <span className="font-bold text-neutral-title">输出</span>
-                      </div>
-                      <div className="flex items-center gap-1 mb-4 text-[14px] text-neutral-title">
-                        response: <Info className="w-3.5 h-3.5 text-neutral-400" />
-                      </div>
-                      <div className="text-[14px] text-neutral-400 mt-6">
-                        提交你的输入来获取输出
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Source Code Section */}
           {activeTab === 'source' && (

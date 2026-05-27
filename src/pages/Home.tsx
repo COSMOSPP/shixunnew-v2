@@ -22,19 +22,18 @@ export default function Home() {
   const [activeScenario, setActiveScenario] = useState(scenarios[0]);
   const slides = [
     {
-      title: "欢迎使用智云实训 2.0",
-      subtitle: "新一代泛 AI 工具与智云实训平台",
-      image: "https://picsum.photos/seed/banner1/1920/800"
+      title: "",
+      subtitle: "",
+      image: "/images/banner2.jpg",
+      isStaticImage: true,
+      link: "/user/courses"
     },
     {
       title: "掌握前沿 AI 技术",
       subtitle: "从理论基础到工程落地，全面提升 AI 核心竞争力",
-      image: "https://picsum.photos/seed/banner2/1920/800"
-    },
-    {
-      title: "企业级项目实战",
-      subtitle: "真实业务场景驱动，沉浸式积累一线实战经验",
-      image: "https://picsum.photos/seed/banner3/1920/800"
+      image: "/images/banner1.jpg",
+      isStaticImage: false,
+      badge: "全新版本发布"
     }
   ];
 
@@ -80,50 +79,74 @@ export default function Home() {
       <div className="flex flex-col min-h-full bg-[#f8fafc] font-sans selection:bg-blue-100 selection:text-blue-900">
         
         {/* Hero Section - Light Luxury Style */}
-        <div className="relative w-full h-[500px] lg:h-[650px] overflow-hidden bg-white">
-          {slides.map((slide, index) => (
-            <div 
-              key={index}
-              className={cn(
-                "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-                index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-              )}
-            >
-              <img 
-                src={slide.image} 
-                alt={slide.title} 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-              {/* Elegant Light Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent"></div>
-              
-              <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-16 lg:px-24 max-w-5xl">
-                <div className="overflow-hidden mb-4">
-                  <span className="inline-block py-1 px-3 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium tracking-wide animate-fade-in-up">
-                    全新版本发布
-                  </span>
-                </div>
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight mb-6 leading-[1.15] animate-fade-in-up animation-delay-100">
-                  {slide.title}
-                </h2>
-                <p className="text-lg md:text-2xl text-slate-600 font-light max-w-2xl leading-relaxed animate-fade-in-up animation-delay-200">
-                  {slide.subtitle}
-                </p>
-                <div className="mt-10 flex items-center gap-4 animate-fade-in-up animation-delay-300">
-                  <Link to="/user/ai/assistant" className="h-14 px-8 inline-flex items-center justify-center rounded-full bg-slate-900 text-white text-base font-medium hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                    开始学习 <ArrowRight className="w-5 h-5 ml-2" />
-                  </Link>
-                  <Link to="/login" className="h-14 px-8 inline-flex items-center justify-center rounded-full bg-white text-slate-900 text-base font-medium border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
-                    了解更多
-                  </Link>
+        <div className="relative w-full aspect-[1024/346] min-h-[250px] max-h-[580px] overflow-hidden bg-[#fff5eb]">
+          {slides.map((slide, index) => {
+            const isCurrent = index === currentSlide;
+            
+            if (slide.isStaticImage) {
+              return (
+                <Link
+                  key={index}
+                  to={slide.link || "/user/courses"}
+                  className={cn(
+                    "absolute inset-0 transition-opacity duration-1000 ease-in-out block cursor-pointer",
+                    isCurrent ? "opacity-100 z-10" : "opacity-0 z-0"
+                  )}
+                >
+                  <img 
+                    src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}${slide.image}`} 
+                    alt="智联未来 云启成长" 
+                    className="w-full h-full object-cover object-left md:object-center transition-all duration-500"
+                  />
+                </Link>
+              );
+            }
+
+            return (
+              <div 
+                key={index}
+                className={cn(
+                  "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                  isCurrent ? "opacity-100 z-10" : "opacity-0 z-0"
+                )}
+              >
+                <img 
+                  src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}${slide.image}`} 
+                  alt={slide.title} 
+                  className="w-full h-full object-cover object-right md:object-center transition-all duration-500"
+                />
+                {/* Elegant Light Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#fff5eb]/90 via-[#fff5eb]/65 to-transparent"></div>
+                
+                <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-16 lg:px-24 max-w-5xl">
+                  {slide.badge && (
+                    <div className="overflow-hidden mb-4 animate-fade-in-up">
+                      <span className="inline-block py-1 px-3 rounded-full bg-[#fff2e8] border border-[#ffbb96] text-[#fa541c] text-sm font-medium tracking-wide">
+                        {slide.badge}
+                      </span>
+                    </div>
+                  )}
+                  <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight mb-6 leading-[1.15] animate-fade-in-up animation-delay-100">
+                    {slide.title}
+                  </h2>
+                  <p className="text-sm md:text-xl text-slate-600 font-light max-w-2xl leading-relaxed animate-fade-in-up animation-delay-200">
+                    {slide.subtitle}
+                  </p>
+                  <div className="mt-8 flex items-center gap-4 animate-fade-in-up animation-delay-300">
+                    <Link to="/user/ai/assistant" className="h-12 px-6 sm:h-14 sm:px-8 inline-flex items-center justify-center rounded-full bg-slate-900 text-white text-sm sm:text-base font-medium hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                      开始学习 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                    </Link>
+                    <Link to="/login" className="h-12 px-6 sm:h-14 sm:px-8 inline-flex items-center justify-center rounded-full bg-white text-slate-900 text-sm sm:text-base font-medium border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
+                      了解更多
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           
           {/* Elegant Controls */}
-          <div className="absolute bottom-12 right-6 md:right-16 lg:right-24 z-20 flex items-center gap-8">
+          <div className="absolute bottom-6 md:bottom-12 right-6 md:right-16 lg:right-24 z-20 flex items-center gap-8">
             {/* Indicators */}
             <div className="hidden md:flex gap-3">
               {slides.map((_, index) => (
