@@ -3,7 +3,8 @@ import {
   Cpu, Activity, CheckCircle, Clock, Brain, Star, Settings, 
   Trash2, Edit, Play, ArrowRight, Save, Plus, Search, Filter, 
   Layers, RefreshCw, FileText, Sliders, Building, Check, 
-  Shield, AlertCircle, Sparkles, Terminal, ToggleLeft, ToggleRight
+  Shield, AlertCircle, Sparkles, Terminal, ToggleLeft, ToggleRight,
+  Table, Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -222,21 +223,6 @@ const allAITools = [
 
 export default function AdminAICapabilities() {
   const [activeTab, setActiveTab] = useState<"auth" | "skills" | "agents">("auth");
-
-  const getSkillIcon = (type: string) => {
-    switch (type) {
-      case "文本处理":
-        return <FileText className="w-5 h-5 text-blue-500" />;
-      case "代码生成":
-        return <Cpu className="w-5 h-5 text-emerald-500" />;
-      case "数据分析":
-        return <Activity className="w-5 h-5 text-purple-500" />;
-      case "知识问答":
-        return <Brain className="w-5 h-5 text-orange-500" />;
-      default:
-        return <Sparkles className="w-5 h-5 text-gray-500" />;
-    }
-  };
 
   // --- States for AI工具授权 (Tab 1) ---
   const [tenants, setTenants] = useState<Tenant[]>(initialTenants);
@@ -503,45 +489,58 @@ export default function AdminAICapabilities() {
 
   return (
     <div className="space-y-6 min-h-full">
-      {/* Title Header */}
-      <div className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-neutral-900">AI能力管理</h1>
-          <p className="text-sm text-neutral-500 mt-1">管理各租户的AI工具和模型授权配额，编排复用Skills包，并对智能体触发和多环境配置进行一键灰度发布发布与回收控制</p>
+      {/* Title Header with top-tab links style referencing teacher datasets tab bar */}
+      <div className="flex flex-col gap-5 bg-white p-6 border border-neutral-100 rounded-xl shadow-sm">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold text-neutral-900">AI能力管理</h1>
+            <p className="text-sm text-neutral-500 mt-1">管理各租户的AI工具和模型授权配额，编排复用Skills包，并对智能体触发和多环境配置进行一键灰度发布发布与回收控制</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2 border border-neutral-200 rounded-lg p-1 bg-neutral-50 self-start">
+        
+        {/* Top flat tabs (referencing the mockup) */}
+        <div className="flex items-center gap-8 border-b border-neutral-200/60 pb-3 shrink-0">
           <button 
             onClick={() => setActiveTab("auth")}
             className={cn(
-              "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
+              "text-[15px] font-bold pb-2 relative transition-all cursor-pointer bg-transparent border-none",
               activeTab === "auth" 
-                ? "bg-white text-[#fa541c] shadow-sm" 
+                ? "text-[#fa541c]" 
                 : "text-neutral-500 hover:text-neutral-800"
             )}
           >
             AI工具授权
+            {activeTab === "auth" && (
+              <div className="absolute bottom-[-13px] left-0 right-0 h-[2.5px] bg-[#fa541c] rounded-full" />
+            )}
           </button>
           <button 
             onClick={() => setActiveTab("skills")}
             className={cn(
-              "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
+              "text-[15px] font-bold pb-2 relative transition-all cursor-pointer bg-transparent border-none",
               activeTab === "skills" 
-                ? "bg-white text-[#fa541c] shadow-sm" 
+                ? "text-[#fa541c]" 
                 : "text-neutral-500 hover:text-neutral-800"
             )}
           >
             Skills库管理
+            {activeTab === "skills" && (
+              <div className="absolute bottom-[-13px] left-0 right-0 h-[2.5px] bg-[#fa541c] rounded-full" />
+            )}
           </button>
           <button 
             onClick={() => setActiveTab("agents")}
             className={cn(
-              "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
+              "text-[15px] font-bold pb-2 relative transition-all cursor-pointer bg-transparent border-none",
               activeTab === "agents" 
-                ? "bg-white text-[#fa541c] shadow-sm" 
+                ? "text-[#fa541c]" 
                 : "text-neutral-500 hover:text-neutral-800"
             )}
           >
             智能体配置
+            {activeTab === "agents" && (
+              <div className="absolute bottom-[-13px] left-0 right-0 h-[2.5px] bg-[#fa541c] rounded-full" />
+            )}
           </button>
         </div>
       </div>
@@ -785,72 +784,71 @@ export default function AdminAICapabilities() {
       {/* ========================================================================= */}
       {activeTab === "skills" && (
         <div className="space-y-6">
-          {/* Filters & Control Panel */}
-          <div className="bg-white border border-neutral-100 rounded-xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              {/* Search bar */}
-              <div className="relative w-64">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input 
-                  type="text"
-                  placeholder="搜索AI技能..."
-                  value={skillSearchQuery}
-                  onChange={(e) => setSkillSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-1.5 w-full text-xs border border-neutral-200 rounded focus:outline-none focus:border-[#fa541c] bg-white text-neutral-800 placeholder-neutral-400"
-                />
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex items-center border border-neutral-200 rounded p-0.5 bg-neutral-50">
-                <button
-                  onClick={() => setSkillCategoryFilter("All")}
-                  className={cn(
-                    "px-3 py-1 text-[11px] font-semibold rounded transition-all cursor-pointer",
-                    skillCategoryFilter === "All" ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-800"
-                  )}
+          {/* Filters & Control Panel styled exactly like dataset filters row */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="flex items-center gap-5">
+              {/* Category Filter Tab Selector */}
+              <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-200/60">
+                <button 
+                  className={cn("px-5 py-1.5 text-[13px] rounded-full transition-all duration-200 cursor-pointer", skillCategoryFilter === 'All' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+                  onClick={() => setSkillCategoryFilter('All')}
                 >
-                  全部类型
+                  全部
                 </button>
-                <button
-                  onClick={() => setSkillCategoryFilter("通用技能")}
-                  className={cn(
-                    "px-3 py-1 text-[11px] font-semibold rounded transition-all cursor-pointer",
-                    skillCategoryFilter === "通用技能" ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-800"
-                  )}
+                <button 
+                  className={cn("px-5 py-1.5 text-[13px] rounded-full transition-all duration-200 cursor-pointer", skillCategoryFilter === '通用技能' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+                  onClick={() => setSkillCategoryFilter('通用技能')}
                 >
                   通用技能
                 </button>
-                <button
-                  onClick={() => setSkillCategoryFilter("专业技能")}
-                  className={cn(
-                    "px-3 py-1 text-[11px] font-semibold rounded transition-all cursor-pointer",
-                    skillCategoryFilter === "专业技能" ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-800"
-                  )}
+                <button 
+                  className={cn("px-5 py-1.5 text-[13px] rounded-full transition-all duration-200 cursor-pointer", skillCategoryFilter === '专业技能' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
+                  onClick={() => setSkillCategoryFilter('专业技能')}
                 >
                   专业技能
                 </button>
               </div>
-
-              {/* Type filter */}
-              <select
-                value={skillTypeFilter}
-                onChange={(e) => setSkillTypeFilter(e.target.value)}
-                className="text-xs border border-neutral-200 rounded px-2 py-1.5 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white cursor-pointer"
-              >
-                <option value="All">所有技能类型</option>
-                <option value="文本处理">文本处理</option>
-                <option value="代码生成">代码生成</option>
-                <option value="数据分析">数据分析</option>
-                <option value="知识问答">知识问答</option>
-              </select>
             </div>
 
-            <button 
-              onClick={() => setIsCreateSkillOpen(true)}
-              className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-1.5 flex-shrink-0 w-full md:w-auto justify-center"
-            >
-              <Plus className="w-4 h-4" /> 增设AI技能
-            </button>
+            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+              {/* Type filter */}
+              <div className="relative">
+                <select 
+                  value={skillTypeFilter}
+                  onChange={(e) => setSkillTypeFilter(e.target.value)}
+                  className="appearance-none border border-neutral-200 rounded-full pl-4 pr-10 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white cursor-pointer h-8"
+                >
+                  <option value="All">所有技能类型</option>
+                  <option value="文本处理">文本处理</option>
+                  <option value="代码生成">代码生成</option>
+                  <option value="数据分析">数据分析</option>
+                  <option value="知识问答">知识问答</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+              </div>
+              
+              {/* Search bar */}
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input 
+                  type="text" 
+                  placeholder="搜索AI技能名称" 
+                  value={skillSearchQuery}
+                  onChange={(e) => setSkillSearchQuery(e.target.value)}
+                  className="pl-9 pr-4 py-1.5 text-[13px] border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] w-64 transition-all h-8"
+                />
+              </div>
+
+              {/* Add Button */}
+              <button 
+                onClick={() => setIsCreateSkillOpen(true)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 h-8 text-[13px] shadow-sm shrink-0 flex items-center gap-1 cursor-pointer font-bold"
+              >
+                <Plus className="w-4 h-4" /> 增设AI技能
+              </button>
+            </div>
           </div>
 
           {/* Create Skill Form Overlay (Modal) */}
@@ -1090,112 +1088,105 @@ export default function AdminAICapabilities() {
             </div>
           )}
 
-          {/* Grid Layout of Skills - Aligned with Teacher Dataset Layout */}
+          {/* Grid Layout of Skills (matching the dataset card style mock perfectly) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredSkills.map(skill => {
-              return (
-                <div 
-                  key={skill.id}
-                  className="bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col hover:-translate-y-1 relative"
-                >
-                  <div className="p-6 flex-1 relative">
-                    {/* Category Tag */}
-                    <div className="absolute top-0 right-0 bg-[#fff2e8] text-[#fa541c] text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                      {skill.category}
-                    </div>
+              const getIconByType = (type: string) => {
+                switch(type) {
+                  case '文本处理': return <FileText className="w-5 h-5 text-blue-500" />;
+                  case '代码生成': return <Cpu className="w-5 h-5 text-emerald-500" />;
+                  case '数据分析': return <Table className="w-5 h-5 text-purple-500" />;
+                  case '知识问答': return <Database className="w-5 h-5 text-teal-500" />;
+                  default: return <Brain className="w-5 h-5 text-gray-500" />;
+                }
+              };
 
+              return (
+                <div key={skill.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col hover:-translate-y-1 relative">
+                  {/* Category Tag matching mockup */}
+                  <div className={cn(
+                    "absolute top-0 right-0 text-[10px] font-bold px-2.5 py-1 rounded-bl-lg",
+                    skill.category === '通用技能' ? "bg-[#fff2e8] text-[#fa541c]" : "bg-blue-50 text-blue-600"
+                  )}>
+                    {skill.category === '通用技能' ? "通用技能" : "专业技能"}
+                  </div>
+                  
+                  <div className="p-6 flex-1 relative">
                     <div className="flex items-start gap-4">
-                      {/* Icon */}
+                      {/* Icon container */}
                       <div className="w-12 h-12 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center flex-shrink-0">
-                        {getSkillIcon(skill.type)}
+                        {getIconByType(skill.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[15px] text-neutral-800 truncate group-hover:text-[#fa541c] transition-colors">
-                          {skill.name}
-                        </h3>
-                        <p className="text-[12px] text-neutral-500 mt-1 line-clamp-2 leading-relaxed">
-                          {skill.description}
-                        </p>
+                        <h3 className="font-bold text-[15px] text-neutral-800 truncate group-hover:text-[#fa541c] transition-colors">{skill.name}</h3>
+                        <p className="text-[12px] text-neutral-500 mt-1 line-clamp-2 leading-relaxed">{skill.description}</p>
                       </div>
                     </div>
-
-                    {/* Inputs & Outputs Tags */}
+                    
+                    {/* Tags matching mockup */}
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-600 rounded text-[11px] border border-neutral-200 truncate max-w-[140px]" title={skill.inputs}>
-                        输入: {skill.inputs}
+                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-600 rounded text-[11px] border border-neutral-200 font-mono">
+                        {skill.version}
                       </span>
-                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-600 rounded text-[11px] border border-neutral-200 truncate max-w-[140px]" title={skill.outputs}>
-                        输出: {skill.outputs}
+                      <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded text-[11px] border border-[#ffbb96] font-medium">
+                        灰度 {skill.grayPercent}%
                       </span>
+                      {skill.nodes.slice(0, 2).map((node, idx) => (
+                        <span key={idx} className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[11px] border border-neutral-200">
+                          {node}
+                        </span>
+                      ))}
                     </div>
-
-                    {/* Three Column Stats Grid */}
+                    
+                    {/* Stat Grid matching mockup exactly */}
                     <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[12px] bg-neutral-50/50 rounded-lg py-2 border border-neutral-100/50">
                       <div>
-                        <div className="text-neutral-400 text-[10px]">分类</div>
-                        <div className="font-medium text-neutral-700 mt-0.5 truncate px-1">{skill.category}</div>
-                      </div>
-                      <div>
                         <div className="text-neutral-400 text-[10px]">类型</div>
-                        <div className="font-medium text-neutral-700 mt-0.5 truncate px-1">{skill.type}</div>
+                        <div className="font-medium text-neutral-700 mt-0.5">{skill.type}</div>
                       </div>
                       <div>
-                        <div className="text-neutral-400 text-[10px]">版本</div>
-                        <div className="font-medium text-neutral-700 mt-0.5 truncate px-1">{skill.version}</div>
+                        <div className="text-neutral-400 text-[10px]">输入</div>
+                        <div className="font-medium text-neutral-700 mt-0.5 max-w-full truncate px-1" title={skill.inputs}>
+                          {skill.inputs.split(':')[0]}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Flow Nodes (Orchestration details) */}
-                    <div className="bg-neutral-50/20 p-2.5 rounded-lg border border-neutral-100/60 text-[10px] mt-3">
-                      <span className="text-[9px] font-bold text-neutral-400 uppercase block mb-1">执行流节点 (编排):</span>
-                      <div className="flex flex-wrap items-center gap-1">
-                        {skill.nodes.map((node, i) => (
-                          <React.Fragment key={i}>
-                            {i > 0 && <span className="text-neutral-300">→</span>}
-                            <span className="bg-white border border-neutral-200 rounded px-1.5 py-0.5 text-[9px] font-medium text-neutral-700 truncate max-w-[75px]" title={node}>
-                              {node}
-                            </span>
-                          </React.Fragment>
-                        ))}
+                      <div>
+                        <div className="text-neutral-400 text-[10px]">节点数</div>
+                        <div className="font-medium text-neutral-700 mt-0.5">{skill.nodes.length}</div>
                       </div>
                     </div>
                   </div>
-
+                  
                   {/* Card Footer Actions */}
-                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/40 flex items-center justify-between mt-auto">
-                    {/* Left: gray release slider */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[10px] w-28">
-                        <span className="text-neutral-400 font-bold">灰度比例</span>
-                        <span className="text-[#fa541c] font-black">{skill.grayPercent}%</span>
-                      </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        step="10"
-                        value={skill.grayPercent}
-                        onChange={(e) => handleUpdateGrayRelease(skill.id, parseInt(e.target.value))}
-                        className="w-28 h-1 accent-[#fa541c] bg-neutral-200 rounded-lg cursor-pointer animate-pulse"
-                      />
-                    </div>
-
-                    {/* Right: action buttons, showing on hover */}
+                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/40 flex items-center justify-between">
+                    <div className="text-[12px] text-neutral-400">更新于 2026-05-27</div>
+                    
+                    {/* Buttons on Hover */}
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
+                      {/* Rollback */}
+                      <button 
                         onClick={() => handleRollbackSkill(skill.id)}
                         disabled={skill.version === "v1.0.0"}
-                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors disabled:opacity-40 cursor-pointer"
+                        className="p-1.5 text-neutral-400 hover:text-amber-500 hover:bg-amber-50 rounded transition-colors disabled:opacity-30 cursor-pointer" 
                         title="安全回滚"
                       >
                         <RefreshCw className="w-4 h-4" />
                       </button>
+                      {/* Test */}
                       <button 
                         onClick={() => setTestingSkill(skill)}
-                        className="p-1.5 bg-[#fff2e8] text-[#fa541c] hover:bg-[#fa541c] hover:text-white rounded transition-colors cursor-pointer"
+                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors flex items-center justify-center cursor-pointer" 
                         title="效果测试"
                       >
                         <Play className="w-4 h-4 fill-current" />
+                      </button>
+                      {/* Delete */}
+                      <button 
+                        onClick={() => setSkills(skills.filter(item => item.id !== skill.id))}
+                        className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer" 
+                        title="删除"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
