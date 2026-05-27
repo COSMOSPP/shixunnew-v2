@@ -223,6 +223,21 @@ const allAITools = [
 export default function AdminAICapabilities() {
   const [activeTab, setActiveTab] = useState<"auth" | "skills" | "agents">("auth");
 
+  const getSkillIcon = (type: string) => {
+    switch (type) {
+      case "文本处理":
+        return <FileText className="w-5 h-5 text-blue-500" />;
+      case "代码生成":
+        return <Cpu className="w-5 h-5 text-emerald-500" />;
+      case "数据分析":
+        return <Activity className="w-5 h-5 text-purple-500" />;
+      case "知识问答":
+        return <Brain className="w-5 h-5 text-orange-500" />;
+      default:
+        return <Sparkles className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
   // --- States for AI工具授权 (Tab 1) ---
   const [tenants, setTenants] = useState<Tenant[]>(initialTenants);
   const [selectedTenantId, setSelectedTenantId] = useState<number>(1);
@@ -1075,72 +1090,83 @@ export default function AdminAICapabilities() {
             </div>
           )}
 
-          {/* Grid Layout of Skills */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Grid Layout of Skills - Aligned with Teacher Dataset Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredSkills.map(skill => {
               return (
                 <div 
                   key={skill.id}
-                  className="bg-white border border-neutral-100 rounded-xl p-5 shadow-sm space-y-4 hover:shadow-md transition-shadow relative flex flex-col justify-between"
+                  className="bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col hover:-translate-y-1 relative"
                 >
-                  <div className="space-y-3">
-                    {/* Header line */}
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-xs font-bold text-neutral-800 leading-snug">{skill.name}</h3>
-                          <span className="text-[10px] font-mono text-neutral-400 font-semibold">{skill.version}</span>
-                        </div>
-                        <p className="text-[10px] text-neutral-400 mt-1 leading-normal">{skill.description}</p>
-                      </div>
+                  <div className="p-6 flex-1 relative">
+                    {/* Category Tag */}
+                    <div className="absolute top-0 right-0 bg-[#fff2e8] text-[#fa541c] text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                      {skill.category}
+                    </div>
 
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <span className={cn(
-                          "px-2 py-0.5 text-[10px] rounded border font-semibold",
-                          skill.category === "通用技能" ? "bg-green-50 text-green-600 border-green-200" : "bg-blue-50 text-blue-600 border-blue-200"
-                        )}>
-                          {skill.category}
-                        </span>
-                        <span className="text-[9px] bg-neutral-100 text-neutral-500 rounded px-1.5 py-0.2 border border-neutral-200 font-medium">
-                          {skill.type}
-                        </span>
+                    <div className="flex items-start gap-4">
+                      {/* Icon */}
+                      <div className="w-12 h-12 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center flex-shrink-0">
+                        {getSkillIcon(skill.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-[15px] text-neutral-800 truncate group-hover:text-[#fa541c] transition-colors">
+                          {skill.name}
+                        </h3>
+                        <p className="text-[12px] text-neutral-500 mt-1 line-clamp-2 leading-relaxed">
+                          {skill.description}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Nodes flow layout */}
-                    <div className="bg-neutral-50/50 p-2.5 rounded-lg border border-neutral-100 text-[10px]">
+                    {/* Inputs & Outputs Tags */}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-600 rounded text-[11px] border border-neutral-200 truncate max-w-[140px]" title={skill.inputs}>
+                        输入: {skill.inputs}
+                      </span>
+                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-600 rounded text-[11px] border border-neutral-200 truncate max-w-[140px]" title={skill.outputs}>
+                        输出: {skill.outputs}
+                      </span>
+                    </div>
+
+                    {/* Three Column Stats Grid */}
+                    <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[12px] bg-neutral-50/50 rounded-lg py-2 border border-neutral-100/50">
+                      <div>
+                        <div className="text-neutral-400 text-[10px]">分类</div>
+                        <div className="font-medium text-neutral-700 mt-0.5 truncate px-1">{skill.category}</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-400 text-[10px]">类型</div>
+                        <div className="font-medium text-neutral-700 mt-0.5 truncate px-1">{skill.type}</div>
+                      </div>
+                      <div>
+                        <div className="text-neutral-400 text-[10px]">版本</div>
+                        <div className="font-medium text-neutral-700 mt-0.5 truncate px-1">{skill.version}</div>
+                      </div>
+                    </div>
+
+                    {/* Flow Nodes (Orchestration details) */}
+                    <div className="bg-neutral-50/20 p-2.5 rounded-lg border border-neutral-100/60 text-[10px] mt-3">
                       <span className="text-[9px] font-bold text-neutral-400 uppercase block mb-1">执行流节点 (编排):</span>
-                      <div className="flex flex-wrap items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1">
                         {skill.nodes.map((node, i) => (
                           <React.Fragment key={i}>
                             {i > 0 && <span className="text-neutral-300">→</span>}
-                            <span className="bg-white border border-neutral-200 rounded px-1.5 py-0.5 text-[9px] font-medium text-neutral-700">
+                            <span className="bg-white border border-neutral-200 rounded px-1.5 py-0.5 text-[9px] font-medium text-neutral-700 truncate max-w-[75px]" title={node}>
                               {node}
                             </span>
                           </React.Fragment>
                         ))}
                       </div>
                     </div>
-
-                    {/* Inputs & Outputs defined */}
-                    <div className="grid grid-cols-2 gap-4 text-[10px] font-mono text-neutral-500 bg-neutral-50/20 p-2 rounded border border-neutral-100">
-                      <div>
-                        <span className="font-bold text-neutral-700 block mb-0.5">Input Parameters:</span>
-                        <span className="text-neutral-500">{skill.inputs}</span>
-                      </div>
-                      <div>
-                        <span className="font-bold text-neutral-700 block mb-0.5">Output Output:</span>
-                        <span className="text-neutral-500">{skill.outputs}</span>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Footer line with Gray settings & rollback & test button */}
-                  <div className="border-t border-neutral-100 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4">
-                    {/* Canary slider controls */}
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-neutral-400 font-bold">灰度发布比例</span>
+                  {/* Card Footer Actions */}
+                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/40 flex items-center justify-between mt-auto">
+                    {/* Left: gray release slider */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[10px] w-28">
+                        <span className="text-neutral-400 font-bold">灰度比例</span>
                         <span className="text-[#fa541c] font-black">{skill.grayPercent}%</span>
                       </div>
                       <input 
@@ -1150,24 +1176,26 @@ export default function AdminAICapabilities() {
                         step="10"
                         value={skill.grayPercent}
                         onChange={(e) => handleUpdateGrayRelease(skill.id, parseInt(e.target.value))}
-                        className="w-32 h-1 accent-[#fa541c] bg-neutral-200 rounded-lg cursor-pointer"
+                        className="w-28 h-1 accent-[#fa541c] bg-neutral-200 rounded-lg cursor-pointer animate-pulse"
                       />
                     </div>
 
-                    {/* Button groups */}
-                    <div className="flex items-center gap-2 justify-end">
+                    {/* Right: action buttons, showing on hover */}
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleRollbackSkill(skill.id)}
                         disabled={skill.version === "v1.0.0"}
-                        className="text-neutral-400 hover:text-neutral-600 disabled:opacity-40 text-xs font-semibold px-2 py-1.5 rounded border border-neutral-200 bg-white hover:bg-neutral-50 cursor-pointer flex items-center gap-1"
+                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors disabled:opacity-40 cursor-pointer"
+                        title="安全回滚"
                       >
-                        回滚
+                        <RefreshCw className="w-4 h-4" />
                       </button>
-                      <button
+                      <button 
                         onClick={() => setTestingSkill(skill)}
-                        className="bg-[#fff2e8] hover:bg-[#ffe8d6] text-[#fa541c] text-xs font-bold px-3 py-1.5 rounded transition-all cursor-pointer flex items-center gap-1 border border-[#ffbb96]/45"
+                        className="p-1.5 bg-[#fff2e8] text-[#fa541c] hover:bg-[#fa541c] hover:text-white rounded transition-colors cursor-pointer"
+                        title="效果测试"
                       >
-                        <Play className="w-3 h-3 fill-[#fa541c]" /> 效果测试
+                        <Play className="w-4 h-4 fill-current" />
                       </button>
                     </div>
                   </div>
