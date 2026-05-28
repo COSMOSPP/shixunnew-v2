@@ -71,6 +71,7 @@ import AdminSystemPage from "./pages/admin/AdminSystemPage";
 
 import LoginUser from "./pages/LoginUser";
 import LoginTeacher from "./pages/LoginTeacher";
+import LoginAdmin from "./pages/LoginAdmin";
 
 import TeacherLayout from "./layouts/TeacherLayout";
 import TeacherHome from "./pages/teacher/TeacherHome";
@@ -105,6 +106,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login/user" element={<LoginUser />} />
         <Route path="/login/teacher" element={<LoginTeacher />} />
+        <Route path="/login/admin" element={<LoginAdmin />} />
 
         {/* Skill Builder & Practice Chat (Full Screen) */}
         <Route path="/skill-builder" element={<SkillBuilder />} />
@@ -202,12 +204,7 @@ export default function App() {
           <Route path="ai-quota" element={<AdminAIQuota />} />
           <Route path="competitions" element={<AdminCompetitions />} />
           <Route path="ai-center" element={<AdminAICenter />} />
-          <Route path="permissions" element={<PermissionsLayout />}>
-            <Route index element={<AdminPermissions />} />
-            <Route path="users" element={<PermissionsUsers />} />
-            <Route path="roles" element={<PermissionsRoles />} />
-            <Route path="policies" element={<PermissionsPolicies />} />
-          </Route>
+          <Route path="permissions" element={<AdminPermissions />} />
           <Route path="system" element={<AdminSystemPage />} />
         </Route>
       </Routes>

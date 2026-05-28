@@ -5,6 +5,7 @@ import AdminCompetitionsPage from "./AdminCompetitionsPage";
 import AdminAIQuotaPage from "./AdminAIQuotaPage";
 import AdminTenantsPage from "./AdminTenantsPage";
 import AdminPermissionsPage from "./AdminPermissionsPage";
+import AdminResourcesPage from "./AdminResourcesPage";
 import { Brain, Shield, Cloud, Server, Laptop, Network, Key, Settings, Activity, Users, Database, Cpu, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
 export function AdminAI() {
@@ -175,26 +176,7 @@ export function AdminSystem() {
 
 
 export function AdminResources() {
-  return (
-    <AdminStandardPage 
-      title="公共资源管理" 
-      description="管理实训平台的课件、数据集、实验模板等公共资源"
-      primaryAction="上传新资源"
-      stats={[
-        { title: "资源总数", value: "482", icon: Database, trend: "24", trendUp: true },
-        { title: "累计下载", value: "45.2k", icon: Activity, trend: "18%", trendUp: true },
-        { title: "上架状态", value: "450", icon: CheckCircle },
-        { title: "存储消耗", value: "4.2TB", icon: Server, trend: "8%", trendUp: true }
-      ]}
-      columns={["资源编号", "资源名称", "类型", "上传者", "状态"]}
-      data={[
-        ["RES-2026-001", "Python数据分析课件", "课件", "系统管理员", "已上架"],
-        ["RES-2026-002", "MNIST手写数字数据集", "数据集", "深度学习助教", "已上架"],
-        ["RES-2026-003", "大语言模型微调模板", "实验模板", "系统管理员", "下架中"],
-        ["RES-2026-004", "计算机网络抓包实验包", "实验包", "李瑞 讲师", "已上架"]
-      ]}
-    />
-  );
+  return <AdminResourcesPage />;
 }
 
 export function AdminTenants() {

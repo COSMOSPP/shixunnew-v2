@@ -12,14 +12,451 @@ import {
   Megaphone,
   TrendingUp,
   Users,
-  PlayCircle
+  PlayCircle,
+  Cpu,
+  Layers,
+  ShieldCheck,
+  Award,
+  Sparkles,
+  Clock,
+  X,
+  CheckCircle2,
+  Lock,
+  Terminal,
+  Activity,
+  AlertCircle,
+  FileText,
+  Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const CORE_FEATURES = [
+  {
+    id: "courses",
+    title: "数字化课程",
+    icon: BookOpen,
+    badge: "教学资源保障",
+    tagline: "新形态数字化课程体系，理论微课与实验环境一体化构建",
+    description: "全面支撑教师构建“精品课程”、“金课”体系。支持交互式课件在线演练、实时教案挂载、学情数据多维追溯，打通教、学、练、评闭环。",
+    highlights: ["集成 Markdown 与高级交互式教案", "支持富媒体、在线微课与在线PPT演示", "内置精品课、专业基础课多形态模板"],
+    mockType: "courses",
+  },
+  {
+    id: "projects",
+    title: "云沙箱项目",
+    icon: Layers,
+    badge: "工程实训中心",
+    tagline: "海量实训项目模板，一键部署虚拟机与容器沙箱",
+    description: "为学生提供开箱即用的工业级实训项目。平台自动根据项目需求调配对应的异构物理机或容器实例，支持端口映射与远程桌面在线调试。",
+    highlights: ["提供企业级真实系统/业务实战沙箱", "预装核心开发包及依赖环境，免配置", "支持一键复制与多人协作调试模式"],
+    mockType: "projects",
+  },
+  {
+    id: "practices",
+    title: "最佳实践库",
+    icon: Star,
+    badge: "前沿产业对齐",
+    tagline: "精选一线大厂与顶级高校真实生产场景，赋能深度实战",
+    description: "整合当下最火热 of 行业落地项目。支持 LoRA 大模型微调演练、Dify 智能知识库搭建、全链路 DevOps 实战等，与现代产业需求无缝接轨。",
+    highlights: ["囊括 DeepSeek、PyTorch、AI Agent 等核心技术", "提供详尽图文说明、源码工程与实验测试集", "每周同步更新最新前沿实践场景"],
+    mockType: "practices",
+  },
+  {
+    id: "exams",
+    title: "防作弊考试",
+    icon: FileText,
+    badge: "评测公信防线",
+    tagline: "智能实操评测系统，多重安全防线杜绝考试舞弊",
+    description: "专为程序设计与实操类考核定制。具备摄像头防作弊抓图、浏览器切屏锁定监测、实操环境秒级抓图、高复原度虚拟机审计等安全屏障。",
+    highlights: ["支持多摄像头、IP 锁定及浏览器限幅防作弊", "虚拟机运行状态秒级记录，防代码抄袭", "AI 智能自动评分，实操结果高精准判定"],
+    mockType: "exams",
+  },
+  {
+    id: "competitions",
+    title: "高并发竞赛",
+    icon: Trophy,
+    badge: "万人级竞技场",
+    tagline: "承载国家级/省部级数字技能大赛，万人级高并发支撑",
+    description: "平台竞赛模块曾多次无故障承载万人规模的高规格赛事。具备秒级评测架构、多物理考点分布调度、大屏可视化实时多维排行榜（Leaderboard）。",
+    highlights: ["支持万人高频提交，秒级容器资源拉起评测", "多维实时动态排行榜，选手排行随时追踪", "自动隔离攻击流量，护航国家级赛事公平"],
+    mockType: "competitions",
+  },
+  {
+    id: "quota",
+    title: "算力调度管理",
+    icon: Cpu,
+    badge: "算力分配中枢",
+    tagline: "异构算力精密管理调度，GPU/CPU 卡时精细配额",
+    description: "为各类院校、企业租户提供弹性的算力精细化配置。管理员可按班级、学生、课程阶段，对卡时消耗、显存占用和并发卡数进行精密管控。",
+    highlights: ["支持按租户、班级、项目动态配置算力配额", "GPU 资源余量、节点状态大盘实时展示", "余量自动报警与智能闲置容器回收机制"],
+    mockType: "quota",
+  },
+  {
+    id: "zero-trust",
+    title: "数据安全零出域",
+    icon: ShieldCheck,
+    badge: "零信任数据沙箱",
+    tagline: "首创数据沙箱物理隔离，数据集‘可用不可见，可算不可下’",
+    description: "针对高保密性数据流通的极致防护方案。学生在沙箱内可对语料、机密数据集进行模型微调演练，但任何数据均无法复制、导出、下载，防泄漏审计。",
+    highlights: ["保密文件数据物理沙箱隔离，防网络导出", "文本、命令、剪贴板多维防泄漏审计过滤", "核心机密资产可用不可见，可算不可下"],
+    mockType: "zero-trust",
+  }
+];
+
+const SUCCESS_CASES = [
+  {
+    id: "union",
+    title: "全国总工会职工职业技能竞赛",
+    badge: "国家级赛事",
+    tagline: "31省精英职工同台竞技，系统可用性99.99%",
+    image: "https://picsum.photos/seed/case1/800/500",
+    color: "from-orange-500 to-red-600",
+    stats: [
+      { label: "覆盖省份", val: "31 个" },
+      { label: "参赛职工", val: "10,000+ 人" },
+      { label: "系统可用性", val: "99.99%" }
+    ],
+    detail: {
+      overview: "作为全国职工技能竞技的最高殿堂，本届竞赛全面引入智云实训平台作为官方评测环境。大赛由全国总工会主办，聚焦新一代数据科学与智能运维技能。我们提供了全方位的算力支持与防作弊守护，确保全国赛区同步安全、公平展开。",
+      metrics: [
+        { label: "最高并发在线沙箱", val: "2,400+ 个" },
+        { label: "实操自动化评测响应", val: "1.2 秒" },
+        { label: "防作弊命令拦截审计", val: "450,000+ 次" }
+      ],
+      achievement: "“本次竞赛充分体现了平台在高并发、防作弊 and 自动化评测方面的硬核实力，获得了专家组和参赛选手的一致好评！” —— 大赛组委会致信感谢"
+    }
+  },
+  {
+    id: "women",
+    title: "长三角女职工数字技能大赛",
+    badge: "区域标杆赛事",
+    tagline: "三省一市联动高频实操，沙箱平均3.5秒拉起",
+    image: "https://picsum.photos/seed/case2/800/500",
+    color: "from-pink-500 to-rose-600",
+    stats: [
+      { label: "联动省市", val: "3省1市" },
+      { label: "精英选手", val: "500+ 人" },
+      { label: "沙箱拉起耗时", val: "3.5 秒" }
+    ],
+    detail: {
+      overview: "长三角女职工数字技能大赛旨在推动长三角一体化战略下数字技能巾帼英才的培养。平台在短时间内承载了高频次的 AI 实验环境拉起和评测交卷，并在比赛期间提供了毫秒级无延迟的动态大屏显示。",
+      metrics: [
+        { label: "沙箱平均拉起耗时", val: "3.5 秒" },
+        { label: "大屏排行榜延迟", val: "0.2 秒" },
+        { label: "答卷全量防雷同审查", val: "100%" }
+      ],
+      achievement: "“系统稳定如磐，3.5秒即时拉起开发容器的体验惊艳了全场，成功展示了长三角职工的数字风采。” —— 主办方总结词"
+    }
+  },
+  {
+    id: "edu",
+    title: "教育部产学合作协同育人示范项目",
+    badge: "高等教育育人示范",
+    tagline: "对接100+所高校学科建设，落地50,000+学生培养",
+    image: "https://picsum.photos/seed/case3/800/500",
+    color: "from-blue-500 to-indigo-600",
+    stats: [
+      { label: "合作高校", val: "100+ 所" },
+      { label: "受益学生", val: "50,000+ 人" },
+      { label: "落地案例项目", val: "1,200+ 个" }
+    ],
+    detail: {
+      overview: "联合教育部产学合作协同育人机制，平台深度整合各大高校的人工智能、云计算和云原生开发方向课程。为高校师生提供企业级真实案例、标准环境以及免配置算力支持，成为产教融合、学科建设的典型案例。",
+      metrics: [
+        { label: "覆盖专业方向", val: "8 个" },
+        { label: "教师联合教改项目", val: "150+ 个" },
+        { label: "学生技能认证通过率", val: "92%" }
+      ],
+      achievement: "“智云平台的数字化课程与云沙箱技术，完美解决了我们实验课GPU环境安装难、管理难的瓶颈，是卓越工程师培养的利器。” —— 某985高校教务处长"
+    }
+  },
+  {
+    id: "unicorn",
+    title: "头部大模型独角兽数据安全实操演练",
+    badge: "零出域典型商业落地",
+    tagline: "50TB级高价值语料物理沙箱隔离，0起敏感泄漏",
+    image: "https://picsum.photos/seed/case4/800/500",
+    color: "from-emerald-500 to-teal-600",
+    stats: [
+      { label: "安全审计数据", val: "50TB+ 敏感" },
+      { label: "数据泄漏事件", val: "0 起" },
+      { label: "审计指令溯源", val: "100%" }
+    ],
+    detail: {
+      overview: "某头部大语言模型独角兽企业为确保微调训练过程中关键行业专有语料的绝对安全，采用智云首创的“数据安全零出域”零信任沙箱。学生与算法工程师可以在沙箱内完成多参数模型微调与数据加工，但所有敏感代码与高保密语料均不可流出、下载，保证资产绝对受控。",
+      metrics: [
+        { label: "敏感数据吞吐总量", val: "50TB+" },
+        { label: "剪贴板敏感拦截数", val: "12,000+ 次" },
+        { label: "水印防护覆盖率", val: "100%" }
+      ],
+      achievement: "“零出域沙箱极大释放了我们核心行业专有语料的安全价值，使得内部实验培训能够在严密的安全红线内高效完成。” —— 独角兽企业首席安全官"
+    }
+  }
+];
+
+const renderFeatureMockup = (mockType: string) => {
+  switch (mockType) {
+    case "courses":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between font-sans">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500"></span>
+              <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+              <span className="w-3 h-3 rounded-full bg-green-500"></span>
+              <span className="text-xs text-slate-500 ml-2 font-mono">zhiyun_course_syllabus.json</span>
+            </div>
+            <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-mono">ACTIVE</span>
+          </div>
+          <div className="space-y-3 flex-1 text-left text-sm text-slate-300">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+              <div className="font-bold text-slate-100 flex items-center gap-2 mb-1">
+                <span className="text-orange-500">第一章:</span> 人工智能训练师基础
+              </div>
+              <div className="text-xs text-slate-500 pl-4">集成3门在线实验 · 包含4个视频课件</div>
+            </div>
+            <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-900">
+              <div className="font-bold text-slate-400 flex items-center gap-2 mb-1">
+                <span className="text-slate-600">第二章:</span> 深度神经网络实战
+              </div>
+              <div className="text-xs text-slate-600 pl-4">待发布课程章节</div>
+            </div>
+          </div>
+          <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">课程总学时:</span>
+              <span className="text-xs font-bold text-white bg-slate-800 px-2 py-0.5 rounded">32 小时</span>
+            </div>
+            <span className="text-xs text-orange-500 font-bold">交互式课件已就绪</span>
+          </div>
+        </div>
+      );
+    case "projects":
+      return (
+        <div className="bg-[#1e1e1e] border border-slate-800 rounded-2xl shadow-2xl h-full flex flex-col font-mono text-left">
+          <div className="bg-[#252526] px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 rounded-t-2xl">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5 text-blue-400" />
+              <span>ZhiYun WebIDE Terminal</span>
+            </div>
+            <span className="text-blue-400 text-[10px] bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">WORKSPACE</span>
+          </div>
+          <div className="p-4 flex-1 space-y-2 text-xs text-[#d4d4d4] overflow-hidden leading-relaxed">
+            <div><span className="text-emerald-400">zhiyun-admin@cloud-sandbox</span>:<span className="text-blue-400">~/workspace</span>$ npm run dev</div>
+            <div className="text-slate-500">&gt; react-example@0.0.0 dev</div>
+            <div className="text-slate-500">&gt; vite --host --port 3000</div>
+            <div className="text-emerald-400">  ✓ dev server running on port 3000</div>
+            <div className="text-slate-400">  ➜  Local:   <span className="text-blue-400 underline">http://localhost:3000/</span></div>
+            <div className="text-slate-400">  ➜  Network: <span className="text-blue-400 underline">http://192.168.1.100:3000/</span></div>
+            <div className="text-yellow-400">  [HMR] update /src/pages/Home.tsx (x1)</div>
+            <div className="animate-pulse inline-block w-1.5 h-3.5 bg-slate-400 ml-1 align-middle"></div>
+          </div>
+          <div className="bg-[#007acc] text-white px-4 py-1.5 text-xs flex items-center justify-between font-sans rounded-b-2xl">
+            <span>✓ Pre-configured: Python 3.10 + PyTorch 2.2</span>
+            <span>RAM: 3.4GB/16GB</span>
+          </div>
+        </div>
+      );
+    case "practices":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between text-left font-sans">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs text-orange-500 font-bold bg-orange-500/10 px-2.5 py-1 rounded-full border border-orange-500/20">大模型微调演练</span>
+              <span className="text-xs text-slate-500 font-mono">V100 算力挂载</span>
+            </div>
+            <h4 className="text-base font-bold text-white mb-2">LoRA 参数高效微调实践</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">采用企业级行业专有语料集，演示对 DeepSeek-R1-Distill 进行 LoRA 架构轻量化微调，零基础掌握核心参数调节。</p>
+          </div>
+          
+          <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/80 space-y-2.5 my-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500">Learning Rate (学习率)</span>
+              <span className="text-orange-500 font-mono font-bold">2e-4</span>
+            </div>
+            <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-[60%] h-full bg-orange-500 rounded-full"></div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500">Epochs (微调轮数)</span>
+              <span className="text-orange-500 font-mono font-bold">3 / 5</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-800/80 pt-3">
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Loss: 0.124</span>
+            <span>显存占用: 14.8GB / 16GB</span>
+          </div>
+        </div>
+      );
+    case "exams":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between text-left font-sans relative overflow-hidden">
+          {/* Watermark layer */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none select-none flex flex-wrap gap-4 items-center justify-center text-xs text-white uppercase font-mono rotate-12">
+            <div>ZHIYUN SECURE EXAM</div>
+            <div>STUDENT ID: 20261014</div>
+          </div>
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3 relative z-10">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-red-500" />
+              <span className="text-xs font-bold text-white tracking-wide">防作弊实操评测系统</span>
+            </div>
+            <span className="text-[11px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">SECURE ACTIVE</span>
+          </div>
+          <div className="flex-1 flex gap-4 my-2 relative z-10">
+            {/* Cam view mockup */}
+            <div className="w-24 h-24 bg-slate-950 rounded-lg border border-slate-800 flex flex-col items-center justify-center relative overflow-hidden flex-shrink-0">
+              <div className="absolute top-1.5 right-1.5 flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/30 px-1 py-0.5 rounded text-[8px] text-emerald-400">
+                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span> LIVE
+              </div>
+              <Users className="w-8 h-8 text-slate-600 mb-1" />
+              <span className="text-[9px] text-slate-500 font-mono">学生摄像头</span>
+            </div>
+            {/* Sec Info */}
+            <div className="flex-1 flex flex-col justify-center space-y-1.5">
+              <div className="text-xs flex items-center justify-between">
+                <span className="text-slate-500">倒计时:</span>
+                <span className="text-white font-mono font-bold bg-slate-800 px-1.5 py-0.5 rounded">01:45:20</span>
+              </div>
+              <div className="text-xs flex items-center justify-between">
+                <span className="text-emerald-400 font-bold">0 / 3 次 (正常)</span>
+              </div>
+              <div className="text-xs flex items-center justify-between">
+                <span className="text-slate-500">实操截取审查:</span>
+                <span className="text-slate-400 font-mono text-[10px]">active_frame_42.png</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-500 font-mono text-center relative z-10">
+            ✓ 虚拟机终端审计服务运行正常
+          </div>
+        </div>
+      );
+    case "competitions":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl h-full flex flex-col justify-between text-left font-sans">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <Trophy className="w-4 h-4 text-amber-500" />
+              竞赛多维实时排行榜
+            </span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-mono">LIVE UPDATE</span>
+          </div>
+          <div className="flex-1 space-y-1.5 my-2">
+            {/* Rank Rows */}
+            <div className="flex items-center justify-between p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs">
+              <div className="flex items-center gap-3">
+                <span className="font-black text-amber-500 w-4 text-center">1</span>
+                <span className="font-bold text-white">浙江代表队</span>
+              </div>
+              <span className="font-mono text-amber-400 font-bold">985.42 pts</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-slate-950 rounded-lg text-xs border border-slate-800/80">
+              <div className="flex items-center gap-3">
+                <span className="font-black text-slate-400 w-4 text-center">2</span>
+                <span className="font-medium text-slate-300">江苏代表队</span>
+              </div>
+              <span className="font-mono text-slate-400 font-bold">962.10 pts</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-slate-950 rounded-lg text-xs border border-slate-800/80">
+              <div className="flex items-center gap-3">
+                <span className="font-black text-slate-500 w-4 text-center">3</span>
+                <span className="font-medium text-slate-300">上海代表队</span>
+              </div>
+              <span className="font-mono text-slate-500 font-bold">940.85 pts</span>
+            </div>
+          </div>
+          <div className="text-[10px] text-slate-600 text-center font-mono">
+            系统并发处理速度: 450次提交/秒
+          </div>
+        </div>
+      );
+    case "quota":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between text-left font-sans">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Cpu className="w-4 h-4 text-orange-500" />
+                算力资源调度监控
+              </span>
+              <span className="text-xs text-orange-500 font-bold font-mono">GPU ACTIVE</span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed mb-3">支持对租户及算力卡时的细粒度按需分配与监控。</p>
+          </div>
+          
+          <div className="space-y-3 flex-1 flex flex-col justify-center">
+            {/* progress bar 1 */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-400">NVIDIA V100 GPU 算力卡时使用率</span>
+                <span className="text-white font-mono font-bold">82.5%</span>
+              </div>
+              <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-[82.5%] h-full bg-gradient-to-r from-orange-400 to-[#fa541c] rounded-full"></div>
+              </div>
+            </div>
+            {/* progress bar 2 */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-400">NVIDIA A100 GPU 算力卡时使用率</span>
+                <span className="text-white font-mono font-bold">45.2%</span>
+              </div>
+              <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-[45.2%] h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-[10px] text-slate-500 font-mono flex items-center justify-between border-t border-slate-800/80 pt-3 mt-3">
+            <span>在线挂载节点: 48 个</span>
+            <span>回收挂载闲置容器: 5 个/时</span>
+          </div>
+        </div>
+      );
+    case "zero-trust":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between text-left font-sans relative overflow-hidden">
+          {/* Watermark overlay */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none select-none flex flex-wrap gap-3 items-center justify-center text-[10px] text-orange-500 font-mono rotate-12">
+            <div>DATA SECURE ZERO EXPORT</div>
+            <div>AUDIT ENABLED</div>
+          </div>
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3 relative z-10">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 animate-pulse" />
+              <span className="text-xs font-bold text-white tracking-wide">机密数据集零出域数据沙箱</span>
+            </div>
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">SECURED</span>
+          </div>
+          
+          <div className="flex-1 bg-slate-950 rounded-lg p-3 border border-slate-800 font-mono text-[10px] text-slate-400 space-y-2 my-2 relative z-10 leading-relaxed overflow-hidden max-h-[110px]">
+            <div className="text-yellow-500/80 font-bold">[Security Notice] Private Dataset Loaded. Outbound channels disabled.</div>
+            <div>$ scp model_weights.pt zhiyun-user@external-server.com:/tmp</div>
+            <div className="text-red-400 font-bold bg-red-500/10 px-1 py-0.5 rounded border border-red-500/10 flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              [Block Alert] command scp blocked. Outbound network violation.
+            </div>
+            <div className="text-slate-600">[Audit Logs] Outbound violation logged for student ID: 20261014.</div>
+          </div>
+          
+          <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-500 text-center relative z-10">
+            ✓ 数据可用不可见，可算不可下，审计全覆盖
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const scenarios = ["人工智能", "安全运维", "私有云", "公有云"];
   const [activeScenario, setActiveScenario] = useState(scenarios[0]);
+  const [activeFeature, setActiveFeature] = useState("courses");
+  const [selectedCase, setSelectedCase] = useState<any | null>(null);
   const slides = [
     {
       title: "",
@@ -302,6 +739,295 @@ export default function Home() {
               ))}
             </div>
           </section>
+
+          {/* ==================== 1. 实训平台功能展示 ==================== */}
+          <section id="platform-showcase" className="scroll-mt-24 bg-white rounded-[32px] p-8 md:p-12 shadow-[0_4px_30px_rgba(0,0,0,0.02)] border border-slate-100/80">
+            <div className="max-w-3xl mb-12 text-left">
+              <span className="inline-block py-1 px-3 rounded-full bg-[#fff2e8] border border-[#ffbb96] text-[#fa541c] text-xs font-semibold tracking-wide uppercase mb-3">
+                ZhiYun Core Features
+              </span>
+              <h3 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+                实训平台核心功能展示
+              </h3>
+              <p className="text-slate-500 text-base md:text-lg font-light leading-relaxed">
+                全方位支撑新形态数字化实训，提供从课程制作、沙箱工程、防作弊考试、竞技比赛到算力调度与安全隔离的一体化闭环保障。
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              {/* Left Selector List - 5 cols */}
+              <div className="lg:col-span-5 flex flex-col gap-2.5">
+                {CORE_FEATURES.map((feat) => {
+                  const isSelected = activeFeature === feat.id;
+                  const Icon = feat.icon;
+                  return (
+                    <button
+                      key={feat.id}
+                      onClick={() => setActiveFeature(feat.id)}
+                      className={cn(
+                        "w-full p-4 rounded-2xl flex items-center gap-4 text-left border transition-all duration-300 group hover:-translate-y-0.5",
+                        isSelected
+                          ? "bg-[#fff2e8]/40 border-[#ffbb96]/60 shadow-sm"
+                          : "bg-white border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/50"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-11 h-11 rounded-xl flex items-center justify-center transition-colors flex-shrink-0",
+                          isSelected
+                            ? "bg-[#fa541c] text-white"
+                            : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/80 group-hover:text-slate-700"
+                        )}
+                      >
+                        <Icon className="w-5.5 h-5.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={cn(
+                            "font-bold text-sm tracking-wide transition-colors",
+                            isSelected ? "text-[#fa541c]" : "text-slate-800"
+                          )}
+                        >
+                          {feat.title}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5 truncate font-light">
+                          {feat.tagline}
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className={cn(
+                          "w-4 h-4 text-slate-400 transition-all",
+                          isSelected ? "text-[#fa541c] translate-x-1" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"
+                        )}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right Showcase Card - 7 cols */}
+              <div className="lg:col-span-7 flex flex-col justify-between bg-slate-950 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-2xl border border-slate-800 min-h-[440px]">
+                {/* Background ambient light */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] -translate-y-1/3 translate-x-1/3"></div>
+                <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3"></div>
+
+                {CORE_FEATURES.map((feat) => {
+                  if (feat.id !== activeFeature) return null;
+                  return (
+                    <div key={feat.id} className="h-full flex flex-col justify-between gap-6 animate-in fade-in duration-500 relative z-10 flex-1">
+                      <div className="space-y-4 text-left">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-orange-400 border border-white/5 uppercase tracking-wider">
+                            {feat.badge}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-500">ZHIYUN ENGINE V2.0</span>
+                        </div>
+                        <h4 className="text-2xl font-bold text-white tracking-wide">
+                          {feat.title} <span className="text-sm font-light text-slate-400 block mt-1">{feat.tagline}</span>
+                        </h4>
+                        <p className="text-slate-400 text-sm leading-relaxed font-light">
+                          {feat.description}
+                        </p>
+                      </div>
+
+                      {/* Mock UI Rendering based on mockType */}
+                      <div className="h-[210px] flex-shrink-0">
+                        {renderFeatureMockup(feat.mockType)}
+                      </div>
+
+                      {/* Bottom highlights */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-left pt-4 border-t border-slate-800/80">
+                        {feat.highlights.map((high, index) => (
+                          <div key={index} className="flex items-center gap-2 text-xs text-slate-300 font-light">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                            <span>{high}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* ==================== 2. 成功案例展示 ==================== */}
+          <section id="success-stories" className="scroll-mt-24">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 text-left">
+              <div>
+                <span className="inline-block py-1 px-3 rounded-full bg-[#fff2e8] border border-[#ffbb96] text-[#fa541c] text-xs font-semibold tracking-wide uppercase mb-3">
+                  ZhiYun Success Cases
+                </span>
+                <h3 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+                  卓越技能，成功案例展示
+                </h3>
+                <p className="text-slate-500 text-base md:text-lg font-light leading-relaxed">
+                  承接多项全国级/省部级大型竞赛与产学研示范工程，为数字化社会建设贡献实训底座。
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 border border-slate-200 rounded-full px-4 py-2 bg-white flex-shrink-0 self-start md:self-auto shadow-sm">
+                <Award className="w-4 h-4 text-amber-500" /> 国家权威赛事官方支持商
+              </div>
+            </div>
+
+            {/* Grid layout - 4 cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 text-left">
+              {SUCCESS_CASES.map((item) => (
+                <div
+                  key={item.id}
+                  className="group relative bg-white rounded-3xl overflow-hidden shadow-[0_2px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_45px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 border border-slate-100 flex flex-col justify-between min-h-[460px]"
+                >
+                  {/* Visual Top section */}
+                  <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700 ease-out"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors duration-500"></div>
+                    
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold tracking-wide shadow-sm flex items-center gap-1.5 border border-white/10">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        {item.badge}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-orange-500 transition-colors">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs md:text-sm text-slate-500 font-light leading-relaxed mb-6">
+                        {item.tagline}
+                      </p>
+                    </div>
+
+                    {/* Numeric stats section */}
+                    <div className="grid grid-cols-3 gap-2 py-4 border-t border-slate-100 my-4 bg-slate-50/50 rounded-2xl px-4">
+                      {item.stats.map((stat, sIdx) => (
+                        <div key={sIdx} className="text-center px-1">
+                          <div className="text-base lg:text-xl font-black text-slate-800 tracking-tight">
+                            {stat.val}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-1 truncate">
+                            {stat.label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CTA Button */}
+                    <button
+                      onClick={() => setSelectedCase(item)}
+                      className="w-full h-11 inline-flex items-center justify-center rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 hover:shadow-lg transition-all duration-300"
+                    >
+                      查看案例详情 <ArrowRight className="w-4 h-4 ml-2" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ==================== 3. 成功案例交互弹窗 (Details Dialog) ==================== */}
+          {selectedCase && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+              <div 
+                className="bg-white shadow-2xl rounded-3xl w-full max-w-[700px] max-h-[90vh] overflow-y-auto flex flex-col border border-slate-100 animate-in slide-in-from-bottom-8 duration-300 text-left"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header image banner inside Modal */}
+                <div className="relative aspect-[21/9] overflow-hidden bg-slate-100 flex-shrink-0">
+                  <img
+                    src={selectedCase.image}
+                    alt={selectedCase.title}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                  
+                  {/* Close btn */}
+                  <button 
+                    onClick={() => setSelectedCase(null)}
+                    className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition-all z-20 border border-white/15"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  <div className="absolute bottom-4 left-6 right-6">
+                    <span className="px-2.5 py-1 bg-[#fa541c] rounded-md text-[10px] font-bold text-white tracking-wide uppercase border border-orange-400/20 mb-2 inline-block">
+                      {selectedCase.badge}
+                    </span>
+                    <h2 className="text-xl md:text-2xl font-bold text-white drop-shadow-md">
+                      {selectedCase.title}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6 md:p-8 space-y-6 flex-1 overflow-y-auto">
+                  {/* Overview */}
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-1.5 h-3.5 bg-[#fa541c] rounded-full inline-block"></span>
+                      项目概况 / OVERVIEW
+                    </h3>
+                    <p className="text-slate-600 text-sm leading-relaxed font-light">
+                      {selectedCase.detail.overview}
+                    </p>
+                  </div>
+
+                  {/* Core Metrics */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-1.5 h-3.5 bg-blue-500 rounded-full inline-block"></span>
+                      核心技术指标 / METRICS
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {selectedCase.detail.metrics.map((metric: any, mIdx: number) => (
+                        <div key={mIdx} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-center">
+                          <div className="text-lg font-black text-slate-800 tracking-tight">
+                            {metric.val}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-1 truncate">
+                            {metric.label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Testimonial / Impact */}
+                  <div className="bg-orange-500/[0.04] border border-[#ffbb96]/30 rounded-2xl p-5 relative overflow-hidden">
+                    {/* Decorative quote icon */}
+                    <div className="absolute right-4 bottom-2 opacity-5 text-8xl font-serif text-[#fa541c] pointer-events-none select-none">
+                      ”
+                    </div>
+                    <div className="relative z-10 flex gap-3 items-start">
+                      <Award className="w-5 h-5 text-[#fa541c] flex-shrink-0 mt-0.5" />
+                      <div className="text-xs md:text-sm text-[#fa541c] leading-relaxed font-medium italic">
+                        {selectedCase.detail.achievement}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer action */}
+                <div className="p-6 border-t border-slate-100 flex justify-end flex-shrink-0">
+                  <button
+                    onClick={() => setSelectedCase(null)}
+                    className="h-10 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold tracking-wide transition-colors"
+                  >
+                    关闭窗口
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
   
           {/* Bottom Section: Announcements & Data */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">

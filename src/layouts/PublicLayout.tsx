@@ -60,7 +60,7 @@ export default function PublicLayout() {
           </div>
           <div className="flex items-center gap-2 h-16">
             <Link 
-              to="/admin" 
+              to="/login/admin" 
               className={cn(buttonVariants({ variant: "ghost" }), "text-neutral-body hover:text-primary")}
             >
               运营端
