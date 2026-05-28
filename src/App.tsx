@@ -67,6 +67,7 @@ import SystemTenants from "./pages/admin/SystemTenants";
 import SystemBilling from "./pages/admin/SystemBilling";
 import SystemResources from "./pages/admin/SystemResources";
 import SystemSecurity from "./pages/admin/SystemSecurity";
+import AdminSystemPage from "./pages/admin/AdminSystemPage";
 
 import LoginUser from "./pages/LoginUser";
 import LoginTeacher from "./pages/LoginTeacher";
@@ -207,14 +208,7 @@ export default function App() {
             <Route path="roles" element={<PermissionsRoles />} />
             <Route path="policies" element={<PermissionsPolicies />} />
           </Route>
-          <Route path="system" element={<SystemLayout />}>
-            <Route index element={<Navigate to="/admin/system/tenants" replace />} />
-            <Route path="tenants" element={<SystemTenants />} />
-            <Route path="billing" element={<SystemBilling />} />
-            <Route path="resources" element={<SystemResources />} />
-            <Route path="security" element={<SystemSecurity />} />
-            <Route path="settings" element={<SystemConfig />} />
-          </Route>
+          <Route path="system" element={<AdminSystemPage />} />
         </Route>
       </Routes>
     </HashRouter>

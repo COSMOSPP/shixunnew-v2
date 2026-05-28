@@ -260,6 +260,24 @@ export default function TeacherQuestions() {
   const [newQuestionAnalysis, setNewQuestionAnalysis] = useState('');
   const [newQuestionStatus, setNewQuestionStatus] = useState('启用');
 
+  // Practical Question (实训题) specific states
+  const [shixunDescription, setShixunDescription] = useState(`### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述`);
+  const [shixunAnswerType, setShixunAnswerType] = useState('线上环境答题');
+  const [shixunType, setShixunType] = useState('自动评分');
+  const [shixunTaskType, setShixunTaskType] = useState('回归');
+  const [shixunTrainDataset, setShixunTrainDataset] = useState('');
+  const [shixunTestDataset, setShixunTestDataset] = useState('');
+  const [shixunScoreDataset, setShixunScoreDataset] = useState('');
+
+  // Programming Question (编程题) specific states
+  const [codingLanguage, setCodingLanguage] = useState('Python');
+  const [codingMaxTime, setCodingMaxTime] = useState(1);
+  const [codingInputDesc, setCodingInputDesc] = useState('');
+  const [codingOutputDesc, setCodingOutputDesc] = useState('');
+  const [codingExamples, setCodingExamples] = useState<any[]>([{ id: 1, input: '', output: '' }]);
+  const [codingTestCases, setCodingTestCases] = useState<any[]>([{ id: 1, input: '', output: '', desc: '' }]);
+  const [codingInitCode, setCodingInitCode] = useState('def solution():\n    # Write your code here\n    pass');
+
   // Tag management
   const [tags, setTags] = useState<string[]>([
     '人工智能概述',
@@ -377,7 +395,7 @@ export default function TeacherQuestions() {
       source: '人工出题',
       difficulty: newQuestionDifficulty || '中级',
       tags: tags.slice(0, 2).join(', ') || '智能体',
-      grading: '自动评分',
+      grading: newQuestionType === '实训题' ? shixunType : '自动评分',
       creator: 'Momodel',
       updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
       scope: '已公开',
@@ -404,6 +422,20 @@ export default function TeacherQuestions() {
     setCorrectAnswerText('');
     setNewQuestionAnalysis('');
     setNewQuestionStatus('启用');
+    setShixunDescription(`### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述`);
+    setShixunAnswerType('线上环境答题');
+    setShixunType('自动评分');
+    setShixunTaskType('回归');
+    setShixunTrainDataset('');
+    setShixunTestDataset('');
+    setShixunScoreDataset('');
+    setCodingLanguage('Python');
+    setCodingMaxTime(1);
+    setCodingInputDesc('');
+    setCodingOutputDesc('');
+    setCodingExamples([{ id: 1, input: '', output: '' }]);
+    setCodingTestCases([{ id: 1, input: '', output: '', desc: '' }]);
+    setCodingInitCode('def solution():\n    # Write your code here\n    pass');
   };
 
   const questionTypes = ['单选题', '多选题', '判断题', '填空题', '简答题', '思考题', '编程题', '实训题'];
@@ -999,90 +1031,572 @@ export default function TeacherQuestions() {
                 </div>
               )}
 
-              {/* Correct Answer */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 正确答案：
-                </label>
-                
-                <div className="p-4 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
-                  {newQuestionType === '单选题' && (
-                    <div className="flex flex-wrap gap-6 items-center">
-                      {options.map((opt) => (
-                        <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                          <input
-                            type="radio"
-                            name="correctAnswerSingle"
-                            value={opt.key}
-                            checked={correctAnswerSingle === opt.key}
-                            onChange={() => setCorrectAnswerSingle(opt.key)}
-                            className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
-                          />
-                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">选项 {opt.key}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                  {newQuestionType === '多选题' && (
-                    <div className="flex flex-wrap gap-6 items-center">
-                      {options.map((opt) => (
-                        <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                          <input
-                            type="checkbox"
-                            checked={correctAnswerMultiple.includes(opt.key)}
-                            onChange={() => {
-                              if (correctAnswerMultiple.includes(opt.key)) {
-                                setCorrectAnswerMultiple(correctAnswerMultiple.filter(k => k !== opt.key));
-                              } else {
-                                setCorrectAnswerMultiple([...correctAnswerMultiple, opt.key]);
-                              }
-                            }}
-                            className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer"
-                          />
-                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">选项 {opt.key}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                  {newQuestionType === '判断题' && (
-                    <div className="flex gap-6 items-center">
-                      {['正确', '错误'].map((val) => (
-                        <label key={val} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                          <input
-                            type="radio"
-                            name="correctAnswerTrueFalse"
-                            value={val}
-                            checked={correctAnswerTrueFalse === val}
-                            onChange={() => setCorrectAnswerTrueFalse(val)}
-                            className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
-                          />
-                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">{val}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                  {!(newQuestionType === '单选题' || newQuestionType === '多选题' || newQuestionType === '判断题') && (
-                    <input
-                      type="text"
-                      placeholder="请输入参考答案或评分标准..."
-                      value={correctAnswerText}
-                      onChange={(e) => setCorrectAnswerText(e.target.value)}
-                      className="w-full border border-neutral-200 bg-white rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400"
+              {/* Practical Question (实训题) Fields */}
+              {newQuestionType === '实训题' && (
+                <div className="space-y-5 animate-slide-up">
+                  
+                  {/* 试题内容说明 */}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 试题内容说明：
+                      <span className="text-xs text-neutral-400 font-normal ml-1">学生根据『试题内容说明』进行答题</span>
+                    </label>
+                    <RichTextEditor
+                      label="内容说明："
+                      required
+                      value={shixunDescription}
+                      onChange={setShixunDescription}
                     />
+                  </div>
+
+                  {/* 答题方式 */}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 答题方式：
+                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                    </label>
+                    <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
+                      {[
+                        { value: '线下做题，上传结果文件', label: '线下做题，上传结果文件' },
+                        { value: '线上环境答题', label: '线上环境答题' }
+                      ].map((item) => (
+                        <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                          <input
+                            type="radio"
+                            name="shixunAnswerType"
+                            value={item.value}
+                            checked={shixunAnswerType === item.value}
+                            onChange={() => setShixunAnswerType(item.value)}
+                            className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                          />
+                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {shixunAnswerType === '线上环境答题' && (
+                      <p className="text-[11px] text-neutral-400 leading-normal pl-1">
+                        点击【确定】后，可在开发环境内编辑详细的<span className="text-[#fa541c] font-medium">『试题内容说明』</span>文档
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 实训类型 */}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 实训类型：
+                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                    </label>
+                    <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
+                      {[
+                        { value: '自动评分', label: '自动评分' },
+                        { value: '实训项目', label: '实训项目' },
+                        { value: '实验报告', label: '实验报告' }
+                      ].map((item) => (
+                        <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                          <input
+                            type="radio"
+                            name="shixunType"
+                            value={item.value}
+                            checked={shixunType === item.value}
+                            onChange={() => setShixunType(item.value)}
+                            className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                          />
+                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 任务类型 */}
+                  {shixunType === '自动评分' && (
+                    <div className="space-y-2 animate-fade-in">
+                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                        <span className="text-[#fa541c]">*</span> 任务类型：
+                        <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                      </label>
+                      <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
+                        {[
+                          { value: '回归', label: '回归' },
+                          { value: 'csv分类', label: 'csv分类' },
+                          { value: '图像分类', label: '图像分类' },
+                          { value: '自定义', label: '自定义' }
+                        ].map((item) => (
+                          <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                            <input
+                              type="radio"
+                              name="shixunTaskType"
+                              value={item.value}
+                              checked={shixunTaskType === item.value}
+                              onChange={() => setShixunTaskType(item.value)}
+                              className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                            />
+                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   )}
+
+                  {/* 数据集选择 */}
+                  <div className="space-y-4 pt-1">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 数据集选择：
+                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                    </label>
+
+                    <div className="space-y-4 pl-1">
+                      {/* 训练数据集 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-neutral-700">训练数据集：</span>
+                          <span className="text-[11px] text-neutral-400">用于学生实训训练过程中训练或验证模型的数据集</span>
+                        </div>
+                        {shixunTrainDataset ? (
+                          <div className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg">
+                            <div className="flex items-center gap-2 text-xs text-neutral-700">
+                              <Database className="w-4 h-4 text-[#fa541c]" />
+                              <span className="font-medium">{shixunTrainDataset}</span>
+                              <span className="text-neutral-400 text-[10px]">(42.5 MB)</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShixunTrainDataset('')}
+                              className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShixunTrainDataset('house_prices_train.csv')}
+                            className="w-full h-9 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded-lg text-xs flex items-center justify-center gap-1.5 text-neutral-500 bg-white transition-all font-medium cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4 text-neutral-400" /> 添加训练数据集
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 测试数据集 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-neutral-700">测试数据集：</span>
+                          <span className="text-[11px] text-neutral-400">用于学生提交结束前，系统测试模型结果的数据集，可根据测试结果调试文件</span>
+                        </div>
+                        {shixunTestDataset ? (
+                          <div className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg">
+                            <div className="flex items-center gap-2 text-xs text-neutral-700">
+                              <Database className="w-4 h-4 text-[#fa541c]" />
+                              <span className="font-medium">{shixunTestDataset}</span>
+                              <span className="text-neutral-400 text-[10px]">(12.8 MB)</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShixunTestDataset('')}
+                              className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShixunTestDataset('house_prices_test.csv')}
+                            className="w-full h-9 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded-lg text-xs flex items-center justify-center gap-1.5 text-neutral-500 bg-white transition-all font-medium cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4 text-neutral-400" /> 添加测试数据集
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 评分数据集 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-neutral-700">评分数据集：</span>
+                          <span className="text-[11px] text-neutral-400">用于学生提交结果后，进行最后自动评分的数据集</span>
+                        </div>
+                        {shixunScoreDataset ? (
+                          <div className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg">
+                            <div className="flex items-center gap-2 text-xs text-neutral-700">
+                              <Database className="w-4 h-4 text-[#fa541c]" />
+                              <span className="font-medium">{shixunScoreDataset}</span>
+                              <span className="text-neutral-400 text-[10px]">(15.4 MB)</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShixunScoreDataset('')}
+                              className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShixunScoreDataset('house_prices_eval.csv')}
+                            className="w-full h-9 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded-lg text-xs flex items-center justify-center gap-1.5 text-neutral-500 bg-white transition-all font-medium cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4 text-neutral-400" /> 添加评分数据集
+                          </button>
+                        )}
+                      </div>
+
+                    </div>
+                  </div>
+
                 </div>
-              </div>
+              )}
+
+              {/* Programming Question (编程题) Fields */}
+              {newQuestionType === '编程题' && (
+                <div className="space-y-5 animate-slide-up">
+                  
+                  {/* Grid fields: Language & Timeout */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* 编程语言 */}
+                    <div className="space-y-2">
+                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                        <span className="text-[#fa541c]">*</span> 编程语言：
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={codingLanguage}
+                          onChange={(e) => setCodingLanguage(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer font-medium"
+                        >
+                          <option value="Python">Python</option>
+                          <option value="C++">C++</option>
+                          <option value="Java">Java</option>
+                          <option value="Go">Go</option>
+                          <option value="JavaScript">JavaScript</option>
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* 单个测试集最大测评时长 */}
+                    <div className="space-y-2">
+                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                        <span className="text-[#fa541c]">*</span> 单个测试集最大测评时长：
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          value={codingMaxTime}
+                          onChange={(e) => setCodingMaxTime(Number(e.target.value))}
+                          min={1}
+                          className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all"
+                        />
+                        <span className="text-xs text-neutral-600 shrink-0 font-medium">秒</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 输入描述 */}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 输入描述：
+                    </label>
+                    <RichTextEditor
+                      label="输入描述："
+                      required
+                      value={codingInputDesc}
+                      onChange={setCodingInputDesc}
+                      placeholder="请输入输入描述..."
+                    />
+                  </div>
+
+                  {/* 输出描述 */}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 输出描述：
+                    </label>
+                    <RichTextEditor
+                      label="输出描述："
+                      required
+                      value={codingOutputDesc}
+                      onChange={setCodingOutputDesc}
+                      placeholder="请输入输出描述..."
+                    />
+                  </div>
+
+                  {/* 输入输出样例 */}
+                  <div className="space-y-3">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 输入输出样例：
+                    </label>
+
+                    <div className="space-y-4 pl-1">
+                      {codingExamples.map((item, idx) => (
+                        <div key={item.id} className="border border-[#d9e8ff] rounded-xl overflow-hidden shadow-2xs">
+                          {/* Banner Header exactly like Image 1 */}
+                          <div className="bg-[#e6f4ff] border-b border-[#d9e8ff] px-4 py-2.5 flex items-center justify-between text-xs font-bold text-[#1677ff]">
+                            <div className="flex items-center gap-2">
+                              <span className="w-4.5 h-4.5 rounded-full bg-[#1677ff] text-white flex items-center justify-center text-[10px] font-black">✓</span>
+                              <span>样例 {idx + 1}</span>
+                            </div>
+                            {codingExamples.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => setCodingExamples(codingExamples.filter(x => x.id !== item.id))}
+                                className="text-neutral-400 hover:text-red-500 transition-colors text-[11px] font-bold cursor-pointer"
+                              >
+                                删除
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Inputs body */}
+                          <div className="p-4 space-y-3.5 bg-white">
+                            {/* Input Area */}
+                            <div className="space-y-1">
+                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+                                <span className="text-[#fa541c]">*</span> 输入：
+                              </span>
+                              <textarea
+                                value={item.input}
+                                onChange={(e) => {
+                                  setCodingExamples(codingExamples.map(x => x.id === item.id ? { ...x, input: e.target.value } : x));
+                                }}
+                                rows={3}
+                                placeholder="请输入样例的输入内容"
+                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
+                              />
+                            </div>
+
+                            {/* Output Area */}
+                            <div className="space-y-1">
+                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+                                <span className="text-[#fa541c]">*</span> 输出：
+                              </span>
+                              <textarea
+                                value={item.output}
+                                onChange={(e) => {
+                                  setCodingExamples(codingExamples.map(x => x.id === item.id ? { ...x, output: e.target.value } : x));
+                                }}
+                                rows={3}
+                                placeholder="请输入样例的输出内容"
+                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add example button styled in theme color orange */}
+                      <button
+                        type="button"
+                        onClick={() => setCodingExamples([...codingExamples, { id: Date.now(), input: '', output: '' }])}
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-lg hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 新增样例
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 测试用例 */}
+                  <div className="space-y-3">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                      <span className="text-[#fa541c]">*</span> 测试用例：
+                    </label>
+
+                    <div className="space-y-4 pl-1">
+                      {codingTestCases.map((item, idx) => (
+                        <div key={item.id} className="border border-[#d9e8ff] rounded-xl overflow-hidden shadow-2xs">
+                          {/* Banner Header exactly like Image 1 */}
+                          <div className="bg-[#e6f4ff] border-b border-[#d9e8ff] px-4 py-2.5 flex items-center justify-between text-xs font-bold text-[#1677ff]">
+                            <div className="flex items-center gap-2">
+                              <span className="w-4.5 h-4.5 rounded-full bg-[#1677ff] text-white flex items-center justify-center text-[10px] font-black">✓</span>
+                              <span>测试用例 {idx + 1}</span>
+                            </div>
+                            {codingTestCases.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => setCodingTestCases(codingTestCases.filter(x => x.id !== item.id))}
+                                className="text-neutral-400 hover:text-red-500 transition-colors text-[11px] font-bold cursor-pointer"
+                              >
+                                删除
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Inputs body */}
+                          <div className="p-4 space-y-3.5 bg-white">
+                            {/* Input Area */}
+                            <div className="space-y-1">
+                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+                                <span className="text-[#fa541c]">*</span> 输入：
+                              </span>
+                              <textarea
+                                value={item.input}
+                                onChange={(e) => {
+                                  setCodingTestCases(codingTestCases.map(x => x.id === item.id ? { ...x, input: e.target.value } : x));
+                                }}
+                                rows={3}
+                                placeholder="请输入测试用例的输入内容"
+                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
+                              />
+                            </div>
+
+                            {/* Output Area */}
+                            <div className="space-y-1">
+                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+                                <span className="text-[#fa541c]">*</span> 输出：
+                              </span>
+                              <textarea
+                                value={item.output}
+                                onChange={(e) => {
+                                  setCodingTestCases(codingTestCases.map(x => x.id === item.id ? { ...x, output: e.target.value } : x));
+                                }}
+                                rows={3}
+                                placeholder="请输入测试用例的预期输出"
+                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
+                              />
+                            </div>
+
+                            {/* Explanation Area */}
+                            <div className="space-y-1">
+                              <span className="text-[11px] font-bold text-neutral-500 block">说明：</span>
+                              <textarea
+                                value={item.desc}
+                                onChange={(e) => {
+                                  setCodingTestCases(codingTestCases.map(x => x.id === item.id ? { ...x, desc: e.target.value } : x));
+                                }}
+                                rows={3}
+                                placeholder="请输入测试用例的相关说明"
+                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add case button styled in theme color orange */}
+                      <button
+                        type="button"
+                        onClick={() => setCodingTestCases([...codingTestCases, { id: Date.now(), input: '', output: '', desc: '' }])}
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-lg hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 新增用例
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 学生初始代码 Console exactly like Image 2 */}
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
+                      学生初始代码：
+                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                    </label>
+                    <div className="border border-neutral-200 rounded-lg overflow-hidden bg-neutral-950 text-white font-mono p-3 shadow-sm transition-all focus-within:border-[#fa541c]/50 flex">
+                      {/* Line numbers column */}
+                      <div className="text-neutral-600 text-right pr-3.5 select-none border-r border-neutral-800 mr-3 text-xs leading-relaxed py-1 w-8 font-mono">
+                        {codingInitCode.split('\n').map((_, index) => (
+                          <div key={index}>{index + 1}</div>
+                        ))}
+                      </div>
+                      {/* Textarea Code Console */}
+                      <textarea
+                        value={codingInitCode}
+                        onChange={(e) => setCodingInitCode(e.target.value)}
+                        rows={7}
+                        placeholder="请输入学生初始代码..."
+                        className="flex-1 bg-transparent text-xs text-emerald-400 focus:outline-none resize-y leading-relaxed font-mono py-1 custom-scrollbar whitespace-pre"
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Correct Answer */}
+              {(newQuestionType !== '实训题' && newQuestionType !== '编程题') && (
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 正确答案：
+                  </label>
+                  
+                  <div className="p-4 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
+                    {newQuestionType === '单选题' && (
+                      <div className="flex flex-wrap gap-6 items-center">
+                        {options.map((opt) => (
+                          <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                            <input
+                              type="radio"
+                              name="correctAnswerSingle"
+                              value={opt.key}
+                              checked={correctAnswerSingle === opt.key}
+                              onChange={() => setCorrectAnswerSingle(opt.key)}
+                              className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
+                            />
+                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">选项 {opt.key}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {newQuestionType === '多选题' && (
+                      <div className="flex flex-wrap gap-6 items-center">
+                        {options.map((opt) => (
+                          <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                            <input
+                              type="checkbox"
+                              checked={correctAnswerMultiple.includes(opt.key)}
+                              onChange={() => {
+                                if (correctAnswerMultiple.includes(opt.key)) {
+                                  setCorrectAnswerMultiple(correctAnswerMultiple.filter(k => k !== opt.key));
+                                } else {
+                                  setCorrectAnswerMultiple([...correctAnswerMultiple, opt.key]);
+                                }
+                              }}
+                              className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer"
+                            />
+                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">选项 {opt.key}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {newQuestionType === '判断题' && (
+                      <div className="flex gap-6 items-center">
+                        {['正确', '错误'].map((val) => (
+                          <label key={val} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                            <input
+                              type="radio"
+                              name="correctAnswerTrueFalse"
+                              value={val}
+                              checked={correctAnswerTrueFalse === val}
+                              onChange={() => setCorrectAnswerTrueFalse(val)}
+                              className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
+                            />
+                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">{val}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {!(newQuestionType === '单选题' || newQuestionType === '多选题' || newQuestionType === '判断题') && (
+                      <input
+                        type="text"
+                        placeholder="请输入参考答案或评分标准..."
+                        value={correctAnswerText}
+                        onChange={(e) => setCorrectAnswerText(e.target.value)}
+                        className="w-full border border-neutral-200 bg-white rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Answer Analysis */}
-              <RichTextEditor
-                label="答案解析："
-                value={newQuestionAnalysis}
-                onChange={setNewQuestionAnalysis}
-                placeholder="请输入详细的答案解析 and 解题思路..."
-              />
+              {newQuestionType !== '实训题' && (
+                <RichTextEditor
+                  label="答案解析："
+                  value={newQuestionAnalysis}
+                  onChange={setNewQuestionAnalysis}
+                  placeholder="请输入详细的答案解析 and 解题思路..."
+                />
+              )}
 
               {/* Status */}
               <div className="space-y-2">
