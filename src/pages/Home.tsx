@@ -154,7 +154,7 @@ const SUCCESS_CASES = [
     badge: "高等教育育人示范",
     tagline: "对接100+所高校学科建设，落地50,000+学生培养",
     image: "https://picsum.photos/seed/case3/800/500",
-    color: "from-blue-500 to-indigo-600",
+    color: "from-amber-500 to-orange-600",
     stats: [
       { label: "合作高校", val: "100+ 所" },
       { label: "受益学生", val: "50,000+ 人" },
@@ -485,10 +485,10 @@ export default function Home() {
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
     const quickAccess = [
-      { title: "我的课程", desc: "继续您的学习旅程", icon: BookOpen, color: "text-blue-600", bg: "bg-blue-50", href: "/user/courses" },
-      { title: "我的项目", desc: "管理您的实战沙箱", icon: Target, color: "text-indigo-600", bg: "bg-indigo-50", href: "/login" },
-      { title: "最近访问", desc: "快速回到上次进度", icon: Star, color: "text-amber-500", bg: "bg-amber-50", href: "/login" },
-      { title: "推荐内容", desc: "发现更多优质资源", icon: Flame, color: "text-rose-500", bg: "bg-rose-50", href: "/login" }
+      { title: "我的课程", desc: "继续您的学习旅程", icon: BookOpen, color: "text-[#fa541c]", bg: "bg-[#fff2e8]", href: "/user/courses" },
+      { title: "我的项目", desc: "管理您的实战沙箱", icon: Target, color: "text-indigo-600", bg: "bg-indigo-50", href: "/login/user" },
+      { title: "最近访问", desc: "快速回到上次进度", icon: Star, color: "text-amber-500", bg: "bg-amber-50", href: "/login/user" },
+      { title: "推荐内容", desc: "发现更多优质资源", icon: Flame, color: "text-rose-500", bg: "bg-rose-50", href: "/user" }
     ];
   
     const courses = [
@@ -513,7 +513,7 @@ export default function Home() {
     ];
   
     return (
-      <div className="flex flex-col min-h-full bg-[#f8fafc] font-sans selection:bg-blue-100 selection:text-blue-900">
+      <div className="flex flex-col min-h-full bg-[#f8fafc] font-sans selection:bg-orange-100 selection:text-orange-900">
         
         {/* Hero Section - Light Luxury Style */}
         <div className="relative w-full aspect-[1024/346] min-h-[250px] max-h-[580px] overflow-hidden bg-[#fff5eb]">
@@ -622,7 +622,7 @@ export default function Home() {
                   <item.icon className={cn("w-7 h-7", item.color)} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors">{item.title}</h3>
+                  <h3 className="font-bold text-lg text-slate-900 group-hover:text-[#fa541c] transition-colors">{item.title}</h3>
                   <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
                 </div>
               </Link>
@@ -648,7 +648,7 @@ export default function Home() {
                      className={cn(
                        "px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 whitespace-nowrap",
                        activeScenario === scenario 
-                         ? "bg-white text-blue-600 shadow-sm" 
+                         ? "bg-white text-[#fa541c] shadow-sm" 
                          : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                      )}
                    >
@@ -682,7 +682,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="p-6">
-                    <h4 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+                    <h4 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-[#fa541c] transition-colors line-clamp-1">
                       {course.title}
                     </h4>
                     <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
@@ -701,7 +701,7 @@ export default function Home() {
                 <h3 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-3">最佳实践</h3>
                 <p className="text-slate-500 text-lg font-light">真实业务场景驱动，沉浸式积累一线实战经验</p>
               </div>
-              <Link to="/user/practices" className="hidden md:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors group">
+              <Link to="/user/practices" className="hidden md:flex items-center gap-2 text-[#fa541c] font-medium hover:text-[#e84a15] transition-colors group">
                 查看更多实践 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -722,7 +722,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="p-6">
-                    <h4 className="font-bold text-lg text-slate-900 mb-4 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug h-[56px]">
+                    <h4 className="font-bold text-lg text-slate-900 mb-4 group-hover:text-[#fa541c] transition-colors line-clamp-2 leading-snug h-[56px]">
                       {practice.title}
                     </h4>
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
@@ -730,7 +730,7 @@ export default function Home() {
                         <TrendingUp className="w-4 h-4 text-emerald-500" />
                         <span>{practice.views} 人已学习</span>
                       </div>
-                      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[#fff2e8] group-hover:text-[#fa541c] transition-colors">
                         <ArrowRight className="w-4 h-4" />
                       </div>
                     </div>
@@ -809,7 +809,7 @@ export default function Home() {
               <div className="lg:col-span-7 flex flex-col justify-between bg-slate-950 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-2xl border border-slate-800 min-h-[440px]">
                 {/* Background ambient light */}
                 <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] -translate-y-1/3 translate-x-1/3"></div>
-                <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3"></div>
+                <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#fa541c]/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3"></div>
 
                 {CORE_FEATURES.map((feat) => {
                   if (feat.id !== activeFeature) return null;
@@ -984,7 +984,7 @@ export default function Home() {
                   {/* Core Metrics */}
                   <div className="space-y-3">
                     <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                      <span className="w-1.5 h-3.5 bg-blue-500 rounded-full inline-block"></span>
+                      <span className="w-1.5 h-3.5 bg-[#fa541c] rounded-full inline-block"></span>
                       核心技术指标 / METRICS
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1036,7 +1036,7 @@ export default function Home() {
             <section className="lg:col-span-1 bg-white rounded-3xl p-8 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">平台公告</h3>
-                <Link to="/user/center/messages" className="text-sm text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                <Link to="/user/center/messages" className="text-sm text-[#fa541c] font-medium hover:text-[#e84a15] transition-colors">
                   全部
                 </Link>
               </div>
@@ -1047,7 +1047,7 @@ export default function Home() {
                     <announcement.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-base font-medium text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+                    <h4 className="text-base font-medium text-slate-900 group-hover:text-[#fa541c] transition-colors line-clamp-2 mb-1">
                       {announcement.title}
                     </h4>
                     <span className="text-sm text-slate-400 font-mono">{announcement.date}</span>
@@ -1060,7 +1060,7 @@ export default function Home() {
           {/* Platform Data */}
           <section className="lg:col-span-2 bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden flex flex-col justify-center">
             {/* Decorative Background */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#fa541c]/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-rose-500/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3"></div>
             
             <div className="relative z-10">
