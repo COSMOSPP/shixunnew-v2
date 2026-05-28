@@ -3,6 +3,8 @@ import AdminStandardPage from "./AdminStandardPage";
 import AdminAICenterPage from "./AdminAICenterPage";
 import AdminCompetitionsPage from "./AdminCompetitionsPage";
 import AdminAIQuotaPage from "./AdminAIQuotaPage";
+import AdminTenantsPage from "./AdminTenantsPage";
+import AdminPermissionsPage from "./AdminPermissionsPage";
 import { Brain, Shield, Cloud, Server, Laptop, Network, Key, Settings, Activity, Users, Database, Cpu, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
 export function AdminAI() {
@@ -144,26 +146,7 @@ export function AdminIP() {
 }
 
 export function AdminPermissions() {
-  return (
-    <AdminStandardPage 
-      title="权限管理" 
-      description="管理用户角色、访问策略与安全审计"
-      primaryAction="新建角色"
-      stats={[
-        { title: "用户总数", value: "8,432", icon: Users, trend: "120", trendUp: true },
-        { title: "角色数量", value: "24", icon: Key, trend: "2", trendUp: true },
-        { title: "权限策略", value: "156", icon: Shield, trend: "5", trendUp: true },
-        { title: "异常登录", value: "2", icon: AlertTriangle, trend: "1", trendUp: false }
-      ]}
-      columns={["用户名", "角色", "部门", "最后登录", "状态"]}
-      data={[
-        ["admin", "超级管理员", "IT部", "2026-03-17 08:00", "正常"],
-        ["zhangsan", "研发工程师", "研发部", "2026-03-17 08:30", "正常"],
-        ["lisi", "安全审计员", "安全部", "2026-03-16 18:00", "正常"],
-        ["wangwu", "实习生", "市场部", "2026-03-10 09:00", "已锁定"]
-      ]}
-    />
-  );
+  return <AdminPermissionsPage />;
 }
 
 export function AdminSystem() {
@@ -215,26 +198,7 @@ export function AdminResources() {
 }
 
 export function AdminTenants() {
-  return (
-    <AdminStandardPage 
-      title="租户管理" 
-      description="管理加入实训平台的高校、企业等租户及配额限制"
-      primaryAction="创建新租户"
-      stats={[
-        { title: "活跃租户", value: "148", icon: Users, trend: "5", trendUp: true },
-        { title: "本月续约", value: "12", icon: Clock, trend: "100%", trendUp: true },
-        { title: "服务中席位", value: "12.4k", icon: Laptop, trend: "10%", trendUp: true },
-        { title: "系统可用性", value: "99.99%", icon: CheckCircle }
-      ]}
-      columns={["租户名称", "管理员", "联系电话", "租期状态", "配额剩余"]}
-      data={[
-        ["北京大学信息学院", "王院长", "13800000001", "服务中", "87%"],
-        ["清华大学计算机系", "李教授", "13800000002", "服务中", "92%"],
-        ["百度智能云研发部", "张经理", "13800000003", "已过期", "0%"],
-        ["复旦大学软件学院", "陈主任", "13800000004", "服务中", "78%"]
-      ]}
-    />
-  );
+  return <AdminTenantsPage />;
 }
 
 export function AdminAIQuota() {

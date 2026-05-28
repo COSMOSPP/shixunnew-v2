@@ -274,7 +274,7 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
         <main className={cn(
           "flex flex-col min-h-0",
           (location.pathname === "/user/ai/assistant/studio" || location.pathname === "/user/ai/agents/studio" || location.pathname === "/user/ai/agents") ? "flex-1 p-0 bg-[#f5f6f8] overflow-hidden" : "flex-1 bg-[#f5f6f8] overflow-auto",
-          (location.pathname === "/user" || location.pathname.startsWith("/user/center") || location.pathname === "/user/mylearning" || location.pathname === "/user/ai/assistant/studio" || location.pathname === "/user/ai/agents/studio" || location.pathname.startsWith("/admin/ai") || location.pathname.startsWith("/admin/audit") || location.pathname.startsWith("/admin/ai-center") || location.pathname.startsWith("/admin/competitions") || location.pathname.startsWith("/admin/system") || location.pathname === "/user/ai/agents") ? "p-0" : "p-6"
+          (location.pathname === "/user" || location.pathname.startsWith("/user/center") || location.pathname === "/user/mylearning" || location.pathname === "/user/ai/assistant/studio" || location.pathname === "/user/ai/agents/studio" || location.pathname.startsWith("/admin/ai") || location.pathname.startsWith("/admin/audit") || location.pathname.startsWith("/admin/ai-center") || location.pathname.startsWith("/admin/competitions") || location.pathname.startsWith("/admin/system") || location.pathname.startsWith("/admin/permissions") || location.pathname === "/user/ai/agents") ? "p-0" : "p-6"
         )}>
           <Outlet />
         </main>
