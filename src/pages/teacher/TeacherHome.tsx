@@ -65,8 +65,8 @@ export default function TeacherHome() {
       desc: '本课程旨在介绍人工智能的基本概念、算法原理及实际应用。',
       teacher: '张老师',
       ta: '李助教',
-      scope: '公开',
-      status: '已上线',
+      scope: '平台',
+      status: '可用',
       auditStatus: '审核通过',
       image: 'https://picsum.photos/seed/ai/400/200',
       state: 'active'
@@ -79,7 +79,7 @@ export default function TeacherHome() {
       teacher: '张老师',
       ta: '王助教',
       scope: '私有',
-      status: '未上线',
+      status: '不可用',
       auditStatus: '待审核',
       image: 'https://picsum.photos/seed/dl/400/200',
       state: 'active'
@@ -91,8 +91,8 @@ export default function TeacherHome() {
       desc: '使用Python进行数据清洗、处理、分析和可视化。',
       teacher: '张老师',
       ta: '-',
-      scope: '公开',
-      status: '已上线',
+      scope: '租户',
+      status: '可用',
       auditStatus: '审核通过',
       image: 'https://picsum.photos/seed/data/400/200',
       state: 'ended'
@@ -346,14 +346,16 @@ export default function TeacherHome() {
                         <div className="text-neutral-800 font-medium">{course.teacher}</div>
                       </td>
                       <td className="p-4">
-                        {course.scope === '公开' ? (
-                          <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded text-[12px] border border-[#ffbb96]">{course.scope}</span>
+                        {course.scope === '平台' ? (
+                          <span className="px-2 py-0.5 bg-orange-50 text-orange-600 rounded text-[12px] border border-orange-200 font-medium">{course.scope}</span>
+                        ) : course.scope === '租户' ? (
+                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[12px] border border-indigo-200 font-medium">{course.scope}</span>
                         ) : (
-                          <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200">{course.scope}</span>
+                          <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200 font-medium">{course.scope}</span>
                         )}
                       </td>
                       <td className="p-4">
-                        <span className={cn("px-2 py-0.5 text-[12px] rounded border", course.status === '已上线' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
+                        <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '可用' ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
                           {course.status}
                         </span>
                       </td>
@@ -476,6 +478,33 @@ export default function TeacherHome() {
                   <span className="text-[#fa541c]">*</span> 标签
                 </label>
                 <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue={courseModalMode === 'edit' ? "必修, 核心课程" : ""} placeholder="请输入标签，用逗号分隔" />
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 课程范围
+                  </label>
+                  <select 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] cursor-pointer font-medium text-neutral-700"
+                    defaultValue={editingCourse?.scope || '私有'}
+                  >
+                    <option value="私有">私有</option>
+                    <option value="租户">租户</option>
+                    <option value="平台">平台</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 状态
+                  </label>
+                  <select 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] cursor-pointer font-medium text-neutral-700"
+                    defaultValue={editingCourse?.status || '可用'}
+                  >
+                    <option value="可用">可用</option>
+                    <option value="不可用">不可用</option>
+                  </select>
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">

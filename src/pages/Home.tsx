@@ -26,7 +26,8 @@ import {
   Activity,
   AlertCircle,
   FileText,
-  Trophy
+  Trophy,
+  Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -193,6 +194,126 @@ const SUCCESS_CASES = [
     }
   }
 ];
+
+const BUSINESS_SCENARIOS = [
+  {
+    id: "ai",
+    title: "AI 大模型开发",
+    icon: Brain,
+    badge: "AI 算力中心",
+    tagline: "零基础微调大语言模型，沉浸式 RAG 知识库调试沙箱",
+    description: "面向生成式人工智能技术前沿，提供模型一键式部署、显卡按需挂载和超参数精细配置。学生可直观进行 LoRA 微调调试、矢量数据库挂载和 Agent 多智能体协作链路拓扑构建。",
+    highlights: ["预置 DeepSeek、Llama3 等核心模型架构", "支持主流 PyTorch / CUDA 环境，一键微调", "内置智能 Agent 工作流图论拓扑调试器"],
+    mockType: "ai"
+  },
+  {
+    id: "cloud",
+    title: "云计算虚拟化",
+    icon: Layers,
+    badge: "云原生工程实训",
+    tagline: "异构物理资源动态调度，一键拉起 k8s 集群与高性能虚拟机",
+    description: "全面对齐产业主流云原生开发。支持 Docker 容器秒级分配、多节点 Kubernetes 容器集群编排实践、物理主机 IP 隔离与分布式 Ceph 存储资源动态调配实验。",
+    highlights: ["秒级拉起专属 Kubernetes 实验集群", "提供丰富 CentOS/Ubuntu 原生镜像与虚拟网卡", "支持高并发负载均衡与故障容器自动恢复测试"],
+    mockType: "cloud"
+  },
+  {
+    id: "security",
+    title: "安全运维审计",
+    icon: ShieldCheck,
+    badge: "零信任数字盾牌",
+    tagline: "堡垒机全网日志稽查，机密数据集‘可用不可见，可算不可下’",
+    description: "致力于培养卓越的信息安全与网络防御工程师。内置零信任堡垒机沙箱，支持敏感网络协议阻断测试、SQL注入攻防演练以及高价值数据集防数据出域外泄的安全零审计隔离验证。",
+    highlights: ["机密数据集物理沙箱物理级隔离防护", "堡垒机级指令命令/剪贴板全量拦截过滤", "实时高保真系统运行漏洞扫描与防火墙规则"],
+    mockType: "security"
+  }
+];
+
+const renderScenarioMockup = (mockType: string) => {
+  switch (mockType) {
+    case "ai":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between text-left font-sans">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs text-orange-500 font-bold bg-orange-500/10 px-2.5 py-1 rounded-full border border-orange-500/20">DeepSeek-R1-Distill-7B</span>
+              <span className="text-xs text-slate-500 font-mono">Tuning Loss: 0.12</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span>LoRA Rank (r)</span>
+                <span className="text-orange-500 font-bold font-mono">16</span>
+              </div>
+              <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-[80%] h-full bg-orange-500 rounded-full"></div>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span>GPU Usage</span>
+                <span className="text-emerald-400 font-bold font-mono">15.4 / 16 GB</span>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-slate-800/80 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+            <span>Epoch: 4/5 (Fine-tuning...)</span>
+            <span className="text-emerald-400">✓ CUDA compilation: Success</span>
+          </div>
+        </div>
+      );
+    case "cloud":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl h-full flex flex-col justify-between text-left font-mono text-[10px] text-slate-400 leading-normal">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 font-sans text-xs">
+            <span className="text-white font-bold flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              Kubernetes Cluster Status
+            </span>
+            <span className="text-emerald-400 font-mono text-[9px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">HEALTHY</span>
+          </div>
+          <div className="space-y-1.5 overflow-hidden flex-1">
+            <div className="flex items-center justify-between p-1 bg-slate-950 rounded">
+              <span className="text-slate-200">pod/zhiyun-core-5f899-node1</span>
+              <span className="text-emerald-400">RUNNING (CPU: 12%)</span>
+            </div>
+            <div className="flex items-center justify-between p-1 bg-slate-950 rounded">
+              <span className="text-slate-200">pod/zhiyun-mysql-8b71d-node2</span>
+              <span className="text-emerald-400">RUNNING (RAM: 1.2G)</span>
+            </div>
+            <div className="flex items-center justify-between p-1 bg-slate-950 rounded">
+              <span className="text-slate-200">pod/zhiyun-sandbox-2c32a-node3</span>
+              <span className="text-amber-400">INITIALIZING...</span>
+            </div>
+          </div>
+          <div className="border-t border-slate-800/80 pt-2 mt-2 flex items-center justify-between font-sans text-[9px] text-slate-500">
+            <span>Nodes: compute-01, compute-02</span>
+            <span>Network: Calico (VXLAN)</span>
+          </div>
+        </div>
+      );
+    case "security":
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl h-full flex flex-col justify-between text-left font-mono text-[10px] text-slate-400">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3 font-sans text-xs">
+            <span className="text-white font-bold flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              零信任堡垒机日志风控
+            </span>
+            <span className="text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">AUDIT ON</span>
+          </div>
+          <div className="bg-slate-950 rounded-lg p-2.5 border border-slate-800 space-y-1.5 overflow-hidden max-h-[100px] leading-relaxed">
+            <div className="text-yellow-500/80 font-bold">[SSH Alert] Root login attempted from 192.168.1.100.</div>
+            <div className="text-red-400 font-bold bg-red-500/10 px-1 py-0.5 rounded border border-red-500/10">
+              [Firewall Blocked] SCP outbound to external-server.com.
+            </div>
+            <div className="text-slate-600">[System Log] Outbound network channel blocked successfully.</div>
+          </div>
+          <div className="text-[9px] text-slate-500 text-center font-sans mt-2 pt-2 border-t border-slate-800/80">
+            ✓ 敏感命令审计率: 100% · 数据零出域泄流拦截激活
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
 const renderFeatureMockup = (mockType: string) => {
   switch (mockType) {
@@ -456,6 +577,7 @@ export default function Home() {
   const scenarios = ["人工智能", "安全运维", "私有云", "公有云"];
   const [activeScenario, setActiveScenario] = useState(scenarios[0]);
   const [activeFeature, setActiveFeature] = useState("courses");
+  const [activeScenarioId, setActiveScenarioId] = useState("ai");
   const [selectedCase, setSelectedCase] = useState<any | null>(null);
   const slides = [
     {
@@ -933,6 +1055,117 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ==================== 业务场景展示模块 ==================== */}
+          <section id="business-scenarios" className="scroll-mt-24 bg-white rounded-[32px] p-8 md:p-12 shadow-[0_4px_30px_rgba(0,0,0,0.02)] border border-slate-100/80">
+            <div className="max-w-3xl mb-12 text-left">
+              <span className="inline-block py-1 px-3 rounded-full bg-[#fff2e8] border border-[#ffbb96] text-[#fa541c] text-xs font-semibold tracking-wide uppercase mb-3">
+                ZhiYun Scenarios
+              </span>
+              <h3 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+                实训平台业务场景展示
+              </h3>
+              <p className="text-slate-500 text-base md:text-lg font-light leading-relaxed">
+                深度覆盖人工智能开发、云计算编排虚拟化和零信任安全运维审计三大业务场景，与企业真实生产无缝对接。
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              {/* Left Selector List - 5 cols */}
+              <div className="lg:col-span-5 flex flex-col gap-2.5">
+                {BUSINESS_SCENARIOS.map((feat) => {
+                  const isSelected = activeScenarioId === feat.id;
+                  const Icon = feat.icon;
+                  return (
+                    <button
+                      key={feat.id}
+                      onClick={() => setActiveScenarioId(feat.id)}
+                      className={cn(
+                        "w-full p-4 rounded-2xl flex items-center gap-4 text-left border transition-all duration-300 group hover:-translate-y-0.5 cursor-pointer",
+                        isSelected
+                          ? "bg-[#fff2e8]/40 border-[#ffbb96]/60 shadow-sm"
+                          : "bg-white border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/50"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-11 h-11 rounded-xl flex items-center justify-center transition-colors flex-shrink-0",
+                          isSelected
+                            ? "bg-[#fa541c] text-white"
+                            : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/80 group-hover:text-slate-700"
+                        )}
+                      >
+                        <Icon className="w-5.5 h-5.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={cn(
+                            "font-bold text-sm tracking-wide transition-colors",
+                            isSelected ? "text-[#fa541c]" : "text-slate-800"
+                          )}
+                        >
+                          {feat.title}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5 truncate font-light">
+                          {feat.tagline}
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className={cn(
+                          "w-4 h-4 text-slate-400 transition-all",
+                           isSelected ? "text-[#fa541c] translate-x-1" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"
+                        )}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right Showcase Card - 7 cols */}
+              <div className="lg:col-span-7 flex flex-col justify-between bg-slate-950 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-2xl border border-slate-800 min-h-[400px]">
+                {/* Background ambient light */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] -translate-y-1/3 translate-x-1/3"></div>
+                <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#fa541c]/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3"></div>
+
+                {BUSINESS_SCENARIOS.map((feat) => {
+                  if (feat.id !== activeScenarioId) return null;
+                  return (
+                    <div key={feat.id} className="h-full flex flex-col justify-between gap-6 animate-in fade-in duration-500 relative z-10 flex-1">
+                      <div className="space-y-4 text-left">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-orange-400 border border-white/5 uppercase tracking-wider">
+                            {feat.badge}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-500">ZHIYUN ENGINE V2.0</span>
+                        </div>
+                        <h4 className="text-2xl font-bold text-white tracking-wide">
+                          {feat.title} <span className="text-sm font-light text-slate-400 block mt-1">{feat.tagline}</span>
+                        </h4>
+                        <p className="text-slate-400 text-sm leading-relaxed font-light">
+                          {feat.description}
+                        </p>
+                      </div>
+
+                      {/* Mock UI Rendering based on mockType */}
+                      <div className="h-[180px] flex-shrink-0">
+                        {renderScenarioMockup(feat.mockType)}
+                      </div>
+
+                      {/* Bottom highlights */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-left pt-4 border-t border-slate-800/80">
+                        {feat.highlights.map((high, index) => (
+                          <div key={index} className="flex items-center gap-2 text-xs text-slate-300 font-light">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                            <span>{high}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
           {/* ==================== 3. 成功案例交互弹窗 (Details Dialog) ==================== */}
           {selectedCase && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
@@ -1058,27 +1291,28 @@ export default function Home() {
           </section>
 
           {/* Platform Data */}
-          <section className="lg:col-span-2 bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden flex flex-col justify-center">
-            {/* Decorative Background */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#fa541c]/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-rose-500/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3"></div>
+          <section className="lg:col-span-2 bg-gradient-to-br from-[#fff6f0] via-[#fffcf9] to-[#fff5eb] rounded-3xl p-8 md:p-12 shadow-sm border border-[#ffbb96]/30 relative overflow-hidden flex flex-col justify-center">
+            {/* Decorative Background with Diffuse/Spread Gradients */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#ffd8bf] to-[#ffbb96] rounded-full blur-[90px] opacity-40 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-br from-[#ffecd2] to-[#fcb69f] rounded-full blur-[100px] opacity-45 translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#fff2e8] rounded-full blur-[100px] opacity-50 pointer-events-none"></div>
             
             <div className="relative z-10">
-              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">平台运行数据</h3>
-              <p className="text-slate-400 mb-12 font-light">持续为您提供稳定、高效的实训环境</p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">平台运行数据</h3>
+              <p className="text-slate-500 mb-12 font-light">持续为您提供稳定、高效的实训环境</p>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-x divide-white/10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-x divide-[#ffbb96]/30">
                 <div className="text-center px-4">
-                  <div className="text-4xl md:text-5xl font-light text-white mb-3 tracking-tight">1,234</div>
-                  <div className="text-sm font-medium text-slate-400 tracking-wider">精品课程</div>
+                  <div className="text-4xl md:text-5xl font-black text-[#fa541c] mb-3 tracking-tight drop-shadow-[0_2px_10px_rgba(250,84,28,0.15)]">1,234</div>
+                  <div className="text-sm font-semibold text-slate-600 tracking-wider">精品课程</div>
                 </div>
                 <div className="text-center px-4">
-                  <div className="text-4xl md:text-5xl font-light text-white mb-3 tracking-tight">5,678</div>
-                  <div className="text-sm font-medium text-slate-400 tracking-wider">实战项目</div>
+                  <div className="text-4xl md:text-5xl font-black text-[#fa541c] mb-3 tracking-tight drop-shadow-[0_2px_10px_rgba(250,84,28,0.15)]">5,678</div>
+                  <div className="text-sm font-semibold text-slate-600 tracking-wider">实战项目</div>
                 </div>
                 <div className="text-center px-4">
-                  <div className="text-4xl md:text-5xl font-light text-white mb-3 tracking-tight">98k+</div>
-                  <div className="text-sm font-medium text-slate-400 tracking-wider">注册用户</div>
+                  <div className="text-4xl md:text-5xl font-black text-[#fa541c] mb-3 tracking-tight drop-shadow-[0_2px_10px_rgba(250,84,28,0.15)]">98k+</div>
+                  <div className="text-sm font-semibold text-slate-600 tracking-wider">注册用户</div>
                 </div>
                 <div className="text-center px-4">
                   <div className="flex items-center justify-center gap-2 mb-3">
@@ -1086,9 +1320,9 @@ export default function Home() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                     </span>
-                    <div className="text-4xl md:text-5xl font-light text-emerald-400 tracking-tight">1,234</div>
+                    <div className="text-4xl md:text-5xl font-black text-emerald-600 mb-3 tracking-tight drop-shadow-[0_2px_10px_rgba(5,150,105,0.15)]">1,234</div>
                   </div>
-                  <div className="text-sm font-medium text-slate-400 tracking-wider">当前在线</div>
+                  <div className="text-sm font-semibold text-slate-600 tracking-wider">当前在线</div>
                 </div>
               </div>
             </div>

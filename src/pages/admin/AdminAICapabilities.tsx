@@ -224,7 +224,7 @@ const allAITools = [
 export default function AdminAICapabilities() {
   const [activeTab, setActiveTab] = useState<"auth" | "skills" | "agents">("auth");
 
-  // --- States for AI工具授权 (Tab 1) ---
+  // --- States for ai助手 (Tab 1) ---
   const [tenants, setTenants] = useState<Tenant[]>(initialTenants);
   const [selectedTenantId, setSelectedTenantId] = useState<number>(1);
   const currentTenant = tenants.find(t => t.id === selectedTenantId) || tenants[0];
@@ -382,7 +382,7 @@ export default function AdminAICapabilities() {
     alert("已触发安全回滚！技能包版本已成功回退到前一稳定状态。");
   };
 
-  // --- States for 智能体配置 (Tab 3) ---
+  // --- States for 数字员工配置 (Tab 3) ---
   const [agents, setAgents] = useState<AgentConfig[]>(initialAgents);
   const [selectedAgentId, setSelectedAgentId] = useState<number>(1);
   const currentAgent = agents.find(a => a.id === selectedAgentId) || agents[0];
@@ -447,7 +447,7 @@ export default function AdminAICapabilities() {
       }
       return a;
     }));
-    alert("智能体本地工作区配置已保存！可进一步点击下方的『一键发布』推送到服务器多环境。");
+    alert("数字员工本地工作区配置已保存！可进一步点击下方的『一键发布』推送到服务器多环境。");
   };
 
   const handleOneClickPublishAgent = () => {
@@ -492,7 +492,7 @@ export default function AdminAICapabilities() {
       {/* Clean text Header without background */}
       <div className="pb-1">
         <h1 className="text-xl font-bold text-neutral-900">AI能力管理</h1>
-        <p className="text-sm text-neutral-500 mt-1">管理各租户的AI工具和模型授权配额，编排复用Skills包，并对智能体触发和多环境配置进行一键灰度发布与回收控制</p>
+        <p className="text-sm text-neutral-500 mt-1">管理各租户的AI助手和模型授权配额，编排复用Skills包，并对数字员工触发和多环境配置进行一键灰度发布与回收控制</p>
       </div>
 
       {/* Unified Module Container (White background, borders, rounded corners, p-6, space-y-6) */}
@@ -508,7 +508,7 @@ export default function AdminAICapabilities() {
                 : "text-neutral-500 hover:text-neutral-800"
             )}
           >
-            AI工具授权
+            ai助手
             {activeTab === "auth" && (
               <div className="absolute bottom-[-13px] left-0 right-0 h-[2.5px] bg-[#fa541c] rounded-full" />
             )}
@@ -536,7 +536,7 @@ export default function AdminAICapabilities() {
                 : "text-neutral-500 hover:text-neutral-800"
             )}
           >
-            智能体配置
+            数字员工
             {activeTab === "agents" && (
               <div className="absolute bottom-[-13px] left-0 right-0 h-[2.5px] bg-[#fa541c] rounded-full" />
             )}
@@ -544,7 +544,7 @@ export default function AdminAICapabilities() {
         </div>
 
       {/* ========================================================================= */}
-      {/* 1. AI工具授权 Tab Content */}
+      {/* 1. ai助手 Tab Content */}
       {/* ========================================================================= */}
       {activeTab === "auth" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -612,7 +612,7 @@ export default function AdminAICapabilities() {
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <div>
                   <span className="font-bold">差异化授权更新成功！</span>
-                  已为 <span className="underline font-semibold">{currentTenant.name}</span> 重新定制了AI工具链授权方案，并设定了严密的并发拦截与 Token 额度上限。
+                  已为 <span className="underline font-semibold">{currentTenant.name}</span> 重新定制了AI助手授权方案，并设定了严密的并发拦截与 Token 额度上限。
                 </div>
               </div>
             )}
@@ -626,7 +626,7 @@ export default function AdminAICapabilities() {
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-neutral-800">
-                      AI能力授权配置面板 - {currentTenant.name}
+                      AI助手模型与调用授权面板 - {currentTenant.name}
                     </h2>
                     <p className="text-[11px] text-neutral-400 mt-0.5">高级租户可分配更多低延时专属推理模型并支持更大并发QPS额度</p>
                   </div>
@@ -645,7 +645,7 @@ export default function AdminAICapabilities() {
                 <div className="space-y-4 border-r border-neutral-100/60 pr-0 md:pr-6">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center text-[10px] font-bold">1</span>
-                    <span className="text-xs font-bold text-neutral-800">勾选可用AI能力工具包</span>
+                    <span className="text-xs font-bold text-neutral-800">勾选授权AI助手大模型与能力包</span>
                   </div>
 
                   <div className="space-y-3 pt-2">
@@ -1197,14 +1197,14 @@ export default function AdminAICapabilities() {
       )}
 
       {/* ========================================================================= */}
-      {/* 3. 智能体配置 Tab Content */}
+      {/* 3. 数字员工 Tab Content */}
       {/* ========================================================================= */}
       {activeTab === "agents" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left panel: Agent selection and Environment Switcher (removed background and shadow, added border) */}
           <div className="lg:col-span-4 border border-neutral-200 rounded-xl overflow-hidden">
             <div className="p-4 border-b border-neutral-200 bg-neutral-50/50 flex justify-between items-center">
-              <span className="font-bold text-neutral-800 text-xs tracking-wider uppercase">智能体配置列表</span>
+              <span className="font-bold text-neutral-800 text-xs tracking-wider uppercase">数字员工配置列表</span>
               <span className="text-[10px] font-bold text-[#fa541c] bg-[#fff2e8] border border-[#ffbb96] rounded px-1.5 py-0.5">多环境</span>
             </div>
 
@@ -1252,7 +1252,7 @@ export default function AdminAICapabilities() {
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <div>
                   <span className="font-bold">一键多环境发布完成！</span>
-                  智能体 <span className="underline font-semibold">{currentAgent.name}</span> 的最新配置已热更新推送至所有服务器，并且成功同步到【开发/测试/生产】对应镜像。
+                  数字员工 <span className="underline font-semibold">{currentAgent.name}</span> 的最新配置已热更新推送至所有服务器，并且成功同步到【开发/测试/生产】对应镜像。
                 </div>
               </div>
             )}
@@ -1268,7 +1268,7 @@ export default function AdminAICapabilities() {
                     <h2 className="text-sm font-bold text-neutral-800">
                       工作区高级参数配置 - {currentAgent.name}
                     </h2>
-                    <p className="text-[11px] text-neutral-400 mt-0.5">在此修改智能体触发策略，能力关联和人工接管条件</p>
+                    <p className="text-[11px] text-neutral-400 mt-0.5">在此修改数字员工触发策略，能力关联和人工接管条件</p>
                   </div>
                 </div>
 

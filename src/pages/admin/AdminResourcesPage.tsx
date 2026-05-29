@@ -4,7 +4,7 @@ import {
   AlertTriangle, Clock, X, Info, Download, Trash2, Edit, Eye, EyeOff, Play, 
   BarChart2, RefreshCw, Layers, ShieldCheck, Terminal, BookOpen, Cpu, 
   HelpCircle, Server, FileText, Check, Copy, AlertCircle, RefreshCcw, Send,
-  BookmarkCheck, PlusCircle, CheckSquare, Square
+  BookmarkCheck, PlusCircle, CheckSquare, Square, ThumbsUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,7 @@ interface TenantReference {
 interface PublicResource {
   id: string;
   name: string;
-  type: "course" | "project" | "sandbox" | "dataset";
+  type: "course" | "project" | "dataset" | "practice" | "ai_capacity";
   logo: string;
   description: string;
   creator: string;
@@ -48,7 +48,7 @@ interface PublicResource {
 const initialResources: PublicResource[] = [
   {
     id: "RES-2026-001",
-    name: "Python数据分析与大模型实战课件",
+    name: "Python数据分析与大模型实战课程",
     type: "course",
     logo: "🐍",
     description: "全面讲解 NumPy, Pandas 数据处理，并配合 DeepSeek API 接入开发简单智能数据看板的实训课程包。",
@@ -97,22 +97,22 @@ const initialResources: PublicResource[] = [
   },
   {
     id: "RES-2026-003",
-    name: "Llama-3-8B 微调参数沙箱实验模板",
-    type: "sandbox",
-    logo: "🐑",
-    description: "内置 LoRA 快速微调脚本及半精度加速参数，支持在单张 V100 上极速跑通大模型自我认知训练。",
+    name: "大语言模型分布式微调最佳实践",
+    type: "practice",
+    logo: "🏆",
+    description: "内置分布式微调 Megatron-LM 与 DeepSpeed 混合架构最佳配置脚本，指导多机多卡 GPU 分布式实训环境高效运作。",
     creator: "李教授",
     creatorRole: "清华大学计算机系",
-    fileSize: "45.2 GB",
+    fileSize: "15.2 MB",
     referencesCount: 24,
     downloadsCount: 450,
     status: "已上架",
     createdAt: "2026-02-28",
-    dependencies: ["CUDA 12.1", "PyTorch 2.2", "Transformers PEFT"],
+    dependencies: ["Megatron-LM v0.4.0", "DeepSpeed 0.12.3", "PyTorch 2.2"],
     outline: [
-      { title: "步骤 1: 微调数据预标记清洗脚本", duration: "10分钟", description: "对 Alpaca 问答格式数据执行清洗与分词 Token 化。" },
-      { title: "步骤 2: LoRA 微调权重挂载与半精度编译", duration: "1.5小时", description: "设定 rank=8, alpha=16 并启动大模型加速微调。" },
-      { title: "步骤 3: 导出微调 Adapter 权重并与基座融合", duration: "15分钟", description: "将 LoRA 参数合并回大模型主干并保存为新实例。" }
+      { title: "步骤 1: Megatron-LM 分布式框架环境配置", duration: "20分钟", description: "设定主从节点网络拓扑，连通多机多卡训练通信管道。" },
+      { title: "步骤 2: DeepSpeed 混合精度与 Zero 显存优化", duration: "1.5小时", description: "设定 Zero-3 策略参数，将大模型权重与梯度高效分片挂载。" },
+      { title: "步骤 3: 启动分布式训练脚本核验与吞吐量监控", duration: "30分钟", description: "监控多节点吞吐指标，完成 70B 模型分布式微调最佳实践调试。" }
     ],
     references: [
       { tenantName: "清华大学计算机系", logo: "🏛️", referencedAt: "2026-03-01", activeStudents: 210 },
@@ -121,7 +121,7 @@ const initialResources: PublicResource[] = [
   },
   {
     id: "RES-2026-004",
-    name: "云原生高并发 K8s 拓扑实训项目包",
+    name: "云原生高并发 K8s 拓扑实训项目",
     type: "project",
     logo: "🐳",
     description: "内置三节点 K8s 集群实训配置文件，挂载 Prometheus + Grafana 动态网络监控与弹性扩缩容拓扑。",
@@ -147,7 +147,7 @@ const initialResources: PublicResource[] = [
     name: "大模型 RAG 向量重排检索数据集",
     type: "dataset",
     logo: "🗂️",
-    description: "包含 50,000 条中文问答高维向量数据，支持 Milvus 向量库直接导入及 BGE-Reranker 检索性能测试评估。",
+    description: "包含 50,000 条中文问答 high 维向量数据，支持 Milvus 向量库直接导入及 BGE-Reranker 检索性能测试评估。",
     creator: "刘松林 教授",
     creatorRole: "哈尔滨工业大学计算学部",
     fileSize: "285 MB",
@@ -164,11 +164,33 @@ const initialResources: PublicResource[] = [
       { tenantName: "北京大学信息学院", logo: "🎓", referencedAt: "2026-03-20", activeStudents: 190 },
       { tenantName: "哈尔滨工业大学计算学部", logo: "🛸", referencedAt: "2026-03-25", activeStudents: 220 }
     ]
+  },
+  {
+    id: "RES-2026-006",
+    name: "通用中英文口语发音流畅度智能评估能力",
+    type: "ai_capacity",
+    logo: "🎙️",
+    description: "对外挂载标准的高吞吐量流式音频语音发音评测接口，支持识别音素错漏、重音偏移、语速卡顿等多维度多模态指标。",
+    creator: "吴教授",
+    creatorRole: "南京大学外国语学院",
+    fileSize: "42 KB",
+    referencesCount: 12,
+    downloadsCount: 210,
+    status: "已上架",
+    createdAt: "2026-04-01",
+    dependencies: ["Whisper-v3 API", "SLA 150ms", "JSON Payload"],
+    outline: [
+      { title: "接口规格", duration: "POST", description: "POST /api/v1/speech/eval (Payload: audio_file, target_text)" },
+      { title: "吞吐量限制", duration: "50 QPS", description: "单租户默认并发数 50 QPS, 可按需配额扩增" }
+    ],
+    references: [
+      { tenantName: "南京大学信息学院", logo: "🎓", referencedAt: "2026-04-10", activeStudents: 140 }
+    ]
   }
 ];
 
 export default function AdminResourcesPage() {
-  const [activeTab, setActiveTab] = useState<"all" | "course" | "project" | "sandbox" | "dataset">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "course" | "project" | "dataset" | "practice" | "ai_capacity">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -312,7 +334,7 @@ export default function AdminResourcesPage() {
             <span>智云实训运营端 - 公共实训资源控制台</span>
           </h1>
           <p className="text-xs text-neutral-caption mt-1">
-            超级管理员对实训平台中所有已审核通过的公共课件、项目模板、实验沙箱、数据集执行集中管控、在线结构化查看、沙箱部署以及违规驳回下架。
+            超级管理员对实训平台中所有已审核通过的课程、项目、数据集、最佳实践、ai能力执行集中管控、在线结构化查看、沙箱部署以及违规驳回下架。
           </p>
         </div>
 
@@ -326,9 +348,9 @@ export default function AdminResourcesPage() {
         {/* Statistics Cards */}
         <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { title: "在架公共实训资源", val: totalAssets, desc: "覆盖四类资源格式", icon: Layers, color: "text-[#fa541c]" },
+            { title: "在架公共实训资源", val: totalAssets, desc: "覆盖五类资源格式", icon: Layers, color: "text-[#fa541c]" },
             { title: "高校租户引用总量", val: `${totalReferences} 次`, desc: "已被引入实训班级", icon: BookmarkCheck, color: "text-emerald-600" },
-            { title: "测试沙箱可用性", val: "99.85 %", desc: "今日测试挂载成功率", icon: ShieldCheck, color: "text-blue-600" },
+            { title: "环境部署可用性", val: "99.85 %", desc: "今日测试挂载成功率", icon: ShieldCheck, color: "text-blue-600" },
             { title: "运营总下载热度", val: `${totalDownloads} 次`, desc: "课件/数据集提取总量", icon: Download, color: "text-purple-600" }
           ].map((card, idx) => (
             <div key={idx} className="bg-white p-5 rounded-xl border border-neutral-border shadow-3xs flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
@@ -349,10 +371,11 @@ export default function AdminResourcesPage() {
           <div className="space-y-1.5 max-w-[130px]">
             <span className="text-[10px] font-black text-neutral-caption uppercase tracking-wider block">资源品类引用分布</span>
             <div className="space-y-1 text-[9px] font-bold text-neutral-body leading-none">
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#fa541c] rounded-xs" /><span>课件课程 35%</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#fa541c] rounded-xs" /><span>课程资源 30%</span></div>
               <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-emerald-500 rounded-xs" /><span>实训项目 25%</span></div>
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-xs" /><span>实验沙箱 20%</span></div>
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-purple-500 rounded-xs" /><span>共享数据 20%</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-xs" /><span>数据集 20%</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-indigo-500 rounded-xs" /><span>最佳实践 15%</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-purple-500 rounded-xs" /><span>AI能力 10%</span></div>
             </div>
           </div>
           
@@ -360,10 +383,11 @@ export default function AdminResourcesPage() {
           <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
               <path className="text-neutral-100" strokeWidth="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="text-[#fa541c]" strokeWidth="4.2" strokeDasharray="35, 100" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="text-emerald-500" strokeWidth="4.2" strokeDasharray="25, 100" strokeDashoffset="-35" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="text-blue-500" strokeWidth="4.2" strokeDasharray="20, 100" strokeDashoffset="-60" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="text-purple-500" strokeWidth="4.2" strokeDasharray="20, 100" strokeDashoffset="-80" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path className="text-[#fa541c]" strokeWidth="4.2" strokeDasharray="30, 100" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path className="text-emerald-500" strokeWidth="4.2" strokeDasharray="25, 100" strokeDashoffset="-30" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path className="text-blue-500" strokeWidth="4.2" strokeDasharray="20, 100" strokeDashoffset="-55" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path className="text-indigo-500" strokeWidth="4.2" strokeDasharray="15, 100" strokeDashoffset="-75" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path className="text-purple-500" strokeWidth="4.2" strokeDasharray="10, 100" strokeDashoffset="-90" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
             </svg>
           </div>
         </div>
@@ -374,10 +398,11 @@ export default function AdminResourcesPage() {
         <div className="flex items-center gap-1">
           {[
             { id: "all", title: "全部已审公共资源", icon: LayoutGrid },
-            { id: "course", title: "课件课程包", icon: BookOpen, badge: resources.filter(r => r.type === "course" && r.status === "已上架").length },
-            { id: "project", title: "实训项目包", icon: Layers, badge: resources.filter(r => r.type === "project" && r.status === "已上架").length },
-            { id: "sandbox", title: "AI实验沙箱", icon: Terminal, badge: resources.filter(r => r.type === "sandbox" && r.status === "已上架").length },
-            { id: "dataset", title: "共享数据集", icon: Database, badge: resources.filter(r => r.type === "dataset" && r.status === "已上架").length }
+            { id: "course", title: "课程", icon: BookOpen, badge: resources.filter(r => r.type === "course" && r.status === "已上架").length },
+            { id: "project", title: "项目", icon: Layers, badge: resources.filter(r => r.type === "project" && r.status === "已上架").length },
+            { id: "dataset", title: "数据集", icon: Database, badge: resources.filter(r => r.type === "dataset" && r.status === "已上架").length },
+            { id: "practice", title: "最佳实践", icon: ThumbsUp, badge: resources.filter(r => r.type === "practice" && r.status === "已上架").length },
+            { id: "ai_capacity", title: "ai能力", icon: Cpu, badge: resources.filter(r => r.type === "ai_capacity" && r.status === "已上架").length }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -647,7 +672,12 @@ export default function AdminResourcesPage() {
                               {r.name}
                             </span>
                             <span className="text-[10px] font-semibold text-neutral-caption block">
-                              类型: <span className="font-bold text-[#fa541c]">{r.type === 'course' ? '课程课件' : r.type === 'project' ? '项目模板' : r.type === 'sandbox' ? '实验沙箱' : '共享数据'}</span>
+                              类型: <span className="font-bold text-[#fa541c]">
+                                {r.type === 'course' ? '课程' : 
+                                 r.type === 'project' ? '项目' : 
+                                 r.type === 'dataset' ? '数据集' : 
+                                 r.type === 'practice' ? '最佳实践' : 'ai能力'}
+                              </span>
                             </span>
                           </div>
                         </td>
@@ -747,7 +777,7 @@ export default function AdminResourcesPage() {
 
           <div className="bg-neutral-50 px-6 py-3.5 border-t border-neutral-100 flex justify-between items-center text-xs font-semibold text-neutral-body shrink-0 select-none">
             <span>共有已审资源: {resources.length} 项 / 在架: {totalAssets} 项</span>
-            <span className="text-[10px] text-neutral-caption font-medium pr-2">驳回下架后该课件包/模板对学生及高校教务自动物理隐藏不可搜索</span>
+            <span className="text-[10px] text-neutral-caption font-medium pr-2">驳回下架后该资源对学生及高校教务自动物理隐藏不可搜索</span>
           </div>
         </div>
       )}
@@ -1016,7 +1046,7 @@ export default function AdminResourcesPage() {
               </p>
               
               <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-lg text-[10.5px] text-rose-800 leading-relaxed font-medium">
-                下架后，该课件或沙箱模板将立即从所有高校和学生端搜索列表隐藏。已引用的租户仍旧保留历史数据，但无法开启新的实训项目。
+                下架后，该资源将立即从所有高校和学生端搜索列表隐藏。已引用的租户仍旧保留历史数据，但无法开启新的实训项目。
               </div>
 
               {/* Take down Reason */}

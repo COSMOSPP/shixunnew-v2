@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { 
   BookOpen, FolderKanban, FileQuestion, Cpu, Building, CheckCircle, 
   Clock, Search, Filter, Check, Shield, AlertCircle, Sparkles, X, 
-  FileText, ClipboardCheck, ThumbsUp, User, ChevronRight
+  FileText, ClipboardCheck, ThumbsUp, User, ChevronRight, Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ interface AuditResource {
   };
 }
 
-const initialResources: Record<"course" | "project" | "question" | "ai_capacity", AuditResource[]> = {
+const initialResources: Record<"course" | "project" | "question" | "ai_capacity" | "practice" | "dataset", AuditResource[]> = {
   course: [
     {
       id: "AUD-CRS-001",
@@ -154,11 +154,50 @@ const initialResources: Record<"course" | "project" | "question" | "ai_capacity"
         ]
       }
     }
+  ],
+  practice: [
+    {
+      id: "AUD-PRC-001",
+      name: "大规模预训练大模型分布式微调最佳实践",
+      creator: "陈博士",
+      tenant: "复旦大学计算机学院",
+      submitTime: "2026-05-27 10:20",
+      status: "待审核",
+      details: {
+        meta: "分布式微调实践 | 推荐星级 5 星",
+        content: "本实践介绍如何使用 DeepSpeed 和 Megatron-LM 在多机多卡 GPU 环境下进行 70B 参数规模 LLM 的 3D 并行（张量并行、流水线并行、数据并行）的高效分布式微调与优化。",
+        outline: [
+          "第一阶段: 分布式环境初始化与无缝集群连接配置",
+          "第二阶段: Megatron-LM 与 DeepSpeed 混合配置文件的精细调优",
+          "第三阶段: 针对大模型吞吐与显存占用的量化微调技术 (FP16/BF16)",
+          "第四阶段: 故障自动恢复与多节点网络通信拥堵排除实践"
+        ]
+      }
+    }
+  ],
+  dataset: [
+    {
+      id: "AUD-DTS-001",
+      name: "多模态中文医疗问答微调高质量数据集",
+      creator: "李教授",
+      tenant: "浙江大学医学院",
+      submitTime: "2026-05-26 09:40",
+      status: "待审核",
+      details: {
+        meta: "医疗问答数据集 | 100万条高质量对话",
+        content: "本数据集专为医疗行业多模态大模型定制，包含100万条经过医学专家脱敏与多轮校验的高质量中文医疗问答对与对应诊断 CT 图片，数据格式完全契合 JSON-L 及 WebDataset 规范。",
+        outline: [
+          "格式标准: JSON Lines 纯文本 + 图像 Base64 字典",
+          "数据清洗: 已使用过滤规则对病患姓名、证件、病历号等敏感隐私数据进行脱敏",
+          "适用方向: 医疗垂直行业大模型指令微调、评测与 RAG 知识库检索"
+        ]
+      }
+    }
   ]
 };
 
 export default function AdminAudit() {
-  const [activeMenu, setActiveMenu] = useState<"course" | "project" | "question" | "ai_capacity">("course");
+  const [activeMenu, setActiveMenu] = useState<"course" | "project" | "question" | "ai_capacity" | "practice" | "dataset">("course");
   const [activeStatusFilter, setActiveStatusFilter] = useState<"全部" | "待审核" | "已通过" | "已驳回">("全部");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -213,7 +252,7 @@ export default function AdminAudit() {
   };
 
   // Counting pending requests for left badges
-  const getPendingCount = (key: "course" | "project" | "question" | "ai_capacity") => {
+  const getPendingCount = (key: "course" | "project" | "question" | "ai_capacity" | "practice" | "dataset") => {
     return (resources[key] || []).filter(item => item.status === "待审核").length;
   };
 
@@ -270,6 +309,34 @@ export default function AdminAudit() {
             <span>项目公开审核</span>
           </button>
 
+          {/* Menu Item 2.5: Practice */}
+          <button 
+            onClick={() => { setActiveMenu("practice"); setActiveStatusFilter("全部"); }}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              activeMenu === "practice" 
+                ? "bg-[#fff2e8] text-[#fa541c]" 
+                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+            )}
+          >
+            <ThumbsUp className="w-4 h-4 shrink-0" />
+            <span>最佳实践公开审核</span>
+          </button>
+
+          {/* Menu Item 2.6: Dataset */}
+          <button 
+            onClick={() => { setActiveMenu("dataset"); setActiveStatusFilter("全部"); }}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              activeMenu === "dataset" 
+                ? "bg-[#fff2e8] text-[#fa541c]" 
+                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+            )}
+          >
+            <Database className="w-4 h-4 shrink-0" />
+            <span>数据集公开审核</span>
+          </button>
+
           {/* Menu Item 3: Question */}
           <button 
             onClick={() => { setActiveMenu("question"); setActiveStatusFilter("全部"); }}
@@ -311,12 +378,16 @@ export default function AdminAudit() {
               {activeMenu === "project" && "项目公开审核"}
               {activeMenu === "question" && "试题公开审核"}
               {activeMenu === "ai_capacity" && "AI能力公开审核"}
+              {activeMenu === "practice" && "最佳实践公开审核"}
+              {activeMenu === "dataset" && "数据集公开审核"}
             </h1>
             <p className="text-sm text-neutral-body mt-1 max-w-[680px]">
               {activeMenu === "course" && "审核各高校教师提请公开的实训课程大纲与课时设计，审核通过后将合并至公共课程资源库。"}
               {activeMenu === "project" && "评估企业级及学术性前沿实训项目案例，通过后在全网租户范围提供秒级沙箱环境部署。"}
               {activeMenu === "question" && "严控试卷试题的知识点覆盖度、科学性及格式标准，确保高价值考核资源的入库品质。"}
               {activeMenu === "ai_capacity" && "测试和校验教师研发定制的高性能AI大模型API接口、离线推理实例以及流畅度评测能力。"}
+              {activeMenu === "practice" && "审核教师及专家提请公开的优质企业级与学术前沿最佳实践方案，核准后上架公共目录。"}
+              {activeMenu === "dataset" && "严加甄别与审计共享数据集的合规度、隐私脱敏及标注规范性，确保高质量科学研究数据的开放安全。"}
             </p>
           </div>
           

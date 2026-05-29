@@ -98,11 +98,9 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
     { title: "IT", icon: Laptop, href: "/admin/it" },
     { title: "IP", icon: Network, href: "/admin/ip" },
     { title: "审核中心", icon: CheckSquare, href: "/admin/audit" },
-    { title: "公共资源管理", icon: Globe, href: "/admin/resources" },
     { title: "租户管理", icon: Building, href: "/admin/tenants" },
     { title: "ai配额管理", icon: Activity, href: "/admin/ai-quota" },
     { title: "竞赛管理", icon: Trophy, href: "/admin/competitions" },
-    { title: "ai能力中心", icon: Zap, href: "/admin/ai-center" },
     { title: "权限管理", icon: Key, href: "/admin/permissions" },
     { title: "系统管理", icon: Settings, href: "/admin/system" },
   ];

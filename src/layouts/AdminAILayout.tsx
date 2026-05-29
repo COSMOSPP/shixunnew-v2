@@ -1,17 +1,17 @@
 import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { BookOpen, FlaskConical, Cpu, Star, LayoutDashboard } from "lucide-react";
+import { BookOpen, Cpu, Star, FolderKanban, Database } from "lucide-react";
 
 export default function AdminAILayout() {
   const location = useLocation();
   
   const menuItems = [
-    { title: "概览", icon: LayoutDashboard, href: "/admin/ai" },
     { title: "课程管理", icon: BookOpen, href: "/admin/ai/courses" },
-    { title: "实验管理", icon: FlaskConical, href: "/admin/ai/experiments" },
-    { title: "AI能力管理", icon: Cpu, href: "/admin/ai/capabilities" },
+    { title: "项目管理", icon: FolderKanban, href: "/admin/ai/projects" },
+    { title: "数据集管理", icon: Database, href: "/admin/ai/datasets" },
     { title: "最佳实践库管理", icon: Star, href: "/admin/ai/practices" },
+    { title: "ai能力管理", icon: Cpu, href: "/admin/ai/capabilities" },
   ];
 
   return (
