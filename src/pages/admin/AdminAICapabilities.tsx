@@ -4,7 +4,7 @@ import {
   Trash2, Edit, Play, ArrowRight, Save, Plus, Search, Filter, 
   Layers, RefreshCw, FileText, Sliders, Building, Check, 
   Shield, AlertCircle, Sparkles, Terminal, ToggleLeft, ToggleRight,
-  Table, Database
+  Table, Database, Bot, X, UploadCloud, Users, HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +93,90 @@ const initialTenants: Tenant[] = [
     }
   }
 ];
+
+// --- AI Assistants (运营管理) Types & Mock Data ---
+
+export interface AdminAgent {
+  id: number;
+  name: string;
+  type: '课程助手' | '实验助手' | '答疑助手';
+  scope: '官方助手' | '租户私有';
+  creator: string;
+  tenant: string;
+  welcomeMsg: string;
+  avatar: string;
+  status: '已部署' | '待审核' | '已驳回';
+  authorizedCount: number;
+  kbCount: number;
+  auditDetails?: {
+    desc: string;
+    scenario: string;
+    example: string;
+    cost: string;
+  };
+}
+
+const initialAdminAgents: AdminAgent[] = [
+  {
+    id: 1,
+    name: "Python数据智能分析助手",
+    type: "课程助手",
+    scope: "官方助手",
+    creator: "智云官方",
+    tenant: "全平台共享",
+    welcomeMsg: "你好！我是官方Python数据分析指导师，随时为你解答NumPy、Pandas等实训中的疑惑。",
+    avatar: "https://picsum.photos/seed/ag1/100/100",
+    status: "已部署",
+    authorizedCount: 450,
+    kbCount: 4
+  },
+  {
+    id: 2,
+    name: "云原生微服务故障排查专家",
+    type: "实验助手",
+    scope: "官方助手",
+    creator: "智云官方",
+    tenant: "全平台共享",
+    welcomeMsg: "遇到K8s部署错误或者Redis哨兵宕机？把你的YAML或报错日志发给我，我来帮你诊断。",
+    avatar: "https://picsum.photos/seed/ag2/100/100",
+    status: "已部署",
+    authorizedCount: 310,
+    kbCount: 3
+  },
+  {
+    id: 3,
+    name: "深度学习反向传播答疑机器人",
+    type: "答疑助手",
+    scope: "租户私有",
+    creator: "李建国 教授",
+    tenant: "北京大学信息学院",
+    welcomeMsg: "同学你好，我是北大计算机网络课程答疑助手，欢迎提问！",
+    avatar: "https://picsum.photos/seed/ag3/100/100",
+    status: "已部署",
+    authorizedCount: 120,
+    kbCount: 2
+  },
+  {
+    id: 4,
+    name: "中英文口语发音流利度评估助手",
+    type: "答疑助手",
+    scope: "租户私有",
+    creator: "吴芳芳 教授",
+    tenant: "南京大学外国语学院",
+    welcomeMsg: "请录入你的流利度口语发音音频，我将利用 Whisper-v3 离线音素对齐算法为您做出打分评估。",
+    avatar: "https://picsum.photos/seed/ag4/100/100",
+    status: "待审核",
+    authorizedCount: 0,
+    kbCount: 1,
+    auditDetails: {
+      desc: "提供流式音频口语评估 API 对接，快速分析音素发音，支持流畅度打分，完美契合外语实训课教学。",
+      scenario: "适用于大学英语听说实训、英语水平测试模拟以及人机口语对话训练课。",
+      example: "用户上传语音文件并传入目标文本，系统反馈各单字评测分数及整体流利度综合评价。",
+      cost: "单次调用约需 120 Tokens，平均响应时延约 220ms。"
+    }
+  }
+];
+
 
 interface AISkill {
   id: number;
@@ -224,60 +308,117 @@ const allAITools = [
 export default function AdminAICapabilities() {
   const [activeTab, setActiveTab] = useState<"auth" | "skills" | "agents">("auth");
 
-  // --- States for ai助手 (Tab 1) ---
-  const [tenants, setTenants] = useState<Tenant[]>(initialTenants);
-  const [selectedTenantId, setSelectedTenantId] = useState<number>(1);
-  const currentTenant = tenants.find(t => t.id === selectedTenantId) || tenants[0];
+  // --- States for ai助手 (Tab 1 重构: AI助手管理与审核) ---
+  const [adminAgents, setAdminAgents] = useState<AdminAgent[]>(initialAdminAgents);
+  const [agentSearchQuery, setAgentSearchQuery] = useState("");
+  const [agentFilter, setAgentFilter] = useState<'全部' | '官方' | '私有' | '待审核'>('全部');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // Auth editing wizard state
-  const [wizardTools, setWizardTools] = useState<string[]>([]);
-  const [wizardDailyLimit, setWizardDailyLimit] = useState<number>(100000);
-  const [wizardTokensQuota, setWizardTokensQuota] = useState<string>("500M");
-  const [wizardConcurrency, setWizardConcurrency] = useState<number>(100);
-  const [wizardExpireDate, setWizardExpireDate] = useState<string>("2026-12-31");
-  const [wizardAutoRecycle, setWizardAutoRecycle] = useState<boolean>(true);
-  const [showAuthSuccessFlash, setShowAuthSuccessFlash] = useState<boolean>(false);
+  // New Official Agent Form State
+  const [isCreateAgentOpen, setIsCreateAgentOpen] = useState(false);
+  const [agentForm, setAgentForm] = useState({
+    name: "",
+    type: "课程助手" as '课程助手' | '实验助手' | '答疑助手',
+    model: "DeepSeek-R1",
+    temperature: 0.5,
+    prompt: "",
+    kbs: "智云公共教学知识库",
+    avatarSeed: "opt1"
+  });
 
-  // Sync wizard inputs when active tenant changes
-  useEffect(() => {
-    if (currentTenant) {
-      setWizardTools(currentTenant.authorizedTools);
-      setWizardDailyLimit(currentTenant.limits.dailyCalls);
-      setWizardTokensQuota(currentTenant.limits.tokensTotal);
-      setWizardConcurrency(currentTenant.limits.concurrency);
-      setWizardExpireDate(currentTenant.limits.expireDate);
-      setWizardAutoRecycle(currentTenant.limits.autoRecycle);
-    }
-  }, [selectedTenantId]);
+  // Audit Modal State
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [reviewingAgent, setReviewingAgent] = useState<AdminAgent | null>(null);
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [checkQuality, setCheckQuality] = useState(true);
+  const [checkOriginality, setCheckOriginality] = useState(true);
+  const [checkStandard, setCheckStandard] = useState(true);
+  const [isAuditLoading, setIsAuditLoading] = useState(false);
 
-  const handleToggleToolCheckbox = (toolId: string) => {
-    if (wizardTools.includes(toolId)) {
-      setWizardTools(wizardTools.filter(t => t !== toolId));
-    } else {
-      setWizardTools([...wizardTools, toolId]);
-    }
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
   };
 
-  const handleSaveAuthorization = () => {
-    const updatedTenants = tenants.map(t => {
-      if (t.id === selectedTenantId) {
-        return {
-          ...t,
-          authorizedTools: wizardTools,
-          limits: {
-            dailyCalls: wizardDailyLimit,
-            tokensTotal: wizardTokensQuota,
-            concurrency: wizardConcurrency,
-            expireDate: wizardExpireDate,
-            autoRecycle: wizardAutoRecycle
-          }
-        };
-      }
-      return t;
+  const handleCreateOfficialAgent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!agentForm.name.trim()) {
+      showToast("请输入智能助手名称", "error");
+      return;
+    }
+    const newAgent: AdminAgent = {
+      id: Date.now(),
+      name: agentForm.name,
+      type: agentForm.type,
+      scope: "官方助手",
+      creator: "智云官方",
+      tenant: "全平台共享",
+      welcomeMsg: agentForm.prompt ? `您好！我是官方的【${agentForm.name}】，${agentForm.prompt.substring(0, 40)}...` : `你好！我是官方推荐的【${agentForm.name}】，随时可以为您提供专属辅导。`,
+      avatar: `https://picsum.photos/seed/${agentForm.avatarSeed}/100/100`,
+      status: "已部署",
+      authorizedCount: 0,
+      kbCount: 2
+    };
+    setAdminAgents([newAgent, ...adminAgents]);
+    setIsCreateAgentOpen(false);
+    showToast("官方智能助手部署上线成功！已向全租户下发。");
+    // Reset Form
+    setAgentForm({
+      name: "",
+      type: "课程助手",
+      model: "DeepSeek-R1",
+      temperature: 0.5,
+      prompt: "",
+      kbs: "智云公共教学知识库",
+      avatarSeed: `opt-${Date.now()}`
     });
-    setTenants(updatedTenants);
-    setShowAuthSuccessFlash(true);
-    setTimeout(() => setShowAuthSuccessFlash(false), 4000);
+  };
+
+  const handleApproveAgent = (id: number) => {
+    setIsAuditLoading(true);
+    setTimeout(() => {
+      setIsAuditLoading(false);
+      setAdminAgents(prev => prev.map(a => {
+        if (a.id === id) {
+          return {
+            ...a,
+            status: "已部署" as const,
+            scope: "官方助手" as const,
+            tenant: "全平台共享"
+          };
+        }
+        return a;
+      }));
+      setIsAuditModalOpen(false);
+      setReviewingAgent(null);
+      showToast("审核通过！该AI能力已发布至公共能力池，对全租户共享。");
+    }, 1000);
+  };
+
+  const handleRejectAgent = (id: number) => {
+    if (!rejectionReason.trim()) {
+      showToast("请输入具体的驳回意见", "error");
+      return;
+    }
+    setIsAuditLoading(true);
+    setTimeout(() => {
+      setIsAuditLoading(false);
+      setAdminAgents(prev => prev.map(a => {
+        if (a.id === id) {
+          return {
+            ...a,
+            status: "已驳回" as const
+          };
+        }
+        return a;
+      }));
+      setIsAuditModalOpen(false);
+      setReviewingAgent(null);
+      setShowRejectForm(false);
+      setRejectionReason("");
+      showToast("已驳回申请，审核意见已同步至教师工作台。", "success");
+    }, 800);
   };
 
   // --- States for Skills库管理 (Tab 2) ---
@@ -544,237 +685,505 @@ export default function AdminAICapabilities() {
         </div>
 
       {/* ========================================================================= */}
-      {/* 1. ai助手 Tab Content */}
+      {/* 1. ai助手 Tab Content 重构 (AI能力中心/智能助手管理) */}
       {/* ========================================================================= */}
       {activeTab === "auth" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Side: Tenant List Selector (removed background and shadow, added border) */}
-          <div className="lg:col-span-4 border border-neutral-200 rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-neutral-200 bg-neutral-50/50 flex justify-between items-center">
-              <span className="font-bold text-neutral-800 text-xs tracking-wider uppercase">选择租户进行授权</span>
-              <Building className="w-4 h-4 text-neutral-400" />
+        <div className="space-y-6">
+          {/* Toast Alert */}
+          {toast && (
+            <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 px-5 py-3 bg-white border border-neutral-200 rounded-xl shadow-xl animate-in slide-in-from-top-4">
+              {toast.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-emerald-500" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-500" />
+              )}
+              <span className="text-[14px] font-bold text-neutral-800">{toast.message}</span>
             </div>
-            <div className="divide-y divide-neutral-100">
-              {tenants.map(tenant => {
-                const isActive = tenant.id === selectedTenantId;
-                return (
-                  <div
-                    key={tenant.id}
-                    onClick={() => setSelectedTenantId(tenant.id)}
-                    className={cn(
-                      "p-4 cursor-pointer transition-all hover:bg-neutral-50 flex flex-col gap-2 relative",
-                      isActive ? "bg-[#fff2e8]/45 border-l-4 border-[#fa541c]" : ""
-                    )}
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className={cn("text-xs font-bold transition-colors", isActive ? "text-[#fa541c]" : "text-neutral-800")}>
-                        {tenant.name}
-                      </span>
-                      <span className={cn(
-                        "px-1.5 py-0.5 text-[10px] font-bold rounded",
-                        tenant.tier === "Advanced" ? "bg-purple-50 text-purple-600 border border-purple-200" :
-                        tenant.tier === "Premium" ? "bg-blue-50 text-blue-600 border border-blue-200" :
-                        "bg-neutral-50 text-neutral-500 border border-neutral-200"
-                      )}>
-                        {tenant.tier === "Advanced" ? "高级租户" : tenant.tier === "Premium" ? "优质租户" : "普通租户"}
-                      </span>
-                    </div>
+          )}
 
-                    <div className="flex items-center justify-between text-[11px] text-neutral-500 mt-1">
-                      <span>接口对接人: {tenant.contact}</span>
-                      <span className="text-[#fa541c] font-semibold">{tenant.authorizedTools.length} 款AI能力</span>
-                    </div>
+          {/* Filtering Row & Search Panel */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Left side: Segmented status controls */}
+            <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-200/60">
+              {([
+                { id: '全部', label: '全部助手' },
+                { id: '官方', label: '官方/公共助手' },
+                { id: '私有', label: '私有/租户助手' },
+                { id: '待审核', label: '待审核公开申请' }
+              ] as const).map(pill => (
+                <button
+                  key={pill.id}
+                  onClick={() => setAgentFilter(pill.id)}
+                  className={cn(
+                    "px-5 py-1.5 text-[13px] rounded-full transition-all duration-200 cursor-pointer border-0 bg-transparent font-medium",
+                    agentFilter === pill.id 
+                      ? "bg-white text-[#fa541c] font-bold shadow-sm" 
+                      : "text-neutral-500 hover:text-neutral-800"
+                  )}
+                >
+                  {pill.label}
+                  {pill.id === '待审核' && adminAgents.filter(a => a.status === '待审核').length > 0 && (
+                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#fa541c] text-[10px] text-white px-1 font-bold">
+                      {adminAgents.filter(a => a.status === '待审核').length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
 
-                    {/* Progress of Quota */}
-                    <div className="space-y-1 mt-2">
-                      <div className="flex justify-between text-[10px] text-neutral-400">
-                        <span>本月Token额度占比</span>
-                        <span>{tenant.quotaUsed}/{tenant.quotaTotal}M ({(tenant.quotaUsed / tenant.quotaTotal * 100).toFixed(0)}%)</span>
-                      </div>
-                      <div className="w-full bg-neutral-100 h-1 rounded-full overflow-hidden">
-                        <div 
-                          className="bg-[#fa541c] h-full rounded-full transition-all duration-300"
-                          style={{ width: `${(tenant.quotaUsed / tenant.quotaTotal * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Right side: Search bar & Create Official button */}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="搜索助手名称、描述或学校..."
+                  value={agentSearchQuery}
+                  onChange={(e) => setAgentSearchQuery(e.target.value)}
+                  className="pl-9 pr-4 py-2 text-xs w-full rounded-full border border-neutral-200 bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] shadow-sm transition-all"
+                />
+              </div>
+
+              <button
+                onClick={() => setIsCreateAgentOpen(true)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 py-2 text-xs shadow-sm font-bold shrink-0 flex items-center gap-1.5 cursor-pointer border-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>新建官方助手</span>
+              </button>
             </div>
           </div>
 
-          {/* Right Side: Step-by-Step Authorization Configurator */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Success flash notice */}
-            {showAuthSuccessFlash && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 flex items-center gap-3 animate-fade-in shadow-sm">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <span className="font-bold">差异化授权更新成功！</span>
-                  已为 <span className="underline font-semibold">{currentTenant.name}</span> 重新定制了AI助手授权方案，并设定了严密的并发拦截与 Token 额度上限。
+          {/* Cards Grid */}
+          {(() => {
+            const filteredAgents = adminAgents.filter(agent => {
+              const matchesSearch = agent.name.toLowerCase().includes(agentSearchQuery.toLowerCase()) || 
+                                    agent.welcomeMsg.toLowerCase().includes(agentSearchQuery.toLowerCase()) ||
+                                    agent.tenant.toLowerCase().includes(agentSearchQuery.toLowerCase());
+              
+              if (agentFilter === '官方') return matchesSearch && agent.scope === '官方助手';
+              if (agentFilter === '私有') return matchesSearch && agent.scope === '租户私有' && agent.status !== '待审核';
+              if (agentFilter === '待审核') return matchesSearch && agent.status === '待审核';
+              return matchesSearch;
+            });
+
+            if (filteredAgents.length === 0) {
+              return (
+                <div className="flex flex-col items-center justify-center py-20 bg-neutral-50/50 rounded-2xl border border-neutral-100 border-dashed">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-xs mb-4">
+                    <Bot className="w-8 h-8 text-neutral-300" />
+                  </div>
+                  <h3 className="text-[15px] font-bold text-neutral-800 mb-1">未找到匹配的智能助手</h3>
+                  <p className="text-[12px] text-neutral-400 max-w-sm text-center mb-4">您可以重置搜索关键字或点击右上角新建一个官方公共助手。</p>
                 </div>
-              </div>
-            )}
+              );
+            }
 
-            {/* Right Side: Step-by-Step Authorization Configurator (removed shadow) */}
-            <div className="bg-white border border-neutral-100 rounded-xl overflow-hidden p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#fff2e8] flex items-center justify-center text-[#fa541c]">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-bold text-neutral-800">
-                      AI助手模型与调用授权面板 - {currentTenant.name}
-                    </h2>
-                    <p className="text-[11px] text-neutral-400 mt-0.5">高级租户可分配更多低延时专属推理模型并支持更大并发QPS额度</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={handleSaveAuthorization}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-                >
-                  <Save className="w-3.5 h-3.5" /> 确认保存授权
-                </button>
-              </div>
-
-              {/* Wizard Steps Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left col: Tool Selection (Step 2 of the workflow) */}
-                <div className="space-y-4 border-r border-neutral-100/60 pr-0 md:pr-6">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center text-[10px] font-bold">1</span>
-                    <span className="text-xs font-bold text-neutral-800">勾选授权AI助手大模型与能力包</span>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    {allAITools.map(tool => {
-                      const isChecked = wizardTools.includes(tool.id);
-                      return (
-                        <div 
-                          key={tool.id}
-                          onClick={() => handleToggleToolCheckbox(tool.id)}
-                          className={cn(
-                            "p-3 rounded-lg border cursor-pointer transition-all flex items-start gap-3 hover:border-[#fa541c]/50 bg-neutral-50/20",
-                            isChecked 
-                              ? "border-[#fa541c] bg-[#fff2e8]/15" 
-                              : "border-neutral-200"
-                          )}
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredAgents.map(agent => (
+                  <div key={agent.id} className="bg-white rounded-[20px] p-6 border border-neutral-200 shadow-xs relative group overflow-hidden hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between">
+                    {/* Hover Actions Bar */}
+                    <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      {agent.status === '待审核' ? (
+                        <button 
+                          onClick={() => {
+                            setReviewingAgent(agent);
+                            setIsAuditModalOpen(true);
+                            setCheckQuality(true);
+                            setCheckOriginality(true);
+                            setCheckStandard(true);
+                          }}
+                          className="px-3 h-7 flex items-center justify-center bg-white border border-[#fa541c] hover:bg-orange-50 rounded-full text-[#fa541c] font-bold text-[11px] shadow-xs cursor-pointer"
                         >
-                          <button
-                            type="button"
-                            className={cn(
-                              "w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all mt-0.5",
-                              isChecked ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300"
-                            )}
+                          评估审核
+                        </button>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => {
+                              alert(`配置助手 ${agent.name}：运营管理员有最高管理权，可微调其挂载的知识库。`);
+                            }}
+                            className="w-7 h-7 flex items-center justify-center bg-white border border-neutral-200 rounded-full text-neutral-500 hover:text-[#fa541c] hover:bg-orange-50 shadow-xs cursor-pointer"
+                            title="配置助手"
                           >
-                            {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                            <Settings className="w-3.5 h-3.5" />
                           </button>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-neutral-800">{tool.id}</span>
-                              <span className="px-1.5 py-0.2 bg-neutral-100 text-neutral-500 rounded text-[9px] font-medium border border-neutral-200">{tool.type}</span>
-                            </div>
-                            <p className="text-[10px] text-neutral-400 mt-1 leading-normal">{tool.desc}</p>
+                          <button 
+                            onClick={() => {
+                              if (confirm(`确认下线或删除助手 [${agent.name}] 吗？`)) {
+                                setAdminAgents(adminAgents.filter(a => a.id !== agent.id));
+                                showToast("助手已被成功强制下线回收。");
+                              }
+                            }}
+                            className="w-7 h-7 flex items-center justify-center bg-white border border-neutral-200 rounded-full text-neutral-500 hover:text-red-500 hover:bg-red-50 shadow-xs cursor-pointer"
+                            title="强制回收下线"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Scope Badge */}
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className={cn(
+                        "inline-flex items-center px-2 py-0.5 text-[10px] rounded-md border font-semibold",
+                        agent.scope === '官方助手' 
+                          ? "bg-purple-50 text-purple-600 border-purple-200" 
+                          : "bg-blue-50 text-blue-600 border-blue-200"
+                      )}>
+                        {agent.scope}
+                      </span>
+                    </div>
+
+                    {/* Card Content */}
+                    <div className="pt-2">
+                      <div className="w-16 h-16 mx-auto rounded-full overflow-hidden border-2 border-neutral-100 shadow-3xs mb-3">
+                        <img src={agent.avatar} alt="avatar" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                      <div className="text-center mb-4">
+                        <h3 className="font-bold text-neutral-900 text-[15px] group-hover:text-[#fa541c] transition-colors line-clamp-1">{agent.name}</h3>
+                        <div className="flex items-center justify-center gap-1.5 mt-1.5">
+                          <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-[10px] rounded-md font-bold border border-neutral-200/50">
+                            {agent.type}
+                          </span>
+                          <span className={cn(
+                            "px-2 py-0.5 text-[10px] rounded-md border font-bold",
+                            agent.status === '已部署' ? "bg-green-50 text-green-600 border-green-200" :
+                            agent.status === '待审核' ? "bg-amber-50 text-amber-600 border-amber-200 animate-pulse" :
+                            "bg-rose-50 text-rose-600 border-rose-200"
+                          )}>
+                            {agent.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-neutral-50/60 rounded-xl p-3.5 text-[11px] text-neutral-600 border border-neutral-100 relative min-h-[72px] flex items-center justify-center">
+                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-neutral-50/60 border-t border-l border-neutral-100 rotate-45"></div>
+                        <span className="line-clamp-3 leading-relaxed relative z-10 text-center italic">“ {agent.welcomeMsg} ”</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Status Info */}
+                    <div className="flex items-center justify-between text-[11px] font-bold pt-3.5 border-t border-neutral-100 text-neutral-400 mt-4 shrink-0">
+                      <div className="flex items-center gap-1"><Database className="w-3.5 h-3.5 text-neutral-300"/> 知识库: {agent.kbCount}</div>
+                      <div className="flex items-center gap-1 max-w-[130px] truncate" title={agent.tenant}>
+                        <Building className="w-3.5 h-3.5 text-neutral-300 shrink-0"/> {agent.tenant}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          {/* ========================================================== */}
+          {/* Drawer: Create Official Public Assistant */}
+          {/* ========================================================== */}
+          {isCreateAgentOpen && (
+            <div className="fixed inset-0 z-[150] flex justify-end bg-black/45 backdrop-blur-[1px] animate-fade-in" onClick={() => setIsCreateAgentOpen(false)}>
+              <div className="bg-white w-full max-w-[580px] h-screen shadow-2xl border-l border-neutral-100 flex flex-col animate-in slide-in-from-right duration-300" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="px-8 py-5 border-b border-neutral-100 flex justify-between items-center shrink-0 bg-neutral-50/50">
+                  <div className="flex items-center gap-2">
+                    <Bot className="w-5 h-5 text-[#fa541c]" />
+                    <h2 className="text-[17px] font-bold text-neutral-900">部署平台官方智能体助手</h2>
+                  </div>
+                  <button onClick={() => setIsCreateAgentOpen(false)} className="text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"><X className="w-5 h-5" /></button>
+                </div>
+
+                {/* Form Body */}
+                <form onSubmit={handleCreateOfficialAgent} className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                  {/* Avatar Upload Selection */}
+                  <div className="flex flex-col items-center justify-center gap-2 border-b border-neutral-100 pb-6 shrink-0">
+                    <div className="w-20 h-20 rounded-full bg-[#fff2e8] border border-dashed border-[#fa541c]/50 flex items-center justify-center cursor-pointer overflow-hidden hover:bg-orange-50/80 transition-all shadow-3xs group">
+                      <UploadCloud className="w-6 h-6 text-[#fa541c] group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-[12px] font-bold text-neutral-400">点击上传官方专属头像</span>
+                  </div>
+
+                  {/* Name */}
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-neutral-700 block">智能助手名称 <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="例如：SQL数据库结构设计专家"
+                      value={agentForm.name}
+                      onChange={(e) => setAgentForm({...agentForm, name: e.target.value})}
+                      className="w-full border border-neutral-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-white text-neutral-800 font-semibold"
+                    />
+                  </div>
+
+                  {/* Classification & LLM model */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[12px] font-bold text-neutral-700 block">助手分类</label>
+                      <select 
+                        value={agentForm.type}
+                        onChange={(e) => setAgentForm({...agentForm, type: e.target.value as any})}
+                        className="w-full border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 font-semibold cursor-pointer"
+                      >
+                        <option>课程助手</option>
+                        <option>实验助手</option>
+                        <option>答疑助手</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[12px] font-bold text-neutral-700 block">推理大语言模型</label>
+                      <select 
+                        value={agentForm.model}
+                        onChange={(e) => setAgentForm({...agentForm, model: e.target.value})}
+                        className="w-full border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 font-semibold cursor-pointer"
+                      >
+                        <option>DeepSeek-R1</option>
+                        <option>GPT-4o</option>
+                        <option>Llama-3-70B</option>
+                        <option>Whisper-v3</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Temperature slider */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[12px] font-bold text-neutral-700">模型发散度 (Temperature)</label>
+                      <span className="text-[11px] font-mono font-bold text-[#fa541c] bg-orange-50 px-2 py-0.5 rounded border border-[#ffbb96]/45">{agentForm.temperature}</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="1.0" 
+                      step="0.1"
+                      value={agentForm.temperature}
+                      onChange={(e) => setAgentForm({...agentForm, temperature: parseFloat(e.target.value)})}
+                      className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-[#fa541c]"
+                    />
+                    <div className="flex justify-between text-[9px] text-neutral-400 px-0.5">
+                      <span>绝对精确 (0.0)</span>
+                      <span>标准 (0.5)</span>
+                      <span>强发散/创意 (1.0)</span>
+                    </div>
+                  </div>
+
+                  {/* Prompt */}
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-neutral-700 block">全局设定级 System Prompt</label>
+                    <textarea 
+                      rows={4}
+                      value={agentForm.prompt}
+                      onChange={(e) => setAgentForm({...agentForm, prompt: e.target.value})}
+                      placeholder="请定义助手的系统人格设定，包括解答策略、输出字数约束、支持代码高亮与拦截敏感内容规则..."
+                      className="w-full border border-neutral-200 rounded-xl p-3 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-white text-neutral-800 font-medium resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  {/* Knowledge Base */}
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-neutral-700 block">关联公共知识库 / 大纲境界</label>
+                    <div className="border-2 border-dashed border-neutral-200 rounded-xl p-5 flex flex-col items-center justify-center bg-neutral-50/50 hover:bg-orange-50/30 hover:border-[#fa541c]/50 transition-all cursor-pointer">
+                      <Database className="w-5 h-5 text-neutral-400 mb-2" />
+                      <span className="text-[12px] font-bold text-neutral-600 mb-0.5">挂载全局公共核心知识库</span>
+                      <span className="text-[10px] text-neutral-400 text-center leading-normal max-w-xs">已默认选择《智云公共教学大纲与题库合集》，点击可切换其他知识库</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 shrink-0">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsCreateAgentOpen(false)}
+                      className="px-6 py-2 border border-neutral-200 rounded-full text-xs font-bold text-neutral-500 bg-white hover:bg-neutral-50 transition-colors cursor-pointer"
+                    >
+                      取消
+                    </button>
+                    <button 
+                      type="submit"
+                      className="px-8 py-2 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer border-0"
+                    >
+                      保存并向全网发布
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================== */}
+          {/* Modal Drawer: Audit & Review Teacher Agent Application */}
+          {/* ========================================================== */}
+          {isAuditModalOpen && reviewingAgent && (
+            <div className="fixed inset-0 z-[150] flex justify-end bg-black/45 backdrop-blur-[1px] animate-fade-in" onClick={() => { setIsAuditModalOpen(false); setReviewingAgent(null); }}>
+              <div className="bg-white w-full max-w-[580px] h-screen shadow-2xl border-l border-neutral-100 flex flex-col animate-in slide-in-from-right duration-300" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="px-8 py-5 border-b border-neutral-100 flex justify-between items-center shrink-0 bg-neutral-50/50">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-[#fa541c]" />
+                    <h2 className="text-[17px] font-bold text-neutral-900">公共能力准入合规度评估</h2>
+                  </div>
+                  <button onClick={() => { setIsAuditModalOpen(false); setReviewingAgent(null); }} className="text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"><X className="w-5 h-5" /></button>
+                </div>
+
+                {/* Audit Body */}
+                <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                  {/* Info Banner */}
+                  <div className="space-y-2 bg-[#fff2e8]/10 p-5 rounded-xl border border-[#ffbb96]/30 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] bg-[#fa541c] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">AUD-AIC-001</span>
+                      <span className="text-[11px] font-bold text-neutral-400">{reviewingAgent.tenant} | 教师: {reviewingAgent.creator}</span>
+                    </div>
+                    <h4 className="text-[15px] font-bold text-neutral-title leading-snug">{reviewingAgent.name}</h4>
+                    <div className="h-[1px] bg-neutral-200/50 my-2"></div>
+                    <div className="text-[11px] text-neutral-500 flex justify-between">
+                      <span><strong>助手分类:</strong> {reviewingAgent.type}</span>
+                      <span><strong>挂载知识库:</strong> {reviewingAgent.kbCount} 个</span>
+                    </div>
+                  </div>
+
+                  {/* Audit details details */}
+                  {reviewingAgent.auditDetails && (
+                    <div className="space-y-3">
+                      <span className="text-[11px] font-bold text-neutral-caption uppercase tracking-wider block">能力公开提请详情</span>
+                      <div className="p-5 border border-neutral-100 rounded-2xl bg-white space-y-4 shadow-3xs">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-neutral-400 block uppercase tracking-wider">功能描述:</span>
+                          <p className="text-xs text-neutral-title leading-relaxed bg-neutral-50 p-3 rounded-lg border border-neutral-100/50">{reviewingAgent.auditDetails.desc}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-neutral-400 block uppercase tracking-wider">适用场景:</span>
+                            <p className="text-xs text-neutral-title leading-relaxed font-semibold">{reviewingAgent.auditDetails.scenario}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-neutral-400 block uppercase tracking-wider">成本评估:</span>
+                            <p className="text-xs text-neutral-title leading-relaxed font-semibold text-emerald-600">{reviewingAgent.auditDetails.cost}</p>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
 
-                {/* Right col: Quota limit details (Step 3 of the workflow) */}
-                <div className="space-y-5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center text-[10px] font-bold">2</span>
-                    <span className="text-xs font-bold text-neutral-800">设置调用约束、频率及Token总量配额</span>
-                  </div>
-
-                  <div className="space-y-4 pt-2">
-                    {/* Dimension: Daily Calls */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-neutral-600 flex items-center justify-between">
-                        <span>单日调用上限 (次数)</span>
-                        <span className="text-neutral-400 text-[10px]">频率约束维度</span>
-                      </label>
-                      <input 
-                        type="number"
-                        value={wizardDailyLimit}
-                        onChange={(e) => setWizardDailyLimit(parseInt(e.target.value) || 0)}
-                        className="w-full border border-neutral-200 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#fa541c] bg-white text-neutral-800 font-semibold"
-                      />
-                    </div>
-
-                    {/* Dimension: Tokens quota */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-neutral-600 flex items-center justify-between">
-                        <span>Token 总量配额</span>
-                        <span className="text-neutral-400 text-[10px]">额度消耗总量</span>
-                      </label>
-                      <input 
-                        type="text"
-                        value={wizardTokensQuota}
-                        onChange={(e) => setWizardTokensQuota(e.target.value)}
-                        placeholder="例如 500M / 1B"
-                        className="w-full border border-neutral-200 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#fa541c] bg-white text-neutral-800 font-semibold"
-                      />
-                    </div>
-
-                    {/* Dimension: Concurrency */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-neutral-600 flex items-center justify-between">
-                        <span>并发限制数 (QPS)</span>
-                        <span className="text-neutral-400 text-[10px]">并发约束维度</span>
-                      </label>
-                      <input 
-                        type="number"
-                        value={wizardConcurrency}
-                        onChange={(e) => setWizardConcurrency(parseInt(e.target.value) || 0)}
-                        className="w-full border border-neutral-200 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#fa541c] bg-white text-neutral-800 font-semibold"
-                      />
-                    </div>
-
-                    {/* Dimension: Expiry Date */}
-                    <div className="grid grid-cols-2 gap-4 pt-1">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-neutral-600">授权到期日期</label>
-                        <input 
-                          type="date"
-                          value={wizardExpireDate}
-                          onChange={(e) => setWizardExpireDate(e.target.value)}
-                          className="w-full border border-neutral-200 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#fa541c] bg-white text-neutral-800"
-                        />
-                      </div>
-                      
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-neutral-600">到期自动回收</label>
-                        <div 
-                          onClick={() => setWizardAutoRecycle(!wizardAutoRecycle)}
-                          className="flex items-center gap-2.5 py-1.5 cursor-pointer text-xs select-none"
-                        >
-                          {wizardAutoRecycle ? (
-                            <ToggleRight className="w-8 h-8 text-[#fa541c]" />
-                          ) : (
-                            <ToggleLeft className="w-8 h-8 text-neutral-300" />
-                          )}
-                          <span className="text-[11px] text-neutral-500 font-medium">{wizardAutoRecycle ? "开启回收" : "到期不回收"}</span>
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-neutral-400 block uppercase tracking-wider">输入输出样例:</span>
+                          <p className="text-[11px] font-mono text-neutral-body leading-relaxed bg-neutral-900 text-neutral-200 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">{reviewingAgent.auditDetails.example}</p>
                         </div>
                       </div>
                     </div>
+                  )}
+
+                  {/* Standard Compliance Checkbox */}
+                  <div className="space-y-3">
+                    <span className="text-[11px] font-bold text-neutral-caption uppercase tracking-wider block">平台公开准入考核标准</span>
+
+                    {/* 1 */}
+                    <div 
+                      onClick={() => setCheckQuality(!checkQuality)}
+                      className={cn(
+                        "p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 bg-white shadow-3xs hover:border-[#fa541c]/50",
+                        checkQuality ? "border-[#fa541c] bg-[#fff2e8]/5" : "border-neutral-200"
+                      )}
+                    >
+                      <button type="button" className={cn("w-4 h-4 rounded border flex items-center justify-center mt-0.5 shrink-0 transition-colors cursor-pointer", checkQuality ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300 bg-white")}>
+                        {checkQuality && <Check className="w-3 h-3 stroke-[3]" />}
+                      </button>
+                      <div>
+                        <span className="text-xs font-bold text-neutral-title block">大模型返回质量评估 (完整、无幻觉)</span>
+                        <p className="text-[10px] text-neutral-caption mt-1 leading-normal">系统核验该助手的 System Prompt，确保针对高噪提问有良好的兜底策略，规避AI幻觉。</p>
+                      </div>
+                    </div>
+
+                    {/* 2 */}
+                    <div 
+                      onClick={() => setCheckOriginality(!checkOriginality)}
+                      className={cn(
+                        "p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 bg-white shadow-3xs hover:border-[#fa541c]/50",
+                        checkOriginality ? "border-[#fa541c] bg-[#fff2e8]/5" : "border-neutral-200"
+                      )}
+                    >
+                      <button type="button" className={cn("w-4 h-4 rounded border flex items-center justify-center mt-0.5 shrink-0 transition-colors cursor-pointer", checkOriginality ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300 bg-white")}>
+                        {checkOriginality && <Check className="w-3 h-3 stroke-[3]" />}
+                      </button>
+                      <div>
+                        <span className="text-xs font-bold text-neutral-title block">合规性与数据安全 (完全脱敏、符合国家合规)</span>
+                        <p className="text-[10px] text-neutral-caption mt-1 leading-normal">已检查挂载的知识库，不含有任何涉密内部敏感数据、高校学生个人隐私数据。</p>
+                      </div>
+                    </div>
+
+                    {/* 3 */}
+                    <div 
+                      onClick={() => setCheckStandard(!checkStandard)}
+                      className={cn(
+                        "p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 bg-white shadow-3xs hover:border-[#fa541c]/50",
+                        checkStandard ? "border-[#fa541c] bg-[#fff2e8]/5" : "border-neutral-200"
+                      )}
+                    >
+                      <button type="button" className={cn("w-4 h-4 rounded border flex items-center justify-center mt-0.5 shrink-0 transition-colors cursor-pointer", checkStandard ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300 bg-white")}>
+                        {checkStandard && <Check className="w-3 h-3 stroke-[3]" />}
+                      </button>
+                      <div>
+                        <span className="text-xs font-bold text-neutral-title block">算力及 SLA 规格评估 (低于 250ms API 响应延迟)</span>
+                        <p className="text-[10px] text-neutral-caption mt-1 leading-normal">评估其 Whisper 发音音素对齐底层服务，确定对租户整体 GPU 并行计算额度的资源吞吐无过大负荷。</p>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Rejection input */}
+                  {showRejectForm && (
+                    <div className="space-y-1.5 pt-2 animate-slide-up">
+                      <label className="text-[12px] font-bold text-rose-600 block flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>驳回审批具体意见 (必填)</span>
+                      </label>
+                      <textarea 
+                        rows={3}
+                        required
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="请输入对该大模型助手能力进行修改、脱敏或优化挂载大纲的具体调整意见..."
+                        className="w-full border border-neutral-200 rounded-xl p-3 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-white text-neutral-800 font-medium resize-none leading-relaxed"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer buttons */}
+                <div className="px-8 py-5 border-t border-neutral-100 flex justify-end gap-3 shrink-0 bg-neutral-50/80">
+                  {showRejectForm ? (
+                    <>
+                      <button 
+                        onClick={() => setShowRejectForm(false)} 
+                        className="px-6 py-2 border border-neutral-200 rounded-full text-xs font-bold text-neutral-500 bg-white hover:bg-neutral-50 transition-colors cursor-pointer"
+                      >
+                        返回
+                      </button>
+                      <button 
+                        onClick={() => handleRejectAgent(reviewingAgent.id)}
+                        disabled={isAuditLoading}
+                        className="px-8 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer border-0"
+                      >
+                        {isAuditLoading ? "提交中..." : "确认驳回"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button 
+                        onClick={() => setShowRejectForm(true)} 
+                        className="px-6 py-2 border border-neutral-200 rounded-full text-xs font-bold text-neutral-500 bg-white hover:bg-neutral-50 transition-colors cursor-pointer"
+                      >
+                        驳回申请
+                      </button>
+                      <button 
+                        onClick={() => handleApproveAgent(reviewingAgent.id)}
+                        disabled={isAuditLoading || !checkQuality || !checkOriginality || !checkStandard}
+                        className="px-8 py-2 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isAuditLoading ? "部署中..." : "审核通过并公开"}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
-
-              {/* Alert Warning Box */}
-              <div className="p-4 bg-amber-50/50 border border-amber-200/50 rounded-lg text-[11px] text-amber-700 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="leading-relaxed">
-                  <strong>注意：</strong> 按租户差异化授权时，请确保高级租户对应的并发限制（QPS）和Token分配在其合约范围内。如果触发了到期自动回收，系统将会在指定截止时间零点彻底冻结工具接口，并自动归还算力资源到AI配额池中。
-                </p>
-              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
