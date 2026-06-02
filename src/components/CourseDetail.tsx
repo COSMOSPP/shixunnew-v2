@@ -62,7 +62,7 @@ const COURSE_SYLLABUS: Chapter[] = [
     description: "",
     lessons: [
       { section: "课时1:", title: "智能音箱产品的数据分析与优化[3.1.1]", locked: false, status: "未学习", type: "experiment" },
-      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", locked: false, status: "未学习", type: "split_doc" },
+      { section: "课时2:", title: "互动学习课件案例演示demo", locked: false, status: "未学习", type: "split_doc" },
       { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", locked: true, status: "未学习", type: "experiment" },
       { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", locked: true, status: "未学习", type: "experiment" },
       { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", locked: true, status: "未学习", type: "experiment" },

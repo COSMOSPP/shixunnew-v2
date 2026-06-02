@@ -5,7 +5,7 @@ import {
   List, ListOrdered, CheckSquare, AlignLeft, AlignCenter, AlignRight,
   PlaySquare, Code, Image as ImageIcon, Video, FileText, ChevronDown,
   MoreHorizontal, ChevronRight, File, Settings, Bot, ChevronLeft, Save, Play, Send,
-  MessageSquare, Cpu, BarChart, PlusCircle, X, Info, Plus, MonitorPlay
+  MessageSquare, Cpu, BarChart, PlusCircle, X, Info, Plus, MonitorPlay, Minus, RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -74,6 +74,245 @@ const getSlidesForLesson = (lessonTitle: string) => {
   }
 };
 
+const INTERACTIVE_TEMPLATES = [
+  {
+    id: 0,
+    name: "智能客服助手模板",
+    docTitle: "智能客服助手 - 系统提示词与业务规则开发手册",
+    docContent: (
+      <div className="space-y-6 text-left text-neutral-700 leading-relaxed text-[13px]">
+        <div className="bg-[#fff7e6] border border-[#ffd591] rounded-xl p-4 mb-4">
+          <div className="font-bold text-[#d46b08] mb-1 flex items-center gap-1.5 text-[13px]">
+            <Info className="w-4 h-4" /> 教学引导提示
+          </div>
+          <p className="text-[12px] text-[#873800] leading-relaxed">
+            本案例演示了如何为大语言模型配置“角色扮演提示词”以提供标准化的客户服务。教师可指导学生在右侧面板修改 <strong>温度 (Temperature)</strong> 参数，观察模型在处理模糊意图时的创造性与稳定性差异。
+          </p>
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-orange-500 rounded-full shrink-0"></span> 一、系统角色定位 (System Prompt)
+        </h3>
+        <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 font-mono text-[12px] text-neutral-600 select-all whitespace-pre-wrap leading-normal">
+          {`你是一个专业且耐心的智能客服助理。
+你的职责是：
+1. 协助解答用户关于商品购买、物流及退换货的常见疑问。
+2. 保持礼貌、友好的语气，首句使用“您好！很高兴为您服务。”
+3. 绝对不能透露任何关于内部算法的敏感信息或违规内容。`}
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 mt-6 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-orange-500 rounded-full shrink-0"></span> 二、知识库规则 (Business Rules)
+        </h3>
+        <ul className="list-decimal pl-5 space-y-2 text-[13px] text-neutral-600">
+          <li><strong>退换货政策：</strong>支持自签收之日起7天无理由退换货（商品需保持完好不影响二次销售）。</li>
+          <li><strong>物流时效：</strong>默认顺丰速运，普通地区2-3天送达，偏远地区3-5天送达。</li>
+          <li><strong>优惠活动：</strong>当前店铺正在进行“满200减20”的满减活动。</li>
+        </ul>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 mt-6 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-orange-500 rounded-full shrink-0"></span> 三、互动探究与实验任务
+        </h3>
+        <p className="text-[13px] text-neutral-600">指导学生在右侧调整模型运行参数，并测试以下常见用户输入，观察输出格式是否符合规则约束：</p>
+        <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-100 flex flex-col gap-1.5 text-neutral-600">
+          <div className="text-[12px]"><strong className="text-neutral-500">测试输入 1:</strong> “我想退换3天前买的书，已经拆封过了还可以吗？”</div>
+          <div className="text-[12px]"><strong className="text-neutral-500">测试输入 2:</strong> “推荐一些满减凑单的商品，顺便问下偏远地区几天能到？”</div>
+        </div>
+      </div>
+    ),
+    defaultMessages: [
+      { sender: "system", text: "客服助手的系统提示词与规则已注入完成。您可以开始测试交互了！" },
+      { sender: "user", text: "我想退换3天前买的书，已经拆封过了还可以吗？" },
+      { sender: "assistant", text: "您好！很高兴为您服务。根据我们的退换货政策，我们支持自签收之日起7天无理由退换货。不过，商品需要保持完好且不影响二次销售。如果书籍仅拆除外层塑料薄膜但本身没有任何污损、折痕，通常是可以办理的；但如果已经涂画或影响了二次销售，则无法支持退换。您可以将书籍当前的状态拍张照片发给我，我为您进行预判哦！" }
+    ],
+    generateReply: (userInput: string, temp: number) => {
+      const input = userInput.trim();
+      if (input.includes("退") || input.includes("换")) {
+        return `您好！很高兴为您服务。关于您的退换货问题，我们支持签收后7天内无理由退换货（商品需完好且不影响二次销售）。如果您的书籍只是拆开了包装封膜，但没有任何使用痕迹或损坏，我们可以为您申请售后；但如果已经有磨损、涂写，将无法受理。${temp > 0.8 ? "另外，祝您今天心情愉快，阅读能带给您片刻的宁静！" : ""}`;
+      } else if (input.includes("几天") || input.includes("物流") || input.includes("顺丰")) {
+        return `您好！很高兴为您服务。我们的订单默认采用顺丰速运寄出。一般情况下，普通地区在下单后2-3天即可送达；偏远地区则需要3-5天。${temp > 0.8 ? "如果您比较着急，我们也可以备注特快专递为您加急处理！" : ""}`;
+      } else if (input.includes("满减") || input.includes("活动") || input.includes("优惠")) {
+        return `您好！很高兴为您服务。我们店铺目前正处于优惠活动期间，下单即可享受“满200减20”的优惠福利！您可以将心仪商品加入购物车凑单，系统会在结算时自动为您扣减。`;
+      } else {
+        return `您好！很高兴为您服务。我已经收到了您的问题：“${input}”。关于此内容，请问有什么我可以帮您具体解答的吗？我会根据店铺的相关客服规范为您竭诚服务。`;
+      }
+    }
+  },
+  {
+    id: 1,
+    name: "Python代码生成器模板",
+    docTitle: "Python代码生成器 - 编程辅助系统提示词开发手册",
+    docContent: (
+      <div className="space-y-6 text-left text-neutral-700 leading-relaxed text-[13px]">
+        <div className="bg-[#e6f7ff] border border-[#91d5ff] rounded-xl p-4 mb-4">
+          <div className="font-bold text-[#0050b3] mb-1 flex items-center gap-1.5 text-[13px]">
+            <Info className="w-4 h-4" /> 教学引导提示
+          </div>
+          <p className="text-[12px] text-[#003a8c] leading-relaxed">
+            本案例演示了如何将大语言模型定制为一个只输出高标准、带详尽注释的 Python 代码生成工具。教师可以指导学生对比在不同 <strong>最大 Token 长度</strong> 下，模型生成长代码的完整性与截止表现。
+          </p>
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-blue-500 rounded-full shrink-0"></span> 一、系统角色定位 (System Prompt)
+        </h3>
+        <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 font-mono text-[12px] text-neutral-600 select-all whitespace-pre-wrap leading-normal">
+          {`你是一个顶尖的 Python 编程导师。
+你的职责是：
+1. 根据用户的编程任务需求，生成高效、优雅、健壮的 Python 代码。
+2. 每一行关键代码都必须包含详尽的中文注释。
+3. 必须在代码块之后附带对核心设计思路的极简讲解。`}
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 mt-6 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-blue-500 rounded-full shrink-0"></span> 二、代码规范与示例 (Code Conventions)
+        </h3>
+        <ul className="list-decimal pl-5 space-y-2 text-[13px] text-neutral-600">
+          <li>遵循 PEP 8 代码风格标准，变量与函数命名需具描述性。</li>
+          <li>合理使用异常处理机制（\`try-except\`）以提升健壮性。</li>
+          <li>必须提供标准的函数说明文档（Docstring）。</li>
+        </ul>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 mt-6 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-blue-500 rounded-full shrink-0"></span> 三、互动探究与实验任务
+        </h3>
+        <p className="text-[13px] text-neutral-600">测试在右侧发出编程指令，检查其生成的代码规范和逻辑架构：</p>
+        <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-100 flex flex-col gap-1.5 text-neutral-600">
+          <div className="text-[12px]"><strong className="text-neutral-500">测试输入:</strong> “写一个用二分查找法在有序数组中检索目标元素的函数。”</div>
+        </div>
+      </div>
+    ),
+    defaultMessages: [
+      { sender: "system", text: "代码生成助手的系统提示词已注入完成。输入编程任务即刻体验！" },
+      { sender: "user", text: "写一个用二分查找法在有序数组中检索目标元素的函数。" },
+      { sender: "assistant", text: "```python\ndef binary_search(arr, target):\n    \"\"\"\n    使用二分查找在有序数组 arr 中检索 target 的索引。\n    如果找到，返回其索引位置，否则返回 -1。\n    \"\"\"\n    left = 0  # 初始化左边界指针\n    right = len(arr) - 1  # 初始化右边界指针\n\n    while left <= right:\n        mid = (left + right) // 2  # 计算中间元素的索引\n        \n        if arr[mid] == target:  # 命中目标，直接返回索引\n            return mid\n        elif arr[mid] < target:  # 中间值小于目标，在右半部分查找\n            left = mid + 1\n        else:  # 中间值大于目标，在左半部分查找\n            right = mid - 1\n            \n    return -1  # 未找到目标元素，返回 -1\n```\n\n**设计思路：**\n1. **双指针机制：** 维护 `left` 和 `right` 指针，逐步缩减一半的查找区间，使时间复杂度保持在极其优秀的 $O(\\log n)$。\n2. **防止溢出：** 在其他编程语言中通常使用 `left + (right - left) // 2` 避免整数溢出，Python 原生支持无限精度的整型，因此可以直接相加求均值。" }
+    ],
+    generateReply: (userInput: string, temp: number) => {
+      const input = userInput.trim();
+      if (input.includes("二分")) {
+        return `\`\`\`python
+def binary_search(arr, target):
+    left = 0
+    right = len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+\`\`\`
+**说明：** 这是一份标准的二分查找算法实现，采用了双指针方法进行查找缩减，效率极高！`;
+      } else {
+        return `\`\`\`python
+# 基于大模型生成的 Python 自定义逻辑
+def process_data(data):
+    # 根据用户输入: "${input}" 自动生成
+    print("正在处理数据:", data)
+    result = [x * 2 for x in data]  # 简单的两倍映射操作
+    return result
+\`\`\`
+**说明：** 针对您提到的 “${input}” 问题，我为您生成了一个结构化的数据处理辅助框架，包含标准循环及参数校验。`;
+      }
+    }
+  },
+  {
+    id: 2,
+    name: "中英文意图分类器模板",
+    docTitle: "中英文意图分类器 - NLP微调与少样本分类提示词开发手册",
+    docContent: (
+      <div className="space-y-6 text-left text-neutral-700 leading-relaxed text-[13px]">
+        <div className="bg-[#f6ffed] border border-[#b7eb8f] rounded-xl p-4 mb-4">
+          <div className="font-bold text-[#389e0d] mb-1 flex items-center gap-1.5 text-[13px]">
+            <Info className="w-4 h-4" /> 教学引导提示
+          </div>
+          <p className="text-[12px] text-[#237804] leading-relaxed">
+            本案例演示了如何通过少样本提示（Few-Shot Prompting）引导模型实现极其严谨的结构化意图分类器，模型仅允许输出预设的 JSON 意图标签。教师可以指导学生设置 <strong>温度 (Temperature) 为 0.0</strong> 以测试其输出格式的确定性。
+          </p>
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-green-600 rounded-full shrink-0"></span> 一、系统角色定位 (System Prompt)
+        </h3>
+        <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 font-mono text-[12px] text-neutral-600 select-all whitespace-pre-wrap leading-normal">
+          {`你是一个严格的中英文文本意图分类程序。
+对于用户输入的任意一段文本，你必须判定其属于以下四个意图之一：
+- "ASK_PRICE" (咨询价格)
+- "ASK_SHIPPING" (咨询物流)
+- "COMPLAINT" (客户投诉)
+- "OTHER" (其他意图)
+
+要求：
+1. 只能输出严格的 JSON 字符串，格式如：{"intent": "ASK_PRICE", "confidence": 0.95}
+2. 绝对不能包含任何其他闲聊文本。`}
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 mt-6 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-green-600 rounded-full shrink-0"></span> 二、少样本示例 (Few-Shot Examples)
+        </h3>
+        <div className="bg-neutral-50 rounded-lg p-3.5 border border-neutral-150 font-mono text-[11px] text-neutral-600 space-y-3">
+          <div>
+            <strong>输入:</strong> “请问这个包邮吗？要多少天可以送达？”
+            <br />
+            <strong>输出:</strong> <code className="text-[#389e0d] font-bold">{`{"intent": "ASK_SHIPPING", "confidence": 0.98}`}</code>
+          </div>
+          <div className="border-t border-neutral-200 pt-2">
+            <strong>输入:</strong> “My order has not arrived yet, and I'm very angry about the delay!”
+            <br />
+            <strong>输出:</strong> <code className="text-[#389e0d] font-bold">{`{"intent": "COMPLAINT", "confidence": 0.99}`}</code>
+          </div>
+        </div>
+
+        <h3 className="text-[14px] font-bold text-neutral-850 border-b border-neutral-150 pb-1.5 mt-6 flex items-center gap-1.5">
+          <span className="w-1.5 h-4 bg-green-600 rounded-full shrink-0"></span> 三、互动探究与实验任务
+        </h3>
+        <p className="text-[13px] text-neutral-600">输入任意文本，观察返回的 JSON 格式是否百分之百规范：</p>
+        <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-100 flex flex-col gap-1.5 text-neutral-600">
+          <div className="text-[12px]"><strong className="text-neutral-500">测试输入:</strong> “How much is this red dress?”</div>
+        </div>
+      </div>
+    ),
+    defaultMessages: [
+      { sender: "system", text: "结构化意图分类器的少样本配置已成功注入。请输入一段文字测试判定！" },
+      { sender: "user", text: "How much is this red dress?" },
+      { sender: "assistant", text: "{\n  \"intent\": \"ASK_PRICE\",\n  \"confidence\": 0.99\n}" }
+    ],
+    generateReply: (userInput: string, temp: number) => {
+      const input = userInput.toLowerCase().trim();
+      let intent = "OTHER";
+      let confidence = 0.85 + Math.random() * 0.14;
+      
+      if (input.includes("how much") || input.includes("price") || input.includes("多少钱") || input.includes("价格") || input.includes("打折")) {
+        intent = "ASK_PRICE";
+      } else if (input.includes("ship") || input.includes("deliver") || input.includes("包邮") || input.includes("几天") || input.includes("物流")) {
+        intent = "ASK_SHIPPING";
+      } else if (input.includes("angry") || input.includes("bad") || input.includes("complaint") || input.includes("投诉") || input.includes("太差") || input.includes("慢")) {
+        intent = "COMPLAINT";
+      }
+      
+      return `{\n  "intent": "${intent}",\n  "confidence": ${confidence.toFixed(2)}\n}`;
+    }
+  }
+];
+
+const renderMessageText = (text: string) => {
+  if (text.startsWith("```") || text.startsWith("{\n")) {
+    let code = text;
+    if (text.startsWith("```")) {
+      const lines = text.split("\n");
+      code = lines.slice(1, -1).join("\n");
+    }
+    return (
+      <pre className="bg-neutral-900 text-neutral-100 p-3 rounded-lg font-mono text-[11px] overflow-x-auto whitespace-pre select-all leading-normal">
+        <code>{code}</code>
+      </pre>
+    );
+  }
+  return <p className="whitespace-pre-wrap leading-normal text-[13px]">{text}</p>;
+};
+
 interface TeacherPPTEditorProps {
   onClose: () => void;
   courseSyllabus: any[];
@@ -100,6 +339,41 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
     onActiveLessonChange?.(activeLessonTitle);
   }, [activeLessonTitle, onActiveLessonChange]);
   
+  // Active Interactive Demo states
+  const [activeTemplateIdx, setActiveTemplateIdx] = useState(0);
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(256);
+  const [model, setModel] = useState("DeepSeek-Chat");
+  const [userInput, setUserInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<any[]>(INTERACTIVE_TEMPLATES[0].defaultMessages);
+  const [isAiResponding, setIsAiResponding] = useState(false);
+  const [showSwitchTemplateModal, setShowSwitchTemplateModal] = useState(false);
+
+  const handleSwitchTemplateIdx = (idx: number) => {
+    setActiveTemplateIdx(idx);
+    setChatMessages(INTERACTIVE_TEMPLATES[idx].defaultMessages);
+    setUserInput("");
+    setShowSwitchTemplateModal(false);
+  };
+
+  const handleSendChatMessage = () => {
+    if (!userInput.trim() || isAiResponding) return;
+    
+    const userMsg = { sender: "user", text: userInput };
+    const updatedMessages = [...chatMessages, userMsg];
+    setChatMessages(updatedMessages);
+    setUserInput("");
+    setIsAiResponding(true);
+    
+    // Simulate AI response stream
+    setTimeout(() => {
+      const activeTemplate = INTERACTIVE_TEMPLATES[activeTemplateIdx];
+      const replyText = activeTemplate.generateReply(userMsg.text, temperature);
+      setChatMessages([...updatedMessages, { sender: "assistant", text: replyText }]);
+      setIsAiResponding(false);
+    }, 800);
+  };
+
   // Modals and drop-downs states
   const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
   const [newLessonName, setNewLessonName] = useState("");
@@ -246,7 +520,7 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
               )}
             </div>
           </div>
-          {!isPreviewMode ? (
+          {(!isPreviewMode || activeLessonTitle === '互动学习课件案例演示demo') ? (
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => alert("保存成功！")} 
@@ -254,11 +528,11 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
               >
                 保存
               </button>
-              {activeLessonTitle === '线性回归实训：预测考试分数' ? (
+              {['线性回归实训：预测考试分数', '互动学习课件案例演示demo'].includes(activeLessonTitle) ? (
                 <button 
                   onClick={() => setIsPreviewMode(!isPreviewMode)} 
                   className={cn(
-                    "px-5 h-9 rounded text-[14px] font-medium transition-all",
+                    "px-5 h-9 rounded text-[14px] font-medium transition-all font-bold",
                     isPreviewMode 
                       ? "bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 text-neutral-600" 
                       : "bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50"
@@ -434,7 +708,19 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                           )}
                         >
                           <div className="flex items-center gap-2 truncate">
-                            <FileText className={cn("w-4 h-4 shrink-0", isActive ? "text-[#fa541c]" : "text-neutral-400")} />
+                            <div className={cn(
+                              "w-6 h-6 rounded flex items-center justify-center shrink-0",
+                              lesson.type === 'split_doc' ? (isActive ? "bg-blue-100 text-blue-600" : "bg-blue-50 text-blue-500") : 
+                              lesson.type === 'experiment' ? (isActive ? "bg-orange-100 text-[#fa541c]" : "bg-orange-50 text-[#fa541c]") :
+                              lesson.type === 'assignment' ? (isActive ? "bg-rose-100 text-rose-600" : "bg-rose-50 text-rose-500") :
+                              (isActive ? "bg-emerald-100 text-emerald-600" : "bg-emerald-50 text-emerald-500")
+                            )}>
+                              {lesson.type === 'split_doc' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
+                               lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
+                               lesson.type === 'assignment' ? <CheckSquare className="w-3.5 h-3.5" /> :
+                               <FileText className="w-3.5 h-3.5" />
+                              }
+                            </div>
                             <span className="text-[13px] font-medium truncate">{lesson.title}</span>
                           </div>
                           
@@ -485,23 +771,230 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
               ))}
             </div>
 
-            {/* Bottom Actions inside Sidebar (Added New Lesson) */}
-            <div className="p-4 border-t border-neutral-100 shrink-0">
-              <Button 
-                onClick={() => {
-                  setNewLessonName("");
-                  setShowCreateLessonModal(true);
-                }}
-                className="w-full border border-dashed border-orange-200 bg-orange-50/50 hover:bg-orange-50 text-[#fa541c] hover:border-[#fa541c] font-bold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-[13px] transition-all h-10"
-              >
-                <PlusCircle className="w-4 h-4" /> 新建课时
-              </Button>
-            </div>
           </div>
 
           {/* Canvas Area */}
           <div className="flex-1 overflow-auto bg-[#f5f6f8] flex flex-col items-center">
-            {activeLessonTitle === '线性回归实训：预测考试分数' ? (
+            {activeLessonTitle === '互动学习课件案例演示demo' ? (
+              <div className="flex-1 w-full bg-white flex flex-col overflow-hidden">
+                {/* Content Header: left title, right switch template button */}
+                <div className="px-6 py-3.5 border-b border-neutral-200 bg-white flex items-center justify-between shrink-0 h-14 shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-4 bg-[#fa541c] rounded-full"></div>
+                    <span className="text-[15px] font-bold text-neutral-800">互动学习课件案例演示demo</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setShowSwitchTemplateModal(true)}
+                      className="text-[12px] bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe4d3] border border-[#ffbb96] px-3.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all shadow-xs active:scale-95"
+                    >
+                      <Cpu className="w-3.5 h-3.5" /> 切换模版
+                    </button>
+                  </div>
+                </div>
+
+                {/* Main Content: Split into two screens */}
+                <div className="flex-1 flex overflow-hidden bg-neutral-50">
+                  {/* Left Screen: Document display module with toolbar */}
+                  <div className="flex-1 flex flex-col bg-white border-r border-neutral-200/80 overflow-hidden">
+                    {/* Document Toolbar */}
+                    <div className="h-11 bg-neutral-50/50 border-b border-neutral-100 px-4 flex items-center justify-between shrink-0 select-none">
+                      <div className="flex items-center gap-1.5">
+                        <button className="p-1.5 text-neutral-500 hover:text-[#fa541c] hover:bg-neutral-100 rounded transition-colors" title="放大">
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        <span className="text-[12px] text-neutral-600 font-bold px-1.5">100%</span>
+                        <button className="p-1.5 text-neutral-500 hover:text-[#fa541c] hover:bg-neutral-100 rounded transition-colors" title="缩小">
+                          <Minus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[12px] text-neutral-500 font-bold">第 1 / 1 页</span>
+                        <div className="w-px h-3 bg-neutral-200"></div>
+                        <span className="text-[12px] text-neutral-400 font-medium">双屏联动预览中</span>
+                      </div>
+                    </div>
+
+                    {/* Document Content */}
+                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                      <div className="max-w-2xl mx-auto">
+                        <h1 className="text-[20px] font-black text-neutral-900 mb-2 tracking-tight">
+                          {INTERACTIVE_TEMPLATES[activeTemplateIdx].docTitle}
+                        </h1>
+                        <div className="text-[12px] text-neutral-400 mb-6 flex items-center gap-4 border-b border-neutral-100 pb-3">
+                          <span>课时类型: 互动微调案例</span>
+                          <span>&middot;</span>
+                          <span>发布: 实操演示教学系统</span>
+                        </div>
+                        {INTERACTIVE_TEMPLATES[activeTemplateIdx].docContent}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Screen: Operation Area */}
+                  <div className="w-[420px] bg-[#f8f9fb] border-l border-neutral-100 flex flex-col shrink-0 overflow-hidden">
+                    {/* Control Board */}
+                    <div className="p-5 border-b border-neutral-200 bg-white space-y-4 shrink-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
+                          <Settings className="w-4 h-4 text-neutral-500" /> 交互配置控制台
+                        </span>
+                        <span className="text-[11px] text-neutral-400 font-medium">参数实时调校</span>
+                      </div>
+
+                      {/* Model Select */}
+                      <div className="space-y-1.5 text-left">
+                        <label className="text-[11px] font-bold text-neutral-500">
+                          微调模型 (Model Target)
+                        </label>
+                        <select 
+                          value={model} 
+                          onChange={(e) => setModel(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:border-[#fa541c] font-medium bg-white"
+                        >
+                          <option value="DeepSeek-Chat">DeepSeek-V3 (推荐/超轻量)</option>
+                          <option value="GPT-4o-Mini">GPT-4o Mini (超低延迟)</option>
+                          <option value="Claude-3.5-Sonnet">Claude 3.5 Sonnet (高智能)</option>
+                        </select>
+                      </div>
+
+                      {/* Temperature Slider */}
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-neutral-500">
+                          <span>随机性参数 (Temperature)</span>
+                          <span className="text-[#fa541c] font-mono">{temperature.toFixed(1)}</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="0.0" 
+                          max="2.0" 
+                          step="0.1" 
+                          value={temperature}
+                          onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                          className="w-full h-1.5 bg-neutral-100 rounded-lg appearance-none cursor-pointer accent-[#fa541c]"
+                        />
+                        <div className="flex justify-between text-[9px] text-neutral-400 font-medium">
+                          <span>0.0 (精准确定)</span>
+                          <span>1.0 (通用标准)</span>
+                          <span>2.0 (极致发散)</span>
+                        </div>
+                      </div>
+
+                      {/* Max Tokens Slider */}
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-neutral-500">
+                          <span>最大响应长度 (Max Tokens)</span>
+                          <span className="text-neutral-705 font-mono">{maxTokens}</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="64" 
+                          max="1024" 
+                          step="64" 
+                          value={maxTokens}
+                          onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                          className="w-full h-1.5 bg-neutral-100 rounded-lg appearance-none cursor-pointer accent-neutral-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Chat Sandbox */}
+                    <div className="flex-1 flex flex-col overflow-hidden bg-neutral-50">
+                      {/* Sandbox Header */}
+                      <div className="px-4 py-2 bg-neutral-100/60 border-b border-neutral-200 flex items-center justify-between shrink-0">
+                        <span className="text-[11px] font-bold text-neutral-600 flex items-center gap-1">
+                          <Bot className="w-3.5 h-3.5 text-neutral-400" /> 模型交互沙盒 (Sandbox)
+                        </span>
+                        <button 
+                          onClick={() => setChatMessages(INTERACTIVE_TEMPLATES[activeTemplateIdx].defaultMessages)}
+                          className="text-[10px] text-neutral-500 hover:text-[#fa541c] font-bold flex items-center gap-0.5"
+                          title="重置会话"
+                        >
+                          <RotateCcw className="w-3 h-3" /> 重置
+                        </button>
+                      </div>
+
+                      {/* Chat Messages Log */}
+                      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-neutral-50">
+                        {chatMessages.map((msg, idx) => {
+                          if (msg.sender === "system") {
+                            return (
+                              <div key={idx} className="flex justify-center">
+                                <div className="text-[10px] bg-neutral-200/80 text-neutral-500 rounded-full px-3 py-1 font-medium shadow-3xs">
+                                  ⚙️ {msg.text}
+                                </div>
+                              </div>
+                            );
+                          }
+                          const isUser = msg.sender === "user";
+                          return (
+                            <div key={idx} className={cn("flex gap-2.5", isUser ? "justify-end" : "justify-start")}>
+                              {!isUser && (
+                                <div className="w-6.5 h-6.5 rounded-full bg-orange-100 flex items-center justify-center shrink-0 shadow-3xs">
+                                  <Bot className="w-4 h-4 text-[#fa541c]" />
+                                </div>
+                              )}
+                              <div className={cn(
+                                "max-w-[85%] rounded-2xl px-3 py-2 text-[13px] shadow-3xs text-left",
+                                isUser 
+                                  ? "bg-[#fa541c] text-white rounded-tr-none" 
+                                  : "bg-white border border-neutral-150 text-neutral-800 rounded-tl-none"
+                              )}>
+                                {renderMessageText(msg.text)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {isAiResponding && (
+                          <div className="flex gap-2.5 justify-start">
+                            <div className="w-6.5 h-6.5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                              <Bot className="w-4 h-4 text-[#fa541c]" />
+                            </div>
+                            <div className="bg-white border border-neutral-150 rounded-2xl rounded-tl-none px-3.5 py-2.5 text-[12px] text-neutral-500 shadow-3xs flex items-center gap-1.5">
+                              <span className="flex gap-0.5">
+                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce"></span>
+                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce delay-75"></span>
+                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce delay-150"></span>
+                              </span>
+                              <span>AI 正在思考生成中...</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Chat Input Bar */}
+                      <div className="p-3 border-t border-neutral-200 bg-white shrink-0">
+                        <div className="flex items-center gap-2 border border-neutral-200 rounded-xl px-3 py-2 focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] bg-neutral-50/30">
+                          <input 
+                            type="text"
+                            placeholder="输入测试提示语或聊天内容..."
+                            value={userInput}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSendChatMessage();
+                            }}
+                            disabled={isAiResponding}
+                            className="flex-1 bg-transparent text-[13px] text-neutral-850 focus:outline-none disabled:cursor-not-allowed"
+                          />
+                          <button 
+                            onClick={handleSendChatMessage}
+                            disabled={isAiResponding || !userInput.trim()}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-colors shrink-0",
+                              userInput.trim() && !isAiResponding
+                                ? "bg-[#fa541c] text-white hover:bg-[#e84a15]"
+                                : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                            )}
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : activeLessonTitle === '线性回归实训：预测考试分数' ? (
               <div className="flex-1 w-full bg-white flex flex-col overflow-hidden">
                 {/* Editor Title */}
                 {isPreviewMode ? (
@@ -1086,6 +1579,66 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                 setShowDeleteChapterModal(false);
                 setChapterToDelete(null);
               }} className="bg-red-600 hover:bg-red-700 text-white font-bold h-10 px-8 shadow-md shadow-red-500/20">确定删除</Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 切换模版 Modal */}
+      {showSwitchTemplateModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[540px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <Cpu className="w-5 h-5 text-[#fa541c]" /> 切换教学案例模版
+              </h2>
+              <button onClick={() => setShowSwitchTemplateModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-[13px] text-neutral-500">请选择一个互动学习课件模版，切换后左侧的教学讲义文档及右侧的交互调试控制台都将同步更新：</p>
+              <div className="grid grid-cols-1 gap-3.5">
+                {INTERACTIVE_TEMPLATES.map((tpl) => (
+                  <div 
+                    key={tpl.id}
+                    onClick={() => handleSwitchTemplateIdx(tpl.id)}
+                    className={cn(
+                      "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-orange-50/20 group",
+                      activeTemplateIdx === tpl.id
+                        ? "border-[#fa541c] bg-orange-50/10"
+                        : "border-neutral-150 bg-white hover:border-orange-200"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                      tpl.id === 0 ? "bg-orange-100 text-[#fa541c]" :
+                      tpl.id === 1 ? "bg-blue-100 text-blue-500" :
+                      "bg-green-100 text-green-600"
+                    )}>
+                      <Bot className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-[14px] font-bold text-neutral-850 group-hover:text-[#fa541c] transition-colors">
+                        {tpl.name}
+                      </div>
+                      <div className="text-[12px] text-neutral-450 mt-1 leading-normal">
+                        {tpl.docTitle}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end">
+              <Button 
+                onClick={() => setShowSwitchTemplateModal(false)}
+                variant="outline"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px]"
+              >
+                取消
+              </Button>
             </div>
           </div>
         </div>

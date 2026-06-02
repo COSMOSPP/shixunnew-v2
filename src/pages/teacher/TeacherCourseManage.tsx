@@ -29,7 +29,7 @@ const COURSE_SYLLABUS = [
     title: "培训与指导",
     lessons: [
       { section: "课时1:", title: "线性回归实训：预测考试分数", type: "experiment" },
-      { section: "课时2:", title: "智能照明系统的数据分析与优化[3.1.2]", type: "split_doc" },
+      { section: "课时2:", title: "互动学习课件案例演示demo", type: "split_doc" },
       { section: "课时3:", title: "智能健康手环的数据分析与优化[3.1.3]", type: "experiment" },
       { section: "课时4:", title: "智能健康监测系统的数据分析与优化[3.1.4]", type: "experiment" },
       { section: "课时5:", title: "智能家居环境控制系统的数据分析与优化[3.1.5]", type: "experiment" }
@@ -87,6 +87,95 @@ export default function TeacherCourseManage() {
   const [selectedEditLesson, setSelectedEditLesson] = useState<{ chapterIndex: number, lessonIndex: number, title: string, section: string } | null>(null);
   const [collapsedChapters, setCollapsedChapters] = useState<Record<number, boolean>>({});
   const [allExpanded, setAllExpanded] = useState(true);
+  // Members Management states
+  const [studentList, setStudentList] = useState([
+    { name: '李明', phone: '138****1000', progress: 60, active: '2小时前' },
+    { name: '王华', phone: '138****1001', progress: 68, active: '2小时前' },
+    { name: '张伟', phone: '138****1002', progress: 76, active: '2小时前' }
+  ]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteInput, setInviteInput] = useState("");
+  const [inviteActiveTab, setInviteActiveTab] = useState<'link' | 'manual'>('link');
+
+  const [showBatchImportModal, setShowBatchImportModal] = useState(false);
+  const [importSelectedFile, setImportSelectedFile] = useState<string | null>(null);
+  const [importProgress, setImportProgress] = useState(0);
+  const [isImporting, setIsImporting] = useState(false);
+
+  // Export Analytics Report states
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportDimension, setExportDimension] = useState("all");
+  const [exportFormat, setExportFormat] = useState("xlsx");
+  const [exportProgress, setExportProgress] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportCompleted, setExportCompleted] = useState(false);
+  const [exportColumns, setExportColumns] = useState({
+    info: true,
+    progress: true,
+    scores: true,
+    active: true
+  });
+
+  const handleStartExport = () => {
+    setIsExporting(true);
+    setExportProgress(0);
+    setExportCompleted(false);
+
+    // Simulate progress counting up
+    let current = 0;
+    const timer = setInterval(() => {
+      current += 10;
+      setExportProgress(current);
+      if (current >= 100) {
+        clearInterval(timer);
+        setIsExporting(false);
+        setExportCompleted(true);
+      }
+    }, 200);
+  };
+
+  const handleRemoveStudent = (name: string) => {
+    setStudentList(studentList.filter(s => s.name !== name));
+  };
+
+  const handleSendInvite = () => {
+    if (!inviteInput.trim()) return;
+    const newStudent = { name: '孙晨 (已邀请)', phone: inviteInput.trim(), progress: 0, active: '等待接受' };
+    setStudentList([...studentList, newStudent]);
+    setShowInviteModal(false);
+    setInviteInput("");
+    alert("邀请发送成功！已将孙晨加入邀请列表。");
+  };
+
+  const handleMockUploadFile = () => {
+    setIsImporting(true);
+    setImportProgress(0);
+    setImportSelectedFile("2026级AI实训班名单.xlsx");
+    
+    // Simulate progression
+    let current = 0;
+    const timer = setInterval(() => {
+      current += 20;
+      setImportProgress(current);
+      if (current >= 100) {
+        clearInterval(timer);
+        setIsImporting(false);
+      }
+    }, 150);
+  };
+
+  const handleConfirmBatchImport = () => {
+    const newStudents = [
+      { name: '周杰', phone: '139****9081', progress: 0, active: '未活跃' },
+      { name: '赵丽', phone: '137****3829', progress: 0, active: '未活跃' },
+      { name: '钱敏', phone: '150****2290', progress: 0, active: '未活跃' }
+    ];
+    setStudentList([...studentList, ...newStudents]);
+    setShowBatchImportModal(false);
+    setImportSelectedFile(null);
+    setImportProgress(0);
+    alert("成功批量导入 3 名学生！");
+  };
 
   const tabs = [
     { id: 'editor', label: '课程章节', icon: BookOpen },
@@ -224,10 +313,13 @@ export default function TeacherCourseManage() {
                     {COURSE_SYLLABUS.map((chapter, i) => {
                       const isCollapsed = collapsedChapters[i];
                       return (
-                        <div key={i} className="rounded-lg bg-neutral-50 border border-neutral-100 overflow-hidden">
+                        <div key={i} className="rounded-lg bg-neutral-50 border border-neutral-100 relative">
                           <div 
                             onClick={() => setCollapsedChapters(prev => ({ ...prev, [i]: !prev[i] }))}
-                            className="flex items-center justify-between px-6 py-4 bg-neutral-100/50 cursor-pointer select-none hover:bg-neutral-100/70 transition-colors"
+                            className={cn(
+                              "flex items-center justify-between px-6 py-4 bg-neutral-100/50 cursor-pointer select-none hover:bg-neutral-100/70 transition-colors",
+                              isCollapsed ? "rounded-lg" : "rounded-t-lg"
+                            )}
                           >
                             <div className="flex items-center gap-4">
                               <h3 className="text-lg font-bold text-neutral-title">{chapter.chapter} {chapter.title}</h3>
@@ -297,72 +389,82 @@ export default function TeacherCourseManage() {
                             </div>
                           </div>
                           {!isCollapsed && (
-                            <div className="bg-white">
-                              {chapter.lessons.map((lesson, idx) => (
-                                <div key={idx} onClick={() => {
-                                  setSelectedLesson({ title: lesson.title, type: lesson.type });
-                                  setShowCourseDetail(true);
-                                }} className="cursor-pointer flex items-center justify-between px-6 py-4 border-b border-neutral-100 hover:bg-neutral-50 group border-l-2 border-l-transparent hover:border-l-[#fa541c] transition-colors">
-                                  <div className="flex items-center gap-6">
-                                    <span className="text-[14px] text-neutral-body w-12">{lesson.section}</span>
-                                    <div className="flex items-center gap-3">
-                                      <div className={cn(
-                                        "w-6 h-6 rounded flex items-center justify-center",
-                                        lesson.type === 'split_doc' ? "bg-blue-50 text-blue-500" : 
-                                        lesson.type === 'experiment' ? "bg-orange-50 text-[#fa541c]" :
-                                        lesson.type === 'assignment' ? "bg-rose-50 text-rose-500" :
-                                        "bg-emerald-50 text-emerald-500"
-                                      )}>
-                                        {lesson.type === 'split_doc' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
-                                         lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
-                                         lesson.type === 'assignment' ? <CheckSquare className="w-3.5 h-3.5" /> :
-                                         <FileText className="w-3.5 h-3.5" />
-                                        }
+                            <div className="bg-white rounded-b-lg">
+                              {chapter.lessons.map((lesson, idx) => {
+                                const isLast = idx === chapter.lessons.length - 1;
+                                return (
+                                  <div 
+                                    key={idx} 
+                                    onClick={() => {
+                                      setSelectedLesson({ title: lesson.title, type: lesson.type });
+                                      setShowCourseDetail(true);
+                                    }} 
+                                    className={cn(
+                                      "cursor-pointer flex items-center justify-between px-6 py-4 border-b border-neutral-100 hover:bg-neutral-50 group border-l-2 border-l-transparent hover:border-l-[#fa541c] transition-colors",
+                                      isLast && "rounded-b-lg border-b-0"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-6">
+                                      <span className="text-[14px] text-neutral-body w-12">{lesson.section}</span>
+                                      <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                          "w-6 h-6 rounded flex items-center justify-center",
+                                          lesson.type === 'split_doc' ? "bg-blue-50 text-blue-500" : 
+                                          lesson.type === 'experiment' ? "bg-orange-50 text-[#fa541c]" :
+                                          lesson.type === 'assignment' ? "bg-rose-50 text-rose-500" :
+                                          "bg-emerald-50 text-emerald-500"
+                                        )}>
+                                          {lesson.type === 'split_doc' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
+                                           lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
+                                           lesson.type === 'assignment' ? <CheckSquare className="w-3.5 h-3.5" /> :
+                                           <FileText className="w-3.5 h-3.5" />
+                                          }
+                                        </div>
+                                        <span className="text-sm font-medium text-neutral-title group-hover:text-[#fa541c] transition-colors">{lesson.title}</span>
                                       </div>
-                                      <span className="text-sm font-medium text-neutral-title group-hover:text-[#fa541c] transition-colors">{lesson.title}</span>
+                                    </div>
+                                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                      <MoreVertical 
+                                        className={cn(
+                                          "w-4 h-4 cursor-pointer transition-all", 
+                                          lessonMenuOpenIndex === `${i}-${idx}` 
+                                            ? "text-[#fa541c] opacity-100 scale-110" 
+                                            : "text-neutral-300 group-hover:text-neutral-500 opacity-0 group-hover:opacity-100"
+                                        )}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setLessonMenuOpenIndex(lessonMenuOpenIndex === `${i}-${idx}` ? null : `${i}-${idx}`);
+                                        }}
+                                      />
+                                      {lessonMenuOpenIndex === `${i}-${idx}` && (
+                                        <>
+                                          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setLessonMenuOpenIndex(null); }}></div>
+                                          <div className="absolute right-0 top-6 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
+                                            <div 
+                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
+                                                setShowEditLessonModal(true);
+                                                setLessonMenuOpenIndex(null);
+                                              }}
+                                            >编辑</div>
+                                            <div 
+                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
+                                                setShowDeleteLessonModal(true);
+                                                setLessonMenuOpenIndex(null);
+                                              }}
+                                            >删除</div>
+                                          </div>
+                                        </>
+                                      )}
                                     </div>
                                   </div>
-                                  <div className="relative" onClick={(e) => e.stopPropagation()}>
-                                    <MoreVertical 
-                                      className={cn(
-                                        "w-4 h-4 cursor-pointer transition-all", 
-                                        lessonMenuOpenIndex === `${i}-${idx}` 
-                                          ? "text-[#fa541c] opacity-100 scale-110" 
-                                          : "text-neutral-300 group-hover:text-neutral-500 opacity-0 group-hover:opacity-100"
-                                      )}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setLessonMenuOpenIndex(lessonMenuOpenIndex === `${i}-${idx}` ? null : `${i}-${idx}`);
-                                      }}
-                                    />
-                                    {lessonMenuOpenIndex === `${i}-${idx}` && (
-                                      <>
-                                        <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setLessonMenuOpenIndex(null); }}></div>
-                                        <div className="absolute right-0 top-6 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
-                                          <div 
-                                            className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
-                                              setShowEditLessonModal(true);
-                                              setLessonMenuOpenIndex(null);
-                                            }}
-                                          >编辑</div>
-                                          <div 
-                                            className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
-                                              setShowDeleteLessonModal(true);
-                                              setLessonMenuOpenIndex(null);
-                                            }}
-                                          >删除</div>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -652,10 +754,17 @@ export default function TeacherCourseManage() {
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-neutral-title">班级成员</h2>
                     <div className="flex gap-3">
-                      <Button variant="outline" className="border-neutral-300 text-neutral-600 h-9">
+                      <Button 
+                        onClick={() => setShowBatchImportModal(true)}
+                        variant="outline" 
+                        className="border-neutral-300 text-neutral-600 h-9"
+                      >
                         批量导入
                       </Button>
-                      <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 shadow-sm">
+                      <Button 
+                        onClick={() => setShowInviteModal(true)}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 shadow-sm"
+                      >
                         <Plus className="w-4 h-4 mr-1.5" /> 邀请学生
                       </Button>
                     </div>
@@ -678,21 +787,28 @@ export default function TeacherCourseManage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {['李明', '王华', '张伟'].map((name, i) => (
+                        {studentList.map((student, i) => (
                           <tr key={i} className="border-b border-neutral-100 hover:bg-[#fff2e8]/20 transition-colors">
-                            <td className="py-3 px-6 font-medium text-sm text-neutral-title">{name}</td>
-                            <td className="py-3 px-6 text-sm text-neutral-500">138****{1000+i}</td>
+                            <td className="py-3 px-6 font-medium text-sm text-neutral-title">{student.name}</td>
+                            <td className="py-3 px-6 text-sm text-neutral-500">{student.phone}</td>
                             <td className="py-3 px-6">
                               <div className="flex items-center gap-3">
                                 <div className="w-24 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                                  <div className="h-full bg-[#fa541c] rounded-full" style={{ width: `${60 + i * 8}%` }}></div>
+                                  <div className="h-full bg-[#fa541c] rounded-full" style={{ width: `${student.progress}%` }}></div>
                                 </div>
-                                <span className="text-xs font-medium text-neutral-500">{60 + i * 8}%</span>
+                                <span className="text-xs font-medium text-neutral-500">{student.progress}%</span>
                               </div>
                             </td>
-                            <td className="py-3 px-6 text-sm text-neutral-400">2小时前</td>
+                            <td className="py-3 px-6 text-sm text-neutral-400">{student.active}</td>
                             <td className="py-3 px-6 text-right">
-                              <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-500 px-2 h-7">移除</Button>
+                              <Button 
+                                onClick={() => handleRemoveStudent(student.name)}
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-neutral-400 hover:text-red-500 px-2 h-7"
+                              >
+                                移除
+                              </Button>
                             </td>
                           </tr>
                         ))}
@@ -712,7 +828,15 @@ export default function TeacherCourseManage() {
                       </h2>
                       <p className="text-[13px] text-neutral-500 mt-1">实时统计所有选课学生的学习进度与考核数据，数据每 15 分钟刷新一次。</p>
                     </div>
-                    <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
+                    <Button 
+                      onClick={() => {
+                        setShowExportModal(true);
+                        setExportProgress(0);
+                        setIsExporting(false);
+                        setExportCompleted(false);
+                      }}
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all"
+                    >
                       <Download className="w-4 h-4 mr-2" /> 导出详细数据报告
                     </Button>
                   </div>
@@ -1453,6 +1577,475 @@ export default function TeacherCourseManage() {
                   <Button onClick={() => setShowDeleteLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 shadow-sm">确定</Button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 邀请学生 Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[500px] overflow-hidden border border-neutral-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 邀请学生入班
+              </h2>
+              <button 
+                onClick={() => setShowInviteModal(false)} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Tabs */}
+            <div className="flex border-b border-neutral-100 px-6 bg-neutral-50/20">
+              <button 
+                onClick={() => setInviteActiveTab('link')}
+                className={cn(
+                  "py-3 text-[13px] font-bold border-b-2 transition-all mr-6",
+                  inviteActiveTab === 'link' 
+                    ? "border-b-[#fa541c] text-[#fa541c]" 
+                    : "border-transparent text-neutral-400 hover:text-neutral-600"
+                )}
+              >
+                邀请链接/邀请码
+              </button>
+              <button 
+                onClick={() => setInviteActiveTab('manual')}
+                className={cn(
+                  "py-3 text-[13px] font-bold border-b-2 transition-all",
+                  inviteActiveTab === 'manual' 
+                    ? "border-b-[#fa541c] text-[#fa541c]" 
+                    : "border-transparent text-neutral-400 hover:text-neutral-600"
+                )}
+              >
+                手机号/邮箱邀请
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex-1">
+              {inviteActiveTab === 'link' ? (
+                <div className="space-y-4">
+                  <p className="text-[12px] text-neutral-500">将下方邀请码或专属邀请链接发送给学生，学生在实操平台中输入或访问即可直接加入该实训班级：</p>
+                  
+                  {/* Invite Code */}
+                  <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-150 flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider mb-1">班级专属邀请码</div>
+                      <div className="text-xl font-mono font-bold text-neutral-800 tracking-wider">X8J9K2</div>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        navigator.clipboard.writeText("X8J9K2");
+                        alert("邀请码复制成功！");
+                      }}
+                      className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors"
+                    >
+                      复制邀请码
+                    </Button>
+                  </div>
+
+                  {/* Invite Link */}
+                  <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-150 space-y-2">
+                    <div className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">班级邀请链接</div>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="text" 
+                        readOnly 
+                        value="https://platform.cosmos.com/join/course/1/X8J9K2" 
+                        className="flex-1 bg-white border border-neutral-200 rounded-lg px-3 py-1.5 text-[11px] text-neutral-600 focus:outline-none font-mono"
+                      />
+                      <Button 
+                        onClick={() => {
+                          navigator.clipboard.writeText("https://platform.cosmos.com/join/course/1/X8J9K2");
+                          alert("邀请链接复制成功！");
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors shrink-0"
+                      >
+                        复制链接
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-neutral-700">手机号/邮箱列表</label>
+                    <textarea 
+                      placeholder="请输入学生的手机号或邮箱，多个成员请用逗号或换行分隔..." 
+                      rows={4}
+                      value={inviteInput}
+                      onChange={(e) => setInviteInput(e.target.value)}
+                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white resize-none"
+                    />
+                    <div className="text-[11px] text-neutral-400">系统将自动向上述联系方式发送包含入班链接的短信或邮件通知。</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowInviteModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px]"
+              >
+                关闭
+              </Button>
+              {inviteActiveTab === 'manual' && (
+                <Button 
+                  onClick={handleSendInvite}
+                  disabled={!inviteInput.trim()}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  发送邀请
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量导入 Modal */}
+      {showBatchImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[560px] overflow-hidden border border-neutral-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <Paperclip className="w-5 h-5 text-[#fa541c]" /> 批量导入学生名单
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowBatchImportModal(false);
+                  setImportSelectedFile(null);
+                  setImportProgress(0);
+                }} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[460px] custom-scrollbar flex-1">
+              {/* Step 1: Download Template */}
+              <div className="space-y-2">
+                <div className="text-[13px] font-bold text-neutral-800 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-orange-50 text-[#fa541c] flex items-center justify-center text-[11px] font-bold shrink-0">1</span>
+                  下载Excel导入模板
+                </div>
+                <div className="pl-7 flex items-center justify-between">
+                  <span className="text-[12px] text-neutral-500">请使用我们预设的模板列属性格式，以避免解析错误。</span>
+                  <Button 
+                    onClick={() => alert("学生导入模版已下载到您的系统默认下载文件夹！")}
+                    className="bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors shadow-2xs"
+                  >
+                    下载导入模板
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-100"></div>
+
+              {/* Step 2: Upload File */}
+              <div className="space-y-3">
+                <div className="text-[13px] font-bold text-neutral-800 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-orange-50 text-[#fa541c] flex items-center justify-center text-[11px] font-bold shrink-0">2</span>
+                  上传已填写的学生表
+                </div>
+                <div className="pl-7 space-y-3">
+                  {!importSelectedFile ? (
+                    <div 
+                      onClick={handleMockUploadFile}
+                      className="border-2 border-dashed border-neutral-200 rounded-xl p-6 flex flex-col items-center justify-center bg-neutral-50/50 hover:bg-orange-50/10 hover:border-orange-200 cursor-pointer transition-all group"
+                    >
+                      <Paperclip className="w-8 h-8 text-neutral-300 group-hover:text-[#fa541c] transition-colors mb-2" />
+                      <div className="text-[13px] font-bold text-neutral-700 mb-1 group-hover:text-[#fa541c] transition-colors">
+                        点击这里上传或将 Excel 文件拖拽到此处
+                      </div>
+                      <div className="text-[11px] text-neutral-400">仅支持 .xlsx, .xls 格式文件，文件不超过 10 MB</div>
+                    </div>
+                  ) : (
+                    <div className="border border-neutral-200 rounded-xl p-4 bg-white space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-[13px] font-bold text-neutral-800">{importSelectedFile}</div>
+                            <div className="text-[11px] text-neutral-400">18.4 KB &middot; {importProgress === 100 ? "文件解析完毕" : "正在上传解析..."}</div>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setImportSelectedFile(null);
+                            setImportProgress(0);
+                          }}
+                          className="text-neutral-400 hover:text-neutral-600 p-1 hover:bg-neutral-100 rounded-full"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] text-neutral-400 font-bold font-mono">
+                          <span>{importProgress === 100 ? "UPLOAD COMPLETED" : "UPLOADING FILE"}</span>
+                          <span>{importProgress}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-[#fa541c] rounded-full transition-all duration-150" 
+                            style={{ width: `${importProgress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Step 3: Mock Data Preview */}
+              {importSelectedFile && importProgress === 100 && (
+                <>
+                  <div className="border-t border-neutral-100"></div>
+                  <div className="space-y-3">
+                    <div className="text-[13px] font-bold text-neutral-800 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-orange-50 text-[#fa541c] flex items-center justify-center text-[11px] font-bold shrink-0">3</span>
+                      预导入数据预览
+                    </div>
+                    <div className="pl-7 space-y-2">
+                      <div className="text-[12px] text-neutral-500 mb-1">系统已成功解析出表格内的 3 位学生，请确认是否导入：</div>
+                      <div className="border border-neutral-150 rounded-xl overflow-hidden bg-neutral-50/30">
+                        <table className="w-full text-left text-[12px] border-collapse bg-white">
+                          <thead>
+                            <tr className="bg-neutral-50/80 border-b border-neutral-200 text-neutral-550 font-bold">
+                              <th className="py-2.5 px-4">序号</th>
+                              <th className="py-2.5 px-4">姓名</th>
+                              <th className="py-2.5 px-4">手机号</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[
+                              { id: 1, name: "周杰", phone: "139****9081" },
+                              { id: 2, name: "赵丽", phone: "137****3829" },
+                              { id: 3, name: "钱敏", phone: "150****2290" }
+                            ].map((row) => (
+                              <tr key={row.id} className="border-b border-neutral-100">
+                                <td className="py-2.5 px-4 font-mono text-neutral-400">{row.id}</td>
+                                <td className="py-2.5 px-4 font-bold text-neutral-800">{row.name}</td>
+                                <td className="py-2.5 px-4 text-neutral-550">{row.phone}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => {
+                  setShowBatchImportModal(false);
+                  setImportSelectedFile(null);
+                  setImportProgress(0);
+                }} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px]"
+              >
+                取消
+              </Button>
+              {importSelectedFile && importProgress === 100 && (
+                <Button 
+                  onClick={handleConfirmBatchImport}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
+                >
+                  确认导入 (3名学生)
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 导出学情数据报告 Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[540px] overflow-hidden border border-neutral-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <Download className="w-5 h-5 text-[#fa541c]" /> 导出学情数据报告
+              </h2>
+              <button 
+                onClick={() => setShowExportModal(false)} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-5 overflow-y-auto max-h-[460px] custom-scrollbar flex-1">
+              {!isExporting && !exportCompleted ? (
+                <>
+                  {/* Configuration Form */}
+                  <div className="space-y-4">
+                    {/* Dimension Selection */}
+                    <div className="space-y-2 text-left">
+                      <label className="text-[12px] font-bold text-neutral-700">导出数据维度</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { id: "all", title: "全班学生综合学情", desc: "汇总基础、进度与各科成绩" },
+                          { id: "lessons", title: "章节课节进度细化表", desc: "细化到各课时的学习细节" }
+                        ].map((dim) => (
+                          <div 
+                            key={dim.id}
+                            onClick={() => setExportDimension(dim.id)}
+                            className={cn(
+                              "border-2 rounded-xl p-3.5 cursor-pointer transition-all hover:bg-neutral-50/50 flex flex-col text-left",
+                              exportDimension === dim.id 
+                                ? "border-[#fa541c] bg-orange-50/10" 
+                                : "border-neutral-200 bg-white"
+                            )}
+                          >
+                            <span className="text-[13px] font-bold text-neutral-850 mb-0.5">{dim.title}</span>
+                            <span className="text-[10px] text-neutral-400 leading-normal">{dim.desc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Columns Checkboxes */}
+                    <div className="space-y-2 text-left">
+                      <label className="text-[12px] font-bold text-neutral-700">包含数据指标段</label>
+                      <div className="grid grid-cols-2 gap-3 bg-neutral-50/50 border border-neutral-150 rounded-xl p-3.5">
+                        {[
+                          { key: "info", label: "学生基本信息 (学号/联系方式)" },
+                          { key: "progress", label: "课时完成进度 (视频完播率/时长)" },
+                          { key: "scores", label: "平时作业与测验评分汇总" },
+                          { key: "active", label: "最近活跃状态与交互日志" }
+                        ].map((col) => (
+                          <label key={col.key} className="flex items-center gap-2 cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              checked={(exportColumns as any)[col.key]}
+                              onChange={(e) => setExportColumns({ ...exportColumns, [col.key]: e.target.checked })}
+                              className="w-3.5 h-3.5 accent-[#fa541c]"
+                            />
+                            <span className="text-[12px] text-neutral-600 font-medium">{col.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Format Selector */}
+                    <div className="space-y-2 text-left">
+                      <label className="text-[12px] font-bold text-neutral-700">文件格式</label>
+                      <div className="flex gap-4">
+                        {[
+                          { id: "xlsx", label: "Excel 报表数据表 (.xlsx)" },
+                          { id: "pdf", label: "PDF 打印版统计图表 (.pdf)" }
+                        ].map((fmt) => (
+                          <label key={fmt.id} className="flex items-center gap-2 cursor-pointer select-none">
+                            <input 
+                              type="radio" 
+                              name="exportFormat"
+                              checked={exportFormat === fmt.id}
+                              onChange={() => setExportFormat(fmt.id)}
+                              className="w-3.5 h-3.5 accent-[#fa541c]"
+                            />
+                            <span className="text-[12px] text-neutral-705 font-bold">{fmt.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : isExporting ? (
+                <div className="py-8 flex flex-col items-center justify-center space-y-4">
+                  <div className="w-12 h-12 rounded-full border-4 border-orange-100 border-t-[#fa541c] animate-spin"></div>
+                  <div className="text-center space-y-2">
+                    <div className="text-[14px] font-bold text-neutral-800">正在打包生成高精学情数据报告...</div>
+                    <div className="text-[11px] text-neutral-450 font-bold font-mono">EXPORTING PROGRESS: {exportProgress}%</div>
+                  </div>
+                  
+                  {/* Progress Line */}
+                  <div className="w-full max-w-[320px] h-2 bg-neutral-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#fa541c] rounded-full transition-all duration-200"
+                      style={{ width: `${exportProgress}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="text-[11px] text-neutral-455 font-medium italic">
+                    {exportProgress < 30 ? "正在提取学生大纲及视频学习时长指标..." :
+                     exportProgress < 75 ? "正在汇总课后作业及平时成绩权重..." :
+                     "正在渲染离线 Excel 图表单元格结构并打包压缩..."}
+                  </div>
+                </div>
+              ) : (
+                <div className="py-6 flex flex-col items-center justify-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <CheckSquare className="w-6 h-6" />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="text-[15px] font-black text-neutral-900">学情数据报告导出成功！</div>
+                    <div className="text-[12px] text-neutral-400">报表已成功下载至您的本地文件系统。</div>
+                  </div>
+
+                  {/* Mock File Card */}
+                  <div className="w-full max-w-[380px] border border-neutral-200 rounded-xl p-4 bg-neutral-50/50 flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="text-[13px] font-bold text-neutral-850 truncate">
+                        人工智能基础与实践_整体学情报告.{exportFormat}
+                      </div>
+                      <div className="text-[11px] text-neutral-400 font-medium">134.5 KB &middot; 本地磁盘文件 &middot; 解析完毕</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              {!isExporting && !exportCompleted ? (
+                <>
+                  <Button 
+                    onClick={() => setShowExportModal(false)}
+                    variant="outline"
+                    className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px]"
+                  >
+                    取消
+                  </Button>
+                  <Button 
+                    onClick={handleStartExport}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
+                  >
+                    开始生成报告
+                  </Button>
+                </>
+              ) : exportCompleted ? (
+                <Button 
+                  onClick={() => setShowExportModal(false)}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-8 text-[13px]"
+                >
+                  完成
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
