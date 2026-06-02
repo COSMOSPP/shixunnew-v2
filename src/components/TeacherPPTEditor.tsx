@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Type, Bold, Italic, Strikethrough, Link, 
   List, ListOrdered, CheckSquare, AlignLeft, AlignCenter, AlignRight,
   PlaySquare, Code, Image as ImageIcon, Video, FileText, ChevronDown,
   MoreHorizontal, ChevronRight, File, Settings, Bot, ChevronLeft, Save, Play, Send,
-  MessageSquare, Cpu, BarChart, PlusCircle, X
+  MessageSquare, Cpu, BarChart, PlusCircle, X, Info, Plus, MonitorPlay
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -82,9 +83,11 @@ interface TeacherPPTEditorProps {
 }
 
 export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesson, onSyllabusChange, onActiveLessonChange }: TeacherPPTEditorProps) {
+  const navigate = useNavigate();
   const [activeLessonTitle, setActiveLessonTitle] = useState(initialLesson?.title || "职业简介");
   const [activeSlideId, setActiveSlideId] = useState<number>(1);
   const [showAiMenu, setShowAiMenu] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   // Syllabus state for dynamic updates
   const [syllabus, setSyllabus] = useState(courseSyllabus);
@@ -108,6 +111,19 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
   
   const [showDeleteLessonModal, setShowDeleteLessonModal] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<{ cIdx: number, lIdx: number } | null>(null);
+
+  const [addChapterMenuOpenIndex, setAddChapterMenuOpenIndex] = useState<number | null>(null);
+  const [chapterActionMenuOpenIndex, setChapterActionMenuOpenIndex] = useState<number | null>(null);
+  
+  const [newLessonType, setNewLessonType] = useState('doc');
+  
+  const [showEditChapterModal, setShowEditChapterModal] = useState(false);
+  const [editChapterName, setEditChapterName] = useState("");
+  const [editChapterTitle, setEditChapterTitle] = useState("");
+  const [chapterToEdit, setChapterToEdit] = useState<number | null>(null);
+  
+  const [showDeleteChapterModal, setShowDeleteChapterModal] = useState(false);
+  const [chapterToDelete, setChapterToDelete] = useState<number | null>(null);
   
   // Smartly determine active chapter index
   const activeChapterIdx = syllabus.findIndex((ch: any) => 
@@ -131,7 +147,7 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
           title: newLessonName,
           locked: false,
           status: "未学习",
-          type: "doc"
+          type: newLessonType
         }
       ];
       setSyllabus(updatedSyllabus);
@@ -213,40 +229,62 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
         <div className="h-14 bg-white border-b border-neutral-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
           <div className="flex items-center gap-3">
             <button 
-              onClick={onClose}
+              onClick={isPreviewMode ? () => setIsPreviewMode(false) : onClose}
               className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500 hover:text-neutral-800"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="w-px h-6 bg-neutral-200"></div>
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-neutral-800">备课模式 &middot; 教学课件编辑</span>
-              <span className="text-[11px] text-neutral-400">正在编辑课程的备课讲义与演示文稿</span>
+              {isPreviewMode ? (
+                <span className="text-[14px] font-bold text-neutral-800">预览模式</span>
+              ) : (
+                <>
+                  <span className="text-[14px] font-bold text-neutral-800">备课模式 &middot; 教学课件编辑</span>
+                  <span className="text-[11px] text-neutral-400">正在编辑课程的备课讲义与演示文稿</span>
+                </>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => alert("保存成功！")} 
-              className="bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50 px-5 h-9 rounded text-[14px] font-medium transition-colors"
-            >
-              保存
-            </button>
-            <button 
-              onClick={() => alert("正在进入课件预览...")} 
-              className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 px-5 h-9 rounded text-[14px] font-medium transition-colors"
-            >
-              预览
-            </button>
-            <button 
-              onClick={() => {
-                alert("课件提交并发布成功！");
-                onClose();
-              }} 
-              className="bg-[#fa541c] hover:bg-[#e84a15] text-white border border-transparent px-5 h-9 rounded text-[14px] font-medium transition-colors shadow-sm shadow-orange-500/10"
-            >
-              提交
-            </button>
-          </div>
+          {!isPreviewMode ? (
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => alert("保存成功！")} 
+                className="bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50 px-5 h-9 rounded text-[14px] font-medium transition-colors"
+              >
+                保存
+              </button>
+              {activeLessonTitle === '线性回归实训：预测考试分数' ? (
+                <button 
+                  onClick={() => setIsPreviewMode(!isPreviewMode)} 
+                  className={cn(
+                    "px-5 h-9 rounded text-[14px] font-medium transition-all",
+                    isPreviewMode 
+                      ? "bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 text-neutral-600" 
+                      : "bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50"
+                  )}
+                >
+                  {isPreviewMode ? '返回编辑' : '预览'}
+                </button>
+              ) : (
+                <button 
+                  onClick={() => alert("正在进入课件预览...")} 
+                  className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 px-5 h-9 rounded text-[14px] font-medium transition-colors"
+                >
+                  预览
+                </button>
+              )}
+              <button 
+                onClick={() => {
+                  alert("课件提交并发布成功！");
+                  onClose();
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white border border-transparent px-5 h-9 rounded text-[14px] font-medium transition-colors shadow-sm shadow-orange-500/10"
+              >
+                提交
+              </button>
+            </div>
+          ) : null}
         </div>
 
         {/* Editor Content Area */}
@@ -255,14 +293,125 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
           <div className="w-64 border-r border-neutral-200 bg-white flex flex-col h-full shrink-0">
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/30">
               <span className="text-[14px] font-bold text-neutral-800">课程目录结构</span>
-              <span className="text-[11px] bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded font-medium">大纲模式</span>
+              <button 
+                onClick={() => {
+                  setNewLessonType('doc');
+                  setNewLessonName("");
+                  setShowCreateLessonModal(true);
+                }}
+                className="text-[11px] bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe4d3] border border-[#ffbb96] px-2 py-0.5 rounded font-bold flex items-center gap-0.5 transition-colors"
+              >
+                <Plus className="w-3 h-3" /> 新建课节
+              </button>
             </div>
             
             {/* Outline list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {syllabus.map((chapter: any, cIdx: number) => (
                 <div key={chapter.id} className="space-y-1">
-                  <div className="text-[12px] font-bold text-neutral-400 px-2 uppercase tracking-wider">{chapter.chapter}</div>
+                  <div className="flex items-center justify-between group/chapter px-2 py-1 select-none hover:bg-neutral-50 rounded-lg transition-colors relative">
+                    <span className="text-[12px] font-bold text-neutral-400 uppercase tracking-wider">
+                      {chapter.chapter}
+                    </span>
+                    
+                    {/* Chapter action buttons - visible on hover */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover/chapter:opacity-100 transition-opacity">
+                      {/* Plus button */}
+                      <div className="relative">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAddChapterMenuOpenIndex(addChapterMenuOpenIndex === cIdx ? null : cIdx);
+                            setChapterActionMenuOpenIndex(null);
+                          }}
+                          className="p-0.5 text-neutral-400 hover:text-[#fa541c] hover:bg-neutral-100 rounded transition-colors"
+                          title="新建课件"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        {addChapterMenuOpenIndex === cIdx && (
+                          <>
+                            <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setAddChapterMenuOpenIndex(null); }}></div>
+                            <div className="absolute left-6 top-6 w-72 bg-white border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl z-30 p-3 select-none flex flex-col gap-1.5 animation-slide-up">
+                              {[
+                                { title: '教学课件', desc: '支持图文、PPT 文档、视频等', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', type: 'doc' },
+                                { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', type: 'experiment' },
+                                { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', type: 'split_doc' }
+                              ].map((item, idx) => (
+                                <div 
+                                  key={idx} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setNewLessonType(item.type);
+                                    setNewLessonName("");
+                                    setAddChapterMenuOpenIndex(null);
+                                    setShowCreateLessonModal(true);
+                                  }} 
+                                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-neutral-50 cursor-pointer transition-colors group/item"
+                                >
+                                  <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors", item.bg, item.color)}>
+                                    <item.icon className="w-4.5 h-4.5" />
+                                  </div>
+                                  <div className="text-left">
+                                    <div className="text-[13px] font-bold text-neutral-800 mb-0.5 group-hover/item:text-[#fa541c] transition-colors">{item.title}</div>
+                                    <div className="text-[11px] text-neutral-400 leading-normal">{item.desc}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Three dots button */}
+                      <div className="relative">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setChapterActionMenuOpenIndex(chapterActionMenuOpenIndex === cIdx ? null : cIdx);
+                            setAddChapterMenuOpenIndex(null);
+                          }}
+                          className="p-0.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded transition-colors"
+                          title="更多操作"
+                        >
+                          <MoreHorizontal className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        {chapterActionMenuOpenIndex === cIdx && (
+                          <>
+                            <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setChapterActionMenuOpenIndex(null); }}></div>
+                            <div className="absolute left-6 top-6 w-28 bg-white border border-neutral-100 shadow-[0_8px_24px_rgba(0,0,0,0.08)] rounded-lg z-30 py-1 overflow-hidden flex flex-col gap-0.5 animation-slide-up">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setChapterToEdit(cIdx);
+                                  setEditChapterName(chapter.chapter);
+                                  setEditChapterTitle(chapter.title || "");
+                                  setChapterActionMenuOpenIndex(null);
+                                  setShowEditChapterModal(true);
+                                }}
+                                className="w-full text-left px-3 py-1.5 text-[12px] text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 font-medium transition-colors"
+                              >
+                                编辑章节
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setChapterToDelete(cIdx);
+                                  setChapterActionMenuOpenIndex(null);
+                                  setShowDeleteChapterModal(true);
+                                }}
+                                className="w-full text-left px-3 py-1.5 text-[12px] text-red-600 hover:bg-red-50 font-medium transition-colors"
+                              >
+                                删除章节
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   <div className="space-y-0.5">
                     {chapter.lessons.map((lesson: any, lIdx: number) => {
                       const isActive = activeLessonTitle === lesson.title;
@@ -352,7 +501,164 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
 
           {/* Canvas Area */}
           <div className="flex-1 overflow-auto bg-[#f5f6f8] flex flex-col items-center">
-            {['职业简介', '认定方案', '代码复习讲义', '实操平台演示'].includes(activeLessonTitle) || syllabus.some((ch: any) => ch.lessons.some((l: any) => l.title === activeLessonTitle)) ? (
+            {activeLessonTitle === '线性回归实训：预测考试分数' ? (
+              <div className="flex-1 w-full bg-white flex flex-col overflow-hidden">
+                {/* Editor Title */}
+                {isPreviewMode ? (
+                  <div className="px-6 py-3 border-b border-neutral-200 bg-white flex items-center justify-between shrink-0 h-16 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <div className="flex-1 flex justify-start items-center">
+                      <div className="flex flex-col items-center relative">
+                        <div className="border border-[#fa541c] text-[#fa541c] px-6 py-1.5 text-[13px] font-bold rounded-full bg-[#fff7f2] shadow-sm select-none">
+                          线性回归实训-预测考试分数
+                        </div>
+                        {/* caret below the tab */}
+                        <div className="absolute -bottom-2 text-[#fa541c] select-none text-[8px]">
+                          ▲
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Info className="w-5 h-5 text-neutral-400 cursor-pointer hover:text-[#fa541c] transition-colors" />
+                      <button 
+                        onClick={() => navigate("/teacher/course/1/experiment/3.1.1")}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-lg flex items-center gap-1.5 shadow-md shadow-orange-500/10 text-[13px] transition-colors"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" /> 进入实训
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between shrink-0">
+                    <h2 className="text-[16px] font-bold text-neutral-800">线性回归实训：预测考试分数</h2>
+                  </div>
+                )}
+
+                <div className="flex-1 flex overflow-hidden">
+                  {/* Left Sidebar (custom single active item) */}
+                  {!isPreviewMode && (
+                    <div className="w-56 border-r border-neutral-100 flex flex-col bg-white">
+                      <div className="py-2.5 px-4 text-[13px] font-bold text-[#fa541c] bg-[#fff7f2] relative border-r-2 border-r-[#fa541c] cursor-pointer h-11 flex items-center">
+                        线性回归实训-预测考试分数
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Right Content */}
+                  <div className="flex-1 overflow-y-auto p-10 bg-white">
+                    <div className="max-w-3xl mx-auto space-y-8 text-left">
+                      <h1 className="text-3xl font-bold text-neutral-900 leading-tight">线性回归实训：预测考试分数</h1>
+                      
+                      <div className="space-y-4 text-[14px] text-neutral-700 leading-relaxed">
+                        <p>本实训通过构建一个从学习时间预测考试分数的线性回归模型来展示数据的可视化。</p>
+                        <p>假设我们收集了8位同学的学习时间与考试分数，如下。如何构建一个从学习时间预测考试分数的模型呢？</p>
+                      </div>
+
+                      <div className="overflow-x-auto py-2">
+                        <table className="min-w-full border-collapse text-[13px] text-neutral-800">
+                          <tbody>
+                            <tr className="border-t border-b border-neutral-200">
+                              <td className="py-3 px-4 bg-neutral-50 font-bold border-r border-neutral-200 w-24">学习时间</td>
+                              {[2, 3, 4, 6, 7, 5, 8, 1].map((val, idx) => (
+                                <td key={idx} className="py-3 px-4 text-center border-r border-neutral-200 font-medium">{val}</td>
+                              ))}
+                            </tr>
+                            <tr className="border-b border-neutral-200">
+                              <td className="py-3 px-4 bg-neutral-50 font-bold border-r border-neutral-200 w-24">考试分数</td>
+                              {[50, 55, 65, 70, 72, 80, 85, 88].map((val, idx) => (
+                                <td key={idx} className="py-3 px-4 text-center border-r border-neutral-200 font-medium">{val}</td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="text-[14px] text-neutral-700 space-y-2">
+                        <div className="font-bold flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-neutral-700"></span> 思考1:
+                        </div>
+                        <ul className="pl-6 space-y-1.5 list-disc text-neutral-600">
+                          <li>是否可以通过线性回归模型求解？</li>
+                          <li>如何判断？</li>
+                        </ul>
+                      </div>
+
+                      <div className="py-4 flex flex-col items-center">
+                        <div className="w-full max-w-[620px] bg-white border border-neutral-100 rounded-xl p-6 shadow-sm flex flex-col items-center">
+                          <span className="text-[16px] font-bold text-neutral-800 mb-6">考试分数</span>
+                          <div className="w-full aspect-[1.8/1] relative">
+                            <svg className="w-full h-full overflow-visible" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg">
+                              {[0, 20, 40, 60, 80, 100].map((tick) => {
+                                const y = 280 - (tick / 100) * 240;
+                                return (
+                                  <g key={tick}>
+                                    <line x1="45" y1={y} x2="560" y2={y} stroke="#f0f0f0" strokeWidth="1" />
+                                    <text x="35" y={y + 4} textAnchor="end" className="text-[11px] fill-neutral-400 font-medium">{tick}</text>
+                                  </g>
+                                );
+                              })}
+                              
+                              {[0, 2, 4, 6, 8, 10].map((tick) => {
+                                const x = 50 + (tick / 10) * 500;
+                                return (
+                                  <g key={tick}>
+                                    <text x={x} y="302" textAnchor="middle" className="text-[11px] fill-neutral-400 font-medium">{tick}</text>
+                                  </g>
+                                );
+                              })}
+
+                              <line x1="50" y1="210" x2="560" y2="78" stroke="#fa541c" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+
+                              {[
+                                { x: 1, y: 88 },
+                                { x: 2, y: 50 },
+                                { x: 3, y: 55 },
+                                { x: 4, y: 65 },
+                                { x: 5, y: 80 },
+                                { x: 6, y: 70 },
+                                { x: 7, y: 72 },
+                                { x: 8, y: 85 }
+                              ].map((pt, idx) => {
+                                const cx = 50 + (pt.x / 10) * 500;
+                                const cy = 280 - (pt.y / 100) * 240;
+                                return (
+                                  <g key={idx} className="group cursor-pointer">
+                                    <circle 
+                                      cx={cx} 
+                                      cy={cy} 
+                                      r="5" 
+                                      fill="#4096ff" 
+                                      className="stroke-white stroke-2 drop-shadow-sm hover:scale-125 transition-transform" 
+                                    />
+                                    <text x={cx} y={cy - 10} textAnchor="middle" className="text-[11px] font-bold fill-neutral-700">{pt.y}</text>
+                                  </g>
+                                );
+                              })}
+
+                              <line x1="48" y1="40" x2="48" y2="280" stroke="#d9d9d9" strokeWidth="1" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-neutral-100 space-y-4">
+                        <h2 className="text-xl font-bold text-neutral-800">1. 导入所需库</h2>
+                        <div className="text-[14px] text-neutral-700 space-y-2">
+                          <div className="font-bold flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-700"></span> 首先需要导入所需的库：
+                          </div>
+                          <ul className="pl-6 space-y-1.5 list-disc text-neutral-600">
+                            <li>numpy是用来做数值计算的基础库；</li>
+                            <li>sklearn.linear_model引入LinearRegression模型</li>
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      <div className="h-20"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : ['职业简介', '认定方案', '代码复习讲义', '实操平台演示'].includes(activeLessonTitle) || syllabus.some((ch: any) => ch.lessons.some((l: any) => l.title === activeLessonTitle)) ? (
               <div className="flex-1 w-full bg-white flex flex-col overflow-hidden">
                 {/* Editor Title */}
                 <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
@@ -686,6 +992,100 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
               <Button type="button" onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
               <Button type="button" onClick={handleDeleteLesson} className="bg-red-600 hover:bg-red-700 text-white font-bold h-10 px-8 shadow-md shadow-red-500/20">确定删除</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 编辑章节 Modal */}
+      {showEditChapterModal && chapterToEdit !== null && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+                <div className="w-1 h-4 bg-[#fa541c] rounded-full shrink-0"></div>
+                编辑章节
+              </h2>
+              <button onClick={() => setShowEditChapterModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!editChapterName.trim()) return;
+              const updatedSyllabus = [...syllabus];
+              updatedSyllabus[chapterToEdit] = {
+                ...updatedSyllabus[chapterToEdit],
+                chapter: editChapterName,
+                title: editChapterTitle
+              };
+              setSyllabus(updatedSyllabus);
+              setShowEditChapterModal(false);
+              setChapterToEdit(null);
+            }}>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 章节序号
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    placeholder="例如：第一课" 
+                    value={editChapterName}
+                    onChange={(e) => setEditChapterName(e.target.value)}
+                    autoFocus 
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                    <span className="text-[#fa541c]">*</span> 章节标题
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    placeholder="请输入章节标题" 
+                    value={editChapterTitle}
+                    onChange={(e) => setEditChapterTitle(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+                <Button type="button" onClick={() => setShowEditChapterModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+                <Button type="submit" className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 删除章节确认 Modal */}
+      {showDeleteChapterModal && chapterToDelete !== null && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-red-600 flex items-center gap-2">
+                提示
+              </h2>
+              <button onClick={() => setShowDeleteChapterModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-[14px] text-neutral-700 font-medium leading-relaxed">
+                确定要删除这一整章吗？删除后，本章下的所有课节也将一并删除，此操作不可恢复。
+              </p>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button type="button" onClick={() => setShowDeleteChapterModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button type="button" onClick={() => {
+                const updatedSyllabus = syllabus.filter((_, idx) => idx !== chapterToDelete);
+                setSyllabus(updatedSyllabus);
+                setShowDeleteChapterModal(false);
+                setChapterToDelete(null);
+              }} className="bg-red-600 hover:bg-red-700 text-white font-bold h-10 px-8 shadow-md shadow-red-500/20">确定删除</Button>
             </div>
           </div>
         </div>
