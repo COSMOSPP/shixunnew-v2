@@ -312,8 +312,15 @@ export default function TeacherCourseManage() {
                   <div className={cn("p-6 space-y-4", editorSubTab === 'directory' ? "block" : "hidden")}>
                     {COURSE_SYLLABUS.map((chapter, i) => {
                       const isCollapsed = collapsedChapters[i];
+                      const hasMenuOpen = addMenuOpenIndex === i || chapterMenuOpenIndex === i || (lessonMenuOpenIndex ? lessonMenuOpenIndex.startsWith(`${i}-`) : false);
                       return (
-                        <div key={i} className="rounded-lg bg-neutral-50 border border-neutral-100 relative">
+                        <div 
+                          key={i} 
+                          className={cn(
+                            "rounded-lg bg-neutral-50 border border-neutral-100 relative transition-all duration-200",
+                            hasMenuOpen ? "z-20 shadow-md" : "z-10"
+                          )}
+                        >
                           <div 
                             onClick={() => setCollapsedChapters(prev => ({ ...prev, [i]: !prev[i] }))}
                             className={cn(

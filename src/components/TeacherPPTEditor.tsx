@@ -388,6 +388,7 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
 
   const [addChapterMenuOpenIndex, setAddChapterMenuOpenIndex] = useState<number | null>(null);
   const [chapterActionMenuOpenIndex, setChapterActionMenuOpenIndex] = useState<number | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number, left: number }>({ top: 0, left: 0 });
   
   const [newLessonType, setNewLessonType] = useState('doc');
   
@@ -582,7 +583,15 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
             {/* Outline list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {syllabus.map((chapter: any, cIdx: number) => (
-                <div key={chapter.id} className="space-y-1">
+                <div 
+                  key={chapter.id} 
+                  className={cn(
+                    "space-y-1 relative transition-all duration-200",
+                    (addChapterMenuOpenIndex === cIdx || chapterActionMenuOpenIndex === cIdx || activeLessonMenu?.cIdx === cIdx) 
+                      ? "z-20" 
+                      : "z-10"
+                  )}
+                >
                   <div className="flex items-center justify-between group/chapter px-2 py-1 select-none hover:bg-neutral-50 rounded-lg transition-colors relative">
                     <span className="text-[12px] font-bold text-neutral-400 uppercase tracking-wider">
                       {chapter.chapter}
@@ -595,8 +604,11 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPosition({ top: rect.bottom + 8, left: rect.left });
                             setAddChapterMenuOpenIndex(addChapterMenuOpenIndex === cIdx ? null : cIdx);
                             setChapterActionMenuOpenIndex(null);
+                            setActiveLessonMenu(null);
                           }}
                           className="p-0.5 text-neutral-400 hover:text-[#fa541c] hover:bg-neutral-100 rounded transition-colors"
                           title="新建课件"
@@ -607,7 +619,10 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                         {addChapterMenuOpenIndex === cIdx && (
                           <>
                             <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setAddChapterMenuOpenIndex(null); }}></div>
-                            <div className="absolute left-6 top-6 w-72 bg-white border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl z-30 p-3 select-none flex flex-col gap-1.5 animation-slide-up">
+                            <div 
+                              className="fixed bg-white border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl z-30 p-3 select-none flex flex-col gap-1.5 animation-slide-up"
+                              style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
+                            >
                               {[
                                 { title: '教学课件', desc: '支持图文、PPT 文档、视频等', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', type: 'doc' },
                                 { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', type: 'experiment' },
@@ -643,8 +658,11 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPosition({ top: rect.bottom + 8, left: rect.left });
                             setChapterActionMenuOpenIndex(chapterActionMenuOpenIndex === cIdx ? null : cIdx);
                             setAddChapterMenuOpenIndex(null);
+                            setActiveLessonMenu(null);
                           }}
                           className="p-0.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded transition-colors"
                           title="更多操作"
@@ -655,7 +673,10 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                         {chapterActionMenuOpenIndex === cIdx && (
                           <>
                             <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setChapterActionMenuOpenIndex(null); }}></div>
-                            <div className="absolute left-6 top-6 w-28 bg-white border border-neutral-100 shadow-[0_8px_24px_rgba(0,0,0,0.08)] rounded-lg z-30 py-1 overflow-hidden flex flex-col gap-0.5 animation-slide-up">
+                            <div 
+                              className="fixed bg-white border border-neutral-100 shadow-[0_8px_24px_rgba(0,0,0,0.08)] rounded-lg z-30 py-1 overflow-hidden flex flex-col gap-0.5 animation-slide-up"
+                              style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
+                            >
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -729,7 +750,11 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setMenuPosition({ top: rect.bottom + 4, left: rect.right - 96 });
                                 setActiveLessonMenu(activeLessonMenu?.cIdx === cIdx && activeLessonMenu?.lIdx === lIdx ? null : { cIdx, lIdx });
+                                setAddChapterMenuOpenIndex(null);
+                                setChapterActionMenuOpenIndex(null);
                               }}
                               className="p-1 hover:bg-neutral-200/50 rounded text-neutral-400 hover:text-neutral-700"
                             >
@@ -738,7 +763,10 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                             {activeLessonMenu?.cIdx === cIdx && activeLessonMenu?.lIdx === lIdx && (
                               <>
                                 <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setActiveLessonMenu(null); }}></div>
-                                <div className="absolute top-6 right-0 w-24 bg-white border border-neutral-100 shadow-lg rounded-md z-30 py-1 overflow-hidden">
+                                <div 
+                                  className="fixed bg-white border border-neutral-100 shadow-lg rounded-md z-30 py-1 overflow-hidden"
+                                  style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
+                                >
                                   <button 
                                     onClick={(e) => {
                                       e.stopPropagation();

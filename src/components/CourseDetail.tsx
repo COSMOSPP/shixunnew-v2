@@ -1437,13 +1437,15 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                       <div className="flex flex-col">
                         {chapter.lessons.map((lesson, idx) => {
                           const isActive = lesson.title === playingLesson.title;
+                          const isMenuOpen = activeLessonMenu?.cIdx === i && activeLessonMenu?.lIdx === idx;
                           return (
                             <div 
                               key={idx} 
                               className={cn(
                                 "flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors cursor-pointer border-r-2 relative group",
                                 isActive ? "bg-[#fff2e8] text-[#fa541c] border-[#fa541c]" : "text-neutral-body hover:bg-neutral-100 border-transparent",
-                                lesson.locked && "opacity-50 cursor-not-allowed hover:bg-transparent"
+                                lesson.locked && "opacity-50 cursor-not-allowed hover:bg-transparent",
+                                isMenuOpen ? "z-20" : "z-10"
                               )}
                               onClick={() => {
                                 if (!lesson.locked) {
