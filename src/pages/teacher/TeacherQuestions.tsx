@@ -114,6 +114,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   );
 };
 
+const AVAILABLE_DATASETS = [
+  { name: 'house_prices_train.csv', size: '42.5 MB' },
+  { name: 'house_prices_test.csv', size: '12.8 MB' },
+  { name: 'house_prices_eval.csv', size: '15.4 MB' },
+  { name: 'mnist_train.bin', size: '9.9 MB' },
+  { name: 'mnist_test.bin', size: '1.6 MB' },
+  { name: 'iris_dataset.csv', size: '4.5 KB' },
+];
+
 export default function TeacherQuestions() {
   const location = useLocation();
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
@@ -263,11 +272,8 @@ export default function TeacherQuestions() {
   // Practical Question (实训题) specific states
   const [shixunDescription, setShixunDescription] = useState(`### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述`);
   const [shixunAnswerType, setShixunAnswerType] = useState('线上环境答题');
-  const [shixunType, setShixunType] = useState('自动评分');
-  const [shixunTaskType, setShixunTaskType] = useState('回归');
-  const [shixunTrainDataset, setShixunTrainDataset] = useState('');
-  const [shixunTestDataset, setShixunTestDataset] = useState('');
-  const [shixunScoreDataset, setShixunScoreDataset] = useState('');
+  const [shixunDatasets, setShixunDatasets] = useState<string[]>([]);
+  const [isDatasetDropdownOpen, setIsDatasetDropdownOpen] = useState(false);
 
   // Programming Question (编程题) specific states
   const [codingLanguage, setCodingLanguage] = useState('Python');
@@ -395,7 +401,7 @@ export default function TeacherQuestions() {
       source: '人工出题',
       difficulty: newQuestionDifficulty || '中级',
       tags: tags.slice(0, 2).join(', ') || '智能体',
-      grading: newQuestionType === '实训题' ? shixunType : '自动评分',
+      grading: '自动评分',
       creator: 'Momodel',
       updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
       scope: '已公开',
@@ -424,11 +430,8 @@ export default function TeacherQuestions() {
     setNewQuestionStatus('启用');
     setShixunDescription(`### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述`);
     setShixunAnswerType('线上环境答题');
-    setShixunType('自动评分');
-    setShixunTaskType('回归');
-    setShixunTrainDataset('');
-    setShixunTestDataset('');
-    setShixunScoreDataset('');
+    setShixunDatasets([]);
+    setIsDatasetDropdownOpen(false);
     setCodingLanguage('Python');
     setCodingMaxTime(1);
     setCodingInputDesc('');
@@ -1080,168 +1083,80 @@ export default function TeacherQuestions() {
                     )}
                   </div>
 
-                  {/* 实训类型 */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 实训类型：
-                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
-                    </label>
-                    <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
-                      {[
-                        { value: '自动评分', label: '自动评分' },
-                        { value: '实训项目', label: '实训项目' },
-                        { value: '实验报告', label: '实验报告' }
-                      ].map((item) => (
-                        <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                          <input
-                            type="radio"
-                            name="shixunType"
-                            value={item.value}
-                            checked={shixunType === item.value}
-                            onChange={() => setShixunType(item.value)}
-                            className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
-                          />
-                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 任务类型 */}
-                  {shixunType === '自动评分' && (
-                    <div className="space-y-2 animate-fade-in">
-                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                        <span className="text-[#fa541c]">*</span> 任务类型：
-                        <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
-                      </label>
-                      <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
-                        {[
-                          { value: '回归', label: '回归' },
-                          { value: 'csv分类', label: 'csv分类' },
-                          { value: '图像分类', label: '图像分类' },
-                          { value: '自定义', label: '自定义' }
-                        ].map((item) => (
-                          <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                            <input
-                              type="radio"
-                              name="shixunTaskType"
-                              value={item.value}
-                              checked={shixunTaskType === item.value}
-                              onChange={() => setShixunTaskType(item.value)}
-                              className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
-                            />
-                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* 数据集选择 */}
-                  <div className="space-y-4 pt-1">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 数据集选择：
-                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
-                    </label>
-
-                    <div className="space-y-4 pl-1">
-                      {/* 训练数据集 */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-neutral-700">训练数据集：</span>
-                          <span className="text-[11px] text-neutral-400">用于学生实训训练过程中训练或验证模型的数据集</span>
-                        </div>
-                        {shixunTrainDataset ? (
-                          <div className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg">
-                            <div className="flex items-center gap-2 text-xs text-neutral-700">
-                              <Database className="w-4 h-4 text-[#fa541c]" />
-                              <span className="font-medium">{shixunTrainDataset}</span>
-                              <span className="text-neutral-400 text-[10px]">(42.5 MB)</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setShixunTrainDataset('')}
-                              className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setShixunTrainDataset('house_prices_train.csv')}
-                            className="w-full h-9 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded-lg text-xs flex items-center justify-center gap-1.5 text-neutral-500 bg-white transition-all font-medium cursor-pointer"
-                          >
-                            <Plus className="w-4 h-4 text-neutral-400" /> 添加训练数据集
-                          </button>
-                        )}
-                      </div>
-
-                      {/* 测试数据集 */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-neutral-700">测试数据集：</span>
-                          <span className="text-[11px] text-neutral-400">用于学生提交结束前，系统测试模型结果的数据集，可根据测试结果调试文件</span>
-                        </div>
-                        {shixunTestDataset ? (
-                          <div className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg">
-                            <div className="flex items-center gap-2 text-xs text-neutral-700">
-                              <Database className="w-4 h-4 text-[#fa541c]" />
-                              <span className="font-medium">{shixunTestDataset}</span>
-                              <span className="text-neutral-400 text-[10px]">(12.8 MB)</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setShixunTestDataset('')}
-                              className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setShixunTestDataset('house_prices_test.csv')}
-                            className="w-full h-9 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded-lg text-xs flex items-center justify-center gap-1.5 text-neutral-500 bg-white transition-all font-medium cursor-pointer"
-                          >
-                            <Plus className="w-4 h-4 text-neutral-400" /> 添加测试数据集
-                          </button>
-                        )}
-                      </div>
-
-                      {/* 评分数据集 */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-neutral-700">评分数据集：</span>
-                          <span className="text-[11px] text-neutral-400">用于学生提交结果后，进行最后自动评分的数据集</span>
-                        </div>
-                        {shixunScoreDataset ? (
-                          <div className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg">
-                            <div className="flex items-center gap-2 text-xs text-neutral-700">
-                              <Database className="w-4 h-4 text-[#fa541c]" />
-                              <span className="font-medium">{shixunScoreDataset}</span>
-                              <span className="text-neutral-400 text-[10px]">(15.4 MB)</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setShixunScoreDataset('')}
-                              className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setShixunScoreDataset('house_prices_eval.csv')}
-                            className="w-full h-9 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded-lg text-xs flex items-center justify-center gap-1.5 text-neutral-500 bg-white transition-all font-medium cursor-pointer"
-                          >
-                            <Plus className="w-4 h-4 text-neutral-400" /> 添加评分数据集
-                          </button>
-                        )}
-                      </div>
-
+                  <div className="space-y-3 pt-1">
+                    <div className="flex items-center gap-2">
+                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                        <span className="text-[#fa541c]">*</span> 数据集选择：
+                      </label>
+                      <span className="text-[12px] text-neutral-400 font-normal">用于学生实训答题过程中训练或验证模型的数据集</span>
                     </div>
+
+                    <div className="relative pl-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsDatasetDropdownOpen(!isDatasetDropdownOpen)}
+                        className="h-9 border border-dashed border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] rounded-lg text-xs flex items-center justify-center px-4 transition-all font-medium cursor-pointer bg-white"
+                      >
+                        添加数据集
+                      </button>
+
+                      {isDatasetDropdownOpen && (
+                        <div className="absolute z-10 w-[320px] mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 max-h-48 overflow-y-auto custom-scrollbar animate-fade-in left-1">
+                          {AVAILABLE_DATASETS.map((ds) => {
+                            const isSelected = shixunDatasets.includes(ds.name);
+                            return (
+                              <label
+                                key={ds.name}
+                                className="flex items-center justify-between px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-xs text-neutral-700 select-none"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      if (isSelected) {
+                                        setShixunDatasets(shixunDatasets.filter(name => name !== ds.name));
+                                      } else {
+                                        setShixunDatasets([...shixunDatasets, ds.name]);
+                                      }
+                                    }}
+                                    className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer"
+                                  />
+                                  <span className="font-medium">{ds.name}</span>
+                                </div>
+                                <span className="text-[10px] text-neutral-400">{ds.size}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 已选数据集展示 */}
+                    {shixunDatasets.length > 0 && (
+                      <div className="space-y-2 pl-1 pt-1">
+                        {shixunDatasets.map((datasetName) => {
+                          const dsInfo = AVAILABLE_DATASETS.find(d => d.name === datasetName) || { name: datasetName, size: '未知大小' };
+                          return (
+                            <div key={datasetName} className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg animate-slide-up">
+                              <div className="flex items-center gap-2 text-xs text-neutral-700">
+                                <Database className="w-4 h-4 text-[#fa541c]" />
+                                <span className="font-medium">{dsInfo.name}</span>
+                                <span className="text-neutral-400 text-[10px]">({dsInfo.size})</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShixunDatasets(shixunDatasets.filter(name => name !== datasetName))}
+                                className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                 </div>
