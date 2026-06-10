@@ -32,8 +32,8 @@ interface OperationalRole {
 interface CloudPlatform {
   id: string;
   name: string;
-  platformType: "ctyun" | "proxmox" | "cloudpods" | "kubernetes" | "huawei";
-  type: "公有云" | "私有云" | "容器平台";
+  platformType: "ctyun" | "proxmox" | "cloudpods" | "kubernetes" | "huawei" | "aliyun" | "tencent" | "ceph" | "nfs" | "minio" | "glusterfs" | "k3s" | "openshift" | "openstack" | "vmware";
+  type: "公有云" | "私有云" | "容器" | "存储";
   pluginId: string;
   status: "已启用" | "未启用";
   createdAt: string;
@@ -128,9 +128,10 @@ const initialPlatforms: CloudPlatform[] = [
   { id: "plat-2", name: "pve", platformType: "proxmox", type: "私有云", pluginId: "private", status: "已启用", createdAt: "2025-05-08 15:24" },
   { id: "plat-3", name: "实训云(临时)", platformType: "cloudpods", type: "私有云", pluginId: "private-qsohfH", status: "未启用", createdAt: "2024-12-25 09:28" },
   { id: "plat-4", name: "天翼云", platformType: "ctyun", type: "公有云", pluginId: "se9cyxgrzoj27vt1ijzm", status: "已启用", createdAt: "2024-11-23 10:35" },
-  { id: "plat-5", name: "kubernetes容器平台", platformType: "kubernetes", type: "容器平台", pluginId: "h2ahwz1awycagfymsp7cc", status: "已启用", createdAt: "2024-04-19 17:29" },
+  { id: "plat-5", name: "kubernetes容器平台", platformType: "kubernetes", type: "容器", pluginId: "h2ahwz1awycagfymsp7cc", status: "已启用", createdAt: "2024-04-19 17:29" },
   { id: "plat-6", name: "Ideal实训云", platformType: "cloudpods", type: "私有云", pluginId: "private", status: "已启用", createdAt: "2024-04-19 17:29" },
-  { id: "plat-7", name: "华为云", platformType: "huawei", type: "公有云", pluginId: "faanhu6yfo2ep84v7kxg4", status: "已启用", createdAt: "2024-04-19 17:28" }
+  { id: "plat-7", name: "华为云", platformType: "huawei", type: "公有云", pluginId: "faanhu6yfo2ep84v7kxg4", status: "已启用", createdAt: "2024-04-19 17:28" },
+  { id: "plat-8", name: "Ceph存储平台", platformType: "ceph", type: "存储", pluginId: "ceph-storage-pool", status: "已启用", createdAt: "2026-06-01 10:00" }
 ];
 
 const initialLogs: SystemLog[] = [
@@ -265,6 +266,116 @@ const renderPlatformLogo = (platformType: string) => {
             <path d="M50,50 C50,50 58,20 62,10 C66,20 50,50 50,50" opacity="0.8" />
           </svg>
           <span className="font-black text-xs text-neutral-800 font-sans tracking-tight">HUAWEI</span>
+        </div>
+      );
+    case "aliyun":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#ff6a00]" viewBox="0 0 100 100" fill="currentColor">
+            <rect x="15" y="15" width="70" height="70" fill="none" stroke="currentColor" strokeWidth="12" rx="10" />
+            <path d="M35,35 L65,35 M35,50 L65,50 M35,65 L55,65" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">阿里云</span>
+        </div>
+      );
+    case "tencent":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#0052d9]" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M50,20 C35,20 25,32 25,48 C25,65 38,72 50,72 C62,72 75,65 75,48 C75,32 65,20 50,20 Z" fill="none" stroke="currentColor" strokeWidth="10" />
+            <circle cx="42" cy="45" r="8" />
+            <circle cx="58" cy="45" r="8" />
+            <path d="M35,60 Q50,68 65,60" fill="none" stroke="currentColor" strokeWidth="6" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">腾讯云</span>
+        </div>
+      );
+    case "k3s":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#326ce5]" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,15 85,35 85,65 50,85 15,65 15,35" fill="none" stroke="currentColor" strokeWidth="10" />
+            <circle cx="50" cy="50" r="15" />
+            <line x1="50" y1="15" x2="50" y2="85" stroke="currentColor" strokeWidth="6" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">K3s</span>
+        </div>
+      );
+    case "openshift":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#e00]" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="currentColor" opacity="0.15" />
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="currentColor" strokeWidth="10" />
+            <path d="M30,50 L50,30 L70,50 L50,70 Z" stroke="currentColor" strokeWidth="8" fill="none" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">OpenShift</span>
+        </div>
+      );
+    case "openstack":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#f03e3e]" viewBox="0 0 100 100" fill="currentColor">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="12" />
+            <path d="M25,50 L75,50 M50,25 L50,75" stroke="currentColor" strokeWidth="10" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">OpenStack</span>
+        </div>
+      );
+    case "vmware":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#0095d9]" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M10,30 L90,30 M10,50 L90,50 M10,70 L90,70" stroke="currentColor" strokeWidth="12" strokeLinecap="round" />
+            <path d="M30,20 L30,80 M70,20 L70,80" stroke="currentColor" strokeWidth="8" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">VMware</span>
+        </div>
+      );
+    case "ceph":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#f05053]" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M50,15 C30,15 15,30 15,50 C15,62 22,72 32,78 C35,65 42,55 50,55 C58,55 65,65 68,78 C78,72 85,62 85,50 C85,30 70,15 50,15 Z" fill="none" stroke="currentColor" strokeWidth="10" />
+            <circle cx="35" cy="45" r="6" />
+            <circle cx="65" cy="45" r="6" />
+            <path d="M50,75 L50,90" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+            <path d="M40,80 L30,90" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+            <path d="M60,80 L70,90" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">Ceph</span>
+        </div>
+      );
+    case "nfs":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#5c6bc0]" viewBox="0 0 100 100" fill="currentColor">
+            <rect x="20" y="20" width="60" height="60" rx="8" fill="none" stroke="currentColor" strokeWidth="10" />
+            <rect x="35" y="40" width="30" height="20" fill="currentColor" />
+            <line x1="50" y1="20" x2="50" y2="80" stroke="currentColor" strokeWidth="6" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">NFS 存储</span>
+        </div>
+      );
+    case "minio":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#c72c48]" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M15,50 Q50,15 85,50 Q50,85 15,50 Z" fill="none" stroke="currentColor" strokeWidth="10" />
+            <circle cx="50" cy="50" r="10" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">MinIO</span>
+        </div>
+      );
+    case "glusterfs":
+      return (
+        <div className="flex items-center gap-2 select-none">
+          <svg className="w-5.5 h-5.5 shrink-0 text-[#388e3c]" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M20,30 L50,15 L80,30 L80,70 L50,85 L20,70 Z" fill="none" stroke="currentColor" strokeWidth="10" />
+            <polygon points="50,15 80,30 50,45 20,30" fill="currentColor" opacity="0.2" />
+            <line x1="50" y1="45" x2="50" y2="85" stroke="currentColor" strokeWidth="8" />
+          </svg>
+          <span className="font-bold text-xs text-neutral-800 font-sans tracking-tight">GlusterFS</span>
         </div>
       );
     default:
@@ -460,14 +571,100 @@ export default function AdminSystemPage() {
   const [filterPlatformName, setFilterPlatformName] = useState("");
   const [selectedPlatIds, setSelectedPlatIds] = useState<string[]>([]);
 
+  // --- Redesigned Form States & Handlers for Cloud Platform ---
+  const [formMainType, setFormMainType] = useState<"容器" | "虚机" | "存储">("虚机");
+  const [formVmType, setFormVmType] = useState<"公有云" | "私有云">("公有云");
+  const [formSubPlatform, setFormSubPlatform] = useState<string>("ctyun");
+  const [isNameManual, setIsNameManual] = useState(false);
   const [showPlatformModal, setShowPlatformModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<CloudPlatform | null>(null);
-
   const [formPlatName, setFormPlatName] = useState("");
-  const [formPlatType, setFormPlatType] = useState<CloudPlatform["platformType"]>("ctyun");
-  const [formType, setFormType] = useState<CloudPlatform["type"]>("公有云");
   const [formPluginId, setFormPluginId] = useState("");
   const [formStatus, setFormStatus] = useState<CloudPlatform["status"]>("已启用");
+
+  const getPlatformDefaultName = (mainType: "容器" | "虚机" | "存储", vmType: "公有云" | "私有云", subPlat: string) => {
+    const providerNames: Record<string, string> = {
+      ctyun: "天翼云",
+      huawei: "华为云",
+      aliyun: "阿里云",
+      tencent: "腾讯云",
+      proxmox: "Proxmox VE",
+      cloudpods: "Cloudpods",
+      openstack: "OpenStack",
+      vmware: "VMware",
+      kubernetes: "Kubernetes",
+      k3s: "K3s",
+      openshift: "OpenShift",
+      ceph: "Ceph",
+      nfs: "NFS",
+      minio: "MinIO",
+      glusterfs: "GlusterFS"
+    };
+    const provider = providerNames[subPlat] || subPlat;
+    if (mainType === "容器") {
+      return `${provider}容器平台`;
+    } else if (mainType === "虚机") {
+      return `${provider}${vmType}平台`;
+    } else {
+      return `${provider}存储平台`;
+    }
+  };
+
+  const getPlatformDefaultPluginId = (subPlat: string) => {
+    const defaultPlugins: Record<string, string> = {
+      ctyun: "se9cyxgrzoj27vt1ijzm",
+      huawei: "faanhu6yfo2ep84v7kxg4",
+      aliyun: "aliyun-plugin-rzo",
+      tencent: "tencent-plugin-gxr",
+      proxmox: "private",
+      cloudpods: "private",
+      openstack: "private-openstack",
+      vmware: "private-vmware",
+      kubernetes: "h2ahwz1awycagfymsp7cc",
+      k3s: "k3s-plugin-light",
+      openshift: "openshift-plugin-ent",
+      ceph: "ceph-storage-pool",
+      nfs: "nfs-storage-plugin",
+      minio: "minio-object-plugin",
+      glusterfs: "gluster-fs-plugin"
+    };
+    return defaultPlugins[subPlat] || `${subPlat}-plugin`;
+  };
+
+  const handleFormMainTypeChange = (val: "容器" | "虚机" | "存储") => {
+    setFormMainType(val);
+    let nextSub = "ctyun";
+    if (val === "容器") {
+      nextSub = "kubernetes";
+    } else if (val === "存储") {
+      nextSub = "ceph";
+    } else {
+      nextSub = formVmType === "公有云" ? "ctyun" : "proxmox";
+    }
+    setFormSubPlatform(nextSub);
+    if (!isNameManual) {
+      setFormPlatName(getPlatformDefaultName(val, formVmType, nextSub));
+    }
+    setFormPluginId(getPlatformDefaultPluginId(nextSub));
+  };
+
+  const handleFormVmTypeChange = (val: "公有云" | "私有云") => {
+    setFormVmType(val);
+    const nextSub = val === "公有云" ? "ctyun" : "proxmox";
+    setFormSubPlatform(nextSub);
+    if (!isNameManual) {
+      setFormPlatName(getPlatformDefaultName("虚机", val, nextSub));
+    }
+    setFormPluginId(getPlatformDefaultPluginId(nextSub));
+  };
+
+  const handleFormSubPlatformChange = (val: string) => {
+    setFormSubPlatform(val);
+    if (!isNameManual) {
+      setFormPlatName(getPlatformDefaultName(formMainType, formVmType, val));
+    }
+    setFormPluginId(getPlatformDefaultPluginId(val));
+  };
 
   const handleSearch = () => {
     setFilterPlatformName(searchPlatformName);
@@ -481,10 +678,12 @@ export default function AdminSystemPage() {
 
   const handleOpenCreatePlatform = () => {
     setEditingPlatform(null);
-    setFormPlatName("");
-    setFormPlatType("ctyun");
-    setFormType("公有云");
-    setFormPluginId("");
+    setFormMainType("虚机");
+    setFormVmType("公有云");
+    setFormSubPlatform("ctyun");
+    setIsNameManual(false);
+    setFormPlatName("天翼云公有云平台");
+    setFormPluginId("se9cyxgrzoj27vt1ijzm");
     setFormStatus("已启用");
     setShowPlatformModal(true);
   };
@@ -492,10 +691,23 @@ export default function AdminSystemPage() {
   const handleOpenEditPlatform = (p: CloudPlatform) => {
     setEditingPlatform(p);
     setFormPlatName(p.name);
-    setFormPlatType(p.platformType);
-    setFormType(p.type);
     setFormPluginId(p.pluginId);
     setFormStatus(p.status);
+    setIsNameManual(true);
+    
+    // Set hierarchical states based on loaded item type and platformType
+    if (p.type === "容器") {
+      setFormMainType("容器");
+      setFormSubPlatform(p.platformType);
+    } else if (p.type === "存储") {
+      setFormMainType("存储");
+      setFormSubPlatform(p.platformType);
+    } else {
+      setFormMainType("虚机");
+      setFormVmType(p.type as any);
+      setFormSubPlatform(p.platformType);
+    }
+    
     setShowPlatformModal(true);
   };
 
@@ -509,10 +721,17 @@ export default function AdminSystemPage() {
     const now = new Date();
     const formatTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
+    // Map hierarchical states back to standard schema fields
+    const mappedType: CloudPlatform["type"] = 
+      formMainType === "容器" ? "容器" :
+      formMainType === "存储" ? "存储" :
+      formVmType;
+    const mappedPlatType = formSubPlatform as CloudPlatform["platformType"];
+
     if (editingPlatform) {
       setPlatforms(platforms.map(p => 
         p.id === editingPlatform.id 
-          ? { ...p, name: formPlatName.trim(), platformType: formPlatType, type: formType, pluginId: formPluginId.trim(), status: formStatus } 
+          ? { ...p, name: formPlatName.trim(), platformType: mappedPlatType, type: mappedType, pluginId: formPluginId.trim(), status: formStatus } 
           : p
       ));
       triggerToast(`💾 成功保存云平台「${formPlatName}」配置！`);
@@ -520,8 +739,8 @@ export default function AdminSystemPage() {
       const newPlatform: CloudPlatform = {
         id: `plat-${Date.now()}`,
         name: formPlatName.trim(),
-        platformType: formPlatType,
-        type: formType,
+        platformType: mappedPlatType,
+        type: mappedType,
         pluginId: formPluginId.trim(),
         status: formStatus,
         createdAt: formatTime
@@ -1367,9 +1586,9 @@ export default function AdminSystemPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 select-none shrink-0">
               {[
                 { title: "平台总数", value: String(platforms.length), icon: Cloud },
-                { title: "已启用平台", value: String(platforms.filter(p => p.status === "已启用").length), icon: CheckCircle },
-                { title: "未启用平台", value: String(platforms.filter(p => p.status === "未启用").length), icon: AlertCircle },
-                { title: "公有云实例", value: String(platforms.filter(p => p.type === "公有云").length), icon: Server }
+                { title: "容器平台", value: String(platforms.filter(p => p.type === "容器").length), icon: Database },
+                { title: "虚机平台", value: String(platforms.filter(p => p.type === "公有云" || p.type === "私有云").length), icon: Cpu },
+                { title: "存储平台", value: String(platforms.filter(p => p.type === "存储").length), icon: Server }
               ].map((stat, i) => (
                 <Card key={i} className="shadow-sm border-neutral-100 bg-white rounded overflow-hidden transition-all hover:shadow-md">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -1438,7 +1657,7 @@ export default function AdminSystemPage() {
                     </th>
                     <th className="p-4 font-semibold text-left">
                       <div className="flex items-center gap-1.5">
-                        平台名称
+                        云平台的名称
                         <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer" />
                       </div>
                     </th>
@@ -1456,19 +1675,7 @@ export default function AdminSystemPage() {
                     </th>
                     <th className="p-4 font-semibold text-left">
                       <div className="flex items-center gap-1.5">
-                        插件ID
-                        <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
-                      </div>
-                    </th>
-                    <th className="p-4 font-semibold text-left">
-                      <div className="flex items-center gap-1.5">
                         状态
-                        <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
-                      </div>
-                    </th>
-                    <th className="p-4 font-semibold text-left">
-                      <div className="flex items-center gap-1.5">
-                        创建时间
                         <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
                       </div>
                     </th>
@@ -1504,7 +1711,7 @@ export default function AdminSystemPage() {
                             </button>
                           </td>
 
-                          {/* 平台名称 */}
+                          {/* 云平台的名称 */}
                           <td className="p-4 font-semibold text-neutral-800 leading-snug">{plat.name}</td>
                           
                           {/* 平台类型 */}
@@ -1514,16 +1721,15 @@ export default function AdminSystemPage() {
                           <td className="p-4">
                             <span className={cn(
                               "px-2 py-0.5 rounded text-[12px] border font-medium font-sans",
-                              plat.type === "公有云" ? "bg-amber-50 border-amber-200 text-amber-600" :
-                              plat.type === "私有云" ? "bg-amber-50 border-amber-200 text-amber-600" :
+                              plat.type === "公有云" ? "bg-orange-50 border-orange-200 text-orange-600" :
+                              plat.type === "私有云" ? "bg-blue-50 border-blue-200 text-blue-600" :
+                              plat.type === "容器" ? "bg-emerald-50 border-emerald-200 text-emerald-600" :
+                              plat.type === "存储" ? "bg-purple-50 border-purple-200 text-purple-600" :
                               "bg-rose-50 border-rose-200 text-rose-600"
                             )}>
                               {plat.type}
                             </span>
                           </td>
-                          
-                          {/* 插件ID */}
-                          <td className="p-4 font-mono text-neutral-500">{plat.pluginId}</td>
                           
                           {/* 状态 */}
                           <td className="p-4">
@@ -1534,9 +1740,6 @@ export default function AdminSystemPage() {
                               {plat.status}
                             </span>
                           </td>
-                          
-                          {/* 创建时间 */}
-                          <td className="p-4 font-mono text-neutral-500">{plat.createdAt}</td>
                           
                           {/* 操作 */}
                           <td className="p-4 text-right pr-6">
@@ -1579,7 +1782,7 @@ export default function AdminSystemPage() {
                     })}
                   {platforms.filter(plat => plat.name.toLowerCase().includes(filterPlatformName.trim().toLowerCase())).length === 0 && (
                     <tr>
-                      <td colSpan={8} className="p-12 text-center text-neutral-400">
+                      <td colSpan={6} className="p-12 text-center text-neutral-400">
                         <AlertCircle className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
                         <span>没有检索到与当前名称匹配的云平台。</span>
                       </td>
@@ -1628,92 +1831,134 @@ export default function AdminSystemPage() {
                 {/* Body inputs */}
                 <div className="p-6 space-y-4 text-left">
                   
+                  {/* 云平台分类 / 选择类型 */}
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-neutral-700 block">云平台分类</label>
+                    <select
+                      value={formMainType}
+                      onChange={(e) => handleFormMainTypeChange(e.target.value as any)}
+                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                    >
+                      <option value="容器">容器</option>
+                      <option value="虚机">虚机</option>
+                      <option value="存储">储存</option>
+                    </select>
+                  </div>
+
                   {/* Platform Name */}
                   <div className="space-y-1.5">
-                    <label className="font-bold text-neutral-700 block">平台名称</label>
+                    <div className="flex justify-between items-center">
+                      <label className="font-bold text-neutral-700 block">云平台的名称</label>
+                      {!isNameManual && (
+                        <span className="text-[9px] text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded font-bold scale-90 origin-right select-none animate-pulse">
+                          ⚡ 智能生成中
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="text"
                       required
                       placeholder="请输入云平台名称，如：天翼云资源池"
                       value={formPlatName}
-                      onChange={(e) => setFormPlatName(e.target.value)}
+                      onChange={(e) => {
+                        setFormPlatName(e.target.value);
+                        setIsNameManual(true);
+                      }}
                       className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Platform Type */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block">平台类型</label>
+                  {/* 针对各分类的具体子选项选择 */}
+                  {formMainType === "容器" && (
+                    <div className="space-y-1.5 animate-fade-in">
+                      <label className="font-bold text-neutral-700 block">容器</label>
                       <select
-                        value={formPlatType}
-                        onChange={(e) => setFormPlatType(e.target.value as any)}
+                        value={formSubPlatform}
+                        onChange={(e) => handleFormSubPlatformChange(e.target.value)}
                         className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
                       >
-                        <option value="ctyun">天翼云</option>
-                        <option value="proxmox">Proxmox VE</option>
-                        <option value="cloudpods">Cloudpods</option>
-                        <option value="kubernetes">Kubernetes</option>
-                        <option value="huawei">华为云</option>
+                        <option value="kubernetes">Kubernetes (K8s)</option>
+                        <option value="k3s">K3s (轻量化 Kubernetes)</option>
+                        <option value="openshift">Red Hat OpenShift</option>
                       </select>
                     </div>
+                  )}
 
-                    {/* Type Category */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block">类型</label>
+                  {formMainType === "虚机" && (
+                    <div className="space-y-3.5 animate-fade-in">
+                      <div className="space-y-1.5">
+                        <label className="font-bold text-neutral-700 block">虚机(公有云\私有云)</label>
+                        <div className="flex gap-4 py-1 select-none">
+                          <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-neutral-600">
+                            <input
+                              type="radio"
+                              name="vmType"
+                              value="公有云"
+                              checked={formVmType === "公有云"}
+                              onChange={() => handleFormVmTypeChange("公有云")}
+                              className="accent-[#fa541c]"
+                            />
+                            <span>公有云</span>
+                          </label>
+                          <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-neutral-600">
+                            <input
+                              type="radio"
+                              name="vmType"
+                              value="私有云"
+                              checked={formVmType === "私有云"}
+                              onChange={() => handleFormVmTypeChange("私有云")}
+                              className="accent-[#fa541c]"
+                            />
+                            <span>私有云</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {formVmType === "公有云" ? (
+                          <select
+                            value={formSubPlatform}
+                            onChange={(e) => handleFormSubPlatformChange(e.target.value)}
+                            className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                          >
+                            <option value="ctyun">天翼云 (CTYun)</option>
+                            <option value="huawei">华为云 (Huawei Cloud)</option>
+                            <option value="aliyun">阿里云 (Alibaba Cloud)</option>
+                            <option value="tencent">腾讯云 (Tencent Cloud)</option>
+                          </select>
+                        ) : (
+                          <select
+                            value={formSubPlatform}
+                            onChange={(e) => handleFormSubPlatformChange(e.target.value)}
+                            className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                          >
+                            <option value="proxmox">Proxmox VE (PVE)</option>
+                            <option value="cloudpods">Cloudpods (实训云池)</option>
+                            <option value="openstack">OpenStack (开源虚拟化)</option>
+                            <option value="vmware">VMware vSphere (ESXi)</option>
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {formMainType === "存储" && (
+                    <div className="space-y-1.5 animate-fade-in">
+                      <label className="font-bold text-neutral-700 block">储存</label>
                       <select
-                        value={formType}
-                        onChange={(e) => setFormType(e.target.value as any)}
+                        value={formSubPlatform}
+                        onChange={(e) => handleFormSubPlatformChange(e.target.value)}
                         className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
                       >
-                        <option value="公有云">公有云</option>
-                        <option value="私有云">私有云</option>
-                        <option value="容器平台">容器平台</option>
+                        <option value="ceph">Ceph 分布式存储</option>
+                        <option value="nfs">NFS 网络文件系统</option>
+                        <option value="minio">MinIO 对象存储</option>
+                        <option value="glusterfs">GlusterFS 存储集群</option>
                       </select>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Plugin ID */}
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-neutral-700 block">插件ID</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="请输入插件ID，如：c4s33451d4plnhp3zidf"
-                      value={formPluginId}
-                      onChange={(e) => setFormPluginId(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-mono font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
-                    />
-                  </div>
 
-                  {/* Status */}
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-neutral-700 block">状态</label>
-                    <div className="flex items-center gap-4 py-1 select-none">
-                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input
-                          type="radio"
-                          name="status"
-                          value="已启用"
-                          checked={formStatus === "已启用"}
-                          onChange={() => setFormStatus("已启用")}
-                          className="accent-[#fa541c]"
-                        />
-                        <span>已启用</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input
-                          type="radio"
-                          name="status"
-                          value="未启用"
-                          checked={formStatus === "未启用"}
-                          onChange={() => setFormStatus("未启用")}
-                          className="accent-[#fa541c]"
-                        />
-                        <span>未启用</span>
-                      </label>
-                    </div>
-                  </div>
 
                 </div>
 
@@ -2269,9 +2514,9 @@ export default function AdminSystemPage() {
                         <div className="border border-neutral-200 rounded-lg p-3.5 bg-neutral-50/50 flex flex-wrap gap-2.5 max-h-[140px] overflow-y-auto custom-scrollbar">
                           {platforms
                             .filter(plat => {
-                              const matchesContainer = formPoolTypes.includes("容器") && plat.platformType === "kubernetes";
+                              const matchesContainer = formPoolTypes.includes("容器") && (plat.type === "容器" || plat.platformType === "kubernetes");
                               const matchesVM = formPoolTypes.includes("虚机") && (plat.type === "公有云" || plat.type === "私有云");
-                              const matchesStorage = formPoolTypes.includes("存储") && (plat.type === "公有云" || plat.type === "私有云");
+                              const matchesStorage = formPoolTypes.includes("存储") && plat.type === "存储";
                               return matchesContainer || matchesVM || matchesStorage;
                             })
                             .map(plat => {
@@ -2300,9 +2545,9 @@ export default function AdminSystemPage() {
                               );
                             })}
                           {platforms.filter(plat => {
-                            const matchesContainer = formPoolTypes.includes("容器") && plat.platformType === "kubernetes";
+                            const matchesContainer = formPoolTypes.includes("容器") && (plat.type === "容器" || plat.platformType === "kubernetes");
                             const matchesVM = formPoolTypes.includes("虚机") && (plat.type === "公有云" || plat.type === "私有云");
-                            const matchesStorage = formPoolTypes.includes("存储") && (plat.type === "公有云" || plat.type === "私有云");
+                            const matchesStorage = formPoolTypes.includes("存储") && plat.type === "存储";
                             return matchesContainer || matchesVM || matchesStorage;
                           }).length === 0 && (
                             <span className="text-neutral-400 italic">没有找到符合当前类型的可用云平台。</span>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, Send, MessageSquare, Database, Sparkles } from 'lucide-react';
+import { Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -123,6 +123,195 @@ const AVAILABLE_DATASETS = [
   { name: 'iris_dataset.csv', size: '4.5 KB' },
 ];
 
+const getQuestionsForBank = (bankName: string, questionsList: any[]) => {
+  // First, find questions in the user's questionsList that match this bank
+  const userQuestions = questionsList.filter(q => q.bank === bankName);
+  
+  // Create default questions
+  const defaultQuestions: any[] = [];
+  
+  if (bankName.includes('大模型') || bankName.includes('深度学习') || bankName.includes('人工智能') || bankName.includes('客观题') || bankName.includes('D-uni') || bankName.includes('机器学习')) {
+    defaultQuestions.push(
+      {
+        id: 101,
+        name: '零样本提示是指？',
+        type: '单选题',
+        options: [
+          '不提供示例直接让模型完成任务',
+          '提供大量示例让模型学习',
+          '不给模型任何输入',
+          '只使用数字示例'
+        ],
+        correct: 'A',
+        analysis: '零样本提示（Zero-shot Prompting）是指直接向大模型描述任务要求，而不提供任何具体的事例或示范，让模型依靠其预训练的泛化能力直接完成任务。'
+      },
+      {
+        id: 102,
+        name: '以下哪项是大语言模型常见的局限性？',
+        type: '单选题',
+        options: [
+          '可能产生幻觉',
+          '无法处理文本',
+          '不需要计算资源',
+          '只有文字'
+        ],
+        correct: 'A',
+        analysis: '大语言模型由于其自回归概率预测 of 机制，容易产生符合语法逻辑但内容完全不真实的“幻觉”现象，这是大模型当前面临的最主要局限性之一。'
+      }
+    );
+  }
+  
+  // Add some specific deep learning questions
+  if (bankName.includes('深度学习')) {
+    defaultQuestions.push(
+      {
+        id: 201,
+        name: '神经网络中激活函数的主要作用是提供非线性建模能力。',
+        type: '判断题',
+        options: ['正确', '错误'],
+        correct: '正确',
+        analysis: '激活函数为神经网络引入非线性映射。如果没有激活函数，无论网络叠加多少层，其输出始终是输入的线性组合，网络退化为单层感知机。'
+      },
+      {
+        id: 202,
+        name: '以下哪些方法常用于防止深度学习模型发生过拟合？',
+        type: '多选题',
+        options: [
+          '使用 Dropout 丢弃法',
+          '增加训练数据量',
+          '采用 L1 或 L2 正则化项',
+          '提高模型的复杂度'
+        ],
+        correct: 'A, B, C',
+        analysis: '防止过拟合的常见方法包括增加数据、引入 L1/L2 正则项以及使用 Dropout。增加模型复杂度反而会加剧过拟合。'
+      }
+    );
+  }
+
+  // Add agent questions for D-uni bank
+  if (bankName.includes('D-uni') || bankName.includes('智能体')) {
+    defaultQuestions.push(
+      {
+        id: 301,
+        name: '智能体与传统程序最本质的区别是什么？',
+        type: '单选题',
+        options: [
+          '智能体具有自主性和自适应学习能力，能够感知环境并做出决策，而传统程序运行在预设逻辑中',
+          '智能体运行速度比传统程序慢',
+          '智能体不需要硬件运行环境',
+          '传统程序不能连接互联网'
+        ],
+        correct: 'A',
+        analysis: '自主性与自适应感知是智能体最显著的特征。'
+      },
+      {
+        id: 302,
+        name: '智能体的四个基本组成部分包括哪些？',
+        type: '多选题',
+        options: [
+          '环境感知系统 (Sensors)',
+          '决策规划系统 (Decision & Planning)',
+          '执行动作系统 (Actuators)',
+          '自我学习与知识库系统 (Knowledge & Learning)'
+        ],
+        correct: 'A, B, C, D',
+        analysis: '感知、决策、执行以及学习共同构成了完整的智能体架构。'
+      }
+    );
+  }
+
+  // Fallback if no questions are matched
+  if (userQuestions.length === 0 && defaultQuestions.length === 0) {
+    defaultQuestions.push(
+      {
+        id: 401,
+        name: '关于通用人工智能（AGI），以下描述中最准确的是？',
+        type: '单选题',
+        options: [
+          '能够在人类表现出的任何智力任务中达到或超过人类水平的系统',
+          '目前已经完全实现的下棋人工智能',
+          '专门用于人脸识别的图像分类算法',
+          '只能进行文本对话的聊天机器人'
+        ],
+        correct: 'A',
+        analysis: '通用人工智能是指在各种认知任务中都达到人类智能水平的系统，目前仍处于研究探索阶段。'
+      }
+    );
+  }
+
+  // Combine and de-duplicate by name to ensure no duplicate titles
+  const combined = [...userQuestions];
+  defaultQuestions.forEach(dq => {
+    if (!combined.some(uq => uq.name === dq.name)) {
+      combined.push(dq);
+    }
+  });
+
+  return combined;
+};
+
+const getQuestionOptions = (q: any) => {
+  if (q.options && q.options.length > 0) return q.options;
+  
+  // Try to match specific titles
+  if (q.name.includes('最本质的区别')) {
+    return [
+      '智能体具有自主性和自适应学习能力，能够感知环境并做出决策，而传统程序运行在预设逻辑中',
+      '智能体运行速度比传统程序慢',
+      '智能体不需要硬件运行环境',
+      '传统程序不能连接互联网'
+    ];
+  }
+  if (q.name.includes('四个基本组成部分')) {
+    return [
+      '环境感知系统 (Sensors)',
+      '决策规划系统 (Decision & Planning)',
+      '执行动作系统 (Actuators)',
+      '自我学习与知识库系统 (Knowledge & Learning)'
+    ];
+  }
+  if (q.name.includes('零样本提示')) {
+    return [
+      '不提供示例直接让模型完成任务',
+      '提供大量示例让模型学习',
+      '不给模型任何输入',
+      '只使用数字示例'
+    ];
+  }
+  if (q.name.includes('局限性')) {
+    return [
+      '可能产生幻觉',
+      '无法处理文本',
+      '不需要计算资源',
+      '只有文字'
+    ];
+  }
+  if (q.name.includes('激活函数的主要作用')) {
+    return [
+      '增加网络层数',
+      '引入非线性因素，使网络能拟合复杂函数',
+      '加速梯度下降的计算',
+      '自动调节学习率'
+    ];
+  }
+  if (q.name.includes('防止深度学习模型发生过拟合')) {
+    return [
+      '使用 Dropout 丢弃法',
+      '增加训练数据量',
+      '采用 L1 或 L2 正则化项',
+      '提高模型的复杂度'
+    ];
+  }
+  
+  // Default fallback for single/multiple choice
+  return [
+    '选项 A - 这是当前题目的默认示例选项，供界面预览展示。',
+    '选项 B - 这是当前题目的默认示例选项，供界面预览展示。',
+    '选项 C - 这是当前题目的默认示例选项，供界面预览展示。',
+    '选项 D - 这是当前题目的默认示例选项，供界面预览展示。'
+  ];
+};
+
 export default function TeacherQuestions() {
   const location = useLocation();
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
@@ -133,6 +322,21 @@ export default function TeacherQuestions() {
   const [importFileName, setImportFileName] = useState('');
   const [viewingQuestion, setViewingQuestion] = useState<any | null>(null);
 
+  // Question database states
+  const [isBankListModalOpen, setIsBankListModalOpen] = useState(false);
+  const [viewingBankDetail, setViewingBankDetail] = useState<any | null>(null);
+  const [searchBankQuery, setSearchBankQuery] = useState('');
+  const [isCreateBankOpen, setIsCreateBankOpen] = useState(false);
+  const [newBankName, setNewBankName] = useState('');
+  const [newBankCategory, setNewBankCategory] = useState('AI技术');
+  const [banksList, setBanksList] = useState([
+    { id: 1, name: '人工智能通识D-uni', count: 124, category: 'AI技术', creator: 'Momodel', createdAt: '2025/11/20' },
+    { id: 2, name: '深度学习基础题库', count: 86, category: 'AI技术', creator: 'Admin', createdAt: '2025/12/01' },
+    { id: 3, name: '大语言模型进阶题库', count: 53, category: '自然语言处理', creator: 'Momodel', createdAt: '2026/02/15' },
+    { id: 4, name: '机器学习算法精选', count: 98, category: '机器学习', creator: 'Teacher_Wang', createdAt: '2026/03/10' },
+    { id: 5, name: '计算机视觉实战题库', count: 42, category: '计算机视觉', creator: 'Teacher_Li', createdAt: '2026/04/22' },
+  ]);
+
   React.useEffect(() => {
     if (location.state?.openCreateQuestion) {
       setIsCreateModalOpen(true);
@@ -142,7 +346,7 @@ export default function TeacherQuestions() {
   }, [location.state]);
 
   // AI Assistant states
-  const [view, setView] = useState<'list' | 'ai'>('list');
+  const [view, setView] = useState<'list' | 'ai' | 'bank-detail'>('list');
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [importedIndexes, setImportedIndexes] = useState<number[]>([]);
@@ -454,6 +658,9 @@ export default function TeacherQuestions() {
               <p className="text-sm text-neutral-500 mb-0.5">新建试题、仅展示公开或您个人题库内试题，试题“启用”后可用于组卷</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={() => setIsBankListModalOpen(true)} variant="outline" className="flex items-center gap-1.5 h-9 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]/30 transition-all cursor-pointer bg-white rounded shadow-sm">
+                <Database className="w-4 h-4" /> 题库管理
+              </Button>
               <Button onClick={() => setView('ai')} variant="outline" className="flex items-center gap-1.5 h-9 border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-white rounded shadow-sm cursor-pointer">
                 <Brain className="w-4 h-4" /> 智能出题
               </Button>
@@ -590,6 +797,179 @@ export default function TeacherQuestions() {
             </div>
           </div>
         </>
+      ) : view === 'bank-detail' ? (
+        /* 题库详情界面 (橙色主题, 参考作业详情留白) */
+        <div className="animate-fade-in -mx-6 -mt-6 min-h-[calc(100vh-56px)] bg-[#f5f7fa] pb-12 text-left">
+          {/* Inject style for floating animation */}
+          <style>{`
+            @keyframes float {
+              0% { transform: translateY(0px) rotate(12deg); }
+              50% { transform: translateY(-10px) rotate(10deg); }
+              100% { transform: translateY(0px) rotate(12deg); }
+            }
+            .style-floating-element {
+              animation: float 4s ease-in-out infinite;
+            }
+          `}</style>
+          
+          {/* Top orange gradient banner */}
+          <div className="relative bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] pt-6 pb-16 text-white select-none overflow-hidden shrink-0">
+            {/* Background circular decorations referencing assignment preview */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute -right-20 -top-20 w-[400px] h-[400px] border-[40px] border-white/5 rounded-full"></div>
+              <div className="absolute -right-10 top-10 w-[300px] h-[300px] border-[2px] border-white/10 rounded-full"></div>
+            </div>
+
+            {/* 3D Glassmorphic Cube/Sphere floats on the right side */}
+            <div className="absolute right-12 top-1/2 -translate-y-1/2 w-48 h-48 overflow-visible pointer-events-none hidden md:block">
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Glow circle */}
+                <div className="absolute w-40 h-40 rounded-full bg-white/20 blur-xl animate-pulse"></div>
+                {/* Rotating Outer Rings */}
+                <div className="absolute w-36 h-36 border border-white/20 rounded-full animate-[spin_12s_linear_infinite] border-dashed"></div>
+                <div className="absolute w-28 h-28 border border-white/30 rounded-full animate-[spin_8s_linear_infinite_reverse]"></div>
+                {/* Inner floating cube/sphere */}
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-white/30 to-white/15 backdrop-blur-md border border-white/45 shadow-2xl rotate-12 flex items-center justify-center style-floating-element">
+                  <div className="w-10 h-10 rounded bg-gradient-to-br from-[#fa541c] to-[#ff7875] opacity-85 shadow-sm transform -rotate-12 border border-white/25"></div>
+                </div>
+                {/* Secondary floating dots */}
+                <div className="absolute top-6 right-6 w-5 h-5 rounded-full bg-[#ff7875] opacity-75 blur-[1px] animate-[float_3s_ease-in-out_infinite_alternate]"></div>
+                <div className="absolute bottom-6 left-6 w-3 h-3 rounded-full bg-white opacity-60 blur-[0.5px] animate-[float_5s_ease-in-out_infinite_alternate]"></div>
+              </div>
+            </div>
+
+            {/* Content info (centered & aligned horizontally with the card container) */}
+            <div className="max-w-5xl mx-auto px-6 w-full relative z-10 flex flex-col">
+              {/* Breadcrumbs - Line 1: back button link inline */}
+              <div className="flex items-center gap-2 text-[12px] text-white/70 mb-4 font-medium tracking-wider">
+                <button 
+                  onClick={() => {
+                    setView('list');
+                    setViewingBankDetail(null);
+                  }} 
+                  className="hover:text-white transition-colors flex items-center gap-1 font-bold border-0 bg-transparent p-0 cursor-pointer text-white/70"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> 题库管理
+                </button>
+              </div>
+              
+              {/* Big Title - Line 2 */}
+              <h1 className="text-[28px] font-bold mb-4 tracking-wider leading-tight">
+                {viewingBankDetail?.name || '人工智能通识E-大模型技术进阶'}
+              </h1>
+
+              {/* Creator info - Line 3 */}
+              <div className="flex items-center gap-6 text-[13px] text-white/90">
+                <span>创建人：{viewingBankDetail?.creator || 'Momodel'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Card Container (styled with exact shadow and borders of assignment detail card) */}
+          <div className="max-w-5xl mx-auto px-6 relative z-10 -mt-8 pb-20">
+            <div className="bg-white rounded-t-xl rounded-b-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 min-h-[400px] border border-neutral-100">
+              {(() => {
+                const bankQuestions = getQuestionsForBank(viewingBankDetail?.name || '', questionsList);
+                const groupedQuestions: { [key: string]: any[] } = {};
+                
+                // Group them by type
+                bankQuestions.forEach(q => {
+                  if (!groupedQuestions[q.type]) {
+                    groupedQuestions[q.type] = [];
+                  }
+                  groupedQuestions[q.type].push(q);
+                });
+
+                // Calculate global index offsets for group headers
+                let currentGlobalIndex = 1;
+                const groupsInfo = Object.entries(groupedQuestions).map(([type, list]) => {
+                  const startIdx = currentGlobalIndex;
+                  const endIdx = currentGlobalIndex + list.length - 1;
+                  currentGlobalIndex += list.length;
+                  return {
+                    type,
+                    list,
+                    startIdx,
+                    endIdx,
+                    totalPoints: list.length * 20
+                  };
+                });
+
+                if (groupsInfo.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-20 text-neutral-400 text-sm gap-2">
+                      <Database className="w-12 h-12 stroke-[1.2] text-neutral-300 animate-pulse" />
+                      <span>该题库内暂无可用试题</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-10">
+                    {groupsInfo.map((group) => (
+                      <div key={group.type} className="animate-slide-up">
+                        {/* Group Header */}
+                        <div className="flex items-center gap-2.5 border-b border-neutral-100 pb-3.5 mb-6 text-left">
+                          <div className="w-5.5 h-5.5 rounded-full bg-blue-50 text-[#1677ff] flex items-center justify-center flex-shrink-0 border border-blue-100">
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </div>
+                          <span className="text-[14px] font-bold text-neutral-800">
+                            {group.type}
+                          </span>
+                          <span className="text-[12px] text-neutral-400 font-medium">
+                            {group.startIdx === group.endIdx 
+                              ? `(第 ${group.startIdx} 题，每题 20 分，共 20 分)`
+                              : `(第 ${group.startIdx}-${group.endIdx} 题，每题 20 分，共 ${group.totalPoints} 分)`
+                            }
+                          </span>
+                        </div>
+
+                        {/* Questions List */}
+                        <div className="space-y-8 pl-1">
+                          {group.list.map((q, qIndex) => {
+                            const number = group.startIdx + qIndex;
+                            const isChoice = ['单选题', '多选题'].includes(q.type);
+                            
+                            return (
+                              <div key={q.id || qIndex} className="text-left space-y-3.5">
+                                {/* Question Title */}
+                                <h4 className="text-[14px] font-bold text-neutral-800 leading-snug">
+                                  {number}、{q.name}
+                                </h4>
+
+                                {/* Options (For single & multiple choices) */}
+                                {isChoice && (
+                                  <div className="space-y-3 pl-5">
+                                    {getQuestionOptions(q).map((optText: string, optIdx: number) => {
+                                      const letter = String.fromCharCode(65 + optIdx);
+                                      return (
+                                        <div key={letter} className="flex items-start gap-2.5 text-xs text-neutral-700 leading-relaxed font-semibold">
+                                          <span className="font-bold text-neutral-400 w-4 select-none shrink-0">{letter}</span>
+                                          <span>{optText}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* Underline for fill-in-the-blank or basic placeholder for other types */}
+                                {q.type === '填空题' && (
+                                  <div className="pl-5 text-xs text-neutral-400 italic">
+                                    （答题栏：______________________________________）
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
       ) : (
         /* AI出题助手界面 */
         <div className="h-[calc(100vh-56px)] flex flex-col bg-white overflow-hidden animate-fade-in -mx-6 -my-6">
@@ -881,10 +1261,10 @@ export default function TeacherQuestions() {
                       onChange={(e) => setNewQuestionBank(e.target.value)}
                       className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
                     >
-                      <option value="">请添加试题库</option>
-                      <option value="人工智能通识D-uni">人工智能通识D-uni</option>
-                      <option value="深度学习基础题库">深度学习基础题库</option>
-                      <option value="大语言模型进阶题库">大语言模型进阶题库</option>
+                      <option value="">请选择所属试题库</option>
+                      {banksList.map(bank => (
+                        <option key={bank.id} value={bank.name}>{bank.name}</option>
+                      ))}
                     </select>
                     <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
@@ -1597,9 +1977,9 @@ export default function TeacherQuestions() {
                     className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
                   >
                     <option value="">请选择所属试题库</option>
-                    <option value="人工智能通识D-uni">人工智能通识D-uni</option>
-                    <option value="深度学习基础题库">深度学习基础题库</option>
-                    <option value="大语言模型进阶题库">大语言模型进阶题库</option>
+                    {banksList.map(bank => (
+                      <option key={bank.id} value={bank.name}>{bank.name}</option>
+                    ))}
                   </select>
                   <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
@@ -1849,6 +2229,299 @@ export default function TeacherQuestions() {
             <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-neutral-50/50">
               <Button 
                 onClick={() => setViewingQuestion(null)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-lg shadow-sm cursor-pointer"
+              >
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 题库管理 Modal */}
+      {isBankListModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center animate-fade-in"
+          onClick={() => {
+            setIsBankListModalOpen(false);
+            setIsCreateBankOpen(false);
+            setViewingBankDetail(null);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] rounded-2xl shadow-2xl border border-neutral-100 p-6 flex flex-col relative animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4">
+              <div className="flex items-center gap-2 border-l-4 border-[#fa541c] pl-2.5">
+                <span className="text-[16px] font-bold text-neutral-800">
+                  {viewingBankDetail ? `${viewingBankDetail.name} 详情` : "题库管理"}
+                </span>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsBankListModalOpen(false);
+                  setIsCreateBankOpen(false);
+                  setViewingBankDetail(null);
+                }}
+                className="text-neutral-400 hover:text-[#fa541c] p-1 rounded-full transition-colors cursor-pointer bg-transparent border-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {viewingBankDetail ? (
+              // BANK DETAIL VIEW
+              <div className="space-y-4 flex-1 flex flex-col min-h-0 text-left">
+                {/* Back Link */}
+                <button
+                  onClick={() => setViewingBankDetail(null)}
+                  className="flex items-center gap-1 text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border-0 bg-transparent p-0 cursor-pointer font-bold mb-2 self-start"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" /> 返回题库列表
+                </button>
+
+                {/* Info Card Grid */}
+                <div className="bg-neutral-50/50 border border-neutral-200/50 rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <span className="text-neutral-400 block mb-0.5">题库分类</span>
+                    <span className="font-semibold text-neutral-700">{viewingBankDetail.category}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 block mb-0.5">创建人</span>
+                    <span className="font-semibold text-neutral-700">{viewingBankDetail.creator}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 block mb-0.5">创建时间</span>
+                    <span className="font-semibold text-neutral-700 font-mono">{viewingBankDetail.createdAt}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 block mb-0.5">试题数量</span>
+                    <span className="font-bold text-neutral-800 font-mono">
+                      {questionsList.filter(q => q.bank === viewingBankDetail.name).length} 道
+                    </span>
+                  </div>
+                </div>
+
+                {/* Subtitle */}
+                <div className="text-xs font-bold text-neutral-800 pt-2 border-b border-neutral-100 pb-1.5 flex justify-between items-center">
+                  <span>关联试题列表</span>
+                  <span className="text-[11px] text-neutral-400 font-normal">展示该题库下收录的试题</span>
+                </div>
+
+                {/* Questions List in this Bank */}
+                <div className="flex-1 overflow-y-auto max-h-[260px] border border-neutral-100 rounded-xl bg-white custom-scrollbar">
+                  <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                    <thead>
+                      <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
+                        <th className="p-3">试题名称</th>
+                        <th className="p-3 w-16 text-center">题型</th>
+                        <th className="p-3 w-16 text-center">难度</th>
+                        <th className="p-3 w-16 text-center">状态</th>
+                        <th className="p-3 w-16 text-center">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                      {questionsList
+                        .filter(q => q.bank === viewingBankDetail.name)
+                        .map((q) => (
+                          <tr key={q.id} className="hover:bg-neutral-50/30 transition-colors">
+                            <td className="p-3 font-semibold text-neutral-800 max-w-[280px] truncate" title={q.name}>
+                              {q.name}
+                            </td>
+                            <td className="p-3 text-center">{q.type}</td>
+                            <td className="p-3 text-center text-neutral-500">{q.difficulty}</td>
+                            <td className="p-3 text-center">
+                              <span className={cn("px-1.5 py-0.5 text-[10px] rounded border font-medium", q.status === '启用' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
+                                {q.status}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <button
+                                onClick={() => {
+                                  // Viewing a question details via our preview drawer
+                                  setViewingQuestion(q);
+                                  setIsBankListModalOpen(false);
+                                }}
+                                className="text-xs text-[#fa541c] hover:underline transition-colors border-0 bg-transparent p-0 cursor-pointer font-medium"
+                              >
+                                查看
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      {questionsList.filter(q => q.bank === viewingBankDetail.name).length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-neutral-400">
+                            该题库下暂无关联试题
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              // BANK LIST VIEW
+              <>
+                {/* Sub-header / Toolbar */}
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                    <input
+                      type="text"
+                      placeholder="搜索题库名称..."
+                      value={searchBankQuery}
+                      onChange={(e) => setSearchBankQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-1.5 border border-neutral-200 rounded-lg text-xs bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
+                    />
+                  </div>
+                  <Button 
+                    onClick={() => setIsCreateBankOpen(!isCreateBankOpen)}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                  >
+                    {isCreateBankOpen ? '取消新建' : '新建题库'}
+                  </Button>
+                </div>
+
+                {/* Create Bank Inline Form */}
+                {isCreateBankOpen && (
+                  <div className="bg-neutral-50 border border-neutral-200/60 rounded-xl p-4 mb-4 space-y-3 animate-slide-up text-left">
+                    <div className="text-xs font-bold text-neutral-800">新建题库</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold text-neutral-600 block">题库名称：</label>
+                        <input
+                          type="text"
+                          placeholder="如：自然语言处理基础"
+                          value={newBankName}
+                          onChange={(e) => setNewBankName(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c]"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold text-neutral-600 block">题库分类：</label>
+                        <select
+                          value={newBankCategory}
+                          onChange={(e) => setNewBankCategory(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c] cursor-pointer font-medium"
+                        >
+                          <option value="AI技术">AI技术</option>
+                          <option value="自然语言处理">自然语言处理</option>
+                          <option value="机器学习">机器学习</option>
+                          <option value="计算机视觉">计算机视觉</option>
+                          <option value="其它">其它</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-1">
+                      <Button 
+                        onClick={() => {
+                          if (!newBankName.trim()) {
+                            alert('请输入题库名称！');
+                            return;
+                          }
+                          const newBank = {
+                            id: Date.now(),
+                            name: newBankName.trim(),
+                            count: 0,
+                            category: newBankCategory,
+                            creator: 'Momodel',
+                            createdAt: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/-/g, '/')
+                          };
+                          setBanksList([...banksList, newBank]);
+                          setNewBankName('');
+                          setIsCreateBankOpen(false);
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 px-4 rounded text-xs font-semibold shadow-sm cursor-pointer border-0"
+                      >
+                        保存
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Banks List Table */}
+                <div className="flex-1 overflow-y-auto max-h-[300px] border border-neutral-100 rounded-xl bg-white custom-scrollbar">
+                  <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                    <thead>
+                      <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
+                        <th className="p-3">题库名称</th>
+                        <th className="p-3 w-20 text-center">试题数量</th>
+                        <th className="p-3">题库分类</th>
+                        <th className="p-3">创建人</th>
+                        <th className="p-3">创建时间</th>
+                        <th className="p-3 w-24 text-center">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                      {banksList
+                        .filter(b => b.name.toLowerCase().includes(searchBankQuery.trim().toLowerCase()))
+                        .map((bank) => (
+                          <tr key={bank.id} className="hover:bg-neutral-50/50 transition-colors">
+                            <td className="p-3 font-semibold text-neutral-800">{bank.name}</td>
+                            <td className="p-3 text-center font-mono">{bank.count}</td>
+                            <td className="p-3">
+                              <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded text-[10px] font-medium border border-neutral-200/40">
+                                {bank.category}
+                              </span>
+                            </td>
+                            <td className="p-3 text-neutral-500">{bank.creator}</td>
+                            <td className="p-3 text-neutral-500 font-mono">{bank.createdAt}</td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-3">
+                                <button
+                                  onClick={() => {
+                                    setViewingBankDetail(bank);
+                                    setIsBankListModalOpen(false);
+                                    setView('bank-detail');
+                                  }}
+                                  className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border-0 bg-transparent p-0 cursor-pointer font-semibold"
+                                >
+                                  详情
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`确定要删除题库「${bank.name}」吗？`)) {
+                                      setBanksList(banksList.filter(item => item.id !== bank.id));
+                                    }
+                                  }}
+                                  disabled={bank.name === '人工智能通识D-uni'}
+                                  className={cn(
+                                    "text-xs transition-colors border-0 bg-transparent p-0 cursor-pointer font-medium",
+                                    bank.name === '人工智能通识D-uni'
+                                      ? "text-neutral-300 cursor-not-allowed"
+                                      : "text-neutral-400 hover:text-red-500"
+                                  )}
+                                >
+                                  删除
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      {banksList.filter(b => b.name.toLowerCase().includes(searchBankQuery.trim().toLowerCase())).length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-neutral-400">
+                            暂无匹配的题库
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+
+            {/* Footer */}
+            <div className="pt-4 border-t border-neutral-100 mt-4 flex justify-end">
+              <Button 
+                onClick={() => {
+                  setIsBankListModalOpen(false);
+                  setIsCreateBankOpen(false);
+                  setViewingBankDetail(null);
+                }}
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-lg shadow-sm cursor-pointer"
               >
                 关闭

@@ -892,42 +892,7 @@ export default function TeacherProjects({
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-neutral-855 flex items-center gap-1">
-                        <span className="text-[#fa541c] font-black">*</span> 项目类型
-                      </label>
-                      <select 
-                        value={formType}
-                        onChange={(e) => setFormType(e.target.value as any)}
-                        className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2.5 bg-white focus:outline-none focus:border-[#fa541c] cursor-pointer"
-                      >
-                        <option value="编程项目">编程项目</option>
-                        <option value="数据分析项目">数据分析项目</option>
-                        <option value="AI项目">AI项目</option>
-                        <option value="运维项目">运维项目</option>
-                      </select>
-                    </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-neutral-855 flex items-center gap-1">
-                        <span className="text-[#fa541c] font-black">*</span> 建议时长 (小时)
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="range"
-                          min="1"
-                          max="40"
-                          value={formDuration}
-                          onChange={(e) => setFormDuration(e.target.value)}
-                          className="flex-1 accent-[#fa541c] h-1 bg-neutral-100 rounded-lg cursor-pointer"
-                        />
-                        <span className="w-12 text-center font-bold text-neutral-855 bg-neutral-50 px-2 py-1.5 border rounded-lg font-mono">
-                          {formDuration}h
-                        </span>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Project Tags (项目标签) */}
                   <div className="space-y-2">
@@ -1100,8 +1065,8 @@ export default function TeacherProjects({
 
                         {/* Card Content */}
                         <div className="p-4 space-y-4 bg-white">
-                          {/* Row 1: Resource Pool & Environment Type */}
-                          <div className="grid grid-cols-2 gap-4">
+                          {/* Row 1: Resource Pool & Environment Type (Stacked vertically) */}
+                          <div className="space-y-4">
                             <div className="space-y-1.5">
                               <label className="text-[11px] font-bold text-neutral-600">选择资源池</label>
                               <select
@@ -1726,26 +1691,53 @@ export default function TeacherProjects({
 
             {/* Modal Footer - styled exactly like course modal footer */}
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 flex-shrink-0 bg-neutral-50/50">
-              <Button 
-                onClick={() => setIsModalOpen(false)} 
-                variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white"
-              >
-                取消
-              </Button>
-              <Button 
-                onClick={() => handleSave('草稿')}
-                variant="outline"
-                className="border-[#fa541c] hover:bg-[#fff2e8] text-[#fa541c] font-bold h-10 px-5 cursor-pointer bg-white"
-              >
-                存为草稿
-              </Button>
-              <Button 
-                onClick={() => handleSave('已发布')} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer"
-              >
-                确认发布项目
-              </Button>
+              {activeFormTab === 'basic' ? (
+                <>
+                  <Button 
+                    onClick={() => setIsModalOpen(false)} 
+                    variant="outline" 
+                    className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white"
+                  >
+                    取消
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveFormTab('env')} 
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer"
+                  >
+                    下一步
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    onClick={() => setActiveFormTab('basic')} 
+                    variant="outline" 
+                    className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white mr-auto"
+                  >
+                    上一步
+                  </Button>
+                  <Button 
+                    onClick={() => setIsModalOpen(false)} 
+                    variant="outline" 
+                    className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white"
+                  >
+                    取消
+                  </Button>
+                  <Button 
+                    onClick={() => handleSave('草稿')}
+                    variant="outline"
+                    className="border-[#fa541c] hover:bg-[#fff2e8] text-[#fa541c] font-bold h-10 px-5 cursor-pointer bg-white"
+                  >
+                    存为草稿
+                  </Button>
+                  <Button 
+                    onClick={() => handleSave('已发布')} 
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer"
+                  >
+                    确认发布项目
+                  </Button>
+                </>
+              )}
             </div>
 
           </div>
