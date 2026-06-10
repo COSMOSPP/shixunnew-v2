@@ -2467,29 +2467,30 @@ export default function AdminSystemPage() {
                     </div>
 
                     {/* Supported Cloud Types */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block">资源可支持云资源类型</label>
-                      <div className="flex gap-6 py-1 select-none font-semibold text-neutral-600">
+                    <div className="space-y-2">
+                      <label className="font-bold text-neutral-700 block">云资源类型</label>
+                      <div className="flex gap-8 border-b border-neutral-100 pb-1 select-none font-semibold text-neutral-500">
                         {["容器", "虚机", "存储"].map((type) => {
                           const isChecked = formPoolTypes.includes(type as any);
                           return (
-                            <label key={type} className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {
-                                  if (isChecked) {
-                                    setFormPoolTypes(formPoolTypes.filter(t => t !== type));
-                                  } else {
-                                    setFormPoolTypes([...formPoolTypes, type as any]);
-                                  }
-                                  // Clear associated platforms when changing supported types to force re-selection
-                                  setFormPoolPlatforms([]);
-                                }}
-                                className="accent-[#fa541c] w-3.5 h-3.5 cursor-pointer"
-                              />
-                              <span>{type}</span>
-                            </label>
+                            <button
+                              type="button"
+                              key={type}
+                              onClick={() => {
+                                // Single-select mode: sets the active type strictly to the selected item
+                                setFormPoolTypes([type as any]);
+                                // Clear associated platforms when changing supported types to force re-selection
+                                setFormPoolPlatforms([]);
+                              }}
+                              className={cn(
+                                "pb-2 text-sm font-medium transition-all relative whitespace-nowrap cursor-pointer border-0 bg-transparent px-1",
+                                isChecked
+                                  ? "text-[#fa541c] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#fa541c]"
+                                  : "text-neutral-500 hover:text-neutral-800"
+                              )}
+                            >
+                              {type}
+                            </button>
                           );
                         })}
                       </div>
