@@ -27,8 +27,7 @@ import {
   ChevronRight,
   FolderOpen,
   Info,
-  Loader2,
-  ChevronDown
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -83,6 +82,8 @@ interface Project {
   publicApplyStatus?: 'none' | 'pending' | 'approved' | 'rejected';
   tags?: string[];
   environments?: EnvConfig[];
+  range?: '私有' | '租户' | '平台';
+  auditStatus?: '待审核' | '已审核' | '已驳回';
 }
 
 const CONTAINER_IMAGES = {
@@ -161,7 +162,6 @@ export default function TeacherProjects({
   // Search & Filter (Course Module Style)
   const [searchQuery, setSearchQuery] = useState('');
   const [projectTab, setProjectTab] = useState<'all' | '已发布' | '草稿'>('all'); // Match courseTab style
-  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   // Form setup wizard active tab inside Modal
   const [activeFormTab, setActiveFormTab] = useState<'basic' | 'env'>('basic');
@@ -172,6 +172,7 @@ export default function TeacherProjects({
   const [formDesc, setFormDesc] = useState('');
   const [formType, setFormType] = useState<'编程项目' | '数据分析项目' | 'AI项目' | '运维项目'>('编程项目');
   const [formDifficulty, setFormDifficulty] = useState<'初级' | '中级' | '高级'>('中级');
+  const [formRange, setFormRange] = useState<'私有' | '租户' | '平台'>('私有');
   const [formDuration, setFormDuration] = useState('8');
   const [selectedCover, setSelectedCover] = useState(defaultCovers[0]);
   
@@ -188,6 +189,7 @@ export default function TeacherProjects({
   const [projectToApply, setProjectToApply] = useState<Project | null>(null);
   const [applyTargetAudience, setApplyTargetAudience] = useState('');
   const [applyUsageSuggestion, setApplyUsageSuggestion] = useState('');
+  const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
   const [isApplying, setIsApplying] = useState(false);
 
   // Mock initial dataset with real courseId assignments and default premium covers
@@ -208,6 +210,8 @@ export default function TeacherProjects({
         scenarios: ['企业实训', '毕业设计']
       },
       status: '已发布',
+      range: '平台',
+      auditStatus: '已审核',
       updateTime: '2026/05/24 18:22',
       image: '/shixunnew-v2/images/covers/microsoft_tech_ai_1779333317936.png',
       courseId: 1,
@@ -246,6 +250,8 @@ export default function TeacherProjects({
         scenarios: ['企业实训', '工程项目实践']
       },
       status: '已发布',
+      range: '租户',
+      auditStatus: '已审核',
       updateTime: '2026/05/23 15:45',
       image: '/shixunnew-v2/images/covers/microsoft_tech_dev_1779333430898.png',
       courseId: 2,
@@ -282,6 +288,8 @@ export default function TeacherProjects({
         scenarios: ['期末大作业', '课程作业']
       },
       status: '草稿',
+      range: '私有',
+      auditStatus: '待审核',
       updateTime: '2026/05/25 09:12',
       image: '/shixunnew-v2/images/covers/microsoft_tech_data_1779333332856.png',
       courseId: 1,
@@ -316,6 +324,8 @@ export default function TeacherProjects({
         scenarios: ['云计算实训', '运维工程实践']
       },
       status: '已发布',
+      range: '平台',
+      auditStatus: '已驳回',
       updateTime: '2026/05/20 11:30',
       image: '/shixunnew-v2/images/covers/microsoft_tech_cloud_1779333396845.png',
       courseId: 3,
@@ -354,6 +364,7 @@ export default function TeacherProjects({
     setFormDesc('');
     setFormType('编程项目');
     setFormDifficulty('中级');
+    setFormRange('私有');
     setFormDuration('8');
     setSelectedCover(defaultCovers[0]);
     setFormTags(['实战', 'Docker']);
@@ -383,6 +394,7 @@ export default function TeacherProjects({
     setFormDesc(proj.desc);
     setFormType(proj.type);
     setFormDifficulty(proj.difficulty);
+    setFormRange(proj.range || '私有');
     setFormDuration(proj.duration);
     setSelectedCover(proj.image || defaultCovers[0]);
     setFormTags(proj.tags || []);
@@ -415,7 +427,7 @@ export default function TeacherProjects({
     setIsModalOpen(true);
   };
 
-  const handleSave = (statusToSave: '草稿' | '已发布') => {
+  const handleSave = (statusToSave?: '草稿' | '已发布') => {
     if (!formName.trim()) {
       showToast('请输入项目名称！');
       return;
@@ -426,6 +438,11 @@ export default function TeacherProjects({
     const legacyCpu = firstEnv ? (firstEnv.type === '容器' ? `${firstEnv.cpuCores} 核` : (firstEnv.vmSpecType === 'spec' ? '规格' : `${firstEnv.cpuCores} 核`)) : '2 核';
     const legacyMem = firstEnv ? (firstEnv.type === '容器' ? `${firstEnv.memoryGB} GB` : (firstEnv.vmSpecType === 'spec' ? '规格' : `${firstEnv.memoryGB} GB`)) : '4 GB';
     const legacyGpu = firstEnv ? (firstEnv.type === '容器' ? (firstEnv.gpu?.power !== '无' ? firstEnv.gpu?.power || '无' : '无') : (firstEnv.vmSpecType === 'spec' ? '规格' : (firstEnv.gpu?.power !== '无' ? firstEnv.gpu?.power || '无' : '无'))) : '无';
+
+    const existingProj = currentProjectId ? projectsList.find(p => p.id === currentProjectId) : null;
+    const finalStatus = statusToSave || (existingProj ? existingProj.status : '草稿');
+    const finalRange = formRange;
+    const finalAuditStatus = existingProj ? (existingProj.auditStatus || '待审核') : '待审核';
 
     const newProjectData: Project = {
       id: currentProjectId ? currentProjectId : Date.now(),
@@ -446,12 +463,14 @@ export default function TeacherProjects({
         skills: formTags,
         scenarios: []
       },
-      status: statusToSave,
+      status: finalStatus,
       updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
       image: selectedCover,
       courseId: currentProjectId ? projectsList.find(p => p.id === currentProjectId)?.courseId : (incomingCourseId || undefined),
       tags: formTags,
-      environments: formEnvironments
+      environments: formEnvironments,
+      range: finalRange,
+      auditStatus: finalAuditStatus
     };
 
     if (modalMode === 'edit') {
@@ -459,7 +478,7 @@ export default function TeacherProjects({
       showToast(`成功更新项目「${formName.slice(0, 10)}...」`);
     } else {
       setProjectsList([newProjectData, ...projectsList]);
-      showToast(`成功创建项目「${formName.slice(0, 10)}...」并保存为${statusToSave}`);
+      showToast(`成功创建项目「${formName.slice(0, 10)}...」并保存`);
     }
 
     setIsModalOpen(false);
@@ -485,26 +504,36 @@ export default function TeacherProjects({
     showToast('项目已成功删除');
   };
 
+  const handlePublish = (id: number) => {
+    setProjectsList(projectsList.map(p => p.id === id ? { ...p, status: '已发布', auditStatus: '已审核' } : p));
+    showToast('项目已成功发布');
+  };
+
+  const handleCancelPublish = (id: number) => {
+    setProjectsList(projectsList.map(p => p.id === id ? { ...p, status: '草稿', auditStatus: '待审核' } : p));
+    showToast('项目已成功取消发布');
+  };
+
   const handleApplyPublic = (proj: Project) => {
     if (proj.status === '草稿') {
       showToast('草稿状态的项目不可用，请先发布。');
       return;
     }
     setProjectToApply(proj);
-    setApplyTargetAudience('');
     setApplyUsageSuggestion('');
+    setApplyRange('租户');
     setIsApplyModalOpen(true);
   };
 
   const handleSubmitApplication = () => {
-    if (!applyTargetAudience.trim() || !applyUsageSuggestion.trim()) {
-      showToast('请填写完整的公开说明');
+    if (!applyUsageSuggestion.trim()) {
+      showToast('请填写完整的申请说明');
       return;
     }
     setIsApplying(true);
     setTimeout(() => {
       setProjectsList(projectsList.map(p => 
-        p.id === projectToApply?.id ? { ...p, publicApplyStatus: 'pending' } : p
+        p.id === projectToApply?.id ? { ...p, publicApplyStatus: 'pending', auditStatus: '待审核', range: applyRange } : p
       ));
       setIsApplying(false);
       setIsApplyModalOpen(false);
@@ -519,9 +548,8 @@ export default function TeacherProjects({
                           p.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.scope.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = projectTab === 'all' || p.status === projectTab;
-    const matchesType = typeFilter === 'all' || p.type === typeFilter;
     const matchesCourse = !incomingCourseId || p.courseId === incomingCourseId;
-    return matchesSearch && matchesStatus && matchesType && matchesCourse;
+    return matchesSearch && matchesStatus && matchesCourse;
   });
 
   return (
@@ -589,24 +617,6 @@ export default function TeacherProjects({
 
         {/* Search Input & Pill Button - Course style */}
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          {/* Sub-filter for Project Type */}
-          <div className="relative">
-            <select 
-              value={typeFilter} 
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="appearance-none text-sm border border-neutral-200 rounded-full pl-4 pr-10 py-2 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white h-9 cursor-pointer w-full"
-            >
-              <option value="all">所有项目类型</option>
-              <option value="编程项目">编程项目</option>
-              <option value="数据分析项目">数据分析项目</option>
-              <option value="AI项目">AI项目</option>
-              <option value="运维项目">运维项目</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-              <ChevronDown className="w-4 h-4" />
-            </div>
-          </div>
-
           <div className="relative flex-1 sm:flex-none">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input 
@@ -640,7 +650,9 @@ export default function TeacherProjects({
               <th className="p-4 font-medium">难度级别</th>
               <th className="p-4 font-medium">容器配置环境</th>
               <th className="p-4 font-medium">算力资源</th>
+              <th className="p-4 font-medium">范围</th>
               <th className="p-4 font-medium">状态</th>
+              <th className="p-4 font-medium">审核状态</th>
               <th className="p-4 font-medium">操作</th>
             </tr>
           </thead>
@@ -779,6 +791,18 @@ export default function TeacherProjects({
                   </div>
                 </td>
 
+                {/* 范围 */}
+                <td className="p-4">
+                  <span className={cn(
+                    "px-2 py-0.5 rounded text-[12px] font-medium border",
+                    proj.range === '平台' && "bg-blue-50/80 text-blue-600 border-blue-200",
+                    proj.range === '租户' && "bg-teal-50/80 text-teal-600 border-teal-200",
+                    (proj.range === '私有' || !proj.range) && "bg-neutral-50 text-neutral-500 border-neutral-200"
+                  )}>
+                    {proj.range || '私有'}
+                  </span>
+                </td>
+
                 {/* Status - Matches course scope styles */}
                 <td className="p-4">
                   {proj.status === '已发布' ? (
@@ -788,9 +812,26 @@ export default function TeacherProjects({
                   )}
                 </td>
 
+                {/* 审核状态 */}
+                <td className="p-4">
+                  <span className={cn(
+                    "px-2 py-0.5 rounded text-[12px] font-medium border",
+                    proj.auditStatus === '已审核' && "bg-green-50/80 text-green-600 border-green-200",
+                    (proj.auditStatus === '待审核' || !proj.auditStatus) && "bg-amber-50/80 text-amber-600 border-amber-200",
+                    proj.auditStatus === '已驳回' && "bg-red-50/80 text-red-600 border-red-200"
+                  )}>
+                    {proj.auditStatus || '待审核'}
+                  </span>
+                </td>
+
                 {/* Action Buttons */}
                 <td className="p-4">
                   <div className="flex items-center gap-3">
+                    {proj.status === '已发布' ? (
+                      <button onClick={() => handleCancelPublish(proj.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">取消发布</button>
+                    ) : (
+                      <button onClick={() => handlePublish(proj.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">发布</button>
+                    )}
                     {proj.publicApplyStatus === 'pending' ? (
                       <span className="text-neutral-400 font-medium">审核中</span>
                     ) : proj.publicApplyStatus === 'approved' ? (
@@ -953,6 +994,32 @@ export default function TeacherProjects({
                           )}
                         >
                           {level.key}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-bold text-neutral-855 flex items-center gap-1">
+                      <span className="text-[#fa541c] font-black">*</span> 发布范围
+                    </label>
+                    <div className="flex gap-4">
+                      {[
+                        { key: '私有', color: 'border-neutral-350 text-neutral-650 bg-neutral-50/15' },
+                        { key: '租户', color: 'border-teal-350 text-teal-650 bg-teal-50/15' },
+                        { key: '平台', color: 'border-blue-350 text-blue-650 bg-blue-50/15' }
+                      ].map(rangeOption => (
+                        <label 
+                          key={rangeOption.key}
+                          onClick={() => setFormRange(rangeOption.key as any)}
+                          className={cn(
+                            "flex-1 border py-2 rounded-xl text-center font-bold cursor-pointer transition-all select-none",
+                            formRange === rangeOption.key 
+                              ? `${rangeOption.color} shadow-sm border-2` 
+                              : "border-neutral-200 text-neutral-550 hover:bg-neutral-50"
+                          )}
+                        >
+                          {rangeOption.key}
                         </label>
                       ))}
                     </div>
@@ -1724,17 +1791,10 @@ export default function TeacherProjects({
                     取消
                   </Button>
                   <Button 
-                    onClick={() => handleSave('草稿')}
-                    variant="outline"
-                    className="border-[#fa541c] hover:bg-[#fff2e8] text-[#fa541c] font-bold h-10 px-5 cursor-pointer bg-white"
-                  >
-                    存为草稿
-                  </Button>
-                  <Button 
-                    onClick={() => handleSave('已发布')} 
+                    onClick={() => handleSave()} 
                     className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer"
                   >
-                    确认发布项目
+                    保存
                   </Button>
                 </>
               )}
@@ -1794,25 +1854,38 @@ export default function TeacherProjects({
 
                 <div>
                   <label className="block text-sm font-semibold text-neutral-800 mb-2">
-                    适用对象 <span className="text-[#fa541c]">*</span>
+                    公开范围 <span className="text-[#fa541c]">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={applyTargetAudience}
-                    onChange={(e) => setApplyTargetAudience(e.target.value)}
-                    placeholder="例如：初级Java开发工程师、大二软件工程专业学生"
-                    className="w-full text-sm border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all"
-                  />
+                  <div className="flex gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级可见' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
+                    ].map(opt => (
+                      <label 
+                        key={opt.key}
+                        onClick={() => setApplyRange(opt.key as any)}
+                        className={cn(
+                          "flex-1 border p-3 rounded-xl cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyRange === opt.key 
+                            ? "border-[#fa541c] text-[#fa541c] bg-[#fff2e8]/10"
+                            : "border-neutral-200 text-neutral-550 hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className="font-bold text-xs">{opt.label}</span>
+                        <span className="text-[10px] text-neutral-400 font-normal">{opt.desc}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-neutral-800 mb-2">
-                    使用建议 <span className="text-[#fa541c]">*</span>
+                    申请说明 <span className="text-[#fa541c]">*</span>
                   </label>
                   <textarea
                     value={applyUsageSuggestion}
                     onChange={(e) => setApplyUsageSuggestion(e.target.value)}
-                    placeholder="请简述该项目的培训价值以及学习前置要求..."
+                    placeholder="请描述该项目的申请公开原因及相关说明..."
                     className="w-full text-sm border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all resize-none h-28"
                   />
                 </div>

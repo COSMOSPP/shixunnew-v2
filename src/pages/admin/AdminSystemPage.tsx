@@ -825,7 +825,8 @@ export default function AdminSystemPage() {
   const handleOpenEditPool = (pool: ResourcePool) => {
     setEditingPool(pool);
     setFormPoolName(pool.name);
-    setFormPoolTypes(pool.supportedTypes);
+    // Slice to the first type to enforce single-select mode when editing existing pools
+    setFormPoolTypes(pool.supportedTypes.slice(0, 1));
     setFormPoolPlatforms(pool.associatedPlatformIds);
     setFormPoolSpecType(pool.specType);
     setFormPoolSpecs(pool.specs || []);
@@ -2502,14 +2503,14 @@ export default function AdminSystemPage() {
                         <span>关联云平台</span>
                         {formPoolTypes.length > 0 && (
                           <span className="text-[10px] text-neutral-400 font-medium font-sans">
-                            已基于勾选类型自动匹配支持的云平台列表
+                            已基于所选类型自动匹配支持的云平台列表
                           </span>
                         )}
                       </label>
                       
                       {formPoolTypes.length === 0 ? (
                         <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200 text-neutral-400 text-center select-none">
-                          请先在上方选择“支持的云资源类型”
+                          请先在上方选择“云资源类型”
                         </div>
                       ) : (
                         <div className="border border-neutral-200 rounded-lg p-3.5 bg-neutral-50/50 flex flex-wrap gap-2.5 max-h-[140px] overflow-y-auto custom-scrollbar">

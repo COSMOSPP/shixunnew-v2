@@ -479,6 +479,34 @@ export default function TeacherQuestions() {
   const [shixunDatasets, setShixunDatasets] = useState<string[]>([]);
   const [isDatasetDropdownOpen, setIsDatasetDropdownOpen] = useState(false);
 
+  // Online environment configurations
+  const [shixunEnvType, setShixunEnvType] = useState<'container' | 'vm'>('container');
+  // Container config states
+  const [shixunProjectSource, setShixunProjectSource] = useState<string>('');
+  const [shixunCpuCores, setShixunCpuCores] = useState<string>('2');
+  const [shixunMemoryGb, setShixunMemoryGb] = useState<string>('4');
+  const [shixunGpuPower, setShixunGpuPower] = useState<string>('10%');
+  const [shixunGpuMem, setShixunGpuMem] = useState<string>('2GB');
+  const [shixunGpuCards, setShixunGpuCards] = useState<string>('0');
+  const [shixunContainerImage, setShixunContainerImage] = useState<string>('Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1');
+  const [shixunEnvVars, setShixunEnvVars] = useState<Array<{ id: number, key: string, value: string }>>([{ id: 1, key: '', value: '' }]);
+  const [shixunStartCmd, setShixunStartCmd] = useState<string>('python main.py');
+  const [shixunMultiInstance, setShixunMultiInstance] = useState<boolean>(false);
+  // VM config states
+  const [shixunVmCpu, setShixunVmCpu] = useState<string>('4');
+  const [shixunVmMem, setShixunVmMem] = useState<string>('8');
+  const [shixunVmGpuPower, setShixunVmGpuPower] = useState<string>('50%');
+  const [shixunVmGpuMem, setShixunVmGpuMem] = useState<string>('8GB');
+  const [shixunVmGpuCards, setShixunVmGpuCards] = useState<string>('0');
+  const [shixunVmSpec, setShixunVmSpec] = useState<string>('4核/8GB/无GPU');
+  const [shixunVmImage, setShixunVmImage] = useState<string>('Ubuntu Server 22.04 LTS');
+  const [shixunVmStorageType, setShixunVmStorageType] = useState<string>('SSD云硬盘');
+  const [shixunVmSystemDisk, setShixunVmSystemDisk] = useState<string>('50');
+  const [shixunVmDataDisk, setShixunVmDataDisk] = useState<string>('100');
+  const [shixunVmVpc, setShixunVmVpc] = useState<string>('vpc-default (192.168.0.0/16)');
+  const [shixunVmSubnet, setShixunVmSubnet] = useState<string>('subnet-default-a (192.168.1.0/24)');
+  const [shixunVmVncType, setShixunVmVncType] = useState<'caddyVnc' | 'noVnc'>('caddyVnc');
+
   // Programming Question (编程题) specific states
   const [codingLanguage, setCodingLanguage] = useState('Python');
   const [codingMaxTime, setCodingMaxTime] = useState(1);
@@ -636,6 +664,30 @@ export default function TeacherQuestions() {
     setShixunAnswerType('线上环境答题');
     setShixunDatasets([]);
     setIsDatasetDropdownOpen(false);
+    setShixunEnvType('container');
+    setShixunProjectSource('');
+    setShixunCpuCores('2');
+    setShixunMemoryGb('4');
+    setShixunGpuPower('10%');
+    setShixunGpuMem('2GB');
+    setShixunGpuCards('0');
+    setShixunContainerImage('Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1');
+    setShixunEnvVars([{ id: 1, key: '', value: '' }]);
+    setShixunStartCmd('python main.py');
+    setShixunMultiInstance(false);
+    setShixunVmCpu('4');
+    setShixunVmMem('8');
+    setShixunVmGpuPower('50%');
+    setShixunVmGpuMem('8GB');
+    setShixunVmGpuCards('0');
+    setShixunVmSpec('4核/8GB/无GPU');
+    setShixunVmImage('Ubuntu Server 22.04 LTS');
+    setShixunVmStorageType('SSD云硬盘');
+    setShixunVmSystemDisk('50');
+    setShixunVmDataDisk('100');
+    setShixunVmVpc('vpc-default (192.168.0.0/16)');
+    setShixunVmSubnet('subnet-default-a (192.168.1.0/24)');
+    setShixunVmVncType('caddyVnc');
     setCodingLanguage('Python');
     setCodingMaxTime(1);
     setCodingInputDesc('');
@@ -1457,9 +1509,509 @@ export default function TeacherQuestions() {
                       ))}
                     </div>
                     {shixunAnswerType === '线上环境答题' && (
-                      <p className="text-[11px] text-neutral-400 leading-normal pl-1">
-                        点击【确定】后，可在开发环境内编辑详细的<span className="text-[#fa541c] font-medium">『试题内容说明』</span>文档
-                      </p>
+                      <div className="space-y-4 animate-slide-up pl-1">
+                        <p className="text-[11px] text-neutral-400 leading-normal">
+                          点击【确定】后，可在开发环境内编辑详细的<span className="text-[#fa541c] font-medium">『试题内容说明』</span>文档
+                        </p>
+
+                        {/* 环境配置 Card */}
+                        <div className="p-4 bg-neutral-50/50 border border-neutral-200/60 rounded-xl space-y-4">
+                          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                            <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-[#fa541c]" /> 环境配置参数
+                            </span>
+                            
+                            {/* Segmented Control */}
+                            <div className="flex bg-neutral-200/60 p-0.5 rounded-lg text-[11px] font-semibold">
+                              <button
+                                type="button"
+                                onClick={() => setShixunEnvType('container')}
+                                className={cn(
+                                  "px-3 py-1 rounded-md transition-all cursor-pointer border-0 bg-transparent text-xs",
+                                  shixunEnvType === 'container'
+                                    ? "bg-[#fa541c] text-white shadow-sm font-bold"
+                                    : "text-neutral-500 hover:text-neutral-800"
+                                )}
+                              >
+                                容器环境
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setShixunEnvType('vm')}
+                                className={cn(
+                                  "px-3 py-1 rounded-md transition-all cursor-pointer border-0 bg-transparent text-xs",
+                                  shixunEnvType === 'vm'
+                                    ? "bg-[#fa541c] text-white shadow-sm font-bold"
+                                    : "text-neutral-500 hover:text-neutral-800"
+                                )}
+                              >
+                                虚拟机环境
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 容器参数 */}
+                          {shixunEnvType === 'container' && (
+                            <div className="space-y-4 animate-fade-in text-left">
+                              {/* 项目源码 */}
+                              <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+                                  <span className="text-[#fa541c]">*</span> 项目源码：
+                                </label>
+                                <div 
+                                  onClick={() => {
+                                    setShixunProjectSource('project_template_' + Date.now().toString().slice(-4) + '.zip');
+                                  }}
+                                  className={cn(
+                                    "border border-dashed rounded-lg p-3.5 flex flex-col items-center justify-center bg-white transition-all cursor-pointer text-center",
+                                    shixunProjectSource
+                                      ? "border-[#fa541c] bg-[#fff2e8]/10"
+                                      : "border-neutral-200 hover:border-[#fa541c] hover:bg-neutral-50"
+                                  )}
+                                >
+                                  {shixunProjectSource ? (
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800">
+                                      <span>📄</span>
+                                      <span>{shixunProjectSource}</span>
+                                      <button 
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setShixunProjectSource('');
+                                        }}
+                                        className="text-[10px] text-red-500 hover:underline ml-2 cursor-pointer border-0 bg-transparent font-bold"
+                                      >
+                                        删除
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="text-[11px] text-neutral-500">
+                                      点击上传项目源码压缩文件（支持 .zip, .tar.gz）
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 资源配置 */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">CPU 核数：</label>
+                                  <div className="relative">
+                                    <input
+                                      type="number"
+                                      value={shixunCpuCores}
+                                      onChange={(e) => setShixunCpuCores(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                      min="1"
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">核</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">内存 (GB)：</label>
+                                  <div className="relative">
+                                    <input
+                                      type="number"
+                                      value={shixunMemoryGb}
+                                      onChange={(e) => setShixunMemoryGb(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                      min="1"
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">GB</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* GPU */}
+                              <div className="bg-neutral-100/40 p-3 rounded-lg border border-neutral-200/50 space-y-2.5">
+                                <div className="text-[11px] font-bold text-neutral-700">GPU 资源配置：</div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">算力比例：</label>
+                                    <select
+                                      value={shixunGpuPower}
+                                      onChange={(e) => setShixunGpuPower(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                    >
+                                      <option value="无GPU">无 GPU</option>
+                                      <option value="10%">10% 算力</option>
+                                      <option value="25%">25% 算力</option>
+                                      <option value="50%">50% 算力</option>
+                                      <option value="100%">100% 独占</option>
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">显存：</label>
+                                    <select
+                                      value={shixunGpuMem}
+                                      onChange={(e) => setShixunGpuMem(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                    >
+                                      <option value="0GB">无显存</option>
+                                      <option value="2GB">2 GB</option>
+                                      <option value="4GB">4 GB</option>
+                                      <option value="8GB">8 GB</option>
+                                      <option value="16GB">16 GB</option>
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">卡数：</label>
+                                    <input
+                                      type="number"
+                                      value={shixunGpuCards}
+                                      onChange={(e) => setShixunGpuCards(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none"
+                                      min="0"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 选择镜像 */}
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-neutral-600 block">选择镜像：</label>
+                                <div className="relative">
+                                  <select
+                                    value={shixunContainerImage}
+                                    onChange={(e) => setShixunContainerImage(e.target.value)}
+                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                  >
+                                    <option value="Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1">Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1 (深度学习推荐)</option>
+                                    <option value="Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0">Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0</option>
+                                    <option value="Python 3.10 Development Environment">Python 3.10 Development Environment (通用编程)</option>
+                                    <option value="Node.js 18 + Frontend SDK">Node.js 18 + Frontend SDK</option>
+                                  </select>
+                                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                </div>
+                              </div>
+
+                              {/* 环境变量配置 */}
+                              <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-neutral-600 block">环境变量配置：</label>
+                                <div className="space-y-2">
+                                  {shixunEnvVars.map((ev, idx) => (
+                                    <div key={ev.id} className="flex gap-2 items-center">
+                                      <input
+                                        type="text"
+                                        placeholder="Key (如: PATH)"
+                                        value={ev.key}
+                                        onChange={(e) => {
+                                          const newVars = [...shixunEnvVars];
+                                          newVars[idx].key = e.target.value;
+                                          setShixunEnvVars(newVars);
+                                        }}
+                                        className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
+                                      />
+                                      <span className="text-neutral-400 text-xs font-bold">=</span>
+                                      <input
+                                        type="text"
+                                        placeholder="Value"
+                                        value={ev.value}
+                                        onChange={(e) => {
+                                          const newVars = [...shixunEnvVars];
+                                          newVars[idx].value = e.target.value;
+                                          setShixunEnvVars(newVars);
+                                        }}
+                                        className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setShixunEnvVars(shixunEnvVars.filter(v => v.id !== ev.id));
+                                        }}
+                                        className="text-neutral-400 hover:text-red-500 font-bold p-1 cursor-pointer border-0 bg-transparent"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ))}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setShixunEnvVars([...shixunEnvVars, { id: Date.now(), key: '', value: '' }]);
+                                    }}
+                                    className="text-[10px] text-[#fa541c] border border-dashed border-[#fa541c] rounded px-3 py-1 hover:bg-[#fff2e8] transition-colors cursor-pointer bg-white"
+                                  >
+                                    + 添加环境变量
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* 容器启动命令 */}
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-neutral-600 block">容器启动命令：</label>
+                                <input
+                                  type="text"
+                                  value={shixunStartCmd}
+                                  onChange={(e) => setShixunStartCmd(e.target.value)}
+                                  placeholder="如: python main.py"
+                                  className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                />
+                              </div>
+
+                              {/* 多实例配置 */}
+                              <label className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 py-1">
+                                <input
+                                  type="checkbox"
+                                  checked={shixunMultiInstance}
+                                  onChange={(e) => setShixunMultiInstance(e.target.checked)}
+                                  className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer bg-white"
+                                />
+                                <span className="font-bold text-neutral-700">支持多实例配置</span>
+                              </label>
+                            </div>
+                          )}
+
+                          {/* 虚拟机参数 */}
+                          {shixunEnvType === 'vm' && (
+                            <div className="space-y-4 animate-fade-in text-left">
+                              {/* 资源配置与规格 */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">资源配置与规格：</label>
+                                  <span className="text-[10px] text-neutral-400 font-bold">快捷选择规格或手动设定</span>
+                                </div>
+                                <div className="relative">
+                                  <select
+                                    value={shixunVmSpec}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setShixunVmSpec(val);
+                                      if (val === '2核/4GB/无GPU') {
+                                        setShixunVmCpu('2');
+                                        setShixunVmMem('4');
+                                        setShixunVmGpuPower('无GPU');
+                                        setShixunVmGpuMem('0GB');
+                                        setShixunVmGpuCards('0');
+                                      } else if (val === '4核/8GB/无GPU') {
+                                        setShixunVmCpu('4');
+                                        setShixunVmMem('8');
+                                        setShixunVmGpuPower('无GPU');
+                                        setShixunVmGpuMem('0GB');
+                                        setShixunVmGpuCards('0');
+                                      } else if (val === '8核/16GB/T4-1卡') {
+                                        setShixunVmCpu('8');
+                                        setShixunVmMem('16');
+                                        setShixunVmGpuPower('100%');
+                                        setShixunVmGpuMem('16GB');
+                                        setShixunVmGpuCards('1');
+                                      }
+                                    }}
+                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                  >
+                                    <option value="自定义">自定义资源配置</option>
+                                    <option value="2核/4GB/无GPU">2核 / 4GB / 无GPU (常规实例)</option>
+                                    <option value="4核/8GB/无GPU">4核 / 8GB / 无GPU (通用计算型)</option>
+                                    <option value="8核/16GB/T4-1卡">8核 / 16GB / T4-1卡 GPU独占实例 (深度学习推荐)</option>
+                                  </select>
+                                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                </div>
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5">
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">CPU 核数：</label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        value={shixunVmCpu}
+                                        onChange={(e) => {
+                                          setShixunVmCpu(e.target.value);
+                                          setShixunVmSpec('自定义');
+                                        }}
+                                        className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                        min="1"
+                                      />
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">核</span>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">内存 (GB)：</label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        value={shixunVmMem}
+                                        onChange={(e) => {
+                                          setShixunVmMem(e.target.value);
+                                          setShixunVmSpec('自定义');
+                                        }}
+                                        className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                        min="1"
+                                      />
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">GB</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* VM GPU */}
+                                <div className="bg-neutral-100/40 p-2.5 rounded-lg border border-neutral-200/50 grid grid-cols-3 gap-2 mt-1">
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-semibold text-neutral-500 block">GPU算力：</label>
+                                    <select
+                                      value={shixunVmGpuPower}
+                                      onChange={(e) => {
+                                        setShixunVmGpuPower(e.target.value);
+                                        setShixunVmSpec('自定义');
+                                      }}
+                                      className="w-full border border-neutral-200 rounded-lg px-2 py-0.5 text-[10px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                    >
+                                      <option value="无GPU">无 GPU</option>
+                                      <option value="25%">25% 算力</option>
+                                      <option value="50%">50% 算力</option>
+                                      <option value="100%">100% 独占</option>
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-semibold text-neutral-500 block">GPU显存：</label>
+                                    <select
+                                      value={shixunVmGpuMem}
+                                      onChange={(e) => {
+                                        setShixunVmGpuMem(e.target.value);
+                                        setShixunVmSpec('自定义');
+                                      }}
+                                      className="w-full border border-neutral-200 rounded-lg px-2 py-0.5 text-[10px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                    >
+                                      <option value="0GB">无显存</option>
+                                      <option value="8GB">8 GB</option>
+                                      <option value="16GB">16 GB</option>
+                                      <option value="24GB">24 GB</option>
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-semibold text-neutral-500 block">GPU卡数：</label>
+                                    <input
+                                      type="number"
+                                      value={shixunVmGpuCards}
+                                      onChange={(e) => {
+                                        setShixunVmGpuCards(e.target.value);
+                                        setShixunVmSpec('自定义');
+                                      }}
+                                      className="w-full border border-neutral-200 rounded-lg px-2 py-0.5 text-[10px] bg-white text-neutral-700 focus:outline-none"
+                                      min="0"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 选择虚拟机镜像 */}
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-neutral-600 block">选择虚拟机镜像：</label>
+                                <div className="relative">
+                                  <select
+                                    value={shixunVmImage}
+                                    onChange={(e) => setShixunVmImage(e.target.value)}
+                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                  >
+                                    <option value="Ubuntu Server 22.04 LTS">Ubuntu Server 22.04 LTS (深度学习常用)</option>
+                                    <option value="CentOS Stream 9 x86_64">CentOS Stream 9 x86_64</option>
+                                    <option value="Windows Server 2022 Core">Windows Server 2022 Core (支持图形界面)</option>
+                                  </select>
+                                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                </div>
+                              </div>
+
+                              {/* 存储配置 */}
+                              <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-neutral-600 block">存储配置：</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">存储类型：</label>
+                                    <select
+                                      value={shixunVmStorageType}
+                                      onChange={(e) => setShixunVmStorageType(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-2.5 py-1 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                    >
+                                      <option value="SSD云硬盘">SSD云硬盘 (高性能)</option>
+                                      <option value="高效云盘">高效云盘 (通用)</option>
+                                      <option value="SATA云磁盘">SATA云磁盘 (大容量低成本)</option>
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">系统盘 (GB)：</label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        value={shixunVmSystemDisk}
+                                        onChange={(e) => setShixunVmSystemDisk(e.target.value)}
+                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-xs bg-white text-neutral-700 focus:outline-none"
+                                        min="20"
+                                      />
+                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400 font-bold">GB</span>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-neutral-500 block">数据盘 (GB)：</label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        value={shixunVmDataDisk}
+                                        onChange={(e) => setShixunVmDataDisk(e.target.value)}
+                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-xs bg-white text-neutral-700 focus:outline-none"
+                                        min="0"
+                                      />
+                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400 font-bold">GB</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 网络配置 */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">VPC 网络：</label>
+                                  <div className="relative">
+                                    <select
+                                      value={shixunVmVpc}
+                                      onChange={(e) => setShixunVmVpc(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                    >
+                                      <option value="vpc-default (192.168.0.0/16)">vpc-default (192.168.0.0/16)</option>
+                                      <option value="vpc-training (172.16.0.0/12)">vpc-training (172.16.0.0/12)</option>
+                                    </select>
+                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                  </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">子网：</label>
+                                  <div className="relative">
+                                    <select
+                                      value={shixunVmSubnet}
+                                      onChange={(e) => setShixunVmSubnet(e.target.value)}
+                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                    >
+                                      <option value="subnet-default-a (192.168.1.0/24)">subnet-default-a (192.168.1.0/24)</option>
+                                      <option value="subnet-default-b (192.168.2.0/24)">subnet-default-b (192.168.2.0/24)</option>
+                                    </select>
+                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* VNC 远程桌面类型 */}
+                              <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-neutral-600 block">VNC 远程桌面类型：</label>
+                                <div className="flex gap-6 items-center">
+                                  {[
+                                    { value: 'caddyVnc', label: 'caddyVnc' },
+                                    { value: 'noVnc', label: 'noVnc' }
+                                  ].map((item) => (
+                                    <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                                      <input
+                                        type="radio"
+                                        name="shixunVmVncType"
+                                        value={item.value}
+                                        checked={shixunVmVncType === item.value}
+                                        onChange={() => setShixunVmVncType(item.value as 'caddyVnc' | 'noVnc')}
+                                        className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                                      />
+                                      <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -2389,31 +2941,15 @@ export default function TeacherQuestions() {
                 {isCreateBankOpen && (
                   <div className="bg-neutral-50 border border-neutral-200/60 rounded-xl p-4 mb-4 space-y-3 animate-slide-up text-left">
                     <div className="text-xs font-bold text-neutral-800">新建题库</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-neutral-600 block">题库名称：</label>
-                        <input
-                          type="text"
-                          placeholder="如：自然语言处理基础"
-                          value={newBankName}
-                          onChange={(e) => setNewBankName(e.target.value)}
-                          className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c]"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-neutral-600 block">题库分类：</label>
-                        <select
-                          value={newBankCategory}
-                          onChange={(e) => setNewBankCategory(e.target.value)}
-                          className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c] cursor-pointer font-medium"
-                        >
-                          <option value="AI技术">AI技术</option>
-                          <option value="自然语言处理">自然语言处理</option>
-                          <option value="机器学习">机器学习</option>
-                          <option value="计算机视觉">计算机视觉</option>
-                          <option value="其它">其它</option>
-                        </select>
-                      </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-neutral-600 block">题库名称：</label>
+                      <input
+                        type="text"
+                        placeholder="如：自然语言处理基础"
+                        value={newBankName}
+                        onChange={(e) => setNewBankName(e.target.value)}
+                        className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c]"
+                      />
                     </div>
                     <div className="flex justify-end pt-1">
                       <Button 
@@ -2426,7 +2962,7 @@ export default function TeacherQuestions() {
                             id: Date.now(),
                             name: newBankName.trim(),
                             count: 0,
-                            category: newBankCategory,
+                            category: '其它',
                             creator: 'Momodel',
                             createdAt: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/-/g, '/')
                           };
@@ -2434,7 +2970,7 @@ export default function TeacherQuestions() {
                           setNewBankName('');
                           setIsCreateBankOpen(false);
                         }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 px-4 rounded text-xs font-semibold shadow-sm cursor-pointer border-0"
+                        className="border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8] h-7 px-4 rounded text-xs font-semibold shadow-sm cursor-pointer"
                       >
                         保存
                       </Button>

@@ -13,7 +13,9 @@ import {
   Calendar, 
   User, 
   Settings, 
-  ClipboardList 
+  ClipboardList,
+  Check,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -514,7 +516,10 @@ export default function TeacherPapers() {
                                   {/* Button Column */}
                                   <div className="flex-shrink-0 md:pl-6 border-t md:border-t-0 md:border-l border-neutral-100/80 pt-4 md:pt-0 flex items-center justify-center">
                                     <Button 
-                                      onClick={() => setView('preview')} 
+                                      onClick={() => {
+                                        setViewingPaper(p);
+                                        setView('preview');
+                                      }} 
                                       className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg shadow-sm shadow-[#fa541c]/25 h-10 font-bold px-6 transition-all cursor-pointer border-0"
                                     >
                                       预览客观题
@@ -549,159 +554,356 @@ export default function TeacherPapers() {
           </div>
         </>
       ) : (
-        /* 客观题预览界面 (参考图1，主题色为橙色) */
-        <div className="space-y-6 animate-fade-in -mx-6 -mt-6">
-          {/* 顶部橙色渐变 Banner 区域 */}
-          <div className="bg-gradient-to-r from-[#fa541c] via-[#ff7875] to-[#ffa940] p-8 pb-10 text-white relative overflow-hidden shadow-lg border-b border-orange-200/20 rounded-b-2xl">
-            {/* Hand-crafted high-fidelity 3D glass orbital SVG graphic */}
-            <div className="absolute right-10 top-1/2 -translate-y-1/2 hidden md:block w-72 h-44 opacity-95">
-              <svg viewBox="0 0 280 180" className="w-full h-full drop-shadow-xl animate-float">
-                {/* Orbit Rings */}
-                <ellipse cx="140" cy="90" rx="90" ry="25" fill="none" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="3" transform="rotate(-15 140 90)" />
-                <ellipse cx="140" cy="90" rx="110" ry="32" fill="none" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1.5" strokeDasharray="6 4" transform="rotate(-15 140 90)" />
-                
-                {/* Glowing elements */}
-                <circle cx="50" cy="60" r="6" fill="#fff" opacity="0.8" />
-                <circle cx="210" cy="110" r="8" fill="#ffe7ba" opacity="0.65" />
-                <circle cx="80" cy="120" r="4" fill="#ffd591" opacity="0.85" />
+        /* 客观题预览界面 (参考题库详情布局和排版，橙色主题) */
+        <div className="animate-fade-in -mx-6 -mt-6 min-h-[calc(100vh-56px)] bg-[#f5f7fa] pb-12 text-left">
+          {/* Inject style for floating animation */}
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes float {
+              0% { transform: translateY(0px) rotate(12deg); }
+              50% { transform: translateY(-10px) rotate(10deg); }
+              100% { transform: translateY(0px) rotate(12deg); }
+            }
+            .style-floating-element {
+              animation: float 4s ease-in-out infinite;
+            }
+          `}} />
 
-                {/* Isometric Cube (glowing 3D block) */}
-                <g transform="translate(140, 75)">
-                  {/* Top Face */}
-                  <path d="M0 -30 L45 -10 L0 10 L-45 -10 Z" fill="rgba(255, 255, 255, 0.28)" stroke="rgba(255, 255, 255, 0.7)" strokeWidth="1.5" />
-                  {/* Left Face */}
-                  <path d="M-45 -10 L0 10 L0 50 L-45 30 Z" fill="rgba(255, 255, 255, 0.12)" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1.5" />
-                  {/* Right Face */}
-                  <path d="M0 10 L45 -10 L45 30 L0 50 Z" fill="rgba(255, 255, 255, 0.18)" stroke="rgba(255, 255, 255, 0.55)" strokeWidth="1.5" />
-                  
-                  {/* Core glowing cube inside */}
-                  <polygon points="0,-15 25,-5 0,5 -25,-5" fill="#ffa940" opacity="0.75" />
-                  <polygon points="-25,-5 0,5 0,25 -25,15" fill="#fa541c" opacity="0.85" />
-                  <polygon points="0,5 25,-5 25,15 0,25" fill="#ff7875" opacity="0.9" />
-                  
-                  <line x1="0" y1="-30" x2="0" y2="-50" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" strokeDasharray="3 2" />
-                  <circle cx="0" cy="-52" r="3" fill="#fff" />
-                </g>
-              </svg>
+          {/* 顶部橙色渐变 Banner 区域 */}
+          <div className="relative bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] pt-6 pb-16 text-white select-none overflow-hidden shrink-0">
+            {/* Background circular decorations referencing assignment preview */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute -right-20 -top-20 w-[400px] h-[400px] border-[40px] border-white/5 rounded-full"></div>
+              <div className="absolute -right-10 top-10 w-[300px] h-[300px] border-[2px] border-white/10 rounded-full"></div>
             </div>
 
-            <button 
-              onClick={() => setView('list')}
-              className="flex items-center gap-1.5 text-xs text-white/90 hover:text-white font-bold transition-all cursor-pointer mb-5 bg-white/10 hover:bg-white/20 px-3.5 py-1.8 rounded-lg backdrop-blur-md shadow-sm border border-white/10"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" /> 返回试卷列表
-            </button>
+            {/* 3D Glassmorphic Cube/Sphere floats on the right side */}
+            <div className="absolute right-12 top-1/2 -translate-y-1/2 w-48 h-48 overflow-visible pointer-events-none hidden md:block">
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Glow circle */}
+                <div className="absolute w-40 h-40 rounded-full bg-white/20 blur-xl animate-pulse"></div>
+                {/* Rotating Outer Rings */}
+                <div className="absolute w-36 h-36 border border-white/20 rounded-full animate-[spin_12s_linear_infinite] border-dashed"></div>
+                <div className="absolute w-28 h-28 border border-white/30 rounded-full animate-[spin_8s_linear_infinite_reverse]"></div>
+                {/* Inner floating cube/sphere */}
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-white/30 to-white/15 backdrop-blur-md border border-white/45 shadow-2xl rotate-12 flex items-center justify-center style-floating-element">
+                  <div className="w-10 h-10 rounded bg-gradient-to-br from-[#fa541c] to-[#ff7875] opacity-85 shadow-sm transform -rotate-12 border border-white/25"></div>
+                </div>
+                {/* Secondary floating dots */}
+                <div className="absolute top-6 right-6 w-5 h-5 rounded-full bg-[#ff7875] opacity-75 blur-[1px] animate-[float_3s_ease-in-out_infinite_alternate]"></div>
+                <div className="absolute bottom-6 left-6 w-3 h-3 rounded-full bg-white opacity-60 blur-[0.5px] animate-[float_5s_ease-in-out_infinite_alternate]"></div>
+              </div>
+            </div>
 
-            <div className="space-y-2 relative z-10">
-              <p className="text-xs text-white/75 font-semibold tracking-wide">课程 / 生成式AI与大模型应用期末考试 / 客观题</p>
-              <h2 className="text-2xl md:text-3xl font-black tracking-wide">生成式AI与大模型应用期末考试-客观题</h2>
-              <div className="flex items-center gap-5 text-xs text-white/95 pt-3 font-semibold">
-                <p className="flex items-center gap-1"><User className="w-3.5 h-3.5 text-orange-100" /> 学生：孙昕</p>
-                <p className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-orange-100" /> 作业时长：3600分钟</p>
+            {/* Content info (centered & aligned horizontally with the card container) */}
+            <div className="max-w-5xl mx-auto px-6 w-full relative z-10 flex flex-col">
+              {/* Breadcrumbs - Line 1: back button link inline */}
+              <div className="flex items-center gap-2 text-[12px] text-white/70 mb-4 font-medium tracking-wider">
+                <button 
+                  onClick={() => {
+                    setView('list');
+                    setViewingPaper(null);
+                  }} 
+                  className="hover:text-white transition-colors flex items-center gap-1 font-bold border-0 bg-transparent p-0 cursor-pointer text-white/70"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> 返回试卷列表
+                </button>
+              </div>
+              
+              {/* Big Title - Line 2 */}
+              <h1 className="text-[28px] font-bold mb-4 tracking-wider leading-tight">
+                {viewingPaper?.name || '生成式AI与大模型应用期末考试-客观题'}
+              </h1>
+
+              {/* Creator info - Line 3 */}
+              <div className="flex items-center gap-6 text-[13px] text-white/90">
+                <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> 创建人：{viewingPaper?.creator || '孙昕'}</span>
+                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> 更新时间：{viewingPaper?.updateTime || '2026/02/11'}</span>
+                <span className="flex items-center gap-1"><ClipboardList className="w-3.5 h-3.5" /> 题目数量：{viewingPaper?.questionCount || 0} 道题</span>
               </div>
             </div>
           </div>
 
-          {/* 试卷客观题卡片主体 */}
-          <div className="bg-white border border-neutral-100 rounded-2xl shadow-sm p-8 space-y-8 max-w-4xl mx-auto mb-10">
-            {/* 试卷客观题题型分组标题 */}
-            <div className="flex items-center gap-2.5 pb-4 border-b border-neutral-100/80">
-              {/* Check-circle Custom SVG */}
-              <div className="w-8 h-8 rounded-full bg-[#fff2e8] flex items-center justify-center">
-                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-[#fa541c]" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <h3 className="text-sm font-bold text-neutral-800 flex items-baseline gap-1.5">
-                单选题 <span className="text-xs text-neutral-400 font-medium font-mono">（第 1-20 题，每题 2 分，共 40 分）</span>
-              </h3>
-            </div>
+          {/* Main Card Container */}
+          <div className="max-w-5xl mx-auto px-6 relative z-10 -mt-8 pb-20">
+            <div className="bg-white rounded-t-xl rounded-b-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 min-h-[400px] border border-neutral-100">
+              {(() => {
+                // Inline helper to get questions for this paper
+                const getQuestionsForPaper = () => {
+                  if (viewingPaper && viewingPaper.name === paperName && confirmedQuestions.length > 0) {
+                    return confirmedQuestions;
+                  }
+                  const paperNameText = viewingPaper?.name || '';
+                  const questions: any[] = [];
+                  
+                  if (paperNameText.includes('AI 通识') || paperNameText.includes('生成式AI') || paperNameText.includes('大模型')) {
+                    questions.push(
+                      {
+                        id: 1,
+                        name: '关于大模型的“涌现能力”，以下说法正确的是（ ）。',
+                        type: '单选题',
+                        options: [
+                          '涌现能力是指模型参数规模超过某个阈值后，突然展现出的新能力',
+                          '涌现能力只能通过增加训练数据量获得，与参数规模无关',
+                          '涌现能力是所有大模型都具备的，不需要达到一定规模',
+                          '涌现能力是小模型特有的，大模型不具备'
+                        ],
+                        correct: 'A',
+                        analysis: '涌现能力是指当模型参数规模达到一定量级时，模型突然表现出之前小规模模型不具备的高级认知能力。'
+                      },
+                      {
+                        id: 2,
+                        name: '以下哪个工具属于“内容分析”类应用？（ ）。',
+                        type: '单选题',
+                        options: [
+                          'DeepSeek',
+                          'Kimi',
+                          'MidJourney',
+                          'GitHub Copilot'
+                        ],
+                        correct: 'B',
+                        analysis: 'Kimi 以长文本分析 and 内容归纳为核心特色，属于典型的内容分析类大模型应用。'
+                      },
+                      {
+                        id: 3,
+                        name: '多模态大模型是指能够处理（ ）的模型。',
+                        type: '单选题',
+                        options: [
+                          '文字、图像、音频、视频等多种类型数据',
+                          '仅限图像',
+                          '仅限文字',
+                          '仅限音频'
+                        ],
+                        correct: 'A',
+                        analysis: '多模态大模型能够跨越单一的文本模态，同时接收和生成文本、图像、语音、视频等多种信息媒介。'
+                      },
+                      {
+                        id: 4,
+                        name: '零样本提示（Zero-shot Prompting）指的是不向模型提供任何示例，直接给出任务指令。',
+                        type: '判断题',
+                        options: ['正确', '错误'],
+                        correct: '正确',
+                        analysis: 'Zero-shot Prompting 依赖模型预训练阶段积累的知识，直接执行从未见过示范的特定任务。'
+                      },
+                      {
+                        id: 5,
+                        name: '大语言模型由于其自回归的概率预测机制，容易产生符合语法逻辑但内容完全不真实的（ ）现象。',
+                        type: '填空题',
+                        options: [],
+                        correct: '幻觉',
+                        analysis: '幻觉（Hallucination）是大语言模型根据概率分布输出文本时常见的局限性。'
+                      }
+                    );
+                  } else if (paperNameText.includes('机器学习') || paperNameText.includes('深度学习')) {
+                    questions.push(
+                      {
+                        id: 11,
+                        name: '机器学习中监督学习与无监督学习的核心区别是（ ）。',
+                        type: '单选题',
+                        options: [
+                          '训练数据是否包含标签/标注信息',
+                          '模型运行速度的快慢',
+                          '是否使用神经网络算法',
+                          '是否可以连接互联网进行实时学习'
+                        ],
+                        correct: 'A',
+                        analysis: '监督学习需要明确的输入输出对（即标签）作为指导，而无监督学习直接对未标记数据寻找内部结构关系。'
+                      },
+                      {
+                        id: 12,
+                        name: '随机森林（Random Forest）的基分类器通常是决策树（Decision Tree）。',
+                        type: '判断题',
+                        options: ['正确', '错误'],
+                        correct: '正确',
+                        analysis: '随机森林通过Bagging集成方法，并行构建多棵决策树作为其基础估计器。'
+                      },
+                      {
+                        id: 13,
+                        name: '关于支持向量机（SVM），以下说法正确的有（ ）。',
+                        type: '多选题',
+                        options: [
+                          '支持向量机旨在寻找一个最优超平面以最大化分类间隔',
+                          '引入核函数是为了处理低维空间中线性不可分的问题',
+                          '支持向量是指距离决策超平面最近的那些训练样本点',
+                          'SVM 的训练过程不需要任何参数调优'
+                        ],
+                        correct: 'A, B, C',
+                        analysis: 'SVM 的核心思想是最大化分类间隔，核函数用于做非线性映射，支持向量决定了超平面的位置。'
+                      },
+                      {
+                        id: 14,
+                        name: '在神经网络中，激活函数的主要作用是（ ）。',
+                        type: '单选题',
+                        options: [
+                          '为网络引入非线性建模能力，从而可以拟合任意复杂的函数',
+                          '加速正向传播的矩阵乘法速度',
+                          '初始化权值 and 偏置，避免梯度消失',
+                          '自动调节优化器（如 Adam）的学习率'
+                        ],
+                        correct: 'A',
+                        analysis: '若不包含激活函数，神经网络的多层叠加只能退化为单层线性映射。激活函数引入非线性从而支持拟合复杂曲线。'
+                      },
+                      {
+                        id: 15,
+                        name: '过拟合是指模型在训练集上表现优异，但在测试集或未知数据上表现很差的现象。',
+                        type: '判断题',
+                        options: ['正确', '错误'],
+                        correct: '正确',
+                        analysis: '过拟合说明模型过度拟合了训练集中的噪声，降低了泛化性能。'
+                      }
+                    );
+                  } else {
+                    // Fallback: mix of default mock questions
+                    questions.push(
+                      {
+                        id: 21,
+                        name: '人工智能发展的三个历史阶段分别是自动控制、知识工程和（ ）。',
+                        type: '单选题',
+                        options: [
+                          '机器学习与连接主义（深度学习）',
+                          '区块链技术',
+                          '量子计算',
+                          '云计算与虚拟化'
+                        ],
+                        correct: 'A',
+                        analysis: '人工智能自诞生起经历了自动控制、以专家系统为核心 of 知识工程，再到当前的深度学习浪潮。'
+                      },
+                      {
+                        id: 22,
+                        name: '神经网络中的激活函数主要作用是引入非线性因素。',
+                        type: '判断题',
+                        options: ['正确', '错误'],
+                        correct: '正确',
+                        analysis: '激活函数提供非线性特征。'
+                      },
+                      {
+                        id: 23,
+                        name: '机器学习中常见的分类算法包括以下哪些？',
+                        type: '多选题',
+                        options: [
+                          '逻辑回归 (Logistic Regression)',
+                          '支持向量机 (SVM)',
+                          '决策树 (Decision Tree)',
+                          'K-Means 均值聚类'
+                        ],
+                        correct: 'A, B, C',
+                        analysis: '逻辑回归、SVM、决策树均为分类算法，而 K-Means 是典型的无监督聚类算法。'
+                      }
+                    );
+                  }
+                  return questions;
+                };
 
-            {/* 客观题试题列表 */}
-            <div className="space-y-8">
-              {/* Question 1 */}
-              <div className="space-y-4">
-                <h4 className="text-[13px] md:text-[14px] font-bold text-neutral-800 leading-relaxed flex items-start gap-1">
-                  <span className="text-neutral-400 font-mono">1、</span>
-                  <span>关于大模型的“涌现能力”，以下说法正确的是（ ）。</span>
-                </h4>
-                <div className="pl-6 space-y-3.5">
-                  {[
-                    { key: 'A', text: '涌现能力是指模型参数规模超过某个阈值后，突然展现出的新能力' },
-                    { key: 'B', text: '涌现能力只能通过增加训练数据量获得，与参数规模无关' },
-                    { key: 'C', text: '涌现能力是所有大模型都具备的，不需要达到一定规模' },
-                    { key: 'D', text: '涌现能力是小模型特有的，大模型不具备' },
-                  ].map((opt) => (
-                    <div key={opt.key} className="flex items-start gap-4 text-xs text-neutral-600 hover:text-[#fa541c] transition-colors duration-200 cursor-pointer group leading-relaxed">
-                      <span className="font-bold text-neutral-400 group-hover:text-[#fa541c] transition-colors w-4 flex-shrink-0">{opt.key}</span>
-                      <span className="font-medium">{opt.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                const paperQuestions = getQuestionsForPaper();
+                const groupedQuestions: { [key: string]: any[] } = {};
+                
+                // Group them by type
+                paperQuestions.forEach(q => {
+                  if (!groupedQuestions[q.type]) {
+                    groupedQuestions[q.type] = [];
+                  }
+                  groupedQuestions[q.type].push(q);
+                });
 
-              {/* Question 2 */}
-              <div className="space-y-4">
-                <h4 className="text-[13px] md:text-[14px] font-bold text-neutral-800 leading-relaxed flex items-start gap-1">
-                  <span className="text-neutral-400 font-mono">2、</span>
-                  <span>以下哪个工具属于“内容分析”类应用？（ ）。</span>
-                </h4>
-                <div className="pl-6 space-y-3.5">
-                  {[
-                    { key: 'A', text: 'DeepSeek' },
-                    { key: 'B', text: 'Kimi' },
-                    { key: 'C', text: 'MidJourney' },
-                    { key: 'D', text: 'GitHub Copilot' },
-                  ].map((opt) => (
-                    <div key={opt.key} className="flex items-start gap-4 text-xs text-neutral-600 hover:text-[#fa541c] transition-colors duration-200 cursor-pointer group leading-relaxed">
-                      <span className="font-bold text-neutral-400 group-hover:text-[#fa541c] transition-colors w-4 flex-shrink-0">{opt.key}</span>
-                      <span className="font-medium">{opt.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                // Calculate global index offsets for group headers
+                let currentGlobalIndex = 1;
+                const groupsInfo = Object.entries(groupedQuestions).map(([type, list]) => {
+                  const startIdx = currentGlobalIndex;
+                  const endIdx = currentGlobalIndex + list.length - 1;
+                  currentGlobalIndex += list.length;
+                  return {
+                    type,
+                    list,
+                    startIdx,
+                    endIdx,
+                    totalPoints: list.length * 20
+                  };
+                });
 
-              {/* Question 3 */}
-              <div className="space-y-4">
-                <h4 className="text-[13px] md:text-[14px] font-bold text-neutral-800 leading-relaxed flex items-start gap-1">
-                  <span className="text-neutral-400 font-mono">3、</span>
-                  <span>在数据敏感场景下，选择大模型工具的首要考虑因素是（ ）。</span>
-                </h4>
-                <div className="pl-6 space-y-3.5">
-                  {[
-                    { key: 'A', text: '模型参数规模' },
-                    { key: 'B', text: '数据安全与隐私保护' },
-                    { key: 'C', text: '生成速度' },
-                    { key: 'D', text: '界面美观度' },
-                  ].map((opt) => (
-                    <div key={opt.key} className="flex items-start gap-4 text-xs text-neutral-600 hover:text-[#fa541c] transition-colors duration-200 cursor-pointer group leading-relaxed">
-                      <span className="font-bold text-neutral-400 group-hover:text-[#fa541c] transition-colors w-4 flex-shrink-0">{opt.key}</span>
-                      <span className="font-medium">{opt.text}</span>
+                if (groupsInfo.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-20 text-neutral-400 text-sm gap-2">
+                      <FileQuestion className="w-12 h-12 stroke-[1.2] text-neutral-300 animate-pulse" />
+                      <span>该试卷内暂无可用客观题</span>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  );
+                }
 
-              {/* Question 4 */}
-              <div className="space-y-4">
-                <h4 className="text-[13px] md:text-[14px] font-bold text-neutral-800 leading-relaxed flex items-start gap-1">
-                  <span className="text-neutral-400 font-mono">4、</span>
-                  <span>多模态大模型是指能够处理（ ）的模型。</span>
-                </h4>
-                <div className="pl-6 space-y-3.5">
-                  {[
-                    { key: 'A', text: '文字、图像、音频、视频等多种类型数据' },
-                    { key: 'B', text: '仅限图像' },
-                    { key: 'C', text: '仅限文字' },
-                    { key: 'D', text: '仅限音频' },
-                  ].map((opt) => (
-                    <div key={opt.key} className="flex items-start gap-4 text-xs text-neutral-600 hover:text-[#fa541c] transition-colors duration-200 cursor-pointer group leading-relaxed">
-                      <span className="font-bold text-neutral-400 group-hover:text-[#fa541c] transition-colors w-4 flex-shrink-0">{opt.key}</span>
-                      <span className="font-medium">{opt.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                return (
+                  <div className="space-y-10">
+                    {groupsInfo.map((group) => (
+                      <div key={group.type} className="animate-slide-up">
+                        {/* Group Header */}
+                        <div className="flex items-center gap-2.5 border-b border-neutral-100 pb-3.5 mb-6 text-left">
+                          <div className="w-5.5 h-5.5 rounded-full bg-blue-50 text-[#1677ff] flex items-center justify-center flex-shrink-0 border border-blue-100">
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </div>
+                          <span className="text-[14px] font-bold text-neutral-800">
+                            {group.type}
+                          </span>
+                          <span className="text-[12px] text-neutral-400 font-medium">
+                            {group.startIdx === group.endIdx 
+                              ? `(第 ${group.startIdx} 题，共 1 题)`
+                              : `(第 ${group.startIdx}-${group.endIdx} 题，共 ${group.list.length} 题)`
+                            }
+                          </span>
+                        </div>
+
+                        {/* Questions List */}
+                        <div className="space-y-8 pl-1">
+                          {group.list.map((q, qIndex) => {
+                            const number = group.startIdx + qIndex;
+                            const isChoice = ['单选题', '多选题'].includes(q.type);
+                            
+                            return (
+                              <div key={q.id || qIndex} className="text-left space-y-3.5">
+                                {/* Question Title */}
+                                <h4 className="text-[14px] font-bold text-neutral-800 leading-snug">
+                                  {number}、{q.name}
+                                </h4>
+
+                                {/* Options (For single & multiple choices) */}
+                                {isChoice && (
+                                  <div className="space-y-3 pl-5">
+                                    {q.options && q.options.map((optText: string, optIdx: number) => {
+                                      const letter = String.fromCharCode(65 + optIdx);
+                                      return (
+                                        <div key={letter} className="flex items-start gap-2.5 text-xs text-neutral-700 leading-relaxed font-semibold">
+                                          <span className="font-bold text-neutral-400 w-4 select-none shrink-0">{letter}</span>
+                                          <span>{optText}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* Underline for fill-in-the-blank or basic placeholder for other types */}
+                                {q.type === '填空题' && (
+                                  <div className="pl-5 text-xs text-neutral-400 italic">
+                                    （答题栏：______________________________________）
+                                  </div>
+                                )}
+
+                                {/* Answer and Analysis section referencing TeacherQuestions details drawer */}
+                                <div className="mt-3 bg-[#fff2e8]/40 border border-[#ffbb96]/45 rounded-xl p-4 space-y-2.5 max-w-2xl ml-5">
+                                  <div className="text-xs text-[#fa541c] font-bold flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
+                                    <span>正确答案：</span>
+                                    <span className="px-2 py-0.5 bg-[#fa541c] text-white rounded text-[10px] font-bold shadow-sm">{q.correct}</span>
+                                  </div>
+                                  <div className="text-[11px] text-neutral-600 leading-relaxed bg-white/70 p-2.5 rounded-lg border border-neutral-100/80">
+                                    <span className="font-bold text-neutral-700 block mb-1">解析：</span>
+                                    {q.analysis}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -1138,7 +1340,7 @@ export default function TeacherPapers() {
       )}
 
       {/* 查看试卷 Drawer (从右侧弹出查看试卷界面) */}
-      {viewingPaper && (
+      {viewingPaper && view !== 'preview' && (
         <div 
           className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
           onClick={() => setViewingPaper(null)}
