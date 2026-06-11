@@ -16,7 +16,67 @@ export default function TeacherHome() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [selectedCourseName, setSelectedCourseName] = useState<string | null>(null);
 
-  const [courseTab, setCourseTab] = useState('all'); // all, active, ended
+  // Initial course data setup
+  const [coursesList, setCoursesList] = useState<any[]>(() => {
+    const saved = localStorage.getItem('zhiyun_courses');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    const defaultList = [
+      {
+        id: 1,
+        name: '人工智能基础与实践',
+        code: 'AI-101-2026',
+        desc: '本课程旨在介绍人工智能的基本概念、算法原理及实际应用。',
+        teacher: '张老师',
+        ta: '李助教',
+        scope: '平台',
+        status: '已发布',
+        auditStatus: '已通过',
+        image: 'https://picsum.photos/seed/ai/400/200',
+        state: 'active',
+        major: '人工智能',
+        tags: '必修, 核心课程'
+      },
+      {
+        id: 2,
+        name: '深度学习进阶',
+        code: 'DL-201-2026',
+        desc: '深入探讨神经网络、CNN、RNN等高级深度学习模型。',
+        teacher: '张老师',
+        ta: '王助教',
+        scope: '私有',
+        status: '草稿',
+        auditStatus: '待审核',
+        image: 'https://picsum.photos/seed/dl/400/200',
+        state: 'active',
+        major: '人工智能',
+        tags: '必修'
+      },
+      {
+        id: 3,
+        name: 'Python数据分析',
+        code: 'PY-301-2025',
+        desc: '使用Python进行数据清洗、处理、分析和可视化。',
+        teacher: '张老师',
+        ta: '-',
+        scope: '租户',
+        status: '已发布',
+        auditStatus: '已通过',
+        image: 'https://picsum.photos/seed/data/400/200',
+        state: 'ended',
+        major: '计算机科学',
+        tags: '选修'
+      }
+    ];
+    localStorage.setItem('zhiyun_courses', JSON.stringify(defaultList));
+    return defaultList;
+  });
+
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [courseModalMode, setCourseModalMode] = useState<'create' | 'edit'>('create');
   const [editingCourse, setEditingCourse] = useState<any>(null);
@@ -25,9 +85,15 @@ export default function TeacherHome() {
   const [isApplyPublicModalOpen, setIsApplyPublicModalOpen] = useState(false);
   const [applyPublicCourse, setApplyPublicCourse] = useState<any>(null);
   const [applyReason, setApplyReason] = useState('');
-  const [applyTarget, setApplyTarget] = useState('');
+  const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  const [courseSearchQuery, setCourseSearchQuery] = useState('');
+  const [courseFormName, setCourseFormName] = useState('');
+  const [courseFormMajor, setCourseFormMajor] = useState('');
+  const [courseFormTags, setCourseFormTags] = useState('');
+  const [courseFormDesc, setCourseFormDesc] = useState('');
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -49,7 +115,7 @@ export default function TeacherHome() {
     { icon: FileQuestion, title: '试题管理', desc: '试题库录入与智能标签', bgGradient: 'bg-gradient-to-br from-blue-50/60 via-indigo-50/30 to-white hover:from-blue-100/50 hover:to-indigo-50/60', borderClass: 'border-blue-100/70 hover:border-blue-200/80', titleColor: 'text-blue-950', descColor: 'text-neutral-500', iconBg: 'bg-blue-600', iconTextColor: 'text-blue-600', shadowColor: 'hover:shadow-blue-500/5 hover:shadow-md', path: '/teacher/questions' },
     { icon: FileText, title: '试卷管理', desc: '智能组卷与作业分发', bgGradient: 'bg-gradient-to-br from-violet-50/60 via-purple-50/30 to-white hover:from-violet-100/50 hover:to-purple-50/60', borderClass: 'border-violet-100/70 hover:border-violet-200/80', titleColor: 'text-violet-950', descColor: 'text-neutral-500', iconBg: 'bg-violet-600', iconTextColor: 'text-violet-600', shadowColor: 'hover:shadow-violet-500/5 hover:shadow-md', path: '/teacher/papers' },
     { icon: ShieldAlert, title: '防作弊管理', desc: '考试竞赛过程监控策略', bgGradient: 'bg-gradient-to-br from-rose-50/60 via-red-50/30 to-white hover:from-rose-100/50 hover:to-red-50/60', borderClass: 'border-rose-100/70 hover:border-rose-200/80', titleColor: 'text-rose-950', descColor: 'text-neutral-500', iconBg: 'bg-rose-600', iconTextColor: 'text-rose-600', shadowColor: 'hover:shadow-rose-500/5 hover:shadow-md', path: '/teacher/anticheat' },
-    { icon: Database, title: '资源分配', desc: '实训算力资源配置', bgGradient: 'bg-gradient-to-br from-emerald-50/60 via-teal-50/30 to-white hover:from-emerald-100/50 hover:to-teal-50/60', borderClass: 'border-emerald-100/70 hover:border-emerald-200/80', titleColor: 'text-emerald-950', descColor: 'text-neutral-500', iconBg: 'bg-emerald-600', iconTextColor: 'text-emerald-600', shadowColor: 'hover:shadow-emerald-500/5 hover:shadow-md', path: '/teacher/resources' },
+    { icon: Database, title: '资源分配', desc: '实训算力资源配置', bgGradient: 'bg-gradient-to-br from-emerald-50/60 via-teal-50/30 to-white hover:from-emerald-100/50 hover:to-emerald-50/60', borderClass: 'border-emerald-100/70 hover:border-emerald-200/80', titleColor: 'text-emerald-950', descColor: 'text-neutral-500', iconBg: 'bg-emerald-600', iconTextColor: 'text-emerald-600', shadowColor: 'hover:shadow-emerald-500/5 hover:shadow-md', path: '/teacher/resources' },
     { icon: Users, title: '用户管理', desc: '学生与协作教师团队管理', bgGradient: 'bg-gradient-to-br from-cyan-50/60 via-blue-50/30 to-white hover:from-cyan-100/50 hover:to-blue-50/60', borderClass: 'border-cyan-100/70 hover:border-cyan-200/80', titleColor: 'text-cyan-950', descColor: 'text-neutral-500', iconBg: 'bg-cyan-600', iconTextColor: 'text-cyan-600', shadowColor: 'hover:shadow-cyan-500/5 hover:shadow-md', path: '/teacher/students' },
     { icon: BarChart3, title: '学习数据统计', desc: '学生学习曲线进度大盘', bgGradient: 'bg-gradient-to-br from-amber-50/60 via-orange-50/30 to-white hover:from-amber-100/50 hover:to-orange-50/60', borderClass: 'border-amber-100/70 hover:border-amber-200/80', titleColor: 'text-amber-950', descColor: 'text-neutral-500', iconBg: 'bg-amber-600', iconTextColor: 'text-amber-600', shadowColor: 'hover:shadow-amber-500/5 hover:shadow-md', path: '/teacher/statistics' },
     { icon: CreditCard, title: '计费账单', desc: '查看算力与存储消费', bgGradient: 'bg-gradient-to-br from-fuchsia-50/60 via-pink-50/30 to-white hover:from-fuchsia-100/50 hover:to-pink-50/60', borderClass: 'border-fuchsia-100/70 hover:border-fuchsia-200/80', titleColor: 'text-fuchsia-950', descColor: 'text-neutral-500', iconBg: 'bg-fuchsia-600', iconTextColor: 'text-fuchsia-600', shadowColor: 'hover:shadow-fuchsia-500/5 hover:shadow-md', path: '/teacher/billing' },
@@ -57,49 +123,114 @@ export default function TeacherHome() {
     { icon: ShieldCheck, title: '审核中心', desc: '自建课程项目上架审核', bgGradient: 'bg-gradient-to-br from-pink-50/60 via-rose-50/30 to-white hover:from-pink-100/50 hover:to-rose-50/60', borderClass: 'border-pink-100/70 hover:border-pink-200/80', titleColor: 'text-pink-950', descColor: 'text-neutral-500', iconBg: 'bg-pink-600', iconTextColor: 'text-pink-600', shadowColor: 'hover:shadow-pink-500/5 hover:shadow-md', path: '/teacher/audit' },
   ];
 
-  const courses = [
-    {
-      id: 1,
-      name: '人工智能基础与实践',
-      code: 'AI-101-2026',
-      desc: '本课程旨在介绍人工智能的基本概念、算法原理及实际应用。',
-      teacher: '张老师',
-      ta: '李助教',
-      scope: '平台',
-      status: '可用',
-      auditStatus: '审核通过',
-      image: 'https://picsum.photos/seed/ai/400/200',
-      state: 'active'
-    },
-    {
-      id: 2,
-      name: '深度学习进阶',
-      code: 'DL-201-2026',
-      desc: '深入探讨神经网络、CNN、RNN等高级深度学习模型。',
-      teacher: '张老师',
-      ta: '王助教',
-      scope: '私有',
-      status: '不可用',
-      auditStatus: '待审核',
-      image: 'https://picsum.photos/seed/dl/400/200',
-      state: 'active'
-    },
-    {
-      id: 3,
-      name: 'Python数据分析',
-      code: 'PY-301-2025',
-      desc: '使用Python进行数据清洗、处理、分析和可视化。',
-      teacher: '张老师',
-      ta: '-',
-      scope: '租户',
-      status: '可用',
-      auditStatus: '审核通过',
-      image: 'https://picsum.photos/seed/data/400/200',
-      state: 'ended'
-    }
-  ];
+  const handlePublishCourse = (id: number) => {
+    const updated = coursesList.map(c => c.id === id ? { ...c, status: '已发布' } : c);
+    setCoursesList(updated);
+    localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+    showToast('课程已发布');
+  };
 
-  const filteredCourses = courses.filter(c => courseTab === 'all' || c.state === courseTab);
+  const handleCancelPublishCourse = (id: number) => {
+    const updated = coursesList.map(c => c.id === id ? { ...c, status: '草稿' } : c);
+    setCoursesList(updated);
+    localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+    showToast('已取消发布课程');
+  };
+
+  const handleDeleteCourse = (id: number) => {
+    const updated = coursesList.filter(c => c.id !== id);
+    setCoursesList(updated);
+    localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+    showToast('删除课程成功');
+  };
+
+  const handleCopyCourse = (course: any) => {
+    const newCourse = {
+      ...course,
+      id: Date.now(),
+      name: `${course.name} (复制)`,
+      code: `AI-${Math.floor(100 + Math.random() * 900)}-2026`,
+      scope: '私有',
+      status: '草稿',
+      auditStatus: '待审核',
+    };
+    const updated = [newCourse, ...coursesList];
+    setCoursesList(updated);
+    localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+    showToast('复制课程成功');
+  };
+
+  const handleSaveCourse = () => {
+    if (!courseFormName.trim()) {
+      showToast('请输入课程名称', 'error');
+      return;
+    }
+    if (courseModalMode === 'create') {
+      const newCourse = {
+        id: Date.now(),
+        name: courseFormName,
+        code: `AI-${Math.floor(100 + Math.random() * 900)}-2026`,
+        desc: courseFormDesc,
+        teacher: '张老师',
+        ta: '-',
+        scope: '私有',
+        status: '草稿',
+        auditStatus: '待审核',
+        image: selectedCover || defaultCovers[0],
+        state: 'active',
+        major: courseFormMajor || '人工智能',
+        tags: courseFormTags || '必修, 核心课程'
+      };
+      const updated = [newCourse, ...coursesList];
+      setCoursesList(updated);
+      localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+      showToast('创建课程成功');
+    } else {
+      const updated = coursesList.map(c => {
+        if (c.id === editingCourse.id) {
+          return {
+            ...c,
+            name: courseFormName,
+            desc: courseFormDesc,
+            image: selectedCover,
+            major: courseFormMajor,
+            tags: courseFormTags
+          };
+        }
+        return c;
+      });
+      setCoursesList(updated);
+      localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+      showToast('修改课程成功');
+    }
+    setIsCourseModalOpen(false);
+  };
+
+  const handleApplyPublic = () => {
+    if (!applyReason.trim()) {
+      showToast('请填写申请说明', 'error');
+      return;
+    }
+    const updated = coursesList.map(c => {
+      if (c.id === applyPublicCourse.id) {
+        return {
+          ...c,
+          scope: applyRange,
+          auditStatus: '待审核'
+        };
+      }
+      return c;
+    });
+    setCoursesList(updated);
+    localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+    showToast('提交申请成功，等待超管审核');
+    setIsApplyPublicModalOpen(false);
+  };
+
+  const filteredCourses = coursesList.filter(c => {
+    const query = courseSearchQuery.toLowerCase();
+    return c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query);
+  });
 
   return (
     <div className="-m-6 p-6 bg-gradient-to-b from-[#ffe2d1] via-[#fff8f5] to-[#ffffff] min-h-full space-y-8 pb-12 relative flex-1">
@@ -280,37 +411,31 @@ export default function TeacherHome() {
         </div>
         {activeSubTab === 'course' ? (
           <>
-            <div className="p-5 flex items-center justify-between">
-              <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-border/50">
-                <button 
-                  className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-                  onClick={() => setCourseTab('all')}
-                >
-                  全部
-                </button>
-                <button 
-                  className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'active' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-                  onClick={() => setCourseTab('active')}
-                >
-                  进行中
-                </button>
-                <button 
-                  className={cn("px-6 py-1.5 text-sm rounded-full transition-all duration-200", courseTab === 'ended' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-body hover:text-neutral-title")}
-                  onClick={() => setCourseTab('ended')}
-                >
-                  已结束
-                </button>
-              </div>
+            <div className="p-5 flex items-center justify-end">
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                   <input 
                     type="text" 
+                    value={courseSearchQuery}
+                    onChange={(e) => setCourseSearchQuery(e.target.value)}
                     placeholder="搜索课程名称/代码" 
                     className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
                   />
                 </div>
-                <Button onClick={() => { setEditingCourse(null); setSelectedCover(defaultCovers[0]); setCourseModalMode('create'); setIsCourseModalOpen(true); }} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm">
+                <Button 
+                  onClick={() => { 
+                    setEditingCourse(null); 
+                    setCourseFormName('');
+                    setCourseFormMajor('');
+                    setCourseFormTags('');
+                    setCourseFormDesc('');
+                    setSelectedCover(defaultCovers[0]); 
+                    setCourseModalMode('create'); 
+                    setIsCourseModalOpen(true); 
+                  }} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm"
+                >
                   <Plus className="w-4 h-4 mr-1" /> 新建课程
                 </Button>
               </div>
@@ -355,30 +480,57 @@ export default function TeacherHome() {
                         )}
                       </td>
                       <td className="p-4">
-                        <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '可用' ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
+                        <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '已发布' ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
                           {course.status}
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className={cn("font-medium", course.auditStatus === '审核通过' ? "text-green-600" : "text-[#fa541c]")}>
-                          {course.auditStatus}
-                        </span>
+                        {course.auditStatus === '已通过' && (
+                          <span className="text-emerald-600 font-medium">已通过</span>
+                        )}
+                        {course.auditStatus === '待审核' && (
+                          <span className="text-[#fa541c] font-medium">待审核</span>
+                        )}
+                        {course.auditStatus === '已驳回' && (
+                          <span className="text-rose-600 font-medium">已驳回</span>
+                        )}
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
-                          <button onClick={() => {
-                            setEditingCourse(course);
-                            setSelectedCover(course.image);
-                            setCourseModalMode('edit');
-                            setIsCourseModalOpen(true);
-                          }} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">编辑</button>
+                          <button 
+                            onClick={() => {
+                              if (course.scope === '租户' || course.scope === '平台') return;
+                              setEditingCourse(course);
+                              setCourseFormName(course.name);
+                              setCourseFormMajor(course.major || '人工智能');
+                              setCourseFormTags(course.tags || '必修, 核心课程');
+                              setCourseFormDesc(course.desc);
+                              setSelectedCover(course.image);
+                              setCourseModalMode('edit');
+                              setIsCourseModalOpen(true);
+                            }} 
+                            disabled={course.scope === '租户' || course.scope === '平台'}
+                            className={cn(
+                              "transition-colors",
+                              (course.scope === '租户' || course.scope === '平台') 
+                                ? "text-neutral-400 cursor-not-allowed" 
+                                : "text-[#fa541c] hover:text-[#e84a15]"
+                            )}
+                          >
+                            编辑
+                          </button>
+                          {course.status === '草稿' ? (
+                            <button onClick={() => handlePublishCourse(course.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">发布</button>
+                          ) : (
+                            <button onClick={() => handleCancelPublishCourse(course.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">取消发布</button>
+                          )}
                           {course.scope === '私有' && (
                             <button 
                               onClick={() => {
                                 setApplyPublicCourse(course);
                                 setApplyReason('');
-                                setApplyTarget('');
+                                setApplyRange('租户');
                                 setIsApplyPublicModalOpen(true);
                               }} 
                               className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
@@ -386,10 +538,24 @@ export default function TeacherHome() {
                               申请公开
                             </button>
                           )}
-                          <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
-                          {index === 1 && (
-                            <button className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
-                          )}
+                          <button onClick={() => handleCopyCourse(course)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
+                          <button 
+                            onClick={() => {
+                              if (course.scope === '租户' || course.scope === '平台') return;
+                              if (confirm(`确定要删除课程 "${course.name}" 吗？`)) {
+                                handleDeleteCourse(course.id);
+                              }
+                            }}
+                            disabled={course.scope === '租户' || course.scope === '平台'}
+                            className={cn(
+                              "transition-colors",
+                              (course.scope === '租户' || course.scope === '平台') 
+                                ? "text-neutral-400 cursor-not-allowed" 
+                                : "text-[#fa541c] hover:text-[#e84a15]"
+                            )}
+                          >
+                            删除
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -464,53 +630,50 @@ export default function TeacherHome() {
                   <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                     <span className="text-[#fa541c]">*</span> 课程名称
                   </label>
-                  <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue={editingCourse?.name || ''} placeholder="请输入课程名称" autoFocus={courseModalMode === 'create'} />
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    value={courseFormName}
+                    onChange={(e) => setCourseFormName(e.target.value)}
+                    placeholder="请输入课程名称" 
+                    autoFocus={courseModalMode === 'create'} 
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                     <span className="text-[#fa541c]">*</span> 专业方向
                   </label>
-                  <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue={courseModalMode === 'edit' ? "人工智能" : ""} placeholder="请输入专业方向" />
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    value={courseFormMajor}
+                    onChange={(e) => setCourseFormMajor(e.target.value)}
+                    placeholder="请输入专业方向" 
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 标签
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue={courseModalMode === 'edit' ? "必修, 核心课程" : ""} placeholder="请输入标签，用逗号分隔" />
-              </div>
-              <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 课程范围
-                  </label>
-                  <select 
-                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] cursor-pointer font-medium text-neutral-700"
-                    defaultValue={editingCourse?.scope || '私有'}
-                  >
-                    <option value="私有">私有</option>
-                    <option value="租户">租户</option>
-                    <option value="平台">平台</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 状态
-                  </label>
-                  <select 
-                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] cursor-pointer font-medium text-neutral-700"
-                    defaultValue={editingCourse?.status || '可用'}
-                  >
-                    <option value="可用">可用</option>
-                    <option value="不可用">不可用</option>
-                  </select>
-                </div>
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                  value={courseFormTags}
+                  onChange={(e) => setCourseFormTags(e.target.value)}
+                  placeholder="请输入标签，用逗号分隔" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 课程简介
                 </label>
-                <textarea className="w-full min-h-[80px] border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none" defaultValue={editingCourse?.desc || ''} placeholder="请输入课程简介"></textarea>
+                <textarea 
+                  className="w-full min-h-[80px] border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none" 
+                  value={courseFormDesc}
+                  onChange={(e) => setCourseFormDesc(e.target.value)}
+                  placeholder="请输入课程简介"
+                ></textarea>
               </div>
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
@@ -541,7 +704,7 @@ export default function TeacherHome() {
               <Button onClick={() => setIsCourseModalOpen(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">
                 取消
               </Button>
-              <Button onClick={() => setIsCourseModalOpen(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">
+              <Button onClick={handleSaveCourse} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">
                 确认
               </Button>
             </div>
@@ -565,30 +728,49 @@ export default function TeacherHome() {
             <div className="p-6 space-y-5">
               <div className="bg-orange-50 text-orange-600 p-3 rounded-lg text-[13px] flex items-start gap-2 border border-orange-100">
                 <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>申请公开后，课程需经过超管审核。审核通过将加入平台公共课程库，全平台师生可见可用。</span>
+                <span>申请公开后，课程需经过超管审核。审核通过将加入对应范围的公共课程库，相应师生可见可用。</span>
               </div>
               
-              <div>
+              <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-700 block mb-2">
-                  <span className="text-[#fa541c]">*</span> 公开说明（适用对象）
+                  <span className="text-[#fa541c]">*</span> 申请范围
                 </label>
-                <input 
-                  type="text" 
-                  value={applyTarget}
-                  onChange={(e) => setApplyTarget(e.target.value)}
-                  placeholder="例如：适用于计算机类专业本科二、三年级学生..." 
-                  className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all"
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setApplyRange('租户')}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all text-[14px]",
+                      applyRange === '租户' 
+                        ? "border-[#fa541c] bg-orange-50/30 text-[#fa541c] font-bold" 
+                        : "border-neutral-200 hover:border-[#fa541c]/30 text-neutral-600 bg-white"
+                    )}
+                  >
+                    租户
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setApplyRange('平台')}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all text-[14px]",
+                      applyRange === '平台' 
+                        ? "border-[#fa541c] bg-orange-50/30 text-[#fa541c] font-bold" 
+                        : "border-neutral-200 hover:border-[#fa541c]/30 text-neutral-600 bg-white"
+                    )}
+                  >
+                    平台
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label className="text-[13px] font-bold text-neutral-700 block mb-2">
-                  <span className="text-[#fa541c]">*</span> 推荐使用建议
+                  <span className="text-[#fa541c]">*</span> 申请说明
                 </label>
                 <textarea 
                   value={applyReason}
                   onChange={(e) => setApplyReason(e.target.value)}
-                  placeholder="请简述该课程的亮点或推荐使用的场景..." 
+                  placeholder="请简述申请公开该课程的理由或推荐使用场景..." 
                   className="w-full h-28 border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none transition-all"
                 ></textarea>
               </div>
@@ -599,14 +781,7 @@ export default function TeacherHome() {
                 取消
               </Button>
               <Button 
-                onClick={() => {
-                  if (!applyTarget || !applyReason) {
-                    showToast('请填写所有的公开说明与建议', 'error');
-                    return;
-                  }
-                  showToast('申请提交成功，等待超管审核');
-                  setIsApplyPublicModalOpen(false);
-                }} 
+                onClick={handleApplyPublic} 
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 rounded-full shadow-sm text-[13px]"
               >
                 提交申请

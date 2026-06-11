@@ -89,10 +89,20 @@ export default function TeacherCourseManage() {
   const [allExpanded, setAllExpanded] = useState(true);
   // Members Management states
   const [studentList, setStudentList] = useState([
-    { name: '李明', phone: '138****1000', progress: 60, active: '2小时前' },
-    { name: '王华', phone: '138****1001', progress: 68, active: '2小时前' },
-    { name: '张伟', phone: '138****1002', progress: 76, active: '2小时前' }
+    { username: 'lilun1982', nickname: '理论1982', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1983', nickname: '理论1983', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1984', nickname: '理论1984', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1985', nickname: '理论1985', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1986', nickname: '理论1986', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1987', nickname: '理论1987', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1988', nickname: '理论1988', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1989', nickname: '理论1989', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1990', nickname: '理论1990', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1991', nickname: '理论1991', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1992', nickname: '理论1992', group: '0523', authTime: '2026-06-11 16:23:12' },
+    { username: 'lilun1993', nickname: '理论1993', group: '0523', authTime: '2026-06-11 16:23:12' }
   ]);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteInput, setInviteInput] = useState("");
   const [inviteActiveTab, setInviteActiveTab] = useState<'link' | 'manual'>('link');
@@ -134,13 +144,43 @@ export default function TeacherCourseManage() {
     }, 200);
   };
 
-  const handleRemoveStudent = (name: string) => {
-    setStudentList(studentList.filter(s => s.name !== name));
+  const handleRevokeAuth = (username: string) => {
+    if (confirm(`确定要解除对用户 "${username}" 的授权吗？`)) {
+      setStudentList(studentList.filter(s => s.username !== username));
+      setSelectedStudents(selectedStudents.filter(uname => uname !== username));
+    }
+  };
+
+  const handleBatchRevokeAuth = () => {
+    if (selectedStudents.length === 0) {
+      alert("请先选择要解除授权的用户！");
+      return;
+    }
+    if (confirm(`确定要解除对选中的 ${selectedStudents.length} 个用户的授权吗？`)) {
+      setStudentList(studentList.filter(s => !selectedStudents.includes(s.username)));
+      setSelectedStudents([]);
+    }
+  };
+
+  const toggleSelectStudent = (username: string) => {
+    if (selectedStudents.includes(username)) {
+      setSelectedStudents(selectedStudents.filter(uname => uname !== username));
+    } else {
+      setSelectedStudents([...selectedStudents, username]);
+    }
+  };
+
+  const toggleSelectAllStudents = (checked: boolean) => {
+    if (checked) {
+      setSelectedStudents(studentList.map(s => s.username));
+    } else {
+      setSelectedStudents([]);
+    }
   };
 
   const handleSendInvite = () => {
     if (!inviteInput.trim()) return;
-    const newStudent = { name: '孙晨 (已邀请)', phone: inviteInput.trim(), progress: 0, active: '等待接受' };
+    const newStudent = { username: 'sunshen', nickname: '孙晨 (已邀请)', group: '0523', authTime: '2026-06-11 16:45:00' };
     setStudentList([...studentList, newStudent]);
     setShowInviteModal(false);
     setInviteInput("");
@@ -164,17 +204,17 @@ export default function TeacherCourseManage() {
     }, 150);
   };
 
-  const handleConfirmBatchImport = () => {
+  const handleConfirmBatchAuthorize = () => {
     const newStudents = [
-      { name: '周杰', phone: '139****9081', progress: 0, active: '未活跃' },
-      { name: '赵丽', phone: '137****3829', progress: 0, active: '未活跃' },
-      { name: '钱敏', phone: '150****2290', progress: 0, active: '未活跃' }
+      { username: 'lilun1994', nickname: '理论1994', group: '0523', authTime: '2026-06-11 16:45:00' },
+      { username: 'lilun1995', nickname: '理论1995', group: '0523', authTime: '2026-06-11 16:45:00' },
+      { username: 'lilun1996', nickname: '理论1996', group: '0523', authTime: '2026-06-11 16:45:00' }
     ];
     setStudentList([...studentList, ...newStudents]);
     setShowBatchImportModal(false);
     setImportSelectedFile(null);
     setImportProgress(0);
-    alert("成功批量导入 3 名学生！");
+    alert("成功批量授权 3 名用户！");
   };
 
   const tabs = [
@@ -579,7 +619,6 @@ export default function TeacherCourseManage() {
                                   <div className="flex items-center gap-3 mb-2">
                                       <h3 className="text-[16px] font-bold text-neutral-900 group-hover:text-[#fa541c] transition-colors">{task.title}</h3>
                                       <span className="px-2 py-0.5 bg-orange-50 text-[#fa541c] text-[11px] font-bold rounded border border-orange-100">满分: 100</span>
-                                      <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 text-[11px] font-bold rounded border border-neutral-200">限交 2 次</span>
                                   </div>
                                   <div className="flex items-center gap-5 text-[13px] text-neutral-500">
                                       <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 截止: {task.deadline}</span>
@@ -588,9 +627,6 @@ export default function TeacherCourseManage() {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button onClick={() => setShowScoringRulesModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3">
-                                      <Settings className="w-3.5 h-3.5 mr-1.5"/> 评分规则
-                                  </Button>
                                   <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3">
                                       <Edit className="w-3.5 h-3.5 mr-1.5"/> 编辑
                                   </Button>
@@ -760,67 +796,103 @@ export default function TeacherCourseManage() {
                 <div className="p-6 animate-in fade-in duration-500">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-neutral-title">班级成员</h2>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-6 gap-4">
+                    <div className="flex items-center relative">
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                      <input type="text" placeholder="搜索用户名或学号..." className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-300 rounded focus:outline-none focus:border-[#fa541c] transition-colors bg-white" />
+                    </div>
                     <div className="flex gap-3">
                       <Button 
                         onClick={() => setShowBatchImportModal(true)}
-                        variant="outline" 
-                        className="border-neutral-300 text-neutral-600 h-9"
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-lg"
                       >
-                        批量导入
+                        批量授权
                       </Button>
                       <Button 
-                        onClick={() => setShowInviteModal(true)}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 shadow-sm"
+                        onClick={handleBatchRevokeAuth}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-lg"
                       >
-                        <Plus className="w-4 h-4 mr-1.5" /> 邀请学生
+                        批量解除授权
                       </Button>
                     </div>
                   </div>
 
-                  <div className="flex items-center mb-6 relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                    <input type="text" placeholder="搜索姓名或学号..." className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-300 rounded focus:outline-none focus:border-[#fa541c] transition-colors" />
-                  </div>
-
-                  <div className="border border-neutral-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-left border-collapse bg-white">
-                      <thead>
-                        <tr className="bg-neutral-50 text-xs text-neutral-500 border-b border-neutral-200 font-medium">
-                          <th className="py-3 px-6">姓名</th>
-                          <th className="py-3 px-6">手机号/邮箱</th>
-                          <th className="py-3 px-6">学习进度</th>
-                          <th className="py-3 px-6">最近活跃</th>
-                          <th className="py-3 px-6 text-right">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {studentList.map((student, i) => (
-                          <tr key={i} className="border-b border-neutral-100 hover:bg-[#fff2e8]/20 transition-colors">
-                            <td className="py-3 px-6 font-medium text-sm text-neutral-title">{student.name}</td>
-                            <td className="py-3 px-6 text-sm text-neutral-500">{student.phone}</td>
-                            <td className="py-3 px-6">
-                              <div className="flex items-center gap-3">
-                                <div className="w-24 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                                  <div className="h-full bg-[#fa541c] rounded-full" style={{ width: `${student.progress}%` }}></div>
-                                </div>
-                                <span className="text-xs font-medium text-neutral-500">{student.progress}%</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-6 text-sm text-neutral-400">{student.active}</td>
-                            <td className="py-3 px-6 text-right">
-                              <Button 
-                                onClick={() => handleRemoveStudent(student.name)}
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-neutral-400 hover:text-red-500 px-2 h-7"
+                  <div className="bg-white rounded overflow-hidden border border-neutral-200">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse whitespace-nowrap">
+                        <thead>
+                          <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                            <th className="p-4 font-medium w-12 text-center">
+                              <button 
+                                type="button"
+                                onClick={() => toggleSelectAllStudents(selectedStudents.length !== studentList.length || studentList.length === 0)}
+                                className={cn(
+                                  "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                                  selectedStudents.length === studentList.length && studentList.length > 0
+                                    ? "bg-[#fa541c] border-[#fa541c] text-white"
+                                    : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                                )}
                               >
-                                移除
-                              </Button>
-                            </td>
+                                {selectedStudents.length === studentList.length && studentList.length > 0 && <span className="text-[10px] font-bold">✓</span>}
+                              </button>
+                            </th>
+                            <th className="p-4 font-medium">用户账号</th>
+                            <th className="p-4 font-medium">用户名</th>
+                            <th className="p-4 font-medium">用户组</th>
+                            <th className="p-4 font-medium">授权时间</th>
+                            <th className="p-4 font-medium text-left">操作</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {studentList.map((student, i) => (
+                            <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                              <td className="p-4 text-center">
+                                <button 
+                                  type="button"
+                                  onClick={() => toggleSelectStudent(student.username)}
+                                  className={cn(
+                                    "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                                    selectedStudents.includes(student.username)
+                                      ? "bg-[#fa541c] border-[#fa541c] text-white"
+                                      : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                                  )}
+                                >
+                                  {selectedStudents.includes(student.username) && <span className="text-[10px] font-bold">✓</span>}
+                                </button>
+                              </td>
+                              <td className="p-4 text-neutral-800">{student.username}</td>
+                              <td className="p-4 text-neutral-600">{student.nickname}</td>
+                              <td className="p-4 text-neutral-600">{student.group}</td>
+                              <td className="p-4 text-neutral-500">{student.authTime}</td>
+                              <td className="p-4 text-left">
+                                <button 
+                                  onClick={() => handleRevokeAuth(student.username)}
+                                  className="text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer font-bold"
+                                >
+                                  解除授权
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Pagination */}
+                    <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-neutral-50/20">
+                      <span className="text-[13px] text-neutral-500 font-medium">共 {studentList.length} 条</span>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+                        <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                        <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
+                      </div>
+                      <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
+                        <option>10 条/页</option>
+                        <option>20 条/页</option>
+                        <option>50 条/页</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               )}
@@ -849,11 +921,10 @@ export default function TeacherCourseManage() {
                   </div>
                   
                   {/* Top Key Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {[
-                      { label: '视频完播率', value: '86.5', unit: '%', desc: '高于全校平均 12%', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50' },
                       { label: '作业平均提交率', value: '92.0', unit: '%', desc: '本周新增提交 45 份', icon: CheckSquare, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                      { label: '考试及格率', value: '88.3', unit: '%', desc: '期中测试统计', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-50' },
+                      { label: '考试及格率', value: '88.3', unit: '%', desc: '', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-50' },
                       { label: '周活跃学生', value: '1,245', unit: '人', desc: '占总人数 78%', icon: Users, color: 'text-orange-500', bg: 'bg-orange-50' },
                     ].map((stat, i) => (
                       <div key={i} className="p-6 rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-md hover:border-orange-200 transition-all group">
@@ -867,7 +938,7 @@ export default function TeacherCourseManage() {
                           <span className="text-3xl font-black text-neutral-900 tracking-tight">{stat.value}</span>
                           <span className="text-[14px] font-bold text-neutral-400">{stat.unit}</span>
                         </div>
-                        <div className="text-[11px] font-medium text-neutral-400 bg-neutral-50 px-2 py-1 rounded inline-block">{stat.desc}</div>
+                        {stat.desc && <div className="text-[11px] font-medium text-neutral-400 bg-neutral-50 px-2 py-1 rounded inline-block">{stat.desc}</div>}
                       </div>
                     ))}
                   </div>
@@ -1717,14 +1788,14 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 批量导入 Modal */}
+      {/* 批量授权 Modal */}
       {showBatchImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-[560px] overflow-hidden border border-neutral-200 flex flex-col">
             {/* Header */}
             <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
-                <Paperclip className="w-5 h-5 text-[#fa541c]" /> 批量导入学生名单
+                <Paperclip className="w-5 h-5 text-[#fa541c]" /> 批量授权用户名单
               </h2>
               <button 
                 onClick={() => {
@@ -1744,15 +1815,15 @@ export default function TeacherCourseManage() {
               <div className="space-y-2">
                 <div className="text-[13px] font-bold text-neutral-800 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-orange-50 text-[#fa541c] flex items-center justify-center text-[11px] font-bold shrink-0">1</span>
-                  下载Excel导入模板
+                  下载Excel授权模板
                 </div>
                 <div className="pl-7 flex items-center justify-between">
                   <span className="text-[12px] text-neutral-500">请使用我们预设的模板列属性格式，以避免解析错误。</span>
                   <Button 
-                    onClick={() => alert("学生导入模版已下载到您的系统默认下载文件夹！")}
+                    onClick={() => alert("用户授权模版已下载到您的系统默认下载文件夹！")}
                     className="bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors shadow-2xs"
                   >
-                    下载导入模板
+                    下载授权模板
                   </Button>
                 </div>
               </div>
@@ -1763,7 +1834,7 @@ export default function TeacherCourseManage() {
               <div className="space-y-3">
                 <div className="text-[13px] font-bold text-neutral-800 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-orange-50 text-[#fa541c] flex items-center justify-center text-[11px] font-bold shrink-0">2</span>
-                  上传已填写的学生表
+                  上传已填写的用户授权表
                 </div>
                 <div className="pl-7 space-y-3">
                   {!importSelectedFile ? (
@@ -1825,29 +1896,31 @@ export default function TeacherCourseManage() {
                   <div className="space-y-3">
                     <div className="text-[13px] font-bold text-neutral-800 flex items-center gap-2">
                       <span className="w-5 h-5 rounded-full bg-orange-50 text-[#fa541c] flex items-center justify-center text-[11px] font-bold shrink-0">3</span>
-                      预导入数据预览
+                      预授权数据预览
                     </div>
                     <div className="pl-7 space-y-2">
-                      <div className="text-[12px] text-neutral-500 mb-1">系统已成功解析出表格内的 3 位学生，请确认是否导入：</div>
+                      <div className="text-[12px] text-neutral-500 mb-1">系统已成功解析出表格内的 3 位用户，请确认是否授权：</div>
                       <div className="border border-neutral-150 rounded-xl overflow-hidden bg-neutral-50/30">
                         <table className="w-full text-left text-[12px] border-collapse bg-white">
                           <thead>
                             <tr className="bg-neutral-50/80 border-b border-neutral-200 text-neutral-550 font-bold">
                               <th className="py-2.5 px-4">序号</th>
-                              <th className="py-2.5 px-4">姓名</th>
-                              <th className="py-2.5 px-4">手机号</th>
+                              <th className="py-2.5 px-4">用户账号</th>
+                              <th className="py-2.5 px-4">用户名</th>
+                              <th className="py-2.5 px-4">用户组</th>
                             </tr>
                           </thead>
                           <tbody>
                             {[
-                              { id: 1, name: "周杰", phone: "139****9081" },
-                              { id: 2, name: "赵丽", phone: "137****3829" },
-                              { id: 3, name: "钱敏", phone: "150****2290" }
+                              { id: 1, username: "lilun1994", nickname: "理论1994", group: "0523" },
+                              { id: 2, username: "lilun1995", nickname: "理论1995", group: "0523" },
+                              { id: 3, username: "lilun1996", nickname: "理论1996", group: "0523" }
                             ].map((row) => (
                               <tr key={row.id} className="border-b border-neutral-100">
                                 <td className="py-2.5 px-4 font-mono text-neutral-400">{row.id}</td>
-                                <td className="py-2.5 px-4 font-bold text-neutral-800">{row.name}</td>
-                                <td className="py-2.5 px-4 text-neutral-550">{row.phone}</td>
+                                <td className="py-2.5 px-4 font-bold text-neutral-850">{row.username}</td>
+                                <td className="py-2.5 px-4 text-neutral-800">{row.nickname}</td>
+                                <td className="py-2.5 px-4 text-neutral-550">{row.group}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -1874,10 +1947,10 @@ export default function TeacherCourseManage() {
               </Button>
               {importSelectedFile && importProgress === 100 && (
                 <Button 
-                  onClick={handleConfirmBatchImport}
+                  onClick={handleConfirmBatchAuthorize}
                   className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
                 >
-                  确认导入 (3名学生)
+                  确认授权 (3名用户)
                 </Button>
               )}
             </div>

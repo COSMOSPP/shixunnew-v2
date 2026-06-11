@@ -71,7 +71,14 @@ export default function UserCourses() {
   const difficultiesList = ["全部", "入门", "进阶", "高级"];
   const pricesList = ["全部", "免费", "付费"];
 
-  const courses = [
+  const [teacherCourses, setTeacherCourses] = useState<any[]>([]);
+
+  useEffect(() => {
+    const list = JSON.parse(localStorage.getItem('zhiyun_courses') || '[]');
+    setTeacherCourses(list.filter((c: any) => c.status === '已发布'));
+  }, []);
+
+  const staticCourses = [
     {
       title: "《人工智能训练师三级实操培训&专题三》",
       image: "https://picsum.photos/seed/aicoding/400/225",
@@ -160,6 +167,21 @@ export default function UserCourses() {
       docs: 4,
       experiments: 3
     }
+  ];
+
+  const courses = [
+    ...teacherCourses.map((c: any) => ({
+      title: c.name,
+      image: c.image,
+      description: c.desc,
+      tags: ["#人工智能", `#${c.scope}`],
+      chapters: 10,
+      students: 25,
+      videos: 4,
+      docs: 2,
+      experiments: 3
+    })),
+    ...staticCourses
   ];
 
   return (
