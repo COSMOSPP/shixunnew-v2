@@ -642,7 +642,6 @@ export default function TeacherProjects({
               <th className="p-4 font-medium w-[35%]">
                 <span>项目信息</span>
               </th>
-              <th className="p-4 font-medium">项目类型</th>
               <th className="p-4 font-medium">建议时长</th>
               <th className="p-4 font-medium">难度级别</th>
               <th className="p-4 font-medium">容器配置环境</th>
@@ -686,18 +685,7 @@ export default function TeacherProjects({
                   </div>
                 </td>
 
-                {/* Project Type */}
-                <td className="p-4 text-neutral-600">
-                  <span className={cn(
-                    "px-2.5 py-0.5 rounded text-[11px] font-bold border",
-                    proj.type === 'AI项目' && "bg-purple-50 text-purple-600 border-purple-200",
-                    proj.type === '编程项目' && "bg-orange-50 text-[#fa541c] border-orange-200",
-                    proj.type === '数据分析项目' && "bg-blue-50 text-blue-600 border-blue-200",
-                    proj.type === '运维项目' && "bg-teal-50 text-teal-600 border-teal-200"
-                  )}>
-                    {proj.type}
-                  </span>
-                </td>
+
 
                 {/* Duration */}
                 <td className="p-4 text-neutral-850 font-bold font-mono">
