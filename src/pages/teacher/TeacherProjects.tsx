@@ -774,14 +774,13 @@ export default function TeacherProjects({
 
                 {/* 范围 */}
                 <td className="p-4">
-                  <span className={cn(
-                    "px-2 py-0.5 rounded text-[12px] font-medium border",
-                    proj.range === '平台' && "bg-blue-50/80 text-blue-600 border-blue-200",
-                    proj.range === '租户' && "bg-teal-50/80 text-teal-600 border-teal-200",
-                    (proj.range === '私有' || !proj.range) && "bg-neutral-50 text-neutral-500 border-neutral-200"
-                  )}>
-                    {proj.range || '私有'}
-                  </span>
+                  {proj.range === '平台' ? (
+                    <span className="px-2 py-0.5 bg-orange-50 text-orange-600 rounded text-[12px] border border-orange-200 font-medium">{proj.range}</span>
+                  ) : proj.range === '租户' ? (
+                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[12px] border border-indigo-200 font-medium">{proj.range}</span>
+                  ) : (
+                    <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200 font-medium">{proj.range || '私有'}</span>
+                  )}
                 </td>
 
                 {/* Status - Matches course scope styles */}
@@ -796,10 +795,9 @@ export default function TeacherProjects({
                 {/* 审核状态 */}
                 <td className="p-4">
                   <span className={cn(
-                    "px-2 py-0.5 rounded text-[12px] font-medium border",
-                    proj.auditStatus === '已审核' && "bg-green-50/80 text-green-600 border-green-200",
-                    (proj.auditStatus === '待审核' || !proj.auditStatus) && "bg-amber-50/80 text-amber-600 border-amber-200",
-                    proj.auditStatus === '已驳回' && "bg-red-50/80 text-red-600 border-red-200"
+                    "font-medium text-[13px]",
+                    proj.auditStatus === '已审核' ? "text-green-600" : 
+                    proj.auditStatus === '已驳回' ? "text-red-500" : "text-[#fa541c]"
                   )}>
                     {proj.auditStatus || '待审核'}
                   </span>
