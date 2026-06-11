@@ -172,7 +172,6 @@ export default function TeacherProjects({
   const [formDesc, setFormDesc] = useState('');
   const [formType, setFormType] = useState<'编程项目' | '数据分析项目' | 'AI项目' | '运维项目'>('编程项目');
   const [formDifficulty, setFormDifficulty] = useState<'初级' | '中级' | '高级'>('中级');
-  const [formRange, setFormRange] = useState<'私有' | '租户' | '平台'>('私有');
   const [formDuration, setFormDuration] = useState('8');
   const [selectedCover, setSelectedCover] = useState(defaultCovers[0]);
   
@@ -364,7 +363,6 @@ export default function TeacherProjects({
     setFormDesc('');
     setFormType('编程项目');
     setFormDifficulty('中级');
-    setFormRange('私有');
     setFormDuration('8');
     setSelectedCover(defaultCovers[0]);
     setFormTags(['实战', 'Docker']);
@@ -394,7 +392,6 @@ export default function TeacherProjects({
     setFormDesc(proj.desc);
     setFormType(proj.type);
     setFormDifficulty(proj.difficulty);
-    setFormRange(proj.range || '私有');
     setFormDuration(proj.duration);
     setSelectedCover(proj.image || defaultCovers[0]);
     setFormTags(proj.tags || []);
@@ -441,7 +438,7 @@ export default function TeacherProjects({
 
     const existingProj = currentProjectId ? projectsList.find(p => p.id === currentProjectId) : null;
     const finalStatus = statusToSave || (existingProj ? existingProj.status : '草稿');
-    const finalRange = formRange;
+    const finalRange = existingProj ? (existingProj.range || '私有') : '私有';
     const finalAuditStatus = existingProj ? (existingProj.auditStatus || '待审核') : '待审核';
 
     const newProjectData: Project = {
@@ -999,31 +996,7 @@ export default function TeacherProjects({
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-855 flex items-center gap-1">
-                      <span className="text-[#fa541c] font-black">*</span> 发布范围
-                    </label>
-                    <div className="flex gap-4">
-                      {[
-                        { key: '私有', color: 'border-neutral-350 text-neutral-650 bg-neutral-50/15' },
-                        { key: '租户', color: 'border-teal-350 text-teal-650 bg-teal-50/15' },
-                        { key: '平台', color: 'border-blue-350 text-blue-650 bg-blue-50/15' }
-                      ].map(rangeOption => (
-                        <label 
-                          key={rangeOption.key}
-                          onClick={() => setFormRange(rangeOption.key as any)}
-                          className={cn(
-                            "flex-1 border py-2 rounded-xl text-center font-bold cursor-pointer transition-all select-none",
-                            formRange === rangeOption.key 
-                              ? `${rangeOption.color} shadow-sm border-2` 
-                              : "border-neutral-200 text-neutral-550 hover:bg-neutral-50"
-                          )}
-                        >
-                          {rangeOption.key}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+
 
                   <div className="space-y-2">
                     <label className="text-[13px] font-bold text-neutral-855">项目说明描述</label>
