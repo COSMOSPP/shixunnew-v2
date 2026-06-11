@@ -642,7 +642,6 @@ export default function TeacherProjects({
               <th className="p-4 font-medium w-[35%]">
                 <span>项目信息</span>
               </th>
-              <th className="p-4 font-medium">建议时长</th>
               <th className="p-4 font-medium">难度级别</th>
               <th className="p-4 font-medium">容器配置环境</th>
               <th className="p-4 font-medium">算力资源</th>
@@ -687,15 +686,12 @@ export default function TeacherProjects({
 
 
 
-                {/* Duration */}
-                <td className="p-4 text-neutral-850 font-bold font-mono">
-                  {proj.duration} 小时
-                </td>
+
 
                 {/* Difficulty */}
                 <td className="p-4">
                   <span className={cn(
-                    "px-1.5 py-0.5 rounded text-[10px] font-bold border",
+                    "px-2 py-0.5 rounded text-[12px] font-bold border",
                     proj.difficulty === '初级' && "bg-green-50 text-green-600 border-green-150",
                     proj.difficulty === '中级' && "bg-orange-50 text-[#fa541c] border-orange-150",
                     proj.difficulty === '高级' && "bg-red-50 text-red-600 border-red-150"
@@ -709,15 +705,15 @@ export default function TeacherProjects({
                   <div className="flex flex-col gap-1">
                     {proj.environments && proj.environments.length > 0 ? (
                       proj.environments.map((env, i) => (
-                        <span key={i} className="text-xs text-neutral-700 max-w-[160px] truncate flex items-center gap-1.5">
-                          <span className={cn("px-1.5 py-0.2 rounded text-[9px] font-black border", env.type === '容器' ? "bg-blue-50/80 text-blue-600 border-blue-250" : "bg-purple-50/80 text-purple-600 border-purple-250")}>
+                        <span key={i} className="text-[13px] text-neutral-700 max-w-[180px] truncate flex items-center gap-1.5">
+                          <span className={cn("px-1.5 py-0.5 rounded text-[11px] font-black border", env.type === '容器' ? "bg-blue-50/80 text-blue-600 border-blue-250" : "bg-purple-50/80 text-purple-600 border-purple-250")}>
                             {env.type}
                           </span>
                           <span className="truncate font-mono" title={env.image}>{env.image.split('/').pop() || env.image}</span>
                         </span>
                       ))
                     ) : (
-                      <div className="font-mono text-xs text-neutral-700 max-w-[150px] truncate" title={proj.baseImage}>
+                      <div className="font-mono text-[13px] text-neutral-700 max-w-[180px] truncate" title={proj.baseImage}>
                         {proj.baseImage}
                       </div>
                     )}
@@ -729,7 +725,7 @@ export default function TeacherProjects({
                   <div className="flex flex-col gap-1">
                     {proj.environments && proj.environments.length > 0 ? (
                       proj.environments.map((env, i) => (
-                        <div key={i} className="text-[11px] text-neutral-600 font-sans flex flex-col gap-0.5">
+                        <div key={i} className="text-[13px] text-neutral-600 font-sans flex flex-col gap-0.5">
                           {env.type === '容器' ? (
                             <>
                               <div className="flex items-center gap-1 font-mono font-bold text-neutral-800">
@@ -738,13 +734,13 @@ export default function TeacherProjects({
                                 <span>{env.memoryGB}GB</span>
                               </div>
                               {env.gpu && env.gpu.power !== '无' && (
-                                <span className="text-[9px] text-purple-600 font-extrabold">{env.gpu.power} ({env.gpu.vram}) * {env.gpu.count}</span>
+                                <span className="text-[11px] text-purple-600 font-extrabold">{env.gpu.power} ({env.gpu.vram}) * {env.gpu.count}</span>
                               )}
                             </>
                           ) : (
                             <>
                               {env.vmSpecType === 'spec' ? (
-                                <span className="font-mono font-bold text-neutral-800 truncate max-w-[120px]" title={env.selectedSpec}>
+                                <span className="font-mono font-bold text-neutral-800 truncate max-w-[140px]" title={env.selectedSpec}>
                                   规格: {env.selectedSpec || '2核 4G'}
                                 </span>
                               ) : (
@@ -755,7 +751,7 @@ export default function TeacherProjects({
                                 </div>
                               )}
                               {env.gpu && env.gpu.power !== '无' && (
-                                <span className="text-[9px] text-purple-600 font-extrabold">{env.gpu.power} ({env.gpu.vram}) * {env.gpu.count}</span>
+                                <span className="text-[11px] text-purple-600 font-extrabold">{env.gpu.power} ({env.gpu.vram}) * {env.gpu.count}</span>
                               )}
                             </>
                           )}
@@ -763,13 +759,13 @@ export default function TeacherProjects({
                       ))
                     ) : (
                       <>
-                        <div className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-1 text-[13px]">
                           <span className="font-semibold text-neutral-800">{proj.resources.cpu}</span>
                           <span className="text-neutral-350">|</span>
                           <span className="font-semibold text-neutral-800">{proj.resources.memory}</span>
                         </div>
                         {proj.resources.gpu !== '无' && (
-                          <div className="text-[10px] text-purple-600 font-bold mt-0.5">{proj.resources.gpu} 加速</div>
+                          <div className="text-[11px] text-purple-600 font-bold mt-0.5">{proj.resources.gpu} 加速</div>
                         )}
                       </>
                     )}
