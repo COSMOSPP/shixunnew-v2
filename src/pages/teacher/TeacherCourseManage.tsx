@@ -119,6 +119,7 @@ export default function TeacherCourseManage() {
   const [exportProgress, setExportProgress] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [exportCompleted, setExportCompleted] = useState(false);
+
   const [exportColumns, setExportColumns] = useState({
     info: true,
     progress: true,
@@ -141,22 +142,11 @@ export default function TeacherCourseManage() {
     onConfirm: () => {}
   });
 
+  const [showBulkRevokeModal, setShowBulkRevokeModal] = useState(false);
+  const [showBulkAuthModal, setShowBulkAuthModal] = useState(false);
+
   const handleBatchAuthorize = () => {
-    setConfirmModal({
-      show: true,
-      title: '提示',
-      message: '确定批量授权吗？',
-      showCancel: true,
-      onConfirm: () => {
-        const newStudents = [
-          { username: 'lilun1994', nickname: '理论1994', group: '0523', authTime: '2026-06-12 10:12:00' },
-          { username: 'lilun1995', nickname: '理论1995', group: '0523', authTime: '2026-06-12 10:12:00' },
-          { username: 'lilun1996', nickname: '理论1996', group: '0523', authTime: '2026-06-12 10:12:00' }
-        ];
-        setStudentList([...studentList, ...newStudents]);
-        setConfirmModal(prev => ({ ...prev, show: false }));
-      }
-    });
+    setShowBulkAuthModal(true);
   };
 
   const handleStartExport = () => {
@@ -204,17 +194,7 @@ export default function TeacherCourseManage() {
       });
       return;
     }
-    setConfirmModal({
-      show: true,
-      title: '提示',
-      message: '确定批量解除授权吗？',
-      showCancel: true,
-      onConfirm: () => {
-        setStudentList(studentList.filter(s => !selectedStudents.includes(s.username)));
-        setSelectedStudents([]);
-        setConfirmModal(prev => ({ ...prev, show: false }));
-      }
-    });
+    setShowBulkRevokeModal(true);
   };
 
   const toggleSelectStudent = (username: string) => {
@@ -1422,6 +1402,12 @@ export default function TeacherCourseManage() {
                 </label>
                 <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入教学课件名称" autoFocus />
               </div>
+              <div className="space-y-2">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 预估课时（分钟）
+                </label>
+                <input type="number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入预估课时（分钟）" defaultValue={45} />
+              </div>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
               <Button onClick={() => setShowTeachingMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
@@ -2230,6 +2216,158 @@ export default function TeacherCourseManage() {
                 className="bg-[#ff8f5b] hover:bg-[#ff7a45] text-white font-bold h-8 px-4 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
               >
                 确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量解除授权 Modal */}
+      {showBulkRevokeModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-neutral-900">
+                批量解除授权
+              </h2>
+              <button 
+                onClick={() => setShowBulkRevokeModal(false)} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
+                <div className="overflow-y-auto max-h-[240px]">
+                  <table className="w-full text-left text-[12px] border-collapse bg-white">
+                    <thead className="sticky top-0 bg-neutral-50 border-b border-neutral-200 z-10">
+                      <tr className="text-neutral-550 font-bold">
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户账号</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户名</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户组</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentList.filter(s => selectedStudents.includes(s.username)).map((student, i) => (
+                        <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50/50 transition-colors">
+                          <td className="py-2.5 px-4 text-neutral-750 font-mono">{student.username}</td>
+                          <td className="py-2.5 px-4 text-neutral-800">{student.nickname}</td>
+                          <td className="py-2.5 px-4 text-neutral-550">{student.group}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4">
+                <div className="text-[14px] text-neutral-800 font-medium">是否对以上用户解除授权</div>
+                <div className="text-[13px] text-neutral-400 font-medium">共 {selectedStudents.length} 条</div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/20 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowBulkRevokeModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-md transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  setStudentList(studentList.filter(s => !selectedStudents.includes(s.username)));
+                  setSelectedStudents([]);
+                  setShowBulkRevokeModal(false);
+                }} 
+                className="bg-[#ff5722] hover:bg-[#e64a19] text-white font-bold h-8.5 px-5 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
+              >
+                确认
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量授权 Modal */}
+      {showBulkAuthModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-neutral-900">
+                批量授权
+              </h2>
+              <button 
+                onClick={() => setShowBulkAuthModal(false)} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
+                <div className="overflow-y-auto max-h-[240px]">
+                  <table className="w-full text-left text-[12px] border-collapse bg-white">
+                    <thead className="sticky top-0 bg-neutral-50 border-b border-neutral-200 z-10">
+                      <tr className="text-neutral-550 font-bold">
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户账号</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户名</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户组</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { username: 'lilun1994', nickname: '理论1994', group: '0523' },
+                        { username: 'lilun1995', nickname: '理论1995', group: '0523' },
+                        { username: 'lilun1996', nickname: '理论1996', group: '0523' }
+                      ].map((student, i) => (
+                        <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50/50 transition-colors">
+                          <td className="py-2.5 px-4 text-neutral-750 font-mono">{student.username}</td>
+                          <td className="py-2.5 px-4 text-neutral-800">{student.nickname}</td>
+                          <td className="py-2.5 px-4 text-neutral-550">{student.group}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4">
+                <div className="text-[14px] text-neutral-800 font-medium">是否对以上用户进行授权</div>
+                <div className="text-[13px] text-neutral-400 font-medium">共 3 条</div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-neutral-100 bg-neutral-50/20 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowBulkAuthModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-md transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  const newStudents = [
+                    { username: 'lilun1994', nickname: '理论1994', group: '0523', authTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') },
+                    { username: 'lilun1995', nickname: '理论1995', group: '0523', authTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') },
+                    { username: 'lilun1996', nickname: '理论1996', group: '0523', authTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') }
+                  ];
+                  setStudentList([...studentList, ...newStudents]);
+                  setShowBulkAuthModal(false);
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8.5 px-5 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
+              >
+                确认
               </Button>
             </div>
           </div>
