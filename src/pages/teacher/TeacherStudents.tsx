@@ -380,13 +380,13 @@ export default function TeacherStudents() {
         <div className="flex flex-wrap items-center gap-3">
           {/* Merged search input */}
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input 
               type="text" 
               placeholder="搜索姓名、手机号..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-3 py-2 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:border-[#fa541c] w-full bg-white transition-all text-neutral-700"
+              className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-full bg-white transition-all text-neutral-700"
             />
           </div>
 

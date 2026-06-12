@@ -411,34 +411,32 @@ export default function TeacherHome() {
         </div>
         {activeSubTab === 'course' ? (
           <>
-            <div className="p-5 flex items-center justify-end">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <input 
-                    type="text" 
-                    value={courseSearchQuery}
-                    onChange={(e) => setCourseSearchQuery(e.target.value)}
-                    placeholder="搜索课程名称/代码" 
-                    className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
-                  />
-                </div>
-                <Button 
-                  onClick={() => { 
-                    setEditingCourse(null); 
-                    setCourseFormName('');
-                    setCourseFormMajor('');
-                    setCourseFormTags('');
-                    setCourseFormDesc('');
-                    setSelectedCover(defaultCovers[0]); 
-                    setCourseModalMode('create'); 
-                    setIsCourseModalOpen(true); 
-                  }} 
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> 新建课程
-                </Button>
+            <div className="p-5 flex items-center justify-between">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input 
+                  type="text" 
+                  value={courseSearchQuery}
+                  onChange={(e) => setCourseSearchQuery(e.target.value)}
+                  placeholder="搜索课程名称/代码" 
+                  className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-64 transition-all"
+                />
               </div>
+              <Button 
+                onClick={() => { 
+                  setEditingCourse(null); 
+                  setCourseFormName('');
+                  setCourseFormMajor('');
+                  setCourseFormTags('');
+                  setCourseFormDesc('');
+                  setSelectedCover(defaultCovers[0]); 
+                  setCourseModalMode('create'); 
+                  setIsCourseModalOpen(true); 
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm"
+              >
+                <Plus className="w-4 h-4 mr-1" /> 新建课程
+              </Button>
             </div>
             
             <div className="overflow-x-auto">
@@ -480,7 +478,7 @@ export default function TeacherHome() {
                         )}
                       </td>
                       <td className="p-4">
-                        <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '已发布' ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
+                        <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '已发布' ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
                           {course.status}
                         </span>
                       </td>

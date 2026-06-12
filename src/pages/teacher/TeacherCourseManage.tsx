@@ -126,6 +126,39 @@ export default function TeacherCourseManage() {
     active: true
   });
 
+  // Custom Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    showCancel: boolean;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    showCancel: true,
+    onConfirm: () => {}
+  });
+
+  const handleBatchAuthorize = () => {
+    setConfirmModal({
+      show: true,
+      title: '提示',
+      message: '确定批量授权吗？',
+      showCancel: true,
+      onConfirm: () => {
+        const newStudents = [
+          { username: 'lilun1994', nickname: '理论1994', group: '0523', authTime: '2026-06-12 10:12:00' },
+          { username: 'lilun1995', nickname: '理论1995', group: '0523', authTime: '2026-06-12 10:12:00' },
+          { username: 'lilun1996', nickname: '理论1996', group: '0523', authTime: '2026-06-12 10:12:00' }
+        ];
+        setStudentList([...studentList, ...newStudents]);
+        setConfirmModal(prev => ({ ...prev, show: false }));
+      }
+    });
+  };
+
   const handleStartExport = () => {
     setIsExporting(true);
     setExportProgress(0);
@@ -145,21 +178,43 @@ export default function TeacherCourseManage() {
   };
 
   const handleRevokeAuth = (username: string) => {
-    if (confirm(`确定要解除对用户 "${username}" 的授权吗？`)) {
-      setStudentList(studentList.filter(s => s.username !== username));
-      setSelectedStudents(selectedStudents.filter(uname => uname !== username));
-    }
+    setConfirmModal({
+      show: true,
+      title: '提示',
+      message: `确定要解除对用户 "${username}" 的授权吗？`,
+      showCancel: true,
+      onConfirm: () => {
+        setStudentList(studentList.filter(s => s.username !== username));
+        setSelectedStudents(selectedStudents.filter(uname => uname !== username));
+        setConfirmModal(prev => ({ ...prev, show: false }));
+      }
+    });
   };
 
   const handleBatchRevokeAuth = () => {
     if (selectedStudents.length === 0) {
-      alert("请先选择要解除授权的用户！");
+      setConfirmModal({
+        show: true,
+        title: '提示',
+        message: '请先选择要解除授权的用户！',
+        showCancel: false,
+        onConfirm: () => {
+          setConfirmModal(prev => ({ ...prev, show: false }));
+        }
+      });
       return;
     }
-    if (confirm(`确定要解除对选中的 ${selectedStudents.length} 个用户的授权吗？`)) {
-      setStudentList(studentList.filter(s => !selectedStudents.includes(s.username)));
-      setSelectedStudents([]);
-    }
+    setConfirmModal({
+      show: true,
+      title: '提示',
+      message: '确定批量解除授权吗？',
+      showCancel: true,
+      onConfirm: () => {
+        setStudentList(studentList.filter(s => !selectedStudents.includes(s.username)));
+        setSelectedStudents([]);
+        setConfirmModal(prev => ({ ...prev, show: false }));
+      }
+    });
   };
 
   const toggleSelectStudent = (username: string) => {
@@ -801,11 +856,11 @@ export default function TeacherCourseManage() {
                   <div className="flex items-center justify-between mb-6 gap-4">
                     <div className="flex items-center relative">
                       <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                      <input type="text" placeholder="搜索用户名或学号..." className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-300 rounded focus:outline-none focus:border-[#fa541c] transition-colors bg-white" />
+                      <input type="text" placeholder="搜索用户名或学号..." className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-colors bg-white" />
                     </div>
                     <div className="flex gap-3">
                       <Button 
-                        onClick={() => setShowBatchImportModal(true)}
+                        onClick={handleBatchAuthorize}
                         className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-lg"
                       >
                         批量授权
@@ -879,20 +934,21 @@ export default function TeacherCourseManage() {
                         </tbody>
                       </table>
                     </div>
-                    {/* Pagination */}
-                    <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-neutral-50/20">
-                      <span className="text-[13px] text-neutral-500 font-medium">共 {studentList.length} 条</span>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
-                        <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-                        <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
-                      </div>
-                      <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
-                        <option>10 条/页</option>
-                        <option>20 条/页</option>
-                        <option>50 条/页</option>
-                      </select>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-end p-4 gap-4 bg-transparent mt-4">
+                    <span className="text-[13px] text-neutral-500 font-medium">共 {studentList.length} 条</span>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white" disabled>&lt;</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white">&gt;</Button>
                     </div>
+                    <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
+                      <option>10 条/页</option>
+                      <option>20 条/页</option>
+                      <option>50 条/页</option>
+                    </select>
                   </div>
                 </div>
               )}
@@ -2126,6 +2182,55 @@ export default function TeacherCourseManage() {
                   完成
                 </Button>
               ) : null}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 提示 Confirm Modal */}
+      {confirmModal.show && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-[420px] overflow-hidden border border-neutral-200 flex flex-col">
+            {/* Header */}
+            <div className="px-5 pt-5 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-neutral-900">
+                {confirmModal.title}
+              </h2>
+              <button 
+                onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-5 py-4 flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-[#fa8c16] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              <div className="text-[14px] text-neutral-700 leading-normal">
+                {confirmModal.message}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 pb-5 flex items-center justify-end gap-3 shrink-0">
+              {confirmModal.showCancel && (
+                <Button 
+                  onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 hover:bg-neutral-50 font-bold h-8 px-4 text-[13px] rounded-md transition-colors bg-white cursor-pointer"
+                >
+                  取消
+                </Button>
+              )}
+              <Button 
+                onClick={() => {
+                  confirmModal.onConfirm();
+                }} 
+                className="bg-[#ff8f5b] hover:bg-[#ff7a45] text-white font-bold h-8 px-4 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
+              >
+                确定
+              </Button>
             </div>
           </div>
         </div>
