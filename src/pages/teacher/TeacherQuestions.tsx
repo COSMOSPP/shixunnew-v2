@@ -329,6 +329,9 @@ export default function TeacherQuestions() {
   const [isCreateBankOpen, setIsCreateBankOpen] = useState(false);
   const [newBankName, setNewBankName] = useState('');
   const [newBankCategory, setNewBankCategory] = useState('AI技术');
+  const [editingBank, setEditingBank] = useState<any | null>(null);
+  const [editBankName, setEditBankName] = useState('');
+  const [editBankCategory, setEditBankCategory] = useState('');
   const [banksList, setBanksList] = useState([
     { id: 1, name: '人工智能通识D-uni', count: 124, category: 'AI技术', creator: 'Momodel', createdAt: '2025/11/20' },
     { id: 2, name: '深度学习基础题库', count: 86, category: 'AI技术', creator: 'Admin', createdAt: '2025/12/01' },
@@ -3009,13 +3012,13 @@ export default function TeacherQuestions() {
                               <div className="flex items-center justify-center gap-3">
                                 <button
                                   onClick={() => {
-                                    setViewingBankDetail(bank);
-                                    setIsBankListModalOpen(false);
-                                    setView('bank-detail');
+                                    setEditingBank(bank);
+                                    setEditBankName(bank.name);
+                                    setEditBankCategory(bank.category);
                                   }}
                                   className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border-0 bg-transparent p-0 cursor-pointer font-semibold"
                                 >
-                                  详情
+                                  编辑
                                 </button>
                                 <button
                                   onClick={() => {
@@ -3061,6 +3064,91 @@ export default function TeacherQuestions() {
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-lg shadow-sm cursor-pointer"
               >
                 关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 编辑题库 Modal */}
+      {editingBank && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] flex items-center justify-center animate-fade-in"
+          onClick={() => setEditingBank(null)}
+        >
+          <div 
+            className="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl border border-neutral-100 p-6 flex flex-col relative animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4">
+              <div className="flex items-center gap-2 border-l-4 border-[#fa541c] pl-2.5">
+                <span className="text-[16px] font-bold text-neutral-800">编辑题库</span>
+              </div>
+              <button 
+                onClick={() => setEditingBank(null)}
+                className="text-neutral-400 hover:text-[#fa541c] p-1 rounded-full transition-colors cursor-pointer bg-transparent border-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="space-y-4 text-left">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 题库名称：
+                </label>
+                <input
+                  type="text"
+                  value={editBankName}
+                  onChange={(e) => setEditBankName(e.target.value)}
+                  className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                  <span className="text-[#fa541c]">*</span> 题库分类：
+                </label>
+                <div className="relative">
+                  <select
+                    value={editBankCategory}
+                    onChange={(e) => setEditBankCategory(e.target.value)}
+                    className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
+                  >
+                    <option value="AI技术">AI技术</option>
+                    <option value="自然语言处理">自然语言处理</option>
+                    <option value="机器学习">机器学习</option>
+                    <option value="计算机视觉">计算机视觉</option>
+                    <option value="其它">其它</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 border-t border-neutral-100 pt-4 mt-5">
+              <Button 
+                onClick={() => setEditingBank(null)}
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!editBankName.trim()) {
+                    alert('请输入题库名称！');
+                    return;
+                  }
+                  setBanksList(banksList.map(b => b.id === editingBank.id ? { ...b, name: editBankName.trim(), category: editBankCategory } : b));
+                  setEditingBank(null);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm cursor-pointer"
+              >
+                保存
               </Button>
             </div>
           </div>
