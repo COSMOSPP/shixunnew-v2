@@ -271,7 +271,7 @@ export default function TeacherCourseManage() {
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#f5f7fa] -mt-6 -mx-6 md:-mx-8 overflow-hidden">
       {/* Top Header */}
       <div className="h-14 bg-white flex items-center px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] relative z-20">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-3 text-neutral-title font-medium hover:text-[#fa541c] transition-colors">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-3 text-neutral-title font-medium hover:text-[#fa541c] transition-colors rounded-[4px]">
           <ArrowLeft className="w-4 h-4" /> 人工智能基础与实践
         </button>
       </div>
@@ -284,7 +284,7 @@ export default function TeacherCourseManage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex flex-col items-center justify-center py-4 w-full transition-colors relative",
+                "flex flex-col items-center justify-center py-4 w-full transition-colors relative rounded-[4px]",
                 activeTab === tab.id 
                   ? "text-[#fa541c]" 
                   : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-title"
@@ -358,11 +358,11 @@ export default function TeacherCourseManage() {
                   {/* Top Inner Tabs */}
                   <div className="flex items-center justify-between border-b border-neutral-border px-8 pt-4">
                      <div className="flex gap-8">
-                       <button onClick={() => setEditorSubTab('directory')} className={cn("pb-4 text-[15px] relative bottom-[-1px]", editorSubTab === 'directory' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程目录</button>
-                       <button onClick={() => setEditorSubTab('assignments')} className={cn("pb-4 text-[15px] relative bottom-[-1px]", editorSubTab === 'assignments' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程作业</button>
+                       <button onClick={() => setEditorSubTab('directory')} className={cn("pb-4 text-[15px] relative bottom-[-1px] rounded-[4px]", editorSubTab === 'directory' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程目录</button>
+                       <button onClick={() => setEditorSubTab('assignments')} className={cn("pb-4 text-[15px] relative bottom-[-1px] rounded-[4px]", editorSubTab === 'assignments' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程作业</button>
                      </div>
                      <div className="flex items-center gap-4 pb-3">
-                       <Button variant="outline" size="sm" onClick={() => setShowCreateLessonModal(true)} className="h-8 text-[#fa541c] border-[#fa541c] bg-transparent hover:bg-[#fa541c] hover:text-white rounded flex items-center gap-1.5 transition-colors">
+                       <Button variant="outline" size="sm" onClick={() => setShowCreateLessonModal(true)} className="h-8 text-[#fa541c] border-[#fa541c] bg-transparent hover:bg-[#fa541c] hover:text-white rounded-[4px] flex items-center gap-1.5 transition-colors">
                          <PlusCircle className="w-3.5 h-3.5" /> 新建课节
                        </Button>
                         <button 
@@ -375,7 +375,7 @@ export default function TeacherCourseManage() {
                             });
                             setCollapsedChapters(nextCollapsed);
                           }}
-                          className="text-sm text-[#fa541c] flex items-center gap-1 hover:opacity-80 font-bold transition-opacity"
+                          className="text-sm text-[#fa541c] flex items-center gap-1 hover:opacity-80 font-bold transition-opacity rounded-[4px]"
                         >
                           {allExpanded ? '收起' : '展开'}
                           {allExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -392,7 +392,7 @@ export default function TeacherCourseManage() {
                         <div 
                           key={i} 
                           className={cn(
-                            "rounded-lg bg-neutral-50 border border-neutral-100 relative transition-all duration-200",
+                            "rounded-[4px] bg-neutral-50 border border-neutral-100 relative transition-all duration-200",
                             hasMenuOpen ? "z-20 shadow-md" : "z-10"
                           )}
                         >
@@ -400,7 +400,7 @@ export default function TeacherCourseManage() {
                             onClick={() => setCollapsedChapters(prev => ({ ...prev, [i]: !prev[i] }))}
                             className={cn(
                               "flex items-center justify-between px-6 py-4 bg-neutral-100/50 cursor-pointer select-none hover:bg-neutral-100/70 transition-colors",
-                              isCollapsed ? "rounded-lg" : "rounded-t-lg"
+                              isCollapsed ? "rounded-[4px]" : "rounded-t-lg"
                             )}
                           >
                             <div className="flex items-center gap-4">
@@ -421,7 +421,7 @@ export default function TeacherCourseManage() {
                                         { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', action: () => {setShowExperimentMaterialModal(true); setAddMenuOpenIndex(null);} },
                                         { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', action: () => {setShowInteractiveMaterialModal(true); setAddMenuOpenIndex(null);} }
                                       ].map((item, idx) => (
-                                        <div key={idx} onClick={item.action} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-neutral-50 cursor-pointer transition-colors group">
+                                        <div key={idx} onClick={item.action} className="flex items-start gap-3 p-2.5 rounded-[4px] hover:bg-neutral-50 cursor-pointer transition-colors group">
                                           <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", item.bg, item.color)}>
                                             <item.icon className="w-4 h-4" />
                                           </div>
@@ -448,7 +448,7 @@ export default function TeacherCourseManage() {
                                     <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setChapterMenuOpenIndex(null); }}></div>
                                     <div className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
                                       <div 
-                                        className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                        className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           setShowEditChapterModal(true);
@@ -456,7 +456,7 @@ export default function TeacherCourseManage() {
                                         }}
                                       >编辑</div>
                                       <div 
-                                        className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                        className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           setShowDeleteChapterModal(true);
@@ -523,7 +523,7 @@ export default function TeacherCourseManage() {
                                           <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setLessonMenuOpenIndex(null); }}></div>
                                           <div className="absolute right-0 top-6 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
                                             <div 
-                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
@@ -532,7 +532,7 @@ export default function TeacherCourseManage() {
                                               }}
                                             >编辑</div>
                                             <div 
-                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-lg text-center transition-colors"
+                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
@@ -579,7 +579,7 @@ export default function TeacherCourseManage() {
                             <p className="text-[12px] text-neutral-400">客观题需在 90 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</p>
                           </div>
                           
-                          <Button onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-orange-500/20 px-6 h-9 font-bold mt-2">
+                          <Button onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-orange-500/20 px-6 h-9 font-bold mt-2">
                             预览作业
                           </Button>
                         </div>
@@ -617,7 +617,7 @@ export default function TeacherCourseManage() {
                           </h2>
                           <p className="text-[13px] text-neutral-500 mt-1">管理课程测验与作业，设置规则并进行在线批阅打分。</p>
                         </div>
-                        <Button onClick={() => setShowCreateTaskModal(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
+                        <Button onClick={() => setShowCreateTaskModal(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
                           <Plus className="w-4 h-4 mr-2" /> 创建作业任务
                         </Button>
                       </div>
@@ -662,7 +662,7 @@ export default function TeacherCourseManage() {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3">
+                                  <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3 rounded-[4px]">
                                       <Edit className="w-3.5 h-3.5 mr-1.5"/> 编辑
                                   </Button>
                                 </div>
@@ -687,12 +687,12 @@ export default function TeacherCourseManage() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                   {task.toGrade > 0 && (
-                                    <Button onClick={() => setShowGrading(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-orange-500/20 text-[13px] h-9 px-6 font-bold">
+                                    <Button onClick={() => setShowGrading(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-orange-500/20 text-[13px] h-9 px-6 font-bold">
                                         进入批阅模式 <ChevronRight className="w-4 h-4 ml-1" />
                                     </Button>
                                   )}
                                   {task.toGrade === 0 && (
-                                    <Button variant="outline" onClick={() => setShowGrading(true)} className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 text-[13px] h-9 px-6 font-bold">
+                                    <Button variant="outline" onClick={() => setShowGrading(true)} className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 text-[13px] h-9 px-6 font-bold rounded-[4px]">
                                         查看批阅记录
                                     </Button>
                                   )}
@@ -707,7 +707,7 @@ export default function TeacherCourseManage() {
                     <div className="flex flex-col h-full animation-slide-up">
                       <div className="flex items-center justify-between mb-6 pb-5 border-b border-neutral-100">
                         <div className="flex items-center gap-4">
-                          <button onClick={() => setShowGrading(false)} className="w-8 h-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-[#fa541c] transition-colors">
+                          <button onClick={() => setShowGrading(false)} className="w-8 h-8 rounded-[4px] hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-[#fa541c] transition-colors">
                             <ArrowLeft className="w-5 h-5" />
                           </button>
                           <div>
@@ -716,7 +716,7 @@ export default function TeacherCourseManage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <Button variant="outline" className="border-orange-200 text-[#fa541c] bg-orange-50 h-9 font-bold text-[13px]">
+                          <Button variant="outline" className="border-orange-200 text-[#fa541c] bg-orange-50 h-9 font-bold text-[13px] rounded-[4px]">
                             处理延期申请 (3)
                           </Button>
                         </div>
@@ -726,9 +726,9 @@ export default function TeacherCourseManage() {
                         {/* Left: Student List */}
                         <div className="w-[280px] bg-white rounded-2xl border border-neutral-200 shadow-sm flex flex-col overflow-hidden shrink-0">
                           <div className="flex items-center p-2 border-b border-neutral-100 bg-neutral-50 text-[13px] font-bold text-neutral-500">
-                            <button className="flex-1 py-1.5 text-center bg-white rounded shadow-sm text-[#fa541c]">待批改(12)</button>
-                            <button className="flex-1 py-1.5 text-center hover:text-neutral-700 transition-colors">已批改(31)</button>
-                            <button className="flex-1 py-1.5 text-center hover:text-neutral-700 transition-colors">已打回(2)</button>
+                            <button className="flex-1 py-1.5 text-center bg-white rounded-[4px] shadow-sm text-[#fa541c]">待批改(12)</button>
+                            <button className="flex-1 py-1.5 text-center hover:text-neutral-700 transition-colors rounded-[4px]">已批改(31)</button>
+                            <button className="flex-1 py-1.5 text-center hover:text-neutral-700 transition-colors rounded-[4px]">已打回(2)</button>
                           </div>
                           <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
                             {['刘晓明', '张伟', '陈静', '王芳'].map((name, i) => (
@@ -748,7 +748,7 @@ export default function TeacherCourseManage() {
                           {/* Submission Content */}
                           <div className="flex-1 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 overflow-y-auto custom-scrollbar relative">
                             <div className="absolute top-4 right-4 flex gap-2">
-                              <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[12px] font-bold border border-blue-100 flex items-center gap-1.5">
+                              <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-[4px] text-[12px] font-bold border border-blue-100 flex items-center gap-1.5">
                                 <Code className="w-3.5 h-3.5" /> 代码查重率: 5% (安全)
                               </span>
                             </div>
@@ -757,8 +757,8 @@ export default function TeacherCourseManage() {
                             <div className="space-y-4">
                               <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl">
                                 <h4 className="text-[13px] font-bold text-neutral-700 mb-2">代码文件</h4>
-                                <div className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-lg max-w-sm">
-                                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                                <div className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-[4px] max-w-sm">
+                                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-[4px] flex items-center justify-center">
                                     <Code className="w-5 h-5" />
                                   </div>
                                   <div>
@@ -770,7 +770,7 @@ export default function TeacherCourseManage() {
 
                               <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl relative group">
                                 <h4 className="text-[13px] font-bold text-neutral-700 mb-2">在线解答</h4>
-                                <div className="bg-white p-4 border border-neutral-200 rounded-lg text-[14px] text-neutral-700 font-mono leading-relaxed">
+                                <div className="bg-white p-4 border border-neutral-200 rounded-[4px] text-[14px] text-neutral-700 font-mono leading-relaxed">
                                   # 核心解析代码实现<br/>
                                   def parse_page(html):<br/>
                                   &nbsp;&nbsp;&nbsp;&nbsp;soup = BeautifulSoup(html, 'lxml')<br/>
@@ -779,7 +779,7 @@ export default function TeacherCourseManage() {
                                   &nbsp;&nbsp;&nbsp;&nbsp;...
                                 </div>
                                 <div className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="outline" size="sm" className="h-8 text-[12px] bg-white shadow-sm"><Edit className="w-3.5 h-3.5 mr-1" /> 添加在线批注</Button>
+                                  <Button variant="outline" size="sm" className="h-8 text-[12px] bg-white shadow-sm rounded-[4px]"><Edit className="w-3.5 h-3.5 mr-1" /> 添加在线批注</Button>
                                 </div>
                               </div>
                             </div>
@@ -810,11 +810,11 @@ export default function TeacherCourseManage() {
                               <div className="w-[300px] flex flex-col justify-between">
                                 <div className="flex items-center justify-between mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
                                   <span className="text-[14px] font-bold text-neutral-800">最终评分 (满分 100)</span>
-                                  <input type="number" className="w-20 text-center text-[24px] font-black text-[#fa541c] bg-white border border-neutral-200 rounded-lg py-1 focus:outline-none focus:border-[#fa541c]" defaultValue={92} />
+                                  <input type="number" className="w-20 text-center text-[24px] font-black text-[#fa541c] bg-white border border-neutral-200 rounded-[4px] py-1 focus:outline-none focus:border-[#fa541c]" defaultValue={92} />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
-                                  <Button variant="outline" className="border-red-200 text-red-500 hover:bg-red-50 font-bold h-10">打回重做</Button>
-                                  <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 shadow-md shadow-orange-500/20">提交评分并继续</Button>
+                                  <Button variant="outline" className="border-red-200 text-red-500 hover:bg-red-50 font-bold h-10 rounded-[4px]">打回重做</Button>
+                                  <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 shadow-md shadow-orange-500/20">提交评分并继续</Button>
                                 </div>
                               </div>
                             </div>
@@ -841,13 +841,13 @@ export default function TeacherCourseManage() {
                     <div className="flex gap-3">
                       <Button 
                         onClick={handleBatchAuthorize}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-lg"
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
                       >
                         批量授权
                       </Button>
                       <Button 
                         onClick={handleBatchRevokeAuth}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-lg"
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
                       >
                         批量解除授权
                       </Button>
@@ -864,7 +864,7 @@ export default function TeacherCourseManage() {
                                 type="button"
                                 onClick={() => toggleSelectAllStudents(selectedStudents.length !== studentList.length || studentList.length === 0)}
                                 className={cn(
-                                  "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                                  "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
                                   selectedStudents.length === studentList.length && studentList.length > 0
                                     ? "bg-[#fa541c] border-[#fa541c] text-white"
                                     : "border-neutral-300 hover:border-[#fa541c] bg-white"
@@ -888,7 +888,7 @@ export default function TeacherCourseManage() {
                                   type="button"
                                   onClick={() => toggleSelectStudent(student.username)}
                                   className={cn(
-                                    "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                                    "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
                                     selectedStudents.includes(student.username)
                                       ? "bg-[#fa541c] border-[#fa541c] text-white"
                                       : "border-neutral-300 hover:border-[#fa541c] bg-white"
@@ -904,7 +904,7 @@ export default function TeacherCourseManage() {
                               <td className="p-4 text-left">
                                 <button 
                                   onClick={() => handleRevokeAuth(student.username)}
-                                  className="text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer font-bold"
+                                  className="text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer font-bold rounded-[4px]"
                                 >
                                   解除授权
                                 </button>
@@ -920,9 +920,9 @@ export default function TeacherCourseManage() {
                   <div className="flex items-center justify-end p-4 gap-4 bg-transparent mt-4">
                     <span className="text-[13px] text-neutral-500 font-medium">共 {studentList.length} 条</span>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white" disabled>&lt;</Button>
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white">&gt;</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-white" disabled>&lt;</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-white">&gt;</Button>
                     </div>
                     <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
                       <option>10 条/页</option>
@@ -950,7 +950,7 @@ export default function TeacherCourseManage() {
                         setIsExporting(false);
                         setExportCompleted(false);
                       }}
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all"
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all"
                     >
                       <Download className="w-4 h-4 mr-2" /> 导出详细数据报告
                     </Button>
@@ -1042,7 +1042,7 @@ export default function TeacherCourseManage() {
                          <div key={i}>
                            <div className="flex items-center justify-between mb-2">
                              <div className="flex items-center gap-2">
-                               <span className="w-6 h-6 rounded-md bg-neutral-100 text-neutral-500 flex items-center justify-center text-[12px] font-bold">{i+1}</span>
+                               <span className="w-6 h-6 rounded-[4px] bg-neutral-100 text-neutral-500 flex items-center justify-center text-[12px] font-bold">{i+1}</span>
                                <span className="text-[14px] font-bold text-neutral-800">{chap.title}</span>
                              </div>
                              <div className="flex items-center gap-4">
@@ -1076,7 +1076,7 @@ export default function TeacherCourseManage() {
           <div className="bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.1)] w-full max-w-[600px] h-full flex flex-col animation-slide-left">
             <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
               <h2 className="text-[18px] font-bold text-neutral-900">新建作业</h2>
-              <button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-full transition-colors">
+              <button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1102,20 +1102,20 @@ export default function TeacherCourseManage() {
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 作业名称：</label>
-                  <input type="text" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入" defaultValue={selectedPaperName} />
+                  <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入" defaultValue={selectedPaperName} />
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 发布时间：</label>
                   <div className="relative">
-                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" defaultValue="2026-05-21T14:29" />
+                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" defaultValue="2026-05-21T14:29" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 截止时间：</label>
                   <div className="relative">
-                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-400" />
+                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-400" />
                   </div>
                 </div>
               </div>
@@ -1158,8 +1158,8 @@ export default function TeacherCourseManage() {
             </div>
 
             <div className="p-6 border-t border-neutral-100 bg-white shrink-0 flex justify-end gap-3">
-              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-6">取消</Button>
-              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className={cn("text-white font-bold h-9 px-6", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>发布作业</Button>
+              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 rounded-[4px]">取消</Button>
+              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className={cn("text-white font-bold h-9 px-6 rounded-[4px]", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>发布作业</Button>
             </div>
           </div>
         </div>
@@ -1171,13 +1171,13 @@ export default function TeacherCourseManage() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[1100px] overflow-hidden flex flex-col h-[600px]">
             <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
               <h2 className="text-[16px] font-bold text-neutral-900">选择试卷</h2>
-              <button onClick={() => setShowSelectPaperModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowSelectPaperModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-5 pb-0 flex justify-end">
-               <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm font-bold h-9 px-5">
+               <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm font-bold h-9 px-5">
                  <Plus className="w-4 h-4 mr-1.5" /> 新建试卷
                </Button>
             </div>
@@ -1200,7 +1200,7 @@ export default function TeacherCourseManage() {
                       {showFilterDropdown && (
                         <>
                           <div className="fixed inset-0 z-[65]" onClick={(e) => { e.stopPropagation(); setShowFilterDropdown(false); }}></div>
-                          <div className="absolute left-0 top-10 z-[70] w-[200px] bg-white border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-lg overflow-hidden animation-slide-up" onClick={e => e.stopPropagation()}>
+                          <div className="absolute left-0 top-10 z-[70] w-[200px] bg-white border border-neutral-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-[4px] overflow-hidden animation-slide-up" onClick={e => e.stopPropagation()}>
                             <div className="p-4 border-b border-neutral-100">
                               <div className="font-bold text-[13px] mb-3 text-neutral-800">搜索包含题型</div>
                               <div className="space-y-2.5">
@@ -1213,8 +1213,8 @@ export default function TeacherCourseManage() {
                               </div>
                             </div>
                             <div className="flex text-[13px]">
-                              <button className="flex-1 py-2.5 text-neutral-500 hover:text-neutral-700 bg-neutral-50 hover:bg-neutral-100 transition-colors">重置</button>
-                              <button className="flex-1 py-2.5 text-[#fa541c] font-bold hover:bg-orange-50 transition-colors" onClick={() => setShowFilterDropdown(false)}>确认</button>
+                              <button className="flex-1 py-2.5 text-neutral-500 hover:text-neutral-700 bg-neutral-50 hover:bg-neutral-100 transition-colors rounded-[4px]">重置</button>
+                              <button className="flex-1 py-2.5 text-[#fa541c] font-bold hover:bg-orange-50 transition-colors rounded-[4px]" onClick={() => setShowFilterDropdown(false)}>确认</button>
                             </div>
                           </div>
                         </>
@@ -1277,7 +1277,7 @@ export default function TeacherCourseManage() {
                                   <div className="font-bold text-[14px] text-neutral-900 mb-2">2. 答题限时: 3600 分钟</div>
                                   <div className="text-[12px] text-neutral-500">客观题需在 3600 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</div>
                                </div>
-                               <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-sm shadow-orange-500/20 font-bold h-8 px-5 mt-2">
+                               <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-orange-500/20 font-bold h-8 px-5 mt-2">
                                   预览客观题
                                </Button>
                             </div>
@@ -1291,8 +1291,8 @@ export default function TeacherCourseManage() {
             </div>
 
             <div className="p-4 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 shrink-0">
-               <Button onClick={() => setShowSelectPaperModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 h-9 px-6">取消</Button>
-               <Button onClick={() => setShowSelectPaperModal(false)} className={cn("text-white h-9 px-6", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>确定</Button>
+               <Button onClick={() => setShowSelectPaperModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px]">取消</Button>
+               <Button onClick={() => setShowSelectPaperModal(false)} className={cn("text-white h-9 px-6 rounded-[4px]", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>确定</Button>
             </div>
           </div>
         </div>
@@ -1306,13 +1306,13 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-[#fa541c]" /> 配置评分维度
               </h2>
-              <button onClick={() => setShowScoringRulesModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowScoringRulesModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             <div className="p-6 flex-1 space-y-6">
-               <div className="bg-orange-50 border border-orange-100 p-3 rounded-lg flex items-start gap-2 mb-2">
+               <div className="bg-orange-50 border border-orange-100 p-3 rounded-[4px] flex items-start gap-2 mb-2">
                  <div className="text-orange-600 mt-0.5"><Award className="w-4 h-4" /></div>
                  <p className="text-[12px] text-orange-800 leading-relaxed">设置多个评分维度，方便批阅时打分。各个维度的分值总和应等于该任务的满分（100分）。</p>
                </div>
@@ -1332,14 +1332,14 @@ export default function TeacherCourseManage() {
                        <input type="number" className="w-10 text-center font-bold text-[#fa541c] bg-transparent outline-none" defaultValue={rule.score} />
                        <span className="text-[12px] text-neutral-500 font-bold">分</span>
                      </div>
-                     <button className="absolute -right-3 -top-3 w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:border-red-200 shadow-sm opacity-0 group-hover:opacity-100 transition-all">
+                     <button className="absolute -right-3 -top-3 w-6 h-6 bg-white border border-neutral-200 rounded-[4px] flex items-center justify-center text-neutral-400 hover:text-red-500 hover:border-red-200 shadow-sm opacity-0 group-hover:opacity-100 transition-all">
                        <Trash2 className="w-3.5 h-3.5" />
                      </button>
                    </div>
                  ))}
                </div>
 
-               <Button variant="outline" className="w-full border-dashed border-neutral-300 text-neutral-600 hover:text-[#fa541c] hover:border-orange-300 bg-neutral-50 hover:bg-orange-50 h-10">
+               <Button variant="outline" className="w-full border-dashed border-neutral-300 text-neutral-600 hover:text-[#fa541c] hover:border-orange-300 bg-neutral-50 hover:bg-orange-50 h-10 rounded-[4px]">
                  <Plus className="w-4 h-4 mr-2" /> 新增评分维度
                </Button>
             </div>
@@ -1347,8 +1347,8 @@ export default function TeacherCourseManage() {
             <div className="p-5 border-t border-neutral-100 bg-white shrink-0 flex items-center justify-between gap-3">
               <span className="text-[13px] font-bold text-neutral-600">当前总分：<span className="text-[#fa541c] text-[16px]">100</span> 分</span>
               <div className="flex gap-3">
-                <Button onClick={() => setShowScoringRulesModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-                <Button onClick={() => setShowScoringRulesModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存规则</Button>
+                <Button onClick={() => setShowScoringRulesModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
+                <Button onClick={() => setShowScoringRulesModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存规则</Button>
               </div>
             </div>
           </div>
@@ -1363,7 +1363,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建课节
               </h2>
-              <button onClick={() => setShowCreateLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowCreateLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1372,12 +1372,12 @@ export default function TeacherCourseManage() {
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 课节名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课节名称" autoFocus />
+                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课节名称" autoFocus />
               </div>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowCreateLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button onClick={() => setShowCreateLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+              <Button onClick={() => setShowCreateLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
+              <Button onClick={() => setShowCreateLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
             </div>
           </div>
         </div>
@@ -1391,7 +1391,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                  新建教学课件
               </h2>
-              <button onClick={() => setShowTeachingMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowTeachingMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1400,18 +1400,18 @@ export default function TeacherCourseManage() {
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入教学课件名称" autoFocus />
+                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入教学课件名称" autoFocus />
               </div>
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 预估课时（分钟）
                 </label>
-                <input type="number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入预估课时（分钟）" defaultValue={45} />
+                <input type="number" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入预估课时（分钟）" defaultValue={45} />
               </div>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowTeachingMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button onClick={() => setShowTeachingMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+              <Button onClick={() => setShowTeachingMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
+              <Button onClick={() => setShowTeachingMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
             </div>
           </div>
         </div>
@@ -1425,7 +1425,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                  <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择实验课件 <span className="text-[13px] text-blue-500 font-normal cursor-pointer hover:underline ml-2">帮助教程 <Info className="w-3.5 h-3.5 inline mb-0.5" /></span>
               </h2>
-              <button onClick={() => setShowExperimentMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowExperimentMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1443,7 +1443,7 @@ export default function TeacherCourseManage() {
                      <Search className="w-4 h-4" />
                    </div>
                  )}
-                 <Button onClick={() => navigate('/teacher/course/1/experiment/new')} variant="outline" className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors">
+                 <Button onClick={() => navigate('/teacher/course/1/experiment/new')} variant="outline" className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors rounded-[4px]">
                    <Plus className="w-3.5 h-3.5 mr-1" /> 新建
                  </Button>
                </div>
@@ -1458,7 +1458,7 @@ export default function TeacherCourseManage() {
                    key={idx} 
                    onClick={() => setSelectedExperimentIndex(idx)}
                    className={cn(
-                     "flex items-center justify-between p-4 border-b cursor-pointer group transition-all rounded-lg mb-1",
+                     "flex items-center justify-between p-4 border-b cursor-pointer group transition-all rounded-[4px] mb-1",
                      selectedExperimentIndex === idx ? "bg-orange-50 border-orange-100 shadow-[0_2px_10px_rgba(250,84,28,0.05)]" : "hover:bg-neutral-50 border-neutral-50"
                    )}
                  >
@@ -1487,8 +1487,8 @@ export default function TeacherCourseManage() {
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-between shrink-0">
               <div className="text-[13px] text-neutral-500">已选 <span className="text-[#fa541c] font-bold">{selectedExperimentIndex !== null ? 1 : 0}</span> 项</div>
               <div className="flex gap-3">
-                <Button onClick={() => setShowExperimentMaterialModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c]">取消</Button>
-                <Button onClick={() => setShowExperimentMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
+                <Button onClick={() => setShowExperimentMaterialModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] rounded-[4px]">取消</Button>
+                <Button onClick={() => setShowExperimentMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
               </div>
             </div>
           </div>
@@ -1503,7 +1503,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                  新建互动学习课件
               </h2>
-              <button onClick={() => setShowInteractiveMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowInteractiveMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1512,12 +1512,12 @@ export default function TeacherCourseManage() {
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课件名称" autoFocus />
+                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课件名称" autoFocus />
               </div>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowInteractiveMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button onClick={() => setShowInteractiveMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+              <Button onClick={() => setShowInteractiveMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
+              <Button onClick={() => setShowInteractiveMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
             </div>
           </div>
         </div>
@@ -1531,7 +1531,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                  <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择随堂作业
               </h2>
-              <button onClick={() => setShowAssignmentModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowAssignmentModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1546,7 +1546,7 @@ export default function TeacherCourseManage() {
 
             <div className="px-6 py-3 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/30">
                <div className="text-[13px] text-neutral-500">列表</div>
-               <Button variant="outline" className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors">
+               <Button variant="outline" className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors rounded-[4px]">
                  <Plus className="w-3.5 h-3.5 mr-1" /> 新建
                </Button>
             </div>
@@ -1575,8 +1575,8 @@ export default function TeacherCourseManage() {
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-between shrink-0">
               <div className="text-[13px] text-neutral-500">已选 <span className="text-[#fa541c] font-bold">0</span> 项</div>
               <div className="flex gap-3">
-                <Button onClick={() => setShowAssignmentModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c]">取消</Button>
-                <Button onClick={() => setShowAssignmentModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
+                <Button onClick={() => setShowAssignmentModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] rounded-[4px]">取消</Button>
+                <Button onClick={() => setShowAssignmentModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
               </div>
             </div>
           </div>
@@ -1591,7 +1591,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                  编辑章节
               </h2>
-              <button onClick={() => setShowEditChapterModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowEditChapterModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1600,12 +1600,12 @@ export default function TeacherCourseManage() {
                 <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="第一课" autoFocus />
+                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="第一课" autoFocus />
               </div>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowEditChapterModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button onClick={() => setShowEditChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+              <Button onClick={() => setShowEditChapterModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
+              <Button onClick={() => setShowEditChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
             </div>
           </div>
         </div>
@@ -1620,7 +1620,7 @@ export default function TeacherCourseManage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-[18px] font-bold text-neutral-900">删除确认</h2>
-                  <button onClick={() => setShowDeleteChapterModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors">
+                  <button onClick={() => setShowDeleteChapterModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors rounded-[4px]">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -1631,8 +1631,8 @@ export default function TeacherCourseManage() {
                   若该目录下存在子目录或学生学习数据将一并删除
                 </p>
                 <div className="flex justify-end gap-3">
-                  <Button onClick={() => setShowDeleteChapterModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200">取消</Button>
-                  <Button onClick={() => setShowDeleteChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 shadow-sm">确定</Button>
+                  <Button onClick={() => setShowDeleteChapterModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200 rounded-[4px]">取消</Button>
+                  <Button onClick={() => setShowDeleteChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 shadow-sm">确定</Button>
                 </div>
               </div>
             </div>
@@ -1648,7 +1648,7 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
                  编辑课时
               </h2>
-              <button onClick={() => setShowEditLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button onClick={() => setShowEditLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1659,15 +1659,15 @@ export default function TeacherCourseManage() {
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
                   defaultValue={selectedEditLesson.title} 
                   autoFocus 
                 />
               </div>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowEditLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button onClick={() => setShowEditLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+              <Button onClick={() => setShowEditLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
+              <Button onClick={() => setShowEditLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
             </div>
           </div>
         </div>
@@ -1682,7 +1682,7 @@ export default function TeacherCourseManage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-[18px] font-bold text-neutral-900">删除课时确认</h2>
-                  <button onClick={() => setShowDeleteLessonModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors">
+                  <button onClick={() => setShowDeleteLessonModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors rounded-[4px]">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -1693,8 +1693,8 @@ export default function TeacherCourseManage() {
                   该课时关联的学习数据与学生记录将一并删除。
                 </p>
                 <div className="flex justify-end gap-3">
-                  <Button onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200">取消</Button>
-                  <Button onClick={() => setShowDeleteLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 shadow-sm">确定</Button>
+                  <Button onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200 rounded-[4px]">取消</Button>
+                  <Button onClick={() => setShowDeleteLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 shadow-sm">确定</Button>
                 </div>
               </div>
             </div>
@@ -1713,7 +1713,7 @@ export default function TeacherCourseManage() {
               </h2>
               <button 
                 onClick={() => setShowInviteModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1724,7 +1724,7 @@ export default function TeacherCourseManage() {
               <button 
                 onClick={() => setInviteActiveTab('link')}
                 className={cn(
-                  "py-3 text-[13px] font-bold border-b-2 transition-all mr-6",
+                  "py-3 text-[13px] font-bold border-b-2 transition-all mr-6 rounded-[4px]",
                   inviteActiveTab === 'link' 
                     ? "border-b-[#fa541c] text-[#fa541c]" 
                     : "border-transparent text-neutral-400 hover:text-neutral-600"
@@ -1735,7 +1735,7 @@ export default function TeacherCourseManage() {
               <button 
                 onClick={() => setInviteActiveTab('manual')}
                 className={cn(
-                  "py-3 text-[13px] font-bold border-b-2 transition-all",
+                  "py-3 text-[13px] font-bold border-b-2 transition-all rounded-[4px]",
                   inviteActiveTab === 'manual' 
                     ? "border-b-[#fa541c] text-[#fa541c]" 
                     : "border-transparent text-neutral-400 hover:text-neutral-600"
@@ -1762,7 +1762,7 @@ export default function TeacherCourseManage() {
                         navigator.clipboard.writeText("X8J9K2");
                         alert("邀请码复制成功！");
                       }}
-                      className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors"
+                      className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 font-bold text-[12px] px-3.5 h-8.5 rounded-[4px] transition-colors"
                     >
                       复制邀请码
                     </Button>
@@ -1776,14 +1776,14 @@ export default function TeacherCourseManage() {
                         type="text" 
                         readOnly 
                         value="https://platform.cosmos.com/join/course/1/X8J9K2" 
-                        className="flex-1 bg-white border border-neutral-200 rounded-lg px-3 py-1.5 text-[11px] text-neutral-600 focus:outline-none font-mono"
+                        className="flex-1 bg-white border border-neutral-200 rounded-[4px] px-3 py-1.5 text-[11px] text-neutral-600 focus:outline-none font-mono"
                       />
                       <Button 
                         onClick={() => {
                           navigator.clipboard.writeText("https://platform.cosmos.com/join/course/1/X8J9K2");
                           alert("邀请链接复制成功！");
                         }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors shrink-0"
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold text-[12px] px-3.5 h-8.5 rounded-[4px] transition-colors shrink-0"
                       >
                         复制链接
                       </Button>
@@ -1812,7 +1812,7 @@ export default function TeacherCourseManage() {
               <Button 
                 onClick={() => setShowInviteModal(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px]"
+                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px] rounded-[4px]"
               >
                 关闭
               </Button>
@@ -1820,7 +1820,7 @@ export default function TeacherCourseManage() {
                 <Button 
                   onClick={handleSendInvite}
                   disabled={!inviteInput.trim()}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   发送邀请
                 </Button>
@@ -1845,7 +1845,7 @@ export default function TeacherCourseManage() {
                   setImportSelectedFile(null);
                   setImportProgress(0);
                 }} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1863,7 +1863,7 @@ export default function TeacherCourseManage() {
                   <span className="text-[12px] text-neutral-500">请使用我们预设的模板列属性格式，以避免解析错误。</span>
                   <Button 
                     onClick={() => alert("用户授权模版已下载到您的系统默认下载文件夹！")}
-                    className="bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-[12px] px-3.5 h-8.5 rounded-lg transition-colors shadow-2xs"
+                    className="bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-[12px] px-3.5 h-8.5 rounded-[4px] transition-colors shadow-2xs"
                   >
                     下载授权模板
                   </Button>
@@ -1894,7 +1894,7 @@ export default function TeacherCourseManage() {
                     <div className="border border-neutral-200 rounded-xl p-4 bg-white space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-[4px] bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                             <FileText className="w-5 h-5" />
                           </div>
                           <div className="text-left">
@@ -1907,7 +1907,7 @@ export default function TeacherCourseManage() {
                             setImportSelectedFile(null);
                             setImportProgress(0);
                           }}
-                          className="text-neutral-400 hover:text-neutral-600 p-1 hover:bg-neutral-100 rounded-full"
+                          className="text-neutral-400 hover:text-neutral-600 p-1 hover:bg-neutral-100 rounded-[4px]"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -1983,14 +1983,14 @@ export default function TeacherCourseManage() {
                   setImportProgress(0);
                 }} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px]"
+                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px] rounded-[4px]"
               >
                 取消
               </Button>
               {importSelectedFile && importProgress === 100 && (
                 <Button 
                   onClick={handleConfirmBatchAuthorize}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
                 >
                   确认授权 (3名用户)
                 </Button>
@@ -2011,7 +2011,7 @@ export default function TeacherCourseManage() {
               </h2>
               <button 
                 onClick={() => setShowExportModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2128,7 +2128,7 @@ export default function TeacherCourseManage() {
 
                   {/* Mock File Card */}
                   <div className="w-full max-w-[380px] border border-neutral-200 rounded-xl p-4 bg-neutral-50/50 flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-[4px] bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="text-left flex-1 min-w-0">
@@ -2149,13 +2149,13 @@ export default function TeacherCourseManage() {
                   <Button 
                     onClick={() => setShowExportModal(false)}
                     variant="outline"
-                    className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px]"
+                    className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px] rounded-[4px]"
                   >
                     取消
                   </Button>
                   <Button 
                     onClick={handleStartExport}
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
                   >
                     开始生成报告
                   </Button>
@@ -2163,7 +2163,7 @@ export default function TeacherCourseManage() {
               ) : exportCompleted ? (
                 <Button 
                   onClick={() => setShowExportModal(false)}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9.5 px-8 text-[13px]"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-8 text-[13px]"
                 >
                   完成
                 </Button>
@@ -2176,7 +2176,7 @@ export default function TeacherCourseManage() {
       {/* 提示 Confirm Modal */}
       {confirmModal.show && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-[420px] overflow-hidden border border-neutral-200 flex flex-col">
+          <div className="bg-white rounded-[4px] shadow-xl w-full max-w-[420px] overflow-hidden border border-neutral-200 flex flex-col">
             {/* Header */}
             <div className="px-5 pt-5 flex items-center justify-between">
               <h2 className="text-[16px] font-bold text-neutral-900">
@@ -2184,7 +2184,7 @@ export default function TeacherCourseManage() {
               </h2>
               <button 
                 onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2204,7 +2204,7 @@ export default function TeacherCourseManage() {
                 <Button 
                   onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
                   variant="outline" 
-                  className="border-neutral-200 text-neutral-600 hover:bg-neutral-50 font-bold h-8 px-4 text-[13px] rounded-md transition-colors bg-white cursor-pointer"
+                  className="border-neutral-200 text-neutral-600 hover:bg-neutral-50 font-bold h-8 px-4 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
                 >
                   取消
                 </Button>
@@ -2213,7 +2213,7 @@ export default function TeacherCourseManage() {
                 onClick={() => {
                   confirmModal.onConfirm();
                 }} 
-                className="bg-[#ff8f5b] hover:bg-[#ff7a45] text-white font-bold h-8 px-4 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
+                className="bg-[#ff8f5b] hover:bg-[#ff7a45] text-white font-bold h-8 px-4 text-[13px] rounded-[4px] shadow-xs transition-colors border-0 cursor-pointer"
               >
                 确定
               </Button>
@@ -2225,7 +2225,7 @@ export default function TeacherCourseManage() {
       {/* 批量解除授权 Modal */}
       {showBulkRevokeModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
+          <div className="bg-white rounded-[4px] shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
             {/* Header */}
             <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
               <h2 className="text-[16px] font-bold text-neutral-900">
@@ -2233,7 +2233,7 @@ export default function TeacherCourseManage() {
               </h2>
               <button 
                 onClick={() => setShowBulkRevokeModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2241,7 +2241,7 @@ export default function TeacherCourseManage() {
 
             {/* Body */}
             <div className="p-6 flex-1 flex flex-col">
-              <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
+              <div className="border border-neutral-200 rounded-[4px] overflow-hidden bg-white">
                 <div className="overflow-y-auto max-h-[240px]">
                   <table className="w-full text-left text-[12px] border-collapse bg-white">
                     <thead className="sticky top-0 bg-neutral-50 border-b border-neutral-200 z-10">
@@ -2275,7 +2275,7 @@ export default function TeacherCourseManage() {
               <Button 
                 onClick={() => setShowBulkRevokeModal(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-md transition-colors bg-white cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
               >
                 取消
               </Button>
@@ -2285,7 +2285,7 @@ export default function TeacherCourseManage() {
                   setSelectedStudents([]);
                   setShowBulkRevokeModal(false);
                 }} 
-                className="bg-[#ff5722] hover:bg-[#e64a19] text-white font-bold h-8.5 px-5 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
+                className="bg-[#ff5722] hover:bg-[#e64a19] text-white font-bold h-8.5 px-5 text-[13px] rounded-[4px] shadow-xs transition-colors border-0 cursor-pointer"
               >
                 确认
               </Button>
@@ -2297,7 +2297,7 @@ export default function TeacherCourseManage() {
       {/* 批量授权 Modal */}
       {showBulkAuthModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
+          <div className="bg-white rounded-[4px] shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
             {/* Header */}
             <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
               <h2 className="text-[16px] font-bold text-neutral-900">
@@ -2305,7 +2305,7 @@ export default function TeacherCourseManage() {
               </h2>
               <button 
                 onClick={() => setShowBulkAuthModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2313,7 +2313,7 @@ export default function TeacherCourseManage() {
 
             {/* Body */}
             <div className="p-6 flex-1 flex flex-col">
-              <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
+              <div className="border border-neutral-200 rounded-[4px] overflow-hidden bg-white">
                 <div className="overflow-y-auto max-h-[240px]">
                   <table className="w-full text-left text-[12px] border-collapse bg-white">
                     <thead className="sticky top-0 bg-neutral-50 border-b border-neutral-200 z-10">
@@ -2351,7 +2351,7 @@ export default function TeacherCourseManage() {
               <Button 
                 onClick={() => setShowBulkAuthModal(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-md transition-colors bg-white cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
               >
                 取消
               </Button>
@@ -2365,7 +2365,7 @@ export default function TeacherCourseManage() {
                   setStudentList([...studentList, ...newStudents]);
                   setShowBulkAuthModal(false);
                 }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8.5 px-5 text-[13px] rounded-md shadow-xs transition-colors border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8.5 px-5 text-[13px] rounded-[4px] shadow-xs transition-colors border-0 cursor-pointer"
               >
                 确认
               </Button>

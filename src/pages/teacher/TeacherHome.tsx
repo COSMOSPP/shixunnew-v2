@@ -453,7 +453,7 @@ export default function TeacherHome() {
                 </thead>
                 <tbody>
                   {filteredCourses.map((course, index) => (
-                    <tr key={course.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                    <tr key={course.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredCourses.length - 1 && "border-b-0")}>
                       <td className="p-4">
                         <div className="flex items-center gap-4">
                           <div className="w-20 h-14 rounded-md overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative">

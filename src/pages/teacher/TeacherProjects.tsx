@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, 
   Search, 
@@ -13,6 +13,7 @@ import {
   Layers, 
   Briefcase, 
   Tag, 
+  ChevronDown, 
   BookOpen, 
   FileCode, 
   BarChart3, 
@@ -27,7 +28,18 @@ import {
   ChevronRight,
   FolderOpen,
   Info,
-  Loader2
+  Loader2,
+  Bold,
+  Italic,
+  Type,
+  List,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Undo2,
+  Redo2,
+  Maximize2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,7 +47,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 interface EnvConfig {
   id: string;
-  resourcePool: '天翼云资源池1' | '上海园区资源池';
+  resourcePool: string;
   type: '容器' | '虚机';
   // 容器字段
   sourceFile?: string; // 项目源码文件
@@ -45,6 +57,7 @@ interface EnvConfig {
     power: string; // 算力
     vram: string;  // 显存
     count: string; // 卡数
+    model?: string; // GPU 型号
   };
   image: string;
   envVariables?: { key: string; value: string }[];
@@ -55,13 +68,14 @@ interface EnvConfig {
   storage?: {
     type: string;
     systemDisk: string;
+    dataType?: string;
     dataDisk: string;
   };
   network?: {
     vpc: string;
     subnet: string;
   };
-  vncType?: 'caddyVnc' | 'noVnc';
+  vncType?: string;
 }
 
 interface Project {
@@ -83,7 +97,10 @@ interface Project {
   tags?: string[];
   environments?: EnvConfig[];
   range?: '私有' | '租户' | '平台';
-  auditStatus?: '待审核' | '已审核' | '已驳回';
+  auditStatus?: '待审核' | '已审核' | '已驳回' | '未审核' | '已通过';
+  creator?: string;
+  isAvailable?: boolean;
+  introduction?: string;
 }
 
 const CONTAINER_IMAGES = {
@@ -124,6 +141,128 @@ const VM_SPECS = [
   { value: 'ecs.gn6i-c4g1.xlarge', label: 'GPU计算型 gn6i | 4核 16GB | T4 * 1 (16GB)' },
   { value: 'ecs.gn7i-c8g1.2xlarge', label: 'GPU计算型 gn7i | 8核 32GB | A10G * 1 (24GB)' }
 ];
+
+const AVAILABLE_TAGS = [
+  { name: 'AI', bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', dot: 'bg-orange-500' },
+  { name: '容器', bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', dot: 'bg-blue-500' },
+  { name: '虚机', bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200', dot: 'bg-purple-500' },
+  { name: 'Java', bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  { name: 'Python', bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-200', dot: 'bg-teal-500' },
+  { name: '数据分析', bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-200', dot: 'bg-cyan-500' },
+  { name: '运维', bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-200', dot: 'bg-rose-500' },
+  { name: 'DevOps', bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200', dot: 'bg-indigo-500' },
+  { name: '大模型', bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', dot: 'bg-amber-500' },
+  { name: '微服务', bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200', dot: 'bg-sky-500' },
+];
+
+const getTagStyle = (tagName: string) => {
+  const matched = AVAILABLE_TAGS.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+  if (matched) return matched;
+  return {
+    name: tagName,
+    bg: 'bg-neutral-50',
+    text: 'text-neutral-600',
+    border: 'border-neutral-200',
+    dot: 'bg-neutral-400'
+  };
+};
+
+interface CustomSelectOption {
+  value: string;
+  label: string | React.ReactNode;
+}
+
+interface CustomSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: CustomSelectOption[];
+  disabled?: boolean;
+  className?: string;
+  placeholder?: string;
+}
+
+export function CustomSelect({
+  value,
+  onChange,
+  options,
+  disabled = false,
+  className = '',
+  placeholder = '请选择'
+}: CustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div ref={dropdownRef} className={cn("relative text-[13px] w-full", className)}>
+      <div
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={cn(
+          "min-h-[38px] w-full border rounded px-3.5 py-2 flex items-center justify-between transition-all text-[#262626] bg-white cursor-pointer select-none",
+          isOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "border-neutral-200 hover:border-neutral-300",
+          disabled && "bg-neutral-50 text-neutral-500 cursor-not-allowed border-neutral-100"
+        )}
+      >
+        <span className={cn("truncate font-medium", !selectedOption && "text-neutral-400")}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        {!disabled && (
+          <div className="text-neutral-400 shrink-0 ml-2">
+            <ChevronDown 
+              className={cn("w-4 h-4 transition-transform duration-200 text-neutral-400", isOpen && "rotate-180")} 
+              strokeWidth={1.5}
+            />
+          </div>
+        )}
+      </div>
+
+      {isOpen && !disabled && (
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="max-h-[220px] overflow-y-auto custom-scrollbar">
+            {options.map(opt => {
+              const isSelected = opt.value === value;
+              return (
+                <div
+                  key={opt.value}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    "px-4 py-2.5 text-left text-[13px] transition-colors cursor-pointer flex items-center justify-between",
+                    isSelected 
+                      ? "bg-orange-50 text-[#fa541c] font-bold"
+                      : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                  )}
+                >
+                  <span className="font-medium truncate">{opt.label}</span>
+                  {isSelected && (
+                    <Check className="w-3.5 h-3.5 text-[#fa541c]" strokeWidth={2.5} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface TeacherProjectsProps {
   embedded?: boolean;
@@ -177,8 +316,75 @@ export default function TeacherProjects({
   
   // New States for tags and environment configs
   const [formTags, setFormTags] = useState<string[]>([]);
-  const [newTagInput, setNewTagInput] = useState('');
+  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [newTagInputText, setNewTagInputText] = useState('');
+  const [availableTagsList, setAvailableTagsList] = useState<string[]>([
+    'AI', '容器', '虚机', 'Java', 'Python', '数据分析', '运维', 'DevOps', '大模型', '微服务'
+  ]);
+  const tagDropdownRef = useRef<HTMLDivElement>(null);
   const [formEnvironments, setFormEnvironments] = useState<EnvConfig[]>([]);
+  const [formIntroduction, setFormIntroduction] = useState('');
+
+  // Environment configurations states
+  const [formSourceRepoUrl, setFormSourceRepoUrl] = useState('');
+  const [repoUploadMode, setRepoUploadMode] = useState<'manual' | 'upload'>('manual');
+  const [formCreationMethod, setFormCreationMethod] = useState<'template' | 'custom'>('template');
+  const [formTemplateValue, setFormTemplateValue] = useState('通用模板');
+  const [activeEnvIdx, setActiveEnvIdx] = useState(0);
+
+  const currentResourcePool = formEnvironments[0]?.resourcePool || '资源池1';
+  const currentEnvType = formEnvironments[0]?.type || '容器';
+
+  const handleChangeEnvType = (newType: '容器' | '虚机') => {
+    const updated = formEnvironments.map(env => {
+      if (env.type === newType) return env;
+      if (newType === '容器') {
+        return {
+          id: env.id,
+          resourcePool: env.resourcePool,
+          type: '容器' as const,
+          sourceFile: '',
+          cpuCores: '2',
+          memoryGB: '4',
+          gpu: { power: '无', vram: '0', count: '0', model: '4090' },
+          image: CONTAINER_IMAGES[env.resourcePool]?.[0] || 'ctyun-python:3.10-slim-cpu',
+          envVariables: [],
+          startCommand: 'python main.py'
+        };
+      } else {
+        return {
+          id: env.id,
+          resourcePool: env.resourcePool,
+          type: '虚机' as const,
+          vmSpecType: 'custom' as const,
+          selectedSpec: VM_SPECS[0].value,
+          cpuCores: '2',
+          memoryGB: '8',
+          gpu: { power: '无', vram: '0', count: '0', model: '4090' },
+          image: VM_IMAGES[env.resourcePool]?.[0] || 'ctyun-ubuntu-22.04-server-x86_64.qcow2',
+          storage: { type: 'SSD', systemDisk: '40', dataType: 'SSD', dataDisk: '100' },
+          network: { vpc: 'vpc-default', subnet: 'subnet-1' },
+          vncType: 'novnc' as const
+        };
+      }
+    });
+    setFormEnvironments(updated);
+    setActiveEnvIdx(0);
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (tagDropdownRef.current && !tagDropdownRef.current.contains(event.target as Node)) {
+        setIsTagDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  const [isCoverPickerOpen, setIsCoverPickerOpen] = useState(false);
 
   // Floating notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -195,158 +401,117 @@ export default function TeacherProjects({
   const [projectsList, setProjectsList] = useState<Project[]>([
     {
       id: 1,
-      name: '大语言模型智能客服助理',
-      desc: '基于 Llama-3-8B 微调 of the smart customer service system, support RAG search.',
+      name: '项目1',
+      desc: '基于容器环境的实战开发项目',
       type: 'AI项目',
       difficulty: '高级',
       duration: '16',
       gitUrl: '',
       baseImage: 'pytorch/pytorch:2.1.0-cuda12.1',
       resources: { cpu: '4 核', memory: '16 GB', gpu: 'NVIDIA T4' },
-      scope: {
-        positions: ['AI算法工程师', 'NLP开发工程师'],
-        skills: ['PyTorch', 'Transformers', 'LangChain'],
-        scenarios: ['企业实训', '毕业设计']
-      },
-      status: '已发布',
-      range: '平台',
-      auditStatus: '已审核',
-      updateTime: '2026/05/24 18:22',
+      scope: { positions: [], skills: [], scenarios: [] },
+      status: '草稿',
+      range: '私有',
+      auditStatus: '未审核',
+      updateTime: '2026/06/15 17:30',
       image: '/shixunnew-v2/images/covers/microsoft_tech_ai_1779333317936.png',
       courseId: 1,
-      tags: ['大模型', 'RAG', '深度学习'],
+      tags: ['容器', 'AI'],
+      creator: '张老师',
+      isAvailable: false,
       environments: [
         {
           id: 'env-1',
           resourcePool: '上海园区资源池',
           type: '容器',
-          sourceFile: 'ai-chatbot-rag-v1.zip',
-          cpuCores: '4',
-          memoryGB: '16',
-          gpu: { power: 'A10G', vram: '24GB', count: '1' },
           image: 'sh-pytorch:2.2.0-cuda12.1-gpu',
-          envVariables: [
-            { key: 'MODEL_PATH', value: '/models/Llama-3-8B' },
-            { key: 'CUDA_VISIBLE_DEVICES', value: '0' }
-          ],
-          startCommand: 'python main.py'
         }
       ]
     },
     {
       id: 2,
-      name: '分布式高并发电商微服务交易系统',
-      desc: '结合 Spring Boot, Redis 缓存, RabbitMQ 异步队列，实现秒杀高可用防御策略。',
+      name: '项目2',
+      desc: '基于虚拟机的微服务实训部署',
       type: '编程项目',
       difficulty: '高级',
       duration: '12',
       gitUrl: '',
       baseImage: 'openjdk:17-jdk-alpine',
       resources: { cpu: '2 核', memory: '8 GB', gpu: '无' },
-      scope: {
-        positions: ['Java开发工程师', '后端开发工程师'],
-        skills: ['Spring Cloud', 'Redis', 'Docker'],
-        scenarios: ['企业实训', '工程项目实践']
-      },
-      status: '已发布',
-      range: '租户',
-      auditStatus: '已审核',
-      updateTime: '2026/05/23 15:45',
+      scope: { positions: [], skills: [], scenarios: [] },
+      status: '草稿',
+      range: '私有',
+      auditStatus: '未审核',
+      updateTime: '2026/06/15 17:25',
       image: '/shixunnew-v2/images/covers/microsoft_tech_dev_1779333430898.png',
       courseId: 2,
-      tags: ['微服务', '高并发', 'Redis'],
+      tags: ['虚机', 'Java'],
+      creator: '李老师',
+      isAvailable: true,
       environments: [
         {
           id: 'env-2',
           resourcePool: '天翼云资源池1',
-          type: '容器',
-          sourceFile: 'mall-seckill-code.zip',
-          cpuCores: '2',
-          memoryGB: '8',
-          image: 'ctyun-openjdk:17-jdk-alpine',
-          envVariables: [
-            { key: 'SPRING_PROFILES_ACTIVE', value: 'prod' }
-          ],
-          startCommand: 'java -jar app.jar'
+          type: '虚机',
+          image: 'ctyun-ubuntu-22.04-server-x86_64.qcow2',
         }
       ]
     },
     {
       id: 3,
-      name: '多渠道金融流失客户预测分析',
-      desc: '获取金融板块流失特征，使用 Pandas/Seaborn 做特征工程，并应用 XGBoost 流失预测。',
+      name: '项目3',
+      desc: '企业租户内的数据特征挖掘工程',
       type: '数据分析项目',
       difficulty: '中级',
       duration: '6',
       gitUrl: '',
       baseImage: 'python:3.10-slim',
       resources: { cpu: '1 核', memory: '4 GB', gpu: '无' },
-      scope: {
-        positions: ['数据分析师', '风控策略分析师'],
-        skills: ['Pandas', 'Scikit-Learn', 'XGBoost'],
-        scenarios: ['期末大作业', '课程作业']
-      },
-      status: '草稿',
-      range: '私有',
-      auditStatus: '待审核',
-      updateTime: '2026/05/25 09:12',
+      scope: { positions: [], skills: [], scenarios: [] },
+      status: '已发布',
+      range: '租户',
+      auditStatus: '已通过',
+      updateTime: '2026/06/15 17:20',
       image: '/shixunnew-v2/images/covers/microsoft_tech_data_1779333332856.png',
       courseId: 1,
-      tags: ['特征工程', 'XGBoost', '数据挖掘'],
+      tags: ['容器', '数据分析'],
+      creator: '王老师',
+      isAvailable: true,
       environments: [
         {
           id: 'env-3',
           resourcePool: '上海园区资源池',
           type: '容器',
-          sourceFile: 'churn-analysis.zip',
-          cpuCores: '1',
-          memoryGB: '4',
           image: 'sh-python:3.11-slim',
-          envVariables: [],
-          startCommand: 'python predict.py'
         }
       ]
     },
     {
       id: 4,
-      name: 'Kubernetes 容器化微服务高可用部署',
-      desc: '设计微服务的 Dockerfile，并在 Kubernetes 集群中部署实现滚动更新与自愈伸缩。',
+      name: '项目4',
+      desc: '云原生高可用容器平台部署',
       type: '运维项目',
       difficulty: '中级',
       duration: '8',
       gitUrl: '',
       baseImage: 'ubuntu:22.04',
       resources: { cpu: '2 核', memory: '4 GB', gpu: '无' },
-      scope: {
-        positions: ['DevOps工程师', '系统运维工程师'],
-        skills: ['Kubernetes', 'Docker', 'Prometheus'],
-        scenarios: ['云计算实训', '运维工程实践']
-      },
+      scope: { positions: [], skills: [], scenarios: [] },
       status: '已发布',
       range: '平台',
-      auditStatus: '已驳回',
-      updateTime: '2026/05/20 11:30',
+      auditStatus: '已通过',
+      updateTime: '2026/06/15 17:15',
       image: '/shixunnew-v2/images/covers/microsoft_tech_cloud_1779333396845.png',
       courseId: 3,
-      tags: ['K8s', 'Docker', 'DevOps'],
+      tags: ['虚机', 'DevOps'],
+      creator: '刘老师',
+      isAvailable: true,
       environments: [
         {
           id: 'env-4',
           resourcePool: '天翼云资源池1',
           type: '虚机',
           image: 'ctyun-ubuntu-22.04-server-x86_64.qcow2',
-          vmSpecType: 'spec',
-          selectedSpec: 'ecs.g6.large',
-          storage: {
-            type: 'SSD',
-            systemDisk: '50',
-            dataDisk: '100'
-          },
-          network: {
-            vpc: 'vpc-ctyun-default',
-            subnet: 'subnet-10.100.1.0/24'
-          },
-          vncType: 'noVnc'
         }
       ]
     }
@@ -357,6 +522,21 @@ export default function TeacherProjects({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  const handleConfirmCreateTag = () => {
+    const trimmed = newTagInputText.trim();
+    if (trimmed) {
+      if (!availableTagsList.includes(trimmed)) {
+        setAvailableTagsList([...availableTagsList, trimmed]);
+      }
+      if (!formTags.includes(trimmed)) {
+        setFormTags([...formTags, trimmed]);
+      }
+      setIsCreatingTag(false);
+      setNewTagInputText('');
+      showToast(`已新建并添加标签: ${trimmed}`);
+    }
+  };
+
   const handleCreateNew = () => {
     setCurrentProjectId(null);
     setFormName('');
@@ -365,7 +545,16 @@ export default function TeacherProjects({
     setFormDifficulty('中级');
     setFormDuration('8');
     setSelectedCover(defaultCovers[0]);
-    setFormTags(['实战', 'Docker']);
+    setFormTags([]);
+    setIsTagDropdownOpen(false);
+    setIsCreatingTag(false);
+    setNewTagInputText('');
+    setFormIntroduction('');
+    setFormSourceRepoUrl('https://github.com/opencv/opencv.git');
+    setRepoUploadMode('manual');
+    setFormCreationMethod('template');
+    setFormTemplateValue('通用模板');
+    setActiveEnvIdx(0);
     setFormEnvironments([
       {
         id: 'env-' + Date.now(),
@@ -395,6 +584,16 @@ export default function TeacherProjects({
     setFormDuration(proj.duration);
     setSelectedCover(proj.image || defaultCovers[0]);
     setFormTags(proj.tags || []);
+    setIsTagDropdownOpen(false);
+    setIsCreatingTag(false);
+    setNewTagInputText('');
+    setFormIntroduction(proj.introduction || '');
+    setFormSourceRepoUrl(proj.gitUrl || 'https://github.com/opencv/opencv.git');
+    const isUrl = proj.gitUrl ? (proj.gitUrl.startsWith('http') || proj.gitUrl.startsWith('git@')) : true;
+    setRepoUploadMode(isUrl ? 'manual' : 'upload');
+    setFormCreationMethod(proj.environments?.[0]?.cpuCores ? 'custom' : 'template');
+    setFormTemplateValue('通用模板');
+    setActiveEnvIdx(0);
     
     if (proj.environments && proj.environments.length > 0) {
       setFormEnvironments(JSON.parse(JSON.stringify(proj.environments)));
@@ -448,7 +647,7 @@ export default function TeacherProjects({
       type: formType,
       difficulty: formDifficulty,
       duration: formDuration,
-      gitUrl: '',
+      gitUrl: formSourceRepoUrl,
       baseImage: firstEnv?.image || 'python:3.10-slim',
       resources: {
         cpu: legacyCpu,
@@ -467,7 +666,8 @@ export default function TeacherProjects({
       tags: formTags,
       environments: formEnvironments,
       range: finalRange,
-      auditStatus: finalAuditStatus
+      auditStatus: finalAuditStatus,
+      introduction: formIntroduction
     };
 
     if (modalMode === 'edit') {
@@ -538,6 +738,58 @@ export default function TeacherProjects({
     }, 800);
   };
 
+  const handleToggleAvailable = (id: number, val: boolean) => {
+    setProjectsList(projectsList.map(p => p.id === id ? { ...p, isAvailable: val } : p));
+    showToast(val ? '项目已启用' : '项目已禁用');
+  };
+
+  const handleViewDetails = (proj: Project) => {
+    setCurrentProjectId(proj.id);
+    setFormName(proj.name);
+    setFormDesc(proj.desc);
+    setFormType(proj.type);
+    setFormDifficulty(proj.difficulty);
+    setFormDuration(proj.duration);
+    setSelectedCover(proj.image || defaultCovers[0]);
+    setFormTags(proj.tags || []);
+    setIsTagDropdownOpen(false);
+    setIsCreatingTag(false);
+    setNewTagInputText('');
+    setFormIntroduction(proj.introduction || '');
+    setFormSourceRepoUrl(proj.gitUrl || 'https://github.com/opencv/opencv.git');
+    const isUrl = proj.gitUrl ? (proj.gitUrl.startsWith('http') || proj.gitUrl.startsWith('git@')) : true;
+    setRepoUploadMode(isUrl ? 'manual' : 'upload');
+    setFormCreationMethod(proj.environments?.[0]?.cpuCores ? 'custom' : 'template');
+    setFormTemplateValue('通用模板');
+    setActiveEnvIdx(0);
+    
+    if (proj.environments && proj.environments.length > 0) {
+      setFormEnvironments(JSON.parse(JSON.stringify(proj.environments)));
+    } else {
+      const isGpu = proj.resources.gpu && proj.resources.gpu !== '无';
+      const defaultEnv: EnvConfig = {
+        id: 'env-default-' + Date.now(),
+        resourcePool: '天翼云资源池1',
+        type: '容器',
+        image: proj.baseImage || 'ctyun-python:3.10-slim-cpu',
+        cpuCores: proj.resources.cpu.replace(/[^0-9]/g, '') || '2',
+        memoryGB: proj.resources.memory.replace(/[^0-9]/g, '') || '4',
+        gpu: {
+          power: isGpu ? (proj.resources.gpu.includes('T4') ? 'T4' : 'A10G') : '无',
+          vram: isGpu ? (proj.resources.gpu.includes('T4') ? '16GB' : '24GB') : '0',
+          count: isGpu ? '1' : '0'
+        },
+        envVariables: [],
+        startCommand: 'python main.py'
+      };
+      setFormEnvironments([defaultEnv]);
+    }
+
+    setActiveFormTab('basic');
+    setModalMode('view');
+    setIsModalOpen(true);
+  };
+
   // Filter projects list
   const filteredProjects = projectsList.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -563,7 +815,7 @@ export default function TeacherProjects({
       {incomingCourseId && incomingCourseName && (
         <div className="mx-5 mt-4 p-4 bg-orange-50 border border-orange-100 rounded-xl flex items-center justify-between animate-in fade-in duration-300">
           <div className="flex items-center gap-3">
-            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 text-[#fa541c] shrink-0">
+            <span className="flex items-center justify-center w-8 h-8 rounded-[4px] bg-orange-100 text-[#fa541c] shrink-0">
               <BookOpen className="w-4 h-4" />
             </span>
             <div>
@@ -579,7 +831,7 @@ export default function TeacherProjects({
             <Button 
               variant="outline" 
               onClick={onBackToCourses}
-              className="border-orange-200 hover:bg-orange-100/50 text-[#fa541c] hover:text-[#e84a15] h-8 text-xs font-bold px-4 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+              className="border-orange-200 hover:bg-orange-100/50 text-[#fa541c] hover:text-[#e84a15] h-8 text-xs font-bold px-4 rounded-[4px] flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> 返回课程列表
             </Button>
@@ -589,49 +841,24 @@ export default function TeacherProjects({
 
       {/* TOP CONTROLLER - Styled exactly like Course Search & Filter Controls */}
       <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        
-        {/* Rounded-full filter capsule - Course style */}
-        <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-border/50 self-start">
-          {[
-            { key: 'all', label: '全部' },
-            { key: '已发布', label: '已发布' },
-            { key: '草稿', label: '草稿' }
-          ].map(tab => (
-            <button 
-              key={tab.key}
-              className={cn(
-                "px-6 py-1.5 text-sm rounded-full transition-all duration-200 cursor-pointer font-medium", 
-                (projectTab === tab.key) 
-                  ? "bg-white text-[#fa541c] font-bold shadow-sm" 
-                  : "text-neutral-500 hover:text-neutral-800"
-              )}
-              onClick={() => setProjectTab(tab.key as any)}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Search Input on the left */}
+        <div className="relative w-full sm:w-auto">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input 
+            type="text" 
+            placeholder="搜索项目名称/技能..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-full sm:w-60 transition-all text-neutral-855 bg-white h-9"
+          />
         </div>
 
-        {/* Search Input & Pill Button - Course style */}
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <div className="relative flex-1 sm:flex-none">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input 
-              type="text" 
-              placeholder="搜索项目名称/技能..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-full sm:w-60 transition-all text-neutral-855 bg-white h-9"
-            />
-          </div>
-
-          <Button 
-            onClick={handleCreateNew}
-            className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm font-bold flex-shrink-0 cursor-pointer border-0 h-9 flex items-center gap-1"
-          >
-            <Plus className="w-4 h-4" /> 新建项目
-          </Button>
-        </div>
+        <Button 
+          onClick={handleCreateNew}
+          className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-5 shadow-sm font-bold flex-shrink-0 cursor-pointer border-0 h-9 flex items-center gap-1"
+        >
+          <Plus className="w-4 h-4" /> 新建项目
+        </Button>
       </div>
 
       {/* TABLE VIEW - Styled exactly like Course management Table */}
@@ -639,25 +866,22 @@ export default function TeacherProjects({
         <table className="w-full text-left border-collapse whitespace-nowrap text-[13px]">
           <thead>
             <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
-              <th className="p-4 font-medium w-[35%]">
-                <span>项目信息</span>
-              </th>
-              <th className="p-4 font-medium">难度级别</th>
-              <th className="p-4 font-medium">容器配置环境</th>
-              <th className="p-4 font-medium">算力资源</th>
-              <th className="p-4 font-medium">范围</th>
-              <th className="p-4 font-medium">状态</th>
+              <th className="p-4 font-medium w-[35%]">项目信息</th>
+              <th className="p-4 font-medium">创建人</th>
+              <th className="p-4 font-medium">环境类型</th>
+              <th className="p-4 font-medium">是否可用</th>
+              <th className="p-4 font-medium">课程范围</th>
               <th className="p-4 font-medium">审核状态</th>
               <th className="p-4 font-medium">操作</th>
             </tr>
           </thead>
           <tbody>
             {filteredProjects.map((proj, index) => (
-              <tr key={proj.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                {/* Project Cover & Basic Info */}
+              <tr key={proj.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredProjects.length - 1 && "border-b-0")}>
+                {/* 1. 项目信息 (封面 + 名称) */}
                 <td className="p-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-14 rounded-md overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative bg-neutral-100">
+                    <div className="w-20 h-14 rounded-[4px] overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative bg-neutral-100">
                       <img 
                         src={proj.image} 
                         alt={proj.name} 
@@ -665,114 +889,44 @@ export default function TeacherProjects({
                         referrerPolicy="no-referrer" 
                       />
                     </div>
-                    <div className="space-y-1">
-                      <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer max-w-[260px] truncate" title={proj.name} onClick={() => handleEditProject(proj)}>
+                    <div>
+                      <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer" onClick={() => handleViewDetails(proj)}>
                         {proj.name}
-                      </div>
-                      <div className="flex flex-wrap gap-1 max-w-[260px]">
-                        {proj.tags && proj.tags.length > 0 ? (
-                          proj.tags.map((tag, idx) => (
-                            <span key={idx} className="px-1.5 py-0.5 bg-neutral-100 text-neutral-600 rounded text-[10px] border border-neutral-200/60 font-medium">
-                              {tag}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[10px] text-neutral-450">无标签</span>
-                        )}
                       </div>
                     </div>
                   </div>
                 </td>
 
+                {/* 2. 创建人 */}
+                <td className="p-4 text-neutral-655 font-medium">
+                  <div className="text-neutral-800 font-medium">{proj.creator || '张老师'}</div>
+                </td>
 
-
-
-
-                {/* Difficulty */}
+                {/* 3. 环境类型 */}
                 <td className="p-4">
                   <span className={cn(
-                    "px-2 py-0.5 rounded text-[12px] font-bold border",
-                    proj.difficulty === '初级' && "bg-green-50 text-green-600 border-green-150",
-                    proj.difficulty === '中级' && "bg-orange-50 text-[#fa541c] border-orange-150",
-                    proj.difficulty === '高级' && "bg-red-50 text-red-600 border-red-150"
+                    "px-2 py-0.5 rounded text-[12px] font-medium border",
+                    (proj.environments?.[0]?.type || '容器') === '容器' 
+                      ? "bg-blue-50 text-blue-600 border-blue-200" 
+                      : "bg-purple-50 text-purple-600 border-purple-200"
                   )}>
-                    {proj.difficulty}
+                    {proj.environments?.[0]?.type || '容器'}
                   </span>
                 </td>
 
-                {/* Environment Image */}
+                {/* 4. 是否可用 */}
                 <td className="p-4">
-                  <div className="flex flex-col gap-1">
-                    {proj.environments && proj.environments.length > 0 ? (
-                      proj.environments.map((env, i) => (
-                        <span key={i} className="text-[13px] text-neutral-700 max-w-[180px] truncate flex items-center gap-1.5">
-                          <span className={cn("px-1.5 py-0.5 rounded text-[11px] font-black border", env.type === '容器' ? "bg-blue-50/80 text-blue-600 border-blue-250" : "bg-purple-50/80 text-purple-600 border-purple-250")}>
-                            {env.type}
-                          </span>
-                          <span className="truncate font-mono" title={env.image}>{env.image.split('/').pop() || env.image}</span>
-                        </span>
-                      ))
-                    ) : (
-                      <div className="font-mono text-[13px] text-neutral-700 max-w-[180px] truncate" title={proj.baseImage}>
-                        {proj.baseImage}
-                      </div>
-                    )}
-                  </div>
+                  <span className={cn(
+                    "px-2 py-0.5 text-[12px] rounded border font-medium",
+                    proj.isAvailable 
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                      : "bg-neutral-50 text-neutral-500 border-neutral-200"
+                  )}>
+                    {proj.isAvailable ? '可用' : '不可用'}
+                  </span>
                 </td>
 
-                {/* Computation Resources */}
-                <td className="p-4 text-neutral-600">
-                  <div className="flex flex-col gap-1">
-                    {proj.environments && proj.environments.length > 0 ? (
-                      proj.environments.map((env, i) => (
-                        <div key={i} className="text-[13px] text-neutral-600 font-sans flex flex-col gap-0.5">
-                          {env.type === '容器' ? (
-                            <>
-                              <div className="flex items-center gap-1 font-mono font-bold text-neutral-800">
-                                <span>{env.cpuCores}核</span>
-                                <span className="text-neutral-300">/</span>
-                                <span>{env.memoryGB}GB</span>
-                              </div>
-                              {env.gpu && env.gpu.power !== '无' && (
-                                <span className="text-[11px] text-purple-600 font-extrabold">{env.gpu.power} ({env.gpu.vram}) * {env.gpu.count}</span>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {env.vmSpecType === 'spec' ? (
-                                <span className="font-mono font-bold text-neutral-800 truncate max-w-[140px]" title={env.selectedSpec}>
-                                  规格: {env.selectedSpec || '2核 4G'}
-                                </span>
-                              ) : (
-                                <div className="flex items-center gap-1 font-mono font-bold text-neutral-800">
-                                  <span>{env.cpuCores}核</span>
-                                  <span className="text-neutral-300">/</span>
-                                  <span>{env.memoryGB}GB</span>
-                                </div>
-                              )}
-                              {env.gpu && env.gpu.power !== '无' && (
-                                <span className="text-[11px] text-purple-600 font-extrabold">{env.gpu.power} ({env.gpu.vram}) * {env.gpu.count}</span>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-1 text-[13px]">
-                          <span className="font-semibold text-neutral-800">{proj.resources.cpu}</span>
-                          <span className="text-neutral-350">|</span>
-                          <span className="font-semibold text-neutral-800">{proj.resources.memory}</span>
-                        </div>
-                        {proj.resources.gpu !== '无' && (
-                          <div className="text-[11px] text-purple-600 font-bold mt-0.5">{proj.resources.gpu} 加速</div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </td>
-
-                {/* 范围 */}
+                {/* 5. 课程范围 */}
                 <td className="p-4">
                   {proj.range === '平台' ? (
                     <span className="px-2 py-0.5 bg-orange-50 text-orange-600 rounded text-[12px] border border-orange-200 font-medium">{proj.range}</span>
@@ -783,44 +937,71 @@ export default function TeacherProjects({
                   )}
                 </td>
 
-                {/* Status - Matches course scope styles */}
+                {/* 6. 审核状态 */}
                 <td className="p-4">
-                  {proj.status === '已发布' ? (
-                    <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded text-[12px] border border-[#ffbb96]">{proj.status}</span>
+                  {proj.auditStatus === '已审核' || proj.auditStatus === '已通过' ? (
+                    <span className="text-emerald-600 font-medium">已通过</span>
+                  ) : proj.auditStatus === '已驳回' ? (
+                    <span className="text-rose-600 font-medium">已驳回</span>
                   ) : (
-                    <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200">{proj.status}</span>
+                    <span className="text-[#fa541c] font-medium">待审核</span>
                   )}
                 </td>
 
-                {/* 审核状态 */}
-                <td className="p-4">
-                  <span className={cn(
-                    "font-medium text-[13px]",
-                    proj.auditStatus === '已审核' ? "text-green-600" : 
-                    proj.auditStatus === '已驳回' ? "text-red-500" : "text-[#fa541c]"
-                  )}>
-                    {proj.auditStatus || '待审核'}
-                  </span>
-                </td>
-
-                {/* Action Buttons */}
+                {/* 7. 操作 */}
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    {proj.status === '已发布' ? (
-                      <button onClick={() => handleCancelPublish(proj.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">取消发布</button>
-                    ) : (
-                      <button onClick={() => handlePublish(proj.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">发布</button>
+                    <button 
+                      onClick={() => handleViewDetails(proj)} 
+                      className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                    >
+                      详情
+                    </button>
+                    <button 
+                      onClick={() => handleEditProject(proj)} 
+                      className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                    >
+                      编辑
+                    </button>
+                    {proj.range === '私有' && proj.isAvailable && (proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过') && (
+                      <button 
+                        onClick={() => handleApplyPublic(proj)} 
+                        className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                      >
+                        公开
+                      </button>
                     )}
-                    {proj.publicApplyStatus === 'pending' ? (
-                      <span className="text-neutral-400 font-medium">审核中</span>
-                    ) : proj.publicApplyStatus === 'approved' ? (
-                      <span className="text-emerald-500 font-medium">已公开</span>
-                    ) : (
-                      <button onClick={() => handleApplyPublic(proj)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">申请公开</button>
+                    <button 
+                      onClick={() => handleCopy(proj)} 
+                      className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                    >
+                      复制
+                    </button>
+                    {(proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过') && (
+                      <button 
+                        onClick={() => handleDelete(proj.id)} 
+                        className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                      >
+                        删除
+                      </button>
                     )}
-                    <button onClick={() => handleEditProject(proj)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">编辑</button>
-                    <button onClick={() => handleCopy(proj)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium">复制</button>
-                    <button onClick={() => handleDelete(proj.id)} className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer">删除</button>
+                    {(proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过') && (
+                      proj.isAvailable ? (
+                        <button 
+                          onClick={() => handleToggleAvailable(proj.id, false)} 
+                          className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                        >
+                          禁用
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleToggleAvailable(proj.id, true)} 
+                          className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
+                        >
+                          启用
+                        </button>
+                      )
+                    )}
                   </div>
                 </td>
               </tr>
@@ -839,9 +1020,9 @@ export default function TeacherProjects({
         <div className="flex items-center justify-end p-4 gap-4 mt-2 border-t border-neutral-100">
           <span className="text-[13px] text-neutral-500">共 {filteredProjects.length} 条</span>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]" disabled>&lt;</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">&gt;</Button>
           </div>
           <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white">
             <option>10 条/页</option>
@@ -851,22 +1032,28 @@ export default function TeacherProjects({
         </div>
       </div>
 
-      {/* PROJECT DIALOG (Create/Edit Modal) - Styled exactly like Course creation dialog */}
+      {/* PROJECT DIALOG (Create/Edit Drawer) - Styled exactly like Dataset creation drawer from right */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[680px] overflow-hidden border border-neutral-200 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             
             {/* Modal Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
-                {modalMode === 'create' ? <Plus className="w-5 h-5 text-[#fa541c]" /> : <Edit className="w-5 h-5 text-[#fa541c]" />} 
-                {modalMode === 'create' ? '新建实战项目' : '编辑实战项目'}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                {modalMode === 'create' ? <Plus className="w-5 h-5 text-[#fa541c]" /> : (modalMode === 'view' ? <BookOpen className="w-5 h-5 text-[#fa541c]" /> : <Edit className="w-5 h-5 text-[#fa541c]" />)} 
+                {modalMode === 'create' ? '新建实战项目' : (modalMode === 'view' ? '查看项目详情' : '编辑实战项目')}
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -881,7 +1068,7 @@ export default function TeacherProjects({
                   type="button"
                   onClick={() => setActiveFormTab(tab.key as any)}
                   className={cn(
-                    "flex-1 py-3 text-center border-b-2 transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                    "flex-1 py-3 text-center border-b-2 transition-all cursor-pointer flex items-center justify-center gap-1.5 rounded-[4px]",
                     activeFormTab === tab.key 
                       ? "border-[#fa541c] text-[#fa541c] bg-white font-extrabold" 
                       : "border-transparent text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100/40"
@@ -894,837 +1081,1084 @@ export default function TeacherProjects({
             </div>
 
             {/* Modal Scrollable Content Forms */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5 bg-white text-xs">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
               
               {/* TAB 1: BASIC INFORMATION */}
               {activeFormTab === 'basic' && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-850 flex items-center gap-1">
-                      <span className="text-[#fa541c] font-black">*</span> 项目名称
+                <div className="space-y-6 animate-fade-in py-2">
+                  
+                  {/* 1. 项目名称 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      项目名称 <span className="text-[#fa541c]">*</span>
                     </label>
                     <input 
                       type="text"
-                      placeholder="请输入实战项目标题"
+                      placeholder="请输入"
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
-                      className="w-full text-xs border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-855"
+                      disabled={modalMode === 'view'}
+                      className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626] disabled:bg-neutral-50 disabled:text-neutral-500"
                     />
                   </div>
 
-
-
-                  {/* Project Tags (项目标签) */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-855 flex justify-between">
-                      <span>🏷️ 项目标签</span>
-                      <span className="text-[10px] text-neutral-400 font-normal">回车添加标签</span>
+                  {/* 2. 标签 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      标签
                     </label>
-                    <div className="flex flex-wrap gap-2 border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/10">
-                      {formTags.map((tag, idx) => (
-                        <span key={idx} className="px-2.5 py-0.5 bg-[#fff2e8] border border-[#ffbb96] text-[#fa541c] rounded-full text-xs font-bold flex items-center gap-1 shadow-sm transition-all">
-                          {tag}
-                          <button 
-                            type="button"
-                            onClick={() => setFormTags(formTags.filter(t => t !== tag))}
-                            className="text-[#fa541c]/50 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer border-0 bg-transparent flex items-center justify-center"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
+                    <div ref={tagDropdownRef} className="relative w-full text-[13px]">
+                      <div
+                        onClick={() => modalMode !== 'view' && setIsTagDropdownOpen(!isTagDropdownOpen)}
+                        className={cn(
+                          "min-h-[38px] w-full border rounded px-3.5 py-1.5 flex flex-wrap items-center gap-1.5 transition-all text-[#262626] bg-white cursor-pointer select-none",
+                          isTagDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "border-neutral-200 hover:border-neutral-300",
+                          modalMode === 'view' && "bg-neutral-50 text-neutral-500 cursor-not-allowed border-neutral-100"
+                        )}
+                      >
+                        {formTags.length === 0 ? (
+                          <span className="text-neutral-400 select-none">请选择或新建项目标签</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1.5 items-center w-full pr-8">
+                            {formTags.map(tag => {
+                              const style = getTagStyle(tag);
+                              return (
+                                <span
+                                  key={tag}
+                                  className={cn(
+                                    "inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold border transition-all animate-fade-in",
+                                    style.bg,
+                                    style.text,
+                                    style.border
+                                  )}
+                                >
+                                  <span className={cn("w-1.5 h-1.5 rounded-full", style.dot)}></span>
+                                  <span>{tag}</span>
+                                  {modalMode !== 'view' && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setFormTags(formTags.filter(t => t !== tag));
+                                      }}
+                                      className="hover:bg-black/10 rounded-[4px] p-0.5 transition-colors cursor-pointer text-current flex items-center justify-center"
+                                    >
+                                      <X className="w-2.5 h-2.5" />
+                                    </button>
+                                  )}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                        
+                        {/* Right arrow */}
+                        {modalMode !== 'view' && (
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                            <ChevronDown 
+                              className={cn("w-4 h-4 transition-transform duration-200 text-neutral-400", isTagDropdownOpen && "rotate-180")} 
+                              strokeWidth={1.5}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Dropdown Menu */}
+                      {isTagDropdownOpen && modalMode !== 'view' && (
+                        <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                          {/* "新建标签" Action button */}
+                          {!isCreatingTag ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsCreatingTag(true);
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-[#fa541c] hover:bg-orange-50/50 font-bold transition-all text-[13px] border-b border-neutral-100 flex items-center gap-1.5 cursor-pointer bg-white rounded-[4px]"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>新建标签</span>
+                            </button>
+                          ) : (
+                            <div 
+                              onClick={(e) => e.stopPropagation()}
+                              className="px-4 py-2 border-b border-neutral-100 flex items-center gap-2 bg-neutral-50/40 shrink-0"
+                            >
+                              <input
+                                type="text"
+                                placeholder="输入标签名称..."
+                                value={newTagInputText}
+                                onChange={(e) => setNewTagInputText(e.target.value)}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleConfirmCreateTag();
+                                  } else if (e.key === 'Escape') {
+                                    setIsCreatingTag(false);
+                                    setNewTagInputText('');
+                                  }
+                                }}
+                                className="w-full bg-white border border-neutral-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleConfirmCreateTag}
+                                className="px-2.5 py-1 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] text-xs transition-colors shrink-0 font-bold cursor-pointer border-0"
+                              >
+                                确定
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsCreatingTag(false);
+                                  setNewTagInputText('');
+                                }}
+                                className="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-[4px] text-xs transition-colors shrink-0 cursor-pointer border-0"
+                              >
+                                取消
+                              </button>
+                            </div>
+                          )}
+
+                          {/* List of tag options */}
+                          <div className="max-h-[220px] overflow-y-auto custom-scrollbar">
+                            {availableTagsList.map(tag => {
+                              const isSelected = formTags.includes(tag);
+                              return (
+                                <div
+                                  key={tag}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setFormTags(formTags.filter(t => t !== tag));
+                                    } else {
+                                      setFormTags([...formTags, tag]);
+                                    }
+                                  }}
+                                  className={cn(
+                                    "px-4 py-2.5 text-left text-[13px] transition-colors cursor-pointer flex items-center justify-between",
+                                    isSelected 
+                                      ? "bg-orange-50 text-[#fa541c] font-bold"
+                                      : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                                  )}
+                                >
+                                  <span className="font-medium">{tag}</span>
+                                  {isSelected && (
+                                    <Check className="w-3.5 h-3.5 text-[#fa541c]" strokeWidth={2.5} />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3. 项目描述 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      项目描述 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <input 
+                      type="text"
+                      placeholder="请输入"
+                      value={formDesc}
+                      onChange={(e) => setFormDesc(e.target.value)}
+                      disabled={modalMode === 'view'}
+                      className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626] disabled:bg-neutral-50 disabled:text-neutral-500"
+                    />
+                  </div>
+
+                  {/* 4. 项目图片 */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">
+                      项目图片 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {defaultCovers.map((cover, idx) => (
+                        <div 
+                          key={idx}
+                          onClick={() => modalMode !== 'view' && setSelectedCover(cover)}
+                          className={cn(
+                            "aspect-[5/2] rounded-[4px] overflow-hidden border-2 transition-all relative select-none",
+                            selectedCover === cover 
+                              ? "border-[#fa541c] shadow-md shadow-orange-500/10 scale-[1.02]" 
+                              : "border-transparent",
+                            modalMode !== 'view' 
+                              ? "cursor-pointer hover:border-[#fa541c]/50 hover:scale-[1.02]" 
+                              : "cursor-not-allowed"
+                          )}
+                        >
+                          <img src={cover} alt={`cover-${idx}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          {selectedCover === cover && (
+                            <div className="absolute top-2 right-2 bg-[#fa541c] text-white rounded-full p-0.5 shadow-md flex items-center justify-center w-5 h-5 animate-in zoom-in-50 duration-150">
+                              <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
                       ))}
-                      <input 
-                        type="text"
-                        placeholder="+ 添加标签"
-                        value={newTagInput}
-                        onChange={(e) => setNewTagInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && newTagInput.trim()) {
-                            e.preventDefault();
-                            if (!formTags.includes(newTagInput.trim())) {
-                              setFormTags([...formTags, newTagInput.trim()]);
-                            }
-                            setNewTagInput('');
-                          }
-                        }}
-                        className="bg-transparent text-xs text-neutral-850 placeholder:text-neutral-450 focus:outline-none px-2 py-0.5 min-w-[100px]"
+                    </div>
+                  </div>
+
+                  {/* 5. 项目介绍 (富文本编辑区域样式) */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      项目介绍 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="border border-neutral-200 rounded overflow-hidden flex flex-col bg-white w-full">
+                      {/* Rich Text Toolbar */}
+                      <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 border-b border-neutral-200 bg-neutral-50/50 select-none">
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="加粗"><Bold className="w-3.5 h-3.5" /></button>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="斜体"><Italic className="w-3.5 h-3.5" /></button>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-[#fa541c]" title="文本颜色"><Type className="w-3.5 h-3.5" /></button>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="字体大小"><span className="text-[10px] font-bold font-serif leading-none relative top-[-0.5px]">Tt</span></button>
+                        <div className="w-px h-3.5 bg-neutral-200 mx-1"></div>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="无序列表"><List className="w-3.5 h-3.5" /></button>
+                        <div className="w-px h-3.5 bg-neutral-200 mx-1"></div>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="左对齐"><AlignLeft className="w-3.5 h-3.5" /></button>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="居中"><AlignCenter className="w-3.5 h-3.5" /></button>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="右对齐"><AlignRight className="w-3.5 h-3.5" /></button>
+                        <div className="w-px h-3.5 bg-neutral-200 mx-1"></div>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="撤销"><Undo2 className="w-3.5 h-3.5" /></button>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="重做"><Redo2 className="w-3.5 h-3.5" /></button>
+                        <div className="w-px h-3.5 bg-neutral-200 mx-1 flex-1"></div>
+                        <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="全屏"><Maximize2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                      
+                      {/* Rich Text Editor Textarea */}
+                      <textarea 
+                        placeholder="请输入"
+                        value={formIntroduction}
+                        onChange={(e) => setFormIntroduction(e.target.value)}
+                        disabled={modalMode === 'view'}
+                        className="w-full min-h-[160px] p-4 text-[13px] focus:outline-none resize-none leading-relaxed text-[#262626] disabled:bg-neutral-50 disabled:text-neutral-500 border-0"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-855 flex items-center gap-1">
-                      <span className="text-[#fa541c] font-black">*</span> 难度级别
+                </div>
+              )}              {/* TAB 2: PROJECT ENVIRONMENT (MULTI-INSTANCE CONFIG) */}
+              {activeFormTab === 'env' && (
+                <div className="space-y-6 animate-fade-in py-2">
+                  
+                  {/* 1. 选择资源池 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      选择资源池 <span className="text-[#fa541c]">*</span>
                     </label>
-                    <div className="flex gap-4">
+                    <CustomSelect
+                      value={currentResourcePool}
+                      disabled={modalMode === 'view'}
+                      onChange={(val) => {
+                        const pool = val as any;
+                        const updated = formEnvironments.map(env => {
+                          const images = env.type === '容器' ? CONTAINER_IMAGES[pool] : VM_IMAGES[pool];
+                          return {
+                            ...env,
+                            resourcePool: pool,
+                            image: images?.[0] || env.image
+                          };
+                        });
+                        setFormEnvironments(updated);
+                      }}
+                      options={[
+                        { value: '资源池1', label: '资源池1' },
+                        { value: '天翼云资源池1', label: '天翼云资源池1' },
+                        { value: '上海园区资源池', label: '上海园区资源池' }
+                      ]}
+                    />
+                  </div>
+
+                  {/* 2. 选择环境类型 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      选择环境类型 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="flex items-center gap-6 text-[13px]">
                       {[
-                        { key: '初级', color: 'border-green-350 text-green-650 bg-green-50/15' },
-                        { key: '中级', color: 'border-orange-350 text-[#fa541c] bg-orange-50/10' },
-                        { key: '高级', color: 'border-red-350 text-red-650 bg-red-50/15' }
-                      ].map(level => (
+                        { value: '容器', label: '容器' },
+                        { value: '虚机', label: '云主机' }
+                      ].map(opt => (
                         <label 
-                          key={level.key}
-                          onClick={() => setFormDifficulty(level.key as any)}
+                          key={opt.value} 
                           className={cn(
-                            "flex-1 border py-2 rounded-xl text-center font-bold cursor-pointer transition-all select-none",
-                            formDifficulty === level.key 
-                              ? `${level.color} shadow-sm border-2` 
-                              : "border-neutral-200 text-neutral-550 hover:bg-neutral-50"
+                            "flex items-center gap-2 select-none",
+                            modalMode !== 'view' ? "cursor-pointer" : "cursor-not-allowed text-neutral-400"
                           )}
                         >
-                          {level.key}
+                          <input
+                            type="radio"
+                            name="envType"
+                            value={opt.value}
+                            checked={currentEnvType === opt.value}
+                            disabled={modalMode === 'view'}
+                            onChange={() => handleChangeEnvType(opt.value as any)}
+                            className="w-4 h-4 accent-[#fa541c] cursor-pointer"
+                          />
+                          <span className="font-medium">{opt.label}</span>
                         </label>
                       ))}
                     </div>
                   </div>
 
-
-
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-855">项目说明描述</label>
-                    <textarea 
-                      placeholder="请简述该实战项目背景与核心技术目标描述"
-                      value={formDesc}
-                      onChange={(e) => setFormDesc(e.target.value)}
-                      className="w-full min-h-[100px] border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#fa541c] resize-none leading-relaxed text-neutral-800"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-855 flex items-center gap-1">
-                      <span className="text-[#fa541c] font-black">*</span> 项目图片
-                    </label>
-                    <div className="grid grid-cols-3 gap-3 mt-1">
-                      {defaultCovers.map((cover, idx) => (
-                        <div 
-                          key={idx}
-                          onClick={() => setSelectedCover(cover)}
-                          className={cn(
-                            "h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all relative",
-                            selectedCover === cover ? "border-[#fa541c] shadow-md scale-[1.02]" : "border-transparent hover:border-[#fa541c]/50 hover:scale-[1.02]"
-                          )}
-                        >
-                          <img src={cover} alt={`cover-${idx}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          {selectedCover === cover && (
-                            <div className="absolute top-1.5 right-1.5 bg-[#fa541c] text-white rounded-full p-0.5 shadow-sm flex items-center justify-center">
-                              <Check className="w-3 h-3" strokeWidth={3} />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 2: PROJECT ENVIRONMENT (MULTI-INSTANCE CONFIG) */}
-              {activeFormTab === 'env' && (
-                <div className="space-y-5 animate-fade-in">
-                  <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                    <div className="flex items-center gap-2">
-                      <Cpu className="w-4 h-4 text-[#fa541c]" />
-                      <span className="text-[13px] font-bold text-neutral-800">多实例环境配置 ({formEnvironments.length})</span>
-                    </div>
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        const newEnv: EnvConfig = {
-                          id: 'env-' + Date.now(),
-                          resourcePool: '天翼云资源池1',
-                          type: '容器',
-                          sourceFile: '',
-                          cpuCores: '2',
-                          memoryGB: '4',
-                          gpu: { power: '无', vram: '0', count: '0' },
-                          image: CONTAINER_IMAGES['天翼云资源池1'][0],
-                          envVariables: [],
-                          startCommand: 'python main.py'
-                        };
-                        setFormEnvironments([...formEnvironments, newEnv]);
-                        showToast('已添加新环境实例');
-                      }}
-                      className="bg-transparent hover:bg-orange-50 border border-[#fa541c] text-[#fa541c] hover:text-[#e84a15] rounded-lg px-3 py-1.5 h-8 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> 添加环境实例
-                    </Button>
-                  </div>
-
-                  {formEnvironments.length === 0 && (
-                    <div className="border border-dashed border-neutral-200 rounded-xl p-10 text-center space-y-3 bg-neutral-50/20 flex flex-col items-center justify-center">
-                      <Cpu className="w-8 h-8 text-neutral-300" />
-                      <div>
-                        <p className="text-xs font-bold text-neutral-600">暂无配置环境实例</p>
-                        <p className="text-[10px] text-neutral-450 mt-1">请点击上方按钮添加至少一个环境配置</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    {formEnvironments.map((env, idx) => (
-                      <div key={env.id} className="border border-neutral-200 rounded-xl overflow-hidden bg-neutral-50/10 shadow-sm animate-slide-up">
-                        {/* Card Header */}
-                        <div className="px-4 py-2.5 bg-neutral-100/70 border-b border-neutral-200 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-orange-100 text-[#fa541c] text-[10px] font-black flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-                            <span className="text-[12px] font-bold text-neutral-800">
-                              环境实例 #{idx + 1} - {env.type} ({env.resourcePool})
-                            </span>
-                          </div>
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setFormEnvironments(formEnvironments.filter(e => e.id !== env.id));
-                              showToast('已删除环境实例');
-                            }}
-                            className="text-neutral-400 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors border-0 bg-transparent cursor-pointer"
-                            title="删除此环境"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        {/* Card Content */}
-                        <div className="p-4 space-y-4 bg-white">
-                          {/* Row 1: Resource Pool & Environment Type (Stacked vertically) */}
-                          <div className="space-y-4">
-                            <div className="space-y-1.5">
-                              <label className="text-[11px] font-bold text-neutral-600">选择资源池</label>
-                              <select
-                                value={env.resourcePool}
-                                onChange={(e) => {
-                                  const updated = [...formEnvironments];
-                                  const pool = e.target.value as any;
-                                  updated[idx].resourcePool = pool;
-                                  // Automatically switch to first image of new pool
-                                  const images = updated[idx].type === '容器' ? CONTAINER_IMAGES[pool] : VM_IMAGES[pool];
-                                  updated[idx].image = images[0];
-                                  setFormEnvironments(updated);
+                  {currentEnvType === '容器' && (
+                    <>
+                      {/* 3. 源仓库地址 & Mode Selector (同一行) */}
+                      <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                        <label className="text-[13px] font-bold text-[#262626] text-right">
+                          源仓库地址 <span className="text-[#fa541c]">*</span>
+                        </label>
+                        <div className="flex items-center gap-6 text-[13px]">
+                          {[
+                            { value: 'manual', label: '手动添加' },
+                            { value: 'upload', label: '本地文件上传' }
+                          ].map(opt => (
+                            <label 
+                              key={opt.value} 
+                              className={cn(
+                                "flex items-center gap-2 select-none",
+                                modalMode !== 'view' ? "cursor-pointer" : "cursor-not-allowed text-neutral-400"
+                              )}
+                            >
+                              <input
+                                type="radio"
+                                name="repoUploadMode"
+                                value={opt.value}
+                                checked={repoUploadMode === opt.value}
+                                disabled={modalMode === 'view'}
+                                onChange={() => {
+                                  setRepoUploadMode(opt.value as any);
+                                  setFormSourceRepoUrl('');
                                 }}
-                                className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 bg-white focus:outline-none focus:border-[#fa541c] cursor-pointer"
-                              >
-                                <option value="天翼云资源池1">天翼云资源池1</option>
-                                <option value="上海园区资源池">上海园区资源池</option>
-                              </select>
-                            </div>
+                                className="w-4 h-4 accent-[#fa541c] cursor-pointer"
+                              />
+                              <span className="font-medium">{opt.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
 
-                            <div className="space-y-1.5">
-                              <label className="text-[11px] font-bold text-neutral-600">选择环境类型</label>
-                              <div className="flex bg-neutral-100 rounded-lg p-0.5 border border-neutral-200">
-                                {['容器', '虚机'].map(typeOption => (
-                                  <button
-                                    key={typeOption}
-                                    type="button"
-                                    onClick={() => {
-                                      const updated = [...formEnvironments];
-                                      const pool = updated[idx].resourcePool;
-                                      updated[idx].type = typeOption as any;
-                                      // Reset type-specific fields and select default image
-                                      const images = typeOption === '容器' ? CONTAINER_IMAGES[pool] : VM_IMAGES[pool];
-                                      updated[idx].image = images[0];
-                                      if (typeOption === '容器') {
-                                        updated[idx].sourceFile = '';
-                                        updated[idx].cpuCores = '2';
-                                        updated[idx].memoryGB = '4';
-                                        updated[idx].gpu = { power: '无', vram: '0', count: '0' };
-                                        updated[idx].envVariables = [];
-                                        updated[idx].startCommand = 'python main.py';
-                                      } else {
-                                        updated[idx].vmSpecType = 'spec';
-                                        updated[idx].selectedSpec = VM_SPECS[0].value;
-                                        updated[idx].storage = { type: 'SSD', systemDisk: '40', dataDisk: '100' };
-                                        updated[idx].network = { vpc: 'vpc-default', subnet: 'subnet-1' };
-                                        updated[idx].vncType = 'noVnc';
-                                      }
-                                      setFormEnvironments(updated);
-                                    }}
-                                    className={cn(
-                                      "flex-1 py-1 text-center text-[11px] rounded-md transition-all cursor-pointer font-bold",
-                                      env.type === typeOption 
-                                        ? "bg-white text-[#fa541c] shadow-sm"
-                                        : "text-neutral-500 hover:text-neutral-800"
-                                    )}
-                                  >
-                                    {typeOption}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* CONTAINER SPECIFIC FORM FIELDS */}
-                          {env.type === '容器' && (
-                            <div className="space-y-4 border-t border-neutral-100 pt-4 animate-in fade-in duration-200">
-                              {/* Project Source File Upload */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-600">项目源码 (源码包文件)</label>
-                                <div className="border border-dashed border-neutral-200 hover:border-[#fa541c]/50 rounded-xl p-4 text-center space-y-2 bg-neutral-50/10 transition-all relative">
-                                  <input 
-                                    type="file" 
-                                    accept=".zip,.tar.gz,.tgz"
-                                    id={`uploader-${env.id}`}
-                                    className="hidden" 
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        const updated = [...formEnvironments];
-                                        updated[idx].sourceFile = file.name;
-                                        setFormEnvironments(updated);
-                                        showToast(`已选择源码: ${file.name}`);
-                                      }
-                                    }}
-                                  />
-                                  <label 
-                                    htmlFor={`uploader-${env.id}`}
-                                    className="flex flex-col items-center justify-center cursor-pointer gap-1.5"
-                                  >
-                                    <Upload className="w-5 h-5 text-[#fa541c]" />
-                                    <span className="text-[11px] font-bold text-neutral-600">点击选择或拖拽源码文件上传</span>
-                                    <span className="text-[9px] text-neutral-400">单文件上限 100MB</span>
-                                  </label>
-                                  {env.sourceFile && (
-                                    <div className="mt-2 text-[10px] text-green-600 font-bold bg-green-50 border border-green-200 px-2.5 py-1 rounded-lg inline-block">
-                                      ✓ 已就绪: {env.sourceFile}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Select Image */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-600">选择容器镜像</label>
-                                <select
-                                  value={env.image}
-                                  onChange={(e) => {
-                                    const updated = [...formEnvironments];
-                                    updated[idx].image = e.target.value;
-                                    setFormEnvironments(updated);
+                      {/* Mode-specific Controls (对齐右侧) */}
+                      <div className="grid grid-cols-[100px_1fr] gap-4 animate-in fade-in duration-200">
+                        <div />
+                        <div className="w-full">
+                          {repoUploadMode === 'manual' ? (
+                            <input
+                              type="text"
+                              placeholder="请输入源仓库地址 (如: git@github.com:... 或 https://...)"
+                              value={formSourceRepoUrl}
+                              disabled={modalMode === 'view'}
+                              onChange={(e) => setFormSourceRepoUrl(e.target.value)}
+                              className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626] disabled:bg-neutral-50 disabled:text-neutral-500 font-mono"
+                            />
+                          ) : (
+                            <div className="space-y-2.5 w-full">
+                              <input
+                                type="file"
+                                id="local-repo-file-upload"
+                                accept=".zip,.tar.gz,.tgz,.rar"
+                                className="hidden"
+                                disabled={modalMode === 'view'}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    setFormSourceRepoUrl(file.name);
+                                    showToast(`已选择本地文件: ${file.name}`);
+                                  }
+                                }}
+                              />
+                              
+                              {modalMode !== 'view' ? (
+                                <label
+                                  htmlFor="local-repo-file-upload"
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    const file = e.dataTransfer.files?.[0];
+                                    if (file) {
+                                      setFormSourceRepoUrl(file.name);
+                                      showToast(`已通过拖拽选择文件: ${file.name}`);
+                                    }
                                   }}
-                                  className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 bg-white focus:outline-none focus:border-[#fa541c] font-mono cursor-pointer"
+                                  className="flex flex-col items-center justify-center border border-dashed border-neutral-300 hover:border-[#fa541c]/50 bg-neutral-50/10 hover:bg-neutral-50/30 rounded-[8px] p-6 cursor-pointer transition-all gap-2 text-center"
                                 >
-                                  {CONTAINER_IMAGES[env.resourcePool].map(img => (
-                                    <option key={img} value={img}>{img}</option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              {/* Resource Configuration: CPU, Memory, GPU */}
-                              <div className="bg-neutral-50/50 border border-neutral-200 rounded-xl p-3 space-y-3">
-                                <h5 className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                  <Cpu className="w-3.5 h-3.5 text-[#fa541c]" /> 资源配置
-                                </h5>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1">
-                                    <span className="text-[10px] text-neutral-450 block">CPU 核数</span>
-                                    <select
-                                      value={env.cpuCores}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        updated[idx].cpuCores = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-[11px] border border-neutral-200 rounded p-1 bg-white"
-                                    >
-                                      {['1', '2', '4', '8', '16'].map(c => (
-                                        <option key={c} value={c}>{c}核</option>
-                                      ))}
-                                    </select>
-                                  </div>
-
-                                  <div className="space-y-1">
-                                    <span className="text-[10px] text-neutral-450 block">内存 GB</span>
-                                    <select
-                                      value={env.memoryGB}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        updated[idx].memoryGB = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-[11px] border border-neutral-200 rounded p-1 bg-white"
-                                    >
-                                      {['2', '4', '8', '16', '32', '64'].map(m => (
-                                        <option key={m} value={m}>{m}GB</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2 border-t border-neutral-200/60 pt-2">
-                                  <span className="text-[10px] text-neutral-450 block font-bold">GPU配置</span>
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div>
-                                      <span className="text-[9px] text-neutral-400 block">算力</span>
-                                      <select
-                                        value={env.gpu?.power || '无'}
-                                        onChange={(e) => {
-                                          const updated = [...formEnvironments];
-                                          if (!updated[idx].gpu) updated[idx].gpu = { power: '无', vram: '0', count: '0' };
-                                          updated[idx].gpu!.power = e.target.value;
-                                          if (e.target.value === '无') {
-                                            updated[idx].gpu!.vram = '无';
-                                            updated[idx].gpu!.count = '0';
-                                          } else if (e.target.value === 'T4') {
-                                            updated[idx].gpu!.vram = '16GB';
-                                            updated[idx].gpu!.count = '1';
-                                          } else if (e.target.value === 'A10G') {
-                                            updated[idx].gpu!.vram = '24GB';
-                                            updated[idx].gpu!.count = '1';
-                                          }
-                                          setFormEnvironments(updated);
-                                        }}
-                                        className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white"
-                                      >
-                                        <option value="无">无 GPU</option>
-                                        <option value="T4">NVIDIA T4</option>
-                                        <option value="A10G">NVIDIA A10G</option>
-                                      </select>
-                                    </div>
-
-                                    <div>
-                                      <span className="text-[9px] text-neutral-400 block">显存</span>
-                                      <select
-                                        value={env.gpu?.vram || '无'}
-                                        disabled={env.gpu?.power === '无'}
-                                        onChange={(e) => {
-                                          const updated = [...formEnvironments];
-                                          updated[idx].gpu!.vram = e.target.value;
-                                          setFormEnvironments(updated);
-                                        }}
-                                        className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white disabled:bg-neutral-100 disabled:text-neutral-400"
-                                      >
-                                        <option value="无">无</option>
-                                        <option value="8GB">8GB</option>
-                                        <option value="16GB">16GB</option>
-                                        <option value="24GB">24GB</option>
-                                      </select>
-                                    </div>
-
-                                    <div>
-                                      <span className="text-[9px] text-neutral-400 block">卡数</span>
-                                      <select
-                                        value={env.gpu?.count || '0'}
-                                        disabled={env.gpu?.power === '无'}
-                                        onChange={(e) => {
-                                          const updated = [...formEnvironments];
-                                          updated[idx].gpu!.count = e.target.value;
-                                          setFormEnvironments(updated);
-                                        }}
-                                        className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white disabled:bg-neutral-100 disabled:text-neutral-400"
-                                      >
-                                        <option value="0">0</option>
-                                        <option value="1">1 卡</option>
-                                        <option value="2">2 卡</option>
-                                        <option value="4">4 卡</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Environment Variable Configuration */}
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-[11px] font-bold text-neutral-600">环境变量配置</label>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const updated = [...formEnvironments];
-                                      if (!updated[idx].envVariables) updated[idx].envVariables = [];
-                                      updated[idx].envVariables!.push({ key: '', value: '' });
-                                      setFormEnvironments(updated);
-                                    }}
-                                    className="text-[#fa541c] hover:text-[#e84a15] text-[10px] font-bold bg-transparent border-0 cursor-pointer flex items-center gap-0.5"
-                                  >
-                                    <Plus className="w-3 h-3" /> 添加变量
-                                  </button>
-                                </div>
-
-                                <div className="space-y-2">
-                                  {env.envVariables && env.envVariables.length > 0 ? (
-                                    env.envVariables.map((variable, vIdx) => (
-                                      <div key={vIdx} className="flex gap-2 items-center">
-                                        <input
-                                          type="text"
-                                          placeholder="KEY (如: API_KEY)"
-                                          value={variable.key}
-                                          onChange={(e) => {
-                                            const updated = [...formEnvironments];
-                                            updated[idx].envVariables![vIdx].key = e.target.value;
-                                            setFormEnvironments(updated);
-                                          }}
-                                          className="flex-1 text-xs border border-neutral-200 rounded px-2 py-1.5 focus:outline-none focus:border-[#fa541c] font-mono text-neutral-800"
-                                        />
-                                        <span className="text-neutral-400">=</span>
-                                        <input
-                                          type="text"
-                                          placeholder="VALUE"
-                                          value={variable.value}
-                                          onChange={(e) => {
-                                            const updated = [...formEnvironments];
-                                            updated[idx].envVariables![vIdx].value = e.target.value;
-                                            setFormEnvironments(updated);
-                                          }}
-                                          className="flex-1 text-xs border border-neutral-200 rounded px-2 py-1.5 focus:outline-none focus:border-[#fa541c] font-mono text-neutral-800"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            const updated = [...formEnvironments];
-                                            updated[idx].envVariables = updated[idx].envVariables!.filter((_, i) => i !== vIdx);
-                                            setFormEnvironments(updated);
-                                          }}
-                                          className="text-neutral-450 hover:text-red-500 p-1 cursor-pointer border-0 bg-transparent"
-                                        >
-                                          <X className="w-4 h-4" />
-                                        </button>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-[10px] text-neutral-400 italic">暂无环境变量，可点击右上角添加。</p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Container Start Command */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-600">容器启动命令</label>
-                                <input
-                                  type="text"
-                                  placeholder="例如: python main.py"
-                                  value={env.startCommand || ''}
-                                  onChange={(e) => {
-                                    const updated = [...formEnvironments];
-                                    updated[idx].startCommand = e.target.value;
-                                    setFormEnvironments(updated);
-                                  }}
-                                  className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#fa541c] font-mono text-neutral-800 bg-white"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* VM SPECIFIC FORM FIELDS */}
-                          {env.type === '虚机' && (
-                            <div className="space-y-4 border-t border-neutral-100 pt-4 animate-in fade-in duration-200">
-                              {/* Spec selector vs Custom */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-600 block">算力配置</label>
-                                <div className="flex bg-neutral-100 rounded-lg p-0.5 border border-neutral-200 max-w-max">
-                                  {[
-                                    { key: 'spec', label: '选择规格' },
-                                    { key: 'custom', label: '自定义资源' }
-                                  ].map(opt => (
-                                    <button
-                                      key={opt.key}
-                                      type="button"
-                                      onClick={() => {
-                                        const updated = [...formEnvironments];
-                                        updated[idx].vmSpecType = opt.key as any;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className={cn(
-                                        "px-3 py-1 text-center text-[10px] rounded-md transition-all cursor-pointer font-bold",
-                                        env.vmSpecType === opt.key 
-                                          ? "bg-white text-[#fa541c] shadow-sm"
-                                          : "text-neutral-500 hover:text-neutral-800"
-                                      )}
-                                    >
-                                      {opt.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {env.vmSpecType === 'spec' ? (
-                                <div className="space-y-1.5">
-                                  <label className="text-[11px] font-bold text-neutral-600">选择虚机规格</label>
-                                  <select
-                                    value={env.selectedSpec}
-                                    onChange={(e) => {
-                                      const updated = [...formEnvironments];
-                                      updated[idx].selectedSpec = e.target.value;
-                                      setFormEnvironments(updated);
-                                    }}
-                                    className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 bg-white focus:outline-none focus:border-[#fa541c] cursor-pointer"
-                                  >
-                                    {VM_SPECS.map(spec => (
-                                      <option key={spec.value} value={spec.value}>{spec.label}</option>
-                                    ))}
-                                  </select>
-                                </div>
+                                  <Upload className="w-6 h-6 text-[#fa541c]" strokeWidth={1.5} />
+                                  <span className="text-[13px] text-[#262626] font-bold">点击选择或拖拽源码文件上传</span>
+                                  <span className="text-[11px] text-neutral-400">单文件上限 100MB</span>
+                                </label>
                               ) : (
-                                <div className="bg-neutral-50/50 border border-neutral-200 rounded-xl p-3 space-y-3">
-                                  <h5 className="text-[11px] font-bold text-neutral-700">自定义虚机规格</h5>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                      <span className="text-[10px] text-neutral-450 block">CPU 核数</span>
-                                      <select
-                                        value={env.cpuCores}
-                                        onChange={(e) => {
-                                          const updated = [...formEnvironments];
-                                          updated[idx].cpuCores = e.target.value;
-                                          setFormEnvironments(updated);
-                                        }}
-                                        className="w-full text-[11px] border border-neutral-200 rounded p-1 bg-white"
-                                      >
-                                        {['1', '2', '4', '8', '16'].map(c => (
-                                          <option key={c} value={c}>{c}核</option>
-                                        ))}
-                                      </select>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                      <span className="text-[10px] text-neutral-450 block">内存大小 (GB)</span>
-                                      <select
-                                        value={env.memoryGB}
-                                        onChange={(e) => {
-                                          const updated = [...formEnvironments];
-                                          updated[idx].memoryGB = e.target.value;
-                                          setFormEnvironments(updated);
-                                        }}
-                                        className="w-full text-[11px] border border-neutral-200 rounded p-1 bg-white"
-                                      >
-                                        {['2', '4', '8', '16', '32', '64'].map(m => (
-                                          <option key={m} value={m}>{m}GB</option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-2 border-t border-neutral-200/60 pt-2">
-                                    <span className="text-[10px] text-neutral-450 block font-bold">GPU规格</span>
-                                    <div className="grid grid-cols-3 gap-2">
-                                      <div>
-                                        <span className="text-[9px] text-neutral-400 block">算力</span>
-                                        <select
-                                          value={env.gpu?.power || '无'}
-                                          onChange={(e) => {
-                                            const updated = [...formEnvironments];
-                                            if (!updated[idx].gpu) updated[idx].gpu = { power: '无', vram: '0', count: '0' };
-                                            updated[idx].gpu!.power = e.target.value;
-                                            if (e.target.value === '无') {
-                                              updated[idx].gpu!.vram = '无';
-                                              updated[idx].gpu!.count = '0';
-                                            } else if (e.target.value === 'T4') {
-                                              updated[idx].gpu!.vram = '16GB';
-                                              updated[idx].gpu!.count = '1';
-                                            } else if (e.target.value === 'A10G') {
-                                              updated[idx].gpu!.vram = '24GB';
-                                              updated[idx].gpu!.count = '1';
-                                            }
-                                            setFormEnvironments(updated);
-                                          }}
-                                          className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white"
-                                        >
-                                          <option value="无">无 GPU</option>
-                                          <option value="T4">NVIDIA T4</option>
-                                          <option value="A10G">NVIDIA A10G</option>
-                                        </select>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[9px] text-neutral-400 block">显存</span>
-                                        <select
-                                          value={env.gpu?.vram || '无'}
-                                          disabled={env.gpu?.power === '无'}
-                                          onChange={(e) => {
-                                            const updated = [...formEnvironments];
-                                            updated[idx].gpu!.vram = e.target.value;
-                                            setFormEnvironments(updated);
-                                          }}
-                                          className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white disabled:bg-neutral-100 disabled:text-neutral-400"
-                                        >
-                                          <option value="无">无</option>
-                                          <option value="8GB">8GB</option>
-                                          <option value="16GB">16GB</option>
-                                          <option value="24GB">24GB</option>
-                                        </select>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[9px] text-neutral-400 block">卡数</span>
-                                        <select
-                                          value={env.gpu?.count || '0'}
-                                          disabled={env.gpu?.power === '无'}
-                                          onChange={(e) => {
-                                            const updated = [...formEnvironments];
-                                            updated[idx].gpu!.count = e.target.value;
-                                            setFormEnvironments(updated);
-                                          }}
-                                          className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white disabled:bg-neutral-100 disabled:text-neutral-400"
-                                        >
-                                          <option value="0">0</option>
-                                          <option value="1">1 卡</option>
-                                          <option value="2">2 卡</option>
-                                          <option value="4">4 卡</option>
-                                        </select>
-                                      </div>
-                                    </div>
-                                  </div>
+                                <div className="flex flex-col items-center justify-center border border-dashed border-neutral-200 bg-neutral-50 text-neutral-400 rounded-[8px] p-6 gap-2 text-center select-none cursor-not-allowed">
+                                  <Upload className="w-6 h-6 text-neutral-300" strokeWidth={1.5} />
+                                  <span className="text-[13px] font-bold">已上传的源码文件</span>
                                 </div>
                               )}
 
-                              {/* Select Image */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-600">选择虚机镜像</label>
-                                <select
-                                  value={env.image}
-                                  onChange={(e) => {
-                                    const updated = [...formEnvironments];
-                                    updated[idx].image = e.target.value;
-                                    setFormEnvironments(updated);
-                                  }}
-                                  className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 bg-white focus:outline-none focus:border-[#fa541c] font-mono cursor-pointer"
-                                >
-                                  {VM_IMAGES[env.resourcePool].map(img => (
-                                    <option key={img} value={img}>{img}</option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              {/* Storage configuration */}
-                              <div className="bg-neutral-50/50 border border-neutral-200 rounded-xl p-3 space-y-3">
-                                <h5 className="text-[11px] font-bold text-neutral-700">存储配置</h5>
-                                <div className="grid grid-cols-3 gap-2">
-                                  <div>
-                                    <span className="text-[10px] text-neutral-450 block">存储类型</span>
-                                    <select
-                                      value={env.storage?.type || 'SSD'}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        if (!updated[idx].storage) updated[idx].storage = { type: 'SSD', systemDisk: '40', dataDisk: '100' };
-                                        updated[idx].storage!.type = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white"
+                              {formSourceRepoUrl && (
+                                <div className="flex items-center justify-between text-[12px] text-green-700 bg-green-50 border border-green-200 px-3.5 py-2 rounded-[4px] font-bold animate-in fade-in duration-200">
+                                  <span className="truncate flex items-center gap-1.5">
+                                    <span>✓ 已就绪:</span>
+                                    <span className="font-mono">{formSourceRepoUrl}</span>
+                                  </span>
+                                  {modalMode !== 'view' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setFormSourceRepoUrl('')}
+                                      className="text-neutral-400 hover:text-red-500 ml-2 cursor-pointer bg-transparent border-0 font-bold"
                                     >
-                                      <option value="SSD">SSD</option>
-                                      <option value="HDD">HDD</option>
-                                      <option value="ESSD">ESSD</option>
-                                    </select>
-                                  </div>
-
-                                  <div>
-                                    <span className="text-[10px] text-neutral-450 block">系统盘 (GB)</span>
-                                    <input
-                                      type="text"
-                                      value={env.storage?.systemDisk || '40'}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        if (!updated[idx].storage) updated[idx].storage = { type: 'SSD', systemDisk: '40', dataDisk: '100' };
-                                        updated[idx].storage!.systemDisk = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white font-mono"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <span className="text-[10px] text-neutral-450 block">数据盘 (GB)</span>
-                                    <input
-                                      type="text"
-                                      value={env.storage?.dataDisk || '100'}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        if (!updated[idx].storage) updated[idx].storage = { type: 'SSD', systemDisk: '40', dataDisk: '100' };
-                                        updated[idx].storage!.dataDisk = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-[10px] border border-neutral-200 rounded p-1 bg-white font-mono"
-                                    />
-                                  </div>
+                                      清除
+                                    </button>
+                                  )}
                                 </div>
-                              </div>
-
-                              {/* Network Configuration */}
-                              <div className="bg-neutral-50/50 border border-neutral-200 rounded-xl p-3 space-y-3">
-                                <h5 className="text-[11px] font-bold text-neutral-700">网络配置</h5>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <span className="text-[10px] text-neutral-450 block">VPC</span>
-                                    <input
-                                      type="text"
-                                      placeholder="选择或输入VPC"
-                                      value={env.network?.vpc || ''}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        if (!updated[idx].network) updated[idx].network = { vpc: '', subnet: '' };
-                                        updated[idx].network!.vpc = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-xs border border-neutral-200 rounded px-2.5 py-1 focus:outline-none focus:border-[#fa541c]"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <span className="text-[10px] text-neutral-450 block">子网</span>
-                                    <input
-                                      type="text"
-                                      placeholder="选择或输入子网"
-                                      value={env.network?.subnet || ''}
-                                      onChange={(e) => {
-                                        const updated = [...formEnvironments];
-                                        if (!updated[idx].network) updated[idx].network = { vpc: '', subnet: '' };
-                                        updated[idx].network!.subnet = e.target.value;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className="w-full text-xs border border-neutral-200 rounded px-2.5 py-1 focus:outline-none focus:border-[#fa541c]"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* VNC Type */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-600 block font-bold">VNC类型</label>
-                                <div className="flex gap-4">
-                                  {['caddyVnc', 'noVnc'].map(vnc => (
-                                    <label
-                                      key={vnc}
-                                      onClick={() => {
-                                        const updated = [...formEnvironments];
-                                        updated[idx].vncType = vnc as any;
-                                        setFormEnvironments(updated);
-                                      }}
-                                      className={cn(
-                                        "flex-1 border py-2 rounded-lg text-center font-mono text-[11px] font-bold cursor-pointer transition-all select-none",
-                                        env.vncType === vnc 
-                                          ? "border-[#fa541c] text-[#fa541c] bg-[#fff2e8]/10"
-                                          : "border-neutral-200 text-neutral-500 hover:bg-neutral-50"
-                                      )}
-                                    >
-                                      {vnc}
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
+                              )}
                             </div>
                           )}
                         </div>
                       </div>
-                    ))}
-                  </div>
+
+                      {/* 4. 创建方式 */}
+                      <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                        <label className="text-[13px] font-bold text-[#262626] text-right">
+                          创建方式
+                        </label>
+                        <div className="flex items-center gap-6 text-[13px]">
+                          {[
+                            { value: 'template', label: '模板创建' },
+                            { value: 'custom', label: '自定义' }
+                          ].map(opt => (
+                            <label 
+                              key={opt.value} 
+                              className={cn(
+                                "flex items-center gap-2 select-none",
+                                modalMode !== 'view' ? "cursor-pointer" : "cursor-not-allowed text-neutral-400"
+                              )}
+                            >
+                              <input
+                                type="radio"
+                                name="creationMethod"
+                                value={opt.value}
+                                checked={formCreationMethod === opt.value}
+                                disabled={modalMode === 'view'}
+                                onChange={() => setFormCreationMethod(opt.value as any)}
+                                className="w-4 h-4 accent-[#fa541c] cursor-pointer"
+                              />
+                              <span className="font-medium">{opt.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Creation Details container depending on selection */}
+                  {(currentEnvType === '虚机' || formCreationMethod === 'custom') ? (
+                    /* 4b. 自定义 Details */
+                    <div className="border border-neutral-200 rounded p-5 bg-white space-y-6 animate-fade-in">
+                      
+                      {/* Tab Row (容器1, 容器2 or 云主机1, 云主机2) */}
+                      <div className="flex items-center justify-between border-b border-neutral-200 pb-px">
+                        <div className="flex gap-1 overflow-x-auto">
+                          {formEnvironments.map((env, idx) => (
+                            <div key={env.id} className="relative group flex items-center">
+                              <button
+                                type="button"
+                                onClick={() => setActiveEnvIdx(idx)}
+                                className={cn(
+                                  "px-5 py-2 text-xs font-bold rounded-[4px]-t transition-all cursor-pointer border border-b-0 border-neutral-200 flex items-center gap-2",
+                                  activeEnvIdx === idx
+                                    ? "bg-[#fa541c] text-white border-[#fa541c] font-black"
+                                    : "bg-white text-[#fa541c] border-[#fa541c]/50 hover:bg-orange-50/20"
+                                )}
+                              >
+                                <span>{currentEnvType === '容器' ? `容器${idx + 1}` : `云主机${idx + 1}`}</span>
+                                {formEnvironments.length > 1 && modalMode !== 'view' && (
+                                  <span
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const updated = formEnvironments.filter((_, i) => i !== idx);
+                                      setFormEnvironments(updated);
+                                      setActiveEnvIdx(prev => Math.max(0, prev - 1));
+                                      showToast(`已删除${currentEnvType === '容器' ? '容器' : '云主机'}实例`);
+                                    }}
+                                    className="hover:bg-black/10 rounded-full p-0.5 transition-colors cursor-pointer text-current flex items-center justify-center ml-1"
+                                  >
+                                    <X className="w-2.5 h-2.5" />
+                                  </span>
+                                )}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Add button */}
+                        {modalMode !== 'view' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newEnv: EnvConfig = currentEnvType === '容器' 
+                                ? {
+                                    id: 'env-' + Date.now(),
+                                    resourcePool: currentResourcePool as any,
+                                    type: '容器',
+                                    cpuCores: '2',
+                                    memoryGB: '4',
+                                    gpu: { power: '无', vram: '0', count: '0', model: '4090' },
+                                    image: CONTAINER_IMAGES[currentResourcePool]?.[0] || 'ctyun-python:3.10-slim-cpu',
+                                    envVariables: [],
+                                    startCommand: 'python main.py'
+                                  }
+                                : {
+                                    id: 'env-' + Date.now(),
+                                    resourcePool: currentResourcePool as any,
+                                    type: '虚机',
+                                    vmSpecType: 'custom',
+                                    selectedSpec: VM_SPECS[0].value,
+                                    cpuCores: '2',
+                                    memoryGB: '8',
+                                    gpu: { power: '无', vram: '0', count: '0', model: '4090' },
+                                    image: VM_IMAGES[currentResourcePool]?.[0] || 'ctyun-ubuntu-22.04-server-x86_64.qcow2',
+                                    storage: { type: 'SSD', systemDisk: '40', dataType: 'SSD', dataDisk: '100' },
+                                    network: { vpc: 'vpc-default', subnet: 'subnet-1' },
+                                    vncType: 'novnc'
+                                  };
+                              setFormEnvironments([...formEnvironments, newEnv]);
+                              setActiveEnvIdx(formEnvironments.length);
+                              showToast(`已添加新${currentEnvType === '容器' ? '容器' : '云主机'}实例`);
+                            }}
+                            className="text-[#fa541c] hover:text-[#e84a15] text-[13px] font-bold cursor-pointer flex items-center gap-1 bg-transparent border-0 rounded-[4px]"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>{currentEnvType === '容器' ? '添加容器' : '添加云主机'}</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Active Instance Form Content */}
+                      {formEnvironments[activeEnvIdx] && (() => {
+                        const activeEnv = formEnvironments[activeEnvIdx];
+                        const imagesList = activeEnv.type === '容器' 
+                          ? CONTAINER_IMAGES[activeEnv.resourcePool] || ['ctyun-python:3.10-slim-cpu']
+                          : VM_IMAGES[activeEnv.resourcePool] || ['ctyun-ubuntu-22.04-server-x86_64.qcow2'];
+                        
+                        return (
+                          <div className="space-y-6">
+                            
+                            {/* 选择镜像 */}
+                            <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                              <label className="text-[13px] font-bold text-[#262626] text-right">
+                                选择镜像 <span className="text-[#fa541c]">*</span>
+                              </label>
+                              <CustomSelect
+                                value={activeEnv.image}
+                                disabled={modalMode === 'view'}
+                                onChange={(val) => {
+                                  const updated = [...formEnvironments];
+                                  updated[activeEnvIdx].image = val;
+                                  setFormEnvironments(updated);
+                                }}
+                                options={imagesList.map(img => ({ value: img, label: img }))}
+                                className="font-mono"
+                              />
+                            </div>
+
+                            {/* 算力配置 Container */}
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[13px] font-bold text-[#262626]">
+                                  算力配置 <span className="text-[#fa541c]">*</span>
+                                </span>
+                                
+                                {activeEnv.type === '虚机' && (
+                                  <div className="flex bg-neutral-100 rounded p-0.5 border border-neutral-200 max-w-max">
+                                    {[
+                                      { key: 'spec', label: '规格选择' },
+                                      { key: 'custom', label: '自定义资源' }
+                                    ].map(opt => (
+                                      <button
+                                        key={opt.key}
+                                        type="button"
+                                        onClick={() => {
+                                          const updated = [...formEnvironments];
+                                          updated[activeEnvIdx].vmSpecType = opt.key as any;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        className={cn(
+                                          "px-3 py-1 text-center text-[11px] rounded-[4px] transition-all cursor-pointer font-bold border-0",
+                                          activeEnv.vmSpecType === opt.key 
+                                            ? "bg-white text-[#fa541c] shadow-sm"
+                                            : "text-neutral-500 hover:text-neutral-800"
+                                        )}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {activeEnv.type === '虚机' && activeEnv.vmSpecType === 'spec' ? (
+                                /* VM SPEC TYPE */
+                                <div className="grid grid-cols-[100px_1fr] items-center gap-4 pl-4 border-l-2 border-[#fa541c]/30">
+                                  <label className="text-[13px] text-neutral-550 text-right">选择规格</label>
+                                  <CustomSelect
+                                    value={activeEnv.selectedSpec || ''}
+                                    disabled={modalMode === 'view'}
+                                    onChange={(val) => {
+                                      const updated = [...formEnvironments];
+                                      updated[activeEnvIdx].selectedSpec = val;
+                                      setFormEnvironments(updated);
+                                    }}
+                                    options={VM_SPECS}
+                                  />
+                                </div>
+                              ) : (
+                                /* CUSTOM CPU/MEM/GPU CONFIG */
+                                <div className="space-y-4 pl-4 border-l-2 border-[#fa541c]/30">
+                                  {/* CPU and Memory Row */}
+                                  <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                      <span className="text-[13px] text-neutral-550 text-right pr-3">CPU</span>
+                                      <input
+                                        type="text"
+                                        placeholder="请输入"
+                                        value={activeEnv.cpuCores || '2'}
+                                        disabled={modalMode === 'view'}
+                                        onChange={(e) => {
+                                          const updated = [...formEnvironments];
+                                          updated[activeEnvIdx].cpuCores = e.target.value;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626]"
+                                      />
+                                      <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">核</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                      <span className="text-[13px] text-neutral-550 text-right pr-3">内存</span>
+                                      <input
+                                        type="text"
+                                        placeholder="请输入"
+                                        value={activeEnv.memoryGB || '8'}
+                                        disabled={modalMode === 'view'}
+                                        onChange={(e) => {
+                                          const updated = [...formEnvironments];
+                                          updated[activeEnvIdx].memoryGB = e.target.value;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626]"
+                                      />
+                                      <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">GB</span>
+                                    </div>
+                                  </div>
+
+                                  {/* GPU Model and count row */}
+                                  <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                      <span className="text-[13px] text-neutral-550 text-right pr-3">GPU型号</span>
+                                      <CustomSelect
+                                        value={activeEnv.gpu?.model || '4090'}
+                                        disabled={modalMode === 'view'}
+                                        onChange={(val) => {
+                                          const updated = [...formEnvironments];
+                                          if (!updated[activeEnvIdx].gpu) updated[activeEnvIdx].gpu = { power: '无', vram: '0', count: '0' };
+                                          updated[activeEnvIdx].gpu!.model = val;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        options={[
+                                          { value: '4090', label: '4090' },
+                                          { value: 'A100', label: 'A100' },
+                                          { value: 'T4', label: 'NVIDIA T4' },
+                                          { value: 'A10G', label: 'NVIDIA A10G' },
+                                          { value: '无', label: '无 GPU' }
+                                        ]}
+                                      />
+                                      <div />
+                                    </div>
+
+                                    <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                      <span className="text-[13px] text-neutral-550 text-right pr-3">GPU</span>
+                                      <input
+                                        type="text"
+                                        placeholder="请输入"
+                                        value={activeEnv.gpu?.count || '0'}
+                                        disabled={modalMode === 'view' || activeEnv.gpu?.model === '无'}
+                                        onChange={(e) => {
+                                          const updated = [...formEnvironments];
+                                          if (!updated[activeEnvIdx].gpu) updated[activeEnvIdx].gpu = { power: '无', vram: '0', count: '0' };
+                                          updated[activeEnvIdx].gpu!.count = e.target.value;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] disabled:bg-neutral-50"
+                                      />
+                                      <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">张</span>
+                                    </div>
+                                  </div>
+
+                                  {/* GPU Power and VRAM (Only for Containers as per image 2) */}
+                                  {activeEnv.type === '容器' && (
+                                    <div className="grid grid-cols-2 gap-6">
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">算力</span>
+                                        <input
+                                          type="text"
+                                          placeholder="请输入"
+                                          value={activeEnv.gpu?.power || '100'}
+                                          disabled={modalMode === 'view' || activeEnv.gpu?.model === '无'}
+                                          onChange={(e) => {
+                                            const updated = [...formEnvironments];
+                                            if (!updated[activeEnvIdx].gpu) updated[activeEnvIdx].gpu = { power: '无', vram: '0', count: '0' };
+                                            updated[activeEnvIdx].gpu!.power = e.target.value;
+                                            setFormEnvironments(updated);
+                                          }}
+                                          className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] disabled:bg-neutral-50"
+                                        />
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">%</span>
+                                      </div>
+
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">显存</span>
+                                        <input
+                                          type="text"
+                                          placeholder="请输入"
+                                          value={activeEnv.gpu?.vram || '24'}
+                                          disabled={modalMode === 'view' || activeEnv.gpu?.model === '无'}
+                                          onChange={(e) => {
+                                            const updated = [...formEnvironments];
+                                            if (!updated[activeEnvIdx].gpu) updated[activeEnvIdx].gpu = { power: '无', vram: '0', count: '0' };
+                                            updated[activeEnvIdx].gpu!.vram = e.target.value;
+                                            setFormEnvironments(updated);
+                                          }}
+                                          className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] disabled:bg-neutral-50"
+                                        />
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">GB</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* CONTAINER specific configurations (环境变量, 启动命令) */}
+                            {activeEnv.type === '容器' && (
+                              <div className="space-y-6">
+                                {/* 环境变量配置 */}
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between border-b border-neutral-100 pb-1.5">
+                                    <span className="text-[13px] font-bold text-[#262626]">
+                                      环境变量配置 <span className="text-[#fa541c]">*</span>
+                                    </span>
+                                    {modalMode !== 'view' && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const updated = [...formEnvironments];
+                                          if (!updated[activeEnvIdx].envVariables) updated[activeEnvIdx].envVariables = [];
+                                          updated[activeEnvIdx].envVariables!.push({ key: '', value: '' });
+                                          setFormEnvironments(updated);
+                                        }}
+                                        className="text-[#fa541c] hover:text-[#e84a15] text-xs font-bold bg-transparent border-0 cursor-pointer flex items-center gap-0.5 rounded-[4px]"
+                                      >
+                                        <Plus className="w-3 h-3" /> 添加变量
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <div className="space-y-2.5">
+                                    {activeEnv.envVariables && activeEnv.envVariables.length > 0 ? (
+                                      activeEnv.envVariables.map((variable, vIdx) => (
+                                        <div key={vIdx} className="flex gap-2 items-center">
+                                          <input
+                                            type="text"
+                                            placeholder="key"
+                                            value={variable.key}
+                                            disabled={modalMode === 'view'}
+                                            onChange={(e) => {
+                                              const updated = [...formEnvironments];
+                                              updated[activeEnvIdx].envVariables![vIdx].key = e.target.value;
+                                              setFormEnvironments(updated);
+                                            }}
+                                            className="flex-1 text-[13px] border border-neutral-200 rounded px-3 py-1.5 focus:outline-none focus:border-[#fa541c] font-mono text-[#262626]"
+                                          />
+                                          <span className="text-neutral-400 font-bold select-none">=</span>
+                                          <input
+                                            type="text"
+                                            placeholder="Value"
+                                            value={variable.value}
+                                            disabled={modalMode === 'view'}
+                                            onChange={(e) => {
+                                              const updated = [...formEnvironments];
+                                              updated[activeEnvIdx].envVariables![vIdx].value = e.target.value;
+                                              setFormEnvironments(updated);
+                                            }}
+                                            className="flex-1 text-[13px] border border-neutral-200 rounded px-3 py-1.5 focus:outline-none focus:border-[#fa541c] font-mono text-[#262626]"
+                                          />
+                                          {modalMode !== 'view' && (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const updated = [...formEnvironments];
+                                                updated[activeEnvIdx].envVariables = updated[activeEnvIdx].envVariables!.filter((_, i) => i !== vIdx);
+                                                setFormEnvironments(updated);
+                                              }}
+                                              className="text-neutral-450 hover:text-red-500 p-1 cursor-pointer border-0 bg-transparent flex items-center rounded-[4px]"
+                                            >
+                                              <X className="w-4 h-4" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-neutral-400 italic pl-2">暂无环境变量</p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* 启动命令 */}
+                                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                                    启动命令 <span className="text-[#fa541c]">*</span>
+                                  </label>
+                                  <textarea
+                                    placeholder="请输入"
+                                    value={activeEnv.startCommand || ''}
+                                    disabled={modalMode === 'view'}
+                                    onChange={(e) => {
+                                      const updated = [...formEnvironments];
+                                      updated[activeEnvIdx].startCommand = e.target.value;
+                                      setFormEnvironments(updated);
+                                    }}
+                                    className="w-full min-h-[80px] p-3 text-[13px] border border-neutral-200 rounded focus:outline-none focus:border-[#fa541c] resize-none leading-relaxed text-[#262626] font-mono"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* VM specific configurations (存储配置, 网络配置, VNC类型) */}
+                            {activeEnv.type === '虚机' && (
+                              <div className="space-y-6">
+                                {/* 存储配置 */}
+                                <div className="space-y-3">
+                                  <span className="text-[13px] font-bold text-[#262626] block border-b border-neutral-100 pb-1.5">
+                                    存储配置 <span className="text-[#fa541c]">*</span>
+                                  </span>
+                                  
+                                  <div className="space-y-3.5 pl-4">
+                                    {/* 系统盘 */}
+                                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                                      <span className="text-[13px] text-neutral-550 text-right">系统盘</span>
+                                      <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">存储类型</span>
+                                          <CustomSelect
+                                            value={activeEnv.storage?.type || 'SSD'}
+                                            disabled={modalMode === 'view'}
+                                            onChange={(val) => {
+                                              const updated = [...formEnvironments];
+                                              if (!updated[activeEnvIdx].storage) updated[activeEnvIdx].storage = { type: 'SSD', systemDisk: '40', dataType: 'SSD', dataDisk: '100' };
+                                              updated[activeEnvIdx].storage!.type = val;
+                                              setFormEnvironments(updated);
+                                            }}
+                                            options={[
+                                              { value: 'SSD', label: 'SSD' },
+                                              { value: 'HDD', label: 'HDD' },
+                                              { value: 'ESSD', label: 'ESSD' }
+                                            ]}
+                                          />
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">大小</span>
+                                          <input
+                                            type="text"
+                                            placeholder="输入大小"
+                                            value={activeEnv.storage?.systemDisk || '40'}
+                                            disabled={modalMode === 'view'}
+                                            onChange={(e) => {
+                                              const updated = [...formEnvironments];
+                                              if (!updated[activeEnvIdx].storage) updated[activeEnvIdx].storage = { type: 'SSD', systemDisk: '40', dataType: 'SSD', dataDisk: '100' };
+                                              updated[activeEnvIdx].storage!.systemDisk = e.target.value;
+                                              setFormEnvironments(updated);
+                                            }}
+                                            className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-[13px] text-[#262626]"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold shrink-0">GB</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* 数据盘 */}
+                                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                                      <span className="text-[13px] text-neutral-550 text-right">数据盘</span>
+                                      <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">存储类型</span>
+                                          <CustomSelect
+                                            value={activeEnv.storage?.dataType || 'SSD'}
+                                            disabled={modalMode === 'view'}
+                                            onChange={(val) => {
+                                              const updated = [...formEnvironments];
+                                              if (!updated[activeEnvIdx].storage) updated[activeEnvIdx].storage = { type: 'SSD', systemDisk: '40', dataType: 'SSD', dataDisk: '100' };
+                                              updated[activeEnvIdx].storage!.dataType = val;
+                                              setFormEnvironments(updated);
+                                            }}
+                                            options={[
+                                              { value: 'SSD', label: 'SSD' },
+                                              { value: 'HDD', label: 'HDD' },
+                                              { value: 'ESSD', label: 'ESSD' }
+                                            ]}
+                                          />
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">大小</span>
+                                          <input
+                                            type="text"
+                                            placeholder="输入大小"
+                                            value={activeEnv.storage?.dataDisk || '100'}
+                                            disabled={modalMode === 'view'}
+                                            onChange={(e) => {
+                                              const updated = [...formEnvironments];
+                                              if (!updated[activeEnvIdx].storage) updated[activeEnvIdx].storage = { type: 'SSD', systemDisk: '40', dataType: 'SSD', dataDisk: '100' };
+                                              updated[activeEnvIdx].storage!.dataDisk = e.target.value;
+                                              setFormEnvironments(updated);
+                                            }}
+                                            className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-[13px] text-[#262626]"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold shrink-0">GB</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 网络配置 */}
+                                <div className="space-y-3">
+                                  <span className="text-[13px] font-bold text-[#262626] block border-b border-neutral-100 pb-1.5">
+                                    网络配置 <span className="text-[#fa541c]">*</span>
+                                  </span>
+
+                                  <div className="grid grid-cols-2 gap-6 pl-4">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-[13px] text-neutral-550 w-[80px] text-right">VPC</span>
+                                      <CustomSelect
+                                        value={activeEnv.network?.vpc || 'vpc-default'}
+                                        disabled={modalMode === 'view'}
+                                        onChange={(val) => {
+                                          const updated = [...formEnvironments];
+                                          if (!updated[activeEnvIdx].network) updated[activeEnvIdx].network = { vpc: '', subnet: '' };
+                                          updated[activeEnvIdx].network!.vpc = val;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        options={[
+                                          { value: 'vpc-default', label: 'vpc-default' },
+                                          { value: 'vpc-edu-1', label: 'vpc-edu-1' },
+                                          { value: 'vpc-prod-2', label: 'vpc-prod-2' }
+                                        ]}
+                                      />
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-[13px] text-neutral-550 w-[80px] text-right">子网</span>
+                                      <CustomSelect
+                                        value={activeEnv.network?.subnet || 'subnet-1'}
+                                        disabled={modalMode === 'view'}
+                                        onChange={(val) => {
+                                          const updated = [...formEnvironments];
+                                          if (!updated[activeEnvIdx].network) updated[activeEnvIdx].network = { vpc: '', subnet: '' };
+                                          updated[activeEnvIdx].network!.subnet = val;
+                                          setFormEnvironments(updated);
+                                        }}
+                                        options={[
+                                          { value: 'subnet-1', label: 'subnet-1' },
+                                          { value: 'subnet-2', label: 'subnet-2' },
+                                          { value: 'subnet-3', label: 'subnet-3' }
+                                        ]}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* VNC类型 */}
+                                <div className="space-y-3">
+                                  <span className="text-[13px] font-bold text-[#262626] block border-b border-neutral-100 pb-1.5">
+                                    VNC类型 <span className="text-[#fa541c]">*</span>
+                                  </span>
+
+                                  <div className="flex items-center gap-6 text-[13px] pl-4">
+                                    {[
+                                      { value: 'caddyvnc', label: 'caddyvnc' },
+                                      { value: 'novnc', label: 'novnc' }
+                                    ].map(opt => (
+                                      <label 
+                                        key={opt.value} 
+                                        className={cn(
+                                          "flex items-center gap-2 select-none",
+                                          modalMode !== 'view' ? "cursor-pointer" : "cursor-not-allowed text-neutral-400"
+                                        )}
+                                      >
+                                        <input
+                                          type="radio"
+                                          name={`vncType-${activeEnv.id}`}
+                                          value={opt.value}
+                                          checked={(activeEnv.vncType || 'novnc').toLowerCase() === opt.value.toLowerCase()}
+                                          disabled={modalMode === 'view'}
+                                          onChange={() => {
+                                            const updated = [...formEnvironments];
+                                            updated[activeEnvIdx].vncType = opt.value as any;
+                                            setFormEnvironments(updated);
+                                          }}
+                                          className="w-4 h-4 accent-[#fa541c] cursor-pointer"
+                                        />
+                                        <span className="font-medium">{opt.label}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                              </div>
+                            )}
+
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    /* 4a. 模板创建 Details */
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                      <div></div>
+                      <CustomSelect
+                        value={formTemplateValue}
+                        disabled={modalMode === 'view'}
+                        onChange={(val) => setFormTemplateValue(val)}
+                        options={[
+                          { value: '通用模板', label: '通用模板' },
+                          { value: 'AI模型开发模板', label: 'AI模型开发模板' },
+                          { value: '数据挖掘算法模板', label: '数据挖掘算法模板' },
+                          { value: 'Java微服务模板', label: 'Java微服务模板' }
+                        ]}
+                      />
+                    </div>
+                  )}
+
                 </div>
               )}
 
             </div>
 
-            {/* Modal Footer - styled exactly like course modal footer */}
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 flex-shrink-0 bg-neutral-50/50">
+            {/* Modal Footer - styled exactly like dataset modal footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               {activeFormTab === 'basic' ? (
                 <>
                   <Button 
                     onClick={() => setIsModalOpen(false)} 
                     variant="outline" 
-                    className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white"
+                    className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                   >
                     取消
                   </Button>
                   <Button 
                     onClick={() => setActiveFormTab('env')} 
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer"
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                   >
                     下一步
                   </Button>
@@ -1734,20 +2168,20 @@ export default function TeacherProjects({
                   <Button 
                     onClick={() => setActiveFormTab('basic')} 
                     variant="outline" 
-                    className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white mr-auto"
+                    className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold mr-auto"
                   >
                     上一步
                   </Button>
                   <Button 
                     onClick={() => setIsModalOpen(false)} 
                     variant="outline" 
-                    className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white"
+                    className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                   >
                     取消
                   </Button>
                   <Button 
                     onClick={() => handleSave()} 
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer"
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                   >
                     保存
                   </Button>
@@ -1777,7 +2211,7 @@ export default function TeacherProjects({
               </h2>
               <button 
                 onClick={() => !isApplying && setIsApplyModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer rounded-[4px]"
                 disabled={isApplying}
               >
                 <X className="w-5 h-5" />
@@ -1802,7 +2236,7 @@ export default function TeacherProjects({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-neutral-800 mb-2">项目名称</label>
-                  <div className="text-sm text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-lg border border-neutral-200">
+                  <div className="text-sm text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-[4px] border border-neutral-200">
                     {projectToApply.name}
                   </div>
                 </div>
@@ -1841,7 +2275,7 @@ export default function TeacherProjects({
                     value={applyUsageSuggestion}
                     onChange={(e) => setApplyUsageSuggestion(e.target.value)}
                     placeholder="请描述该项目的申请公开原因及相关说明..."
-                    className="w-full text-sm border border-neutral-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all resize-none h-28"
+                    className="w-full text-sm border border-neutral-200 rounded-[4px] px-4 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all resize-none h-28"
                   />
                 </div>
               </div>
@@ -1852,14 +2286,14 @@ export default function TeacherProjects({
               <Button 
                 onClick={() => setIsApplyModalOpen(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white"
+                className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white rounded-[4px]"
                 disabled={isApplying}
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSubmitApplication} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 border-0 cursor-pointer flex items-center gap-2"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 rounded-[4px] border-0 cursor-pointer flex items-center gap-2"
                 disabled={isApplying}
               >
                 {isApplying ? (
