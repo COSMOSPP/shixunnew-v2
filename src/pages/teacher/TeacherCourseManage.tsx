@@ -272,8 +272,8 @@ export default function TeacherCourseManage() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#f5f7fa] -mt-6 -mx-6 md:-mx-8 overflow-hidden">
       {/* Top Header */}
-      <div className="h-14 bg-white flex items-center justify-between px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] relative z-20">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-3 text-neutral-title font-medium hover:text-[#fa541c] transition-colors rounded-[4px]">
+      <div className="h-14 bg-white flex items-center justify-between px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] relative z-30">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-3 text-[#262626] font-medium hover:text-[#fa541c] transition-colors rounded-[4px]">
           <ArrowLeft className="w-4 h-4" /> 人工智能基础与实践
         </button>
 
