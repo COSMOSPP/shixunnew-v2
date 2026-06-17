@@ -156,8 +156,6 @@ const AVAILABLE_TAGS = [
 ];
 
 const getTagStyle = (tagName: string) => {
-  const matched = AVAILABLE_TAGS.find(t => t.name.toLowerCase() === tagName.toLowerCase());
-  if (matched) return matched;
   return {
     name: tagName,
     bg: 'bg-neutral-50',
@@ -165,6 +163,20 @@ const getTagStyle = (tagName: string) => {
     border: 'border-neutral-200',
     dot: 'bg-neutral-400'
   };
+};
+
+const parseSubnet = (subnetStr: string) => {
+  let standardStr = subnetStr;
+  if (subnetStr === 'subnet-1') standardStr = '192.168.1.0/16';
+  else if (subnetStr === 'subnet-2') standardStr = '192.168.2.0/24';
+  else if (subnetStr === 'subnet-3') standardStr = '192.168.3.0/24';
+  else if (!subnetStr || !subnetStr.includes('/')) standardStr = '192.168.1.0/16';
+
+  const parts = standardStr.split(/[./]/);
+  const octet3 = parts[2] || '1';
+  const octet4 = parts[3] || '0';
+  const mask = parts[4] || '16';
+  return { octet3, octet4, mask };
 };
 
 interface CustomSelectOption {
@@ -317,8 +329,6 @@ export default function TeacherProjects({
   // New States for tags and environment configs
   const [formTags, setFormTags] = useState<string[]>([]);
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
-  const [isCreatingTag, setIsCreatingTag] = useState(false);
-  const [newTagInputText, setNewTagInputText] = useState('');
   const [availableTagsList, setAvailableTagsList] = useState<string[]>([
     'AI', '容器', '虚机', 'Java', 'Python', '数据分析', '运维', 'DevOps', '大模型', '微服务'
   ]);
@@ -522,20 +532,7 @@ export default function TeacherProjects({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleConfirmCreateTag = () => {
-    const trimmed = newTagInputText.trim();
-    if (trimmed) {
-      if (!availableTagsList.includes(trimmed)) {
-        setAvailableTagsList([...availableTagsList, trimmed]);
-      }
-      if (!formTags.includes(trimmed)) {
-        setFormTags([...formTags, trimmed]);
-      }
-      setIsCreatingTag(false);
-      setNewTagInputText('');
-      showToast(`已新建并添加标签: ${trimmed}`);
-    }
-  };
+
 
   const handleCreateNew = () => {
     setCurrentProjectId(null);
@@ -547,8 +544,6 @@ export default function TeacherProjects({
     setSelectedCover(defaultCovers[0]);
     setFormTags([]);
     setIsTagDropdownOpen(false);
-    setIsCreatingTag(false);
-    setNewTagInputText('');
     setFormIntroduction('');
     setFormSourceRepoUrl('https://github.com/opencv/opencv.git');
     setRepoUploadMode('manual');
@@ -585,8 +580,6 @@ export default function TeacherProjects({
     setSelectedCover(proj.image || defaultCovers[0]);
     setFormTags(proj.tags || []);
     setIsTagDropdownOpen(false);
-    setIsCreatingTag(false);
-    setNewTagInputText('');
     setFormIntroduction(proj.introduction || '');
     setFormSourceRepoUrl(proj.gitUrl || 'https://github.com/opencv/opencv.git');
     const isUrl = proj.gitUrl ? (proj.gitUrl.startsWith('http') || proj.gitUrl.startsWith('git@')) : true;
@@ -712,29 +705,19 @@ export default function TeacherProjects({
   };
 
   const handleApplyPublic = (proj: Project) => {
-    if (proj.status === '草稿') {
-      showToast('草稿状态的项目不可用，请先发布。');
-      return;
-    }
     setProjectToApply(proj);
-    setApplyUsageSuggestion('');
-    setApplyRange('租户');
     setIsApplyModalOpen(true);
   };
 
   const handleSubmitApplication = () => {
-    if (!applyUsageSuggestion.trim()) {
-      showToast('请填写完整的申请说明');
-      return;
-    }
     setIsApplying(true);
     setTimeout(() => {
       setProjectsList(projectsList.map(p => 
-        p.id === projectToApply?.id ? { ...p, publicApplyStatus: 'pending', auditStatus: '待审核', range: applyRange } : p
+        p.id === projectToApply?.id ? { ...p, range: '平台', auditStatus: '已审核', status: '已发布' } : p
       ));
       setIsApplying(false);
       setIsApplyModalOpen(false);
-      showToast('项目公开申请已提交，等待平台超管审核');
+      showToast('项目已成功公开');
     }, 800);
   };
 
@@ -753,8 +736,6 @@ export default function TeacherProjects({
     setSelectedCover(proj.image || defaultCovers[0]);
     setFormTags(proj.tags || []);
     setIsTagDropdownOpen(false);
-    setIsCreatingTag(false);
-    setNewTagInputText('');
     setFormIntroduction(proj.introduction || '');
     setFormSourceRepoUrl(proj.gitUrl || 'https://github.com/opencv/opencv.git');
     const isUrl = proj.gitUrl ? (proj.gitUrl.startsWith('http') || proj.gitUrl.startsWith('git@')) : true;
@@ -1117,7 +1098,7 @@ export default function TeacherProjects({
                         )}
                       >
                         {formTags.length === 0 ? (
-                          <span className="text-neutral-400 select-none">请选择或新建项目标签</span>
+                          <span className="text-neutral-400 select-none">请选择项目标签</span>
                         ) : (
                           <div className="flex flex-wrap gap-1.5 items-center w-full pr-8">
                             {formTags.map(tag => {
@@ -1166,61 +1147,6 @@ export default function TeacherProjects({
                       {/* Dropdown Menu */}
                       {isTagDropdownOpen && modalMode !== 'view' && (
                         <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                          {/* "新建标签" Action button */}
-                          {!isCreatingTag ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsCreatingTag(true);
-                              }}
-                              className="w-full text-left px-4 py-2.5 text-[#fa541c] hover:bg-orange-50/50 font-bold transition-all text-[13px] border-b border-neutral-100 flex items-center gap-1.5 cursor-pointer bg-white rounded-[4px]"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>新建标签</span>
-                            </button>
-                          ) : (
-                            <div 
-                              onClick={(e) => e.stopPropagation()}
-                              className="px-4 py-2 border-b border-neutral-100 flex items-center gap-2 bg-neutral-50/40 shrink-0"
-                            >
-                              <input
-                                type="text"
-                                placeholder="输入标签名称..."
-                                value={newTagInputText}
-                                onChange={(e) => setNewTagInputText(e.target.value)}
-                                autoFocus
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleConfirmCreateTag();
-                                  } else if (e.key === 'Escape') {
-                                    setIsCreatingTag(false);
-                                    setNewTagInputText('');
-                                  }
-                                }}
-                                className="w-full bg-white border border-neutral-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20"
-                              />
-                              <button
-                                type="button"
-                                onClick={handleConfirmCreateTag}
-                                className="px-2.5 py-1 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] text-xs transition-colors shrink-0 font-bold cursor-pointer border-0"
-                              >
-                                确定
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsCreatingTag(false);
-                                  setNewTagInputText('');
-                                }}
-                                className="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-[4px] text-xs transition-colors shrink-0 cursor-pointer border-0"
-                              >
-                                取消
-                              </button>
-                            </div>
-                          )}
-
                           {/* List of tag options */}
                           <div className="max-h-[220px] overflow-y-auto custom-scrollbar">
                             {availableTagsList.map(tag => {
@@ -1698,7 +1624,7 @@ export default function TeacherProjects({
 
                               {activeEnv.type === '虚机' && activeEnv.vmSpecType === 'spec' ? (
                                 /* VM SPEC TYPE */
-                                <div className="grid grid-cols-[100px_1fr] items-center gap-4 pl-4 border-l-2 border-[#fa541c]/30">
+                                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                                   <label className="text-[13px] text-neutral-550 text-right">选择规格</label>
                                   <CustomSelect
                                     value={activeEnv.selectedSpec || ''}
@@ -1713,7 +1639,7 @@ export default function TeacherProjects({
                                 </div>
                               ) : (
                                 /* CUSTOM CPU/MEM/GPU CONFIG */
-                                <div className="space-y-4 pl-4 border-l-2 border-[#fa541c]/30">
+                                <div className="space-y-4">
                                   {/* CPU and Memory Row */}
                                   <div className="grid grid-cols-2 gap-6">
                                     <div className="grid grid-cols-[80px_1fr_32px] items-center">
@@ -2037,43 +1963,81 @@ export default function TeacherProjects({
                                     网络配置 <span className="text-[#fa541c]">*</span>
                                   </span>
 
-                                  <div className="grid grid-cols-2 gap-6 pl-4">
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-[13px] text-neutral-550 w-[80px] text-right">VPC</span>
-                                      <CustomSelect
-                                        value={activeEnv.network?.vpc || 'vpc-default'}
-                                        disabled={modalMode === 'view'}
-                                        onChange={(val) => {
-                                          const updated = [...formEnvironments];
-                                          if (!updated[activeEnvIdx].network) updated[activeEnvIdx].network = { vpc: '', subnet: '' };
-                                          updated[activeEnvIdx].network!.vpc = val;
-                                          setFormEnvironments(updated);
-                                        }}
-                                        options={[
-                                          { value: 'vpc-default', label: 'vpc-default' },
-                                          { value: 'vpc-edu-1', label: 'vpc-edu-1' },
-                                          { value: 'vpc-prod-2', label: 'vpc-prod-2' }
-                                        ]}
-                                      />
-                                    </div>
-
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-[13px] text-neutral-550 w-[80px] text-right">子网</span>
-                                      <CustomSelect
-                                        value={activeEnv.network?.subnet || 'subnet-1'}
-                                        disabled={modalMode === 'view'}
-                                        onChange={(val) => {
-                                          const updated = [...formEnvironments];
-                                          if (!updated[activeEnvIdx].network) updated[activeEnvIdx].network = { vpc: '', subnet: '' };
-                                          updated[activeEnvIdx].network!.subnet = val;
-                                          setFormEnvironments(updated);
-                                        }}
-                                        options={[
-                                          { value: 'subnet-1', label: 'subnet-1' },
-                                          { value: 'subnet-2', label: 'subnet-2' },
-                                          { value: 'subnet-3', label: 'subnet-3' }
-                                        ]}
-                                      />
+                                  <div className="space-y-3.5 pl-4">
+                                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                                      <span className="text-[13px] text-neutral-550 text-right">子网</span>
+                                      
+                                      <div className="flex items-center gap-1.5 text-[13px]">
+                                        <input
+                                          type="text"
+                                          value="192"
+                                          disabled
+                                          className="w-12 text-center bg-neutral-50 border border-neutral-200 rounded py-1.5 text-[13px] text-neutral-500 cursor-not-allowed select-none focus:outline-none"
+                                        />
+                                        <span className="text-neutral-400 font-bold">.</span>
+                                        
+                                        <input
+                                          type="text"
+                                          value="168"
+                                          disabled
+                                          className="w-12 text-center bg-neutral-50 border border-neutral-200 rounded py-1.5 text-[13px] text-neutral-500 cursor-not-allowed select-none focus:outline-none"
+                                        />
+                                        <span className="text-neutral-400 font-bold">.</span>
+                                        
+                                        <select
+                                          value={(() => {
+                                            const { octet3 } = parseSubnet(activeEnv.network?.subnet || 'subnet-1');
+                                            return octet3;
+                                          })()}
+                                          disabled={modalMode === 'view'}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            const currentSubnet = activeEnv.network?.subnet || 'subnet-1';
+                                            const { mask } = parseSubnet(currentSubnet);
+                                            const updated = [...formEnvironments];
+                                            if (!updated[activeEnvIdx].network) updated[activeEnvIdx].network = { vpc: 'vpc-default', subnet: '' };
+                                            updated[activeEnvIdx].network!.subnet = `192.168.${val}.0/${mask}`;
+                                            setFormEnvironments(updated);
+                                          }}
+                                          className="px-2 py-1.5 border border-neutral-200 rounded text-[13px] text-[#262626] bg-white focus:outline-none focus:border-[#fa541c] disabled:bg-neutral-50 disabled:text-neutral-500 cursor-pointer min-w-[50px] text-center"
+                                        >
+                                          <option value="1">1</option>
+                                          <option value="2">2</option>
+                                          <option value="3">3</option>
+                                          <option value="4">4</option>
+                                          <option value="5">5</option>
+                                        </select>
+                                        <span className="text-neutral-400 font-bold">.</span>
+                                        
+                                        <input
+                                          type="text"
+                                          value="0"
+                                          disabled
+                                          className="w-12 text-center bg-neutral-50 border border-neutral-200 rounded py-1.5 text-[13px] text-neutral-500 cursor-not-allowed select-none focus:outline-none"
+                                        />
+                                        <span className="text-neutral-400 font-bold">/</span>
+                                        
+                                        <select
+                                          value={(() => {
+                                            const { mask } = parseSubnet(activeEnv.network?.subnet || 'subnet-1');
+                                            return mask;
+                                          })()}
+                                          disabled={modalMode === 'view'}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            const currentSubnet = activeEnv.network?.subnet || 'subnet-1';
+                                            const { octet3 } = parseSubnet(currentSubnet);
+                                            const updated = [...formEnvironments];
+                                            if (!updated[activeEnvIdx].network) updated[activeEnvIdx].network = { vpc: 'vpc-default', subnet: '' };
+                                            updated[activeEnvIdx].network!.subnet = `192.168.${octet3}.0/${val}`;
+                                            setFormEnvironments(updated);
+                                          }}
+                                          className="px-2 py-1.5 border border-neutral-200 rounded text-[13px] text-[#262626] bg-white focus:outline-none focus:border-[#fa541c] disabled:bg-neutral-50 disabled:text-neutral-500 cursor-pointer min-w-[58px] text-center"
+                                        >
+                                          <option value="16">16</option>
+                                          <option value="24">24</option>
+                                        </select>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -2193,116 +2157,58 @@ export default function TeacherProjects({
         </div>
       )}
 
-      {/* Application for Public Modal */}
       {isApplyModalOpen && projectToApply && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-neutral-900/60 backdrop-blur-[2px]"
             onClick={() => !isApplying && setIsApplyModalOpen(false)}
           ></div>
           
           {/* Modal Content */}
-          <div className="relative bg-white rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-neutral-100">
             {/* Header */}
-            <div className="p-6 pb-4 border-b border-neutral-100 flex items-center justify-between bg-white">
-              <h2 className="text-xl font-bold text-neutral-800 flex items-center gap-2">
-                申请公开项目
+            <div className="p-5 pb-3 flex items-center justify-between bg-white shrink-0">
+              <h2 className="text-[16px] font-bold text-neutral-800 flex items-center gap-2">
+                确认公开项目
               </h2>
               <button 
                 onClick={() => !isApplying && setIsApplyModalOpen(false)}
                 className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer rounded-[4px]"
                 disabled={isApplying}
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
             
             {/* Body */}
-            <div className="p-6 bg-neutral-50/30 overflow-y-auto space-y-6">
-              
-              {/* Info Alert */}
-              <div className="bg-[#fff2e8] border border-[#ffbb96] rounded-xl p-4 flex gap-3 text-sm text-[#d4380d]">
-                <Info className="w-5 h-5 flex-shrink-0" />
-                <div>
-                  <p className="font-bold mb-1">公开后全平台可见可用</p>
-                  <p className="opacity-90">
-                    提交申请后，超管将从 <strong>项目完整性、代码质量、文档规范、培训价值</strong> 四个维度进行审核。审核通过后将进入公共资源库。
-                  </p>
-                </div>
-              </div>
-
-              {/* Form */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-800 mb-2">项目名称</label>
-                  <div className="text-sm text-neutral-600 bg-neutral-100 px-4 py-2.5 rounded-[4px] border border-neutral-200">
-                    {projectToApply.name}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-800 mb-2">
-                    公开范围 <span className="text-[#fa541c]">*</span>
-                  </label>
-                  <div className="flex gap-4">
-                    {[
-                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级可见' },
-                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
-                    ].map(opt => (
-                      <label 
-                        key={opt.key}
-                        onClick={() => setApplyRange(opt.key as any)}
-                        className={cn(
-                          "flex-1 border p-3 rounded-xl cursor-pointer transition-all select-none flex flex-col gap-1",
-                          applyRange === opt.key 
-                            ? "border-[#fa541c] text-[#fa541c] bg-[#fff2e8]/10"
-                            : "border-neutral-200 text-neutral-550 hover:bg-neutral-50"
-                        )}
-                      >
-                        <span className="font-bold text-xs">{opt.label}</span>
-                        <span className="text-[10px] text-neutral-400 font-normal">{opt.desc}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-800 mb-2">
-                    申请说明 <span className="text-[#fa541c]">*</span>
-                  </label>
-                  <textarea
-                    value={applyUsageSuggestion}
-                    onChange={(e) => setApplyUsageSuggestion(e.target.value)}
-                    placeholder="请描述该项目的申请公开原因及相关说明..."
-                    className="w-full text-sm border border-neutral-200 rounded-[4px] px-4 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all resize-none h-28"
-                  />
-                </div>
-              </div>
+            <div className="px-5 py-4 bg-white text-[13px] text-neutral-600 leading-relaxed">
+              <p>确定要公开实战项目 <span className="font-bold text-neutral-800">「{projectToApply.name}」</span> 吗？</p>
+              <p className="mt-2 text-neutral-400 text-xs">公开后，该项目将被推送到公共资源库，全平台的所有院校和租户均可见并使用该项目。</p>
             </div>
             
             {/* Footer */}
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-3">
+            <div className="p-4 bg-neutral-50/50 flex items-center justify-end gap-2.5 border-t border-neutral-100">
               <Button 
                 onClick={() => setIsApplyModalOpen(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 cursor-pointer bg-white rounded-[4px]"
+                className="border-neutral-200 text-neutral-600 font-bold h-8 px-4 cursor-pointer bg-white rounded-[4px] text-xs hover:bg-neutral-50"
                 disabled={isApplying}
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSubmitApplication} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-7 shadow-md shadow-orange-500/20 rounded-[4px] border-0 cursor-pointer flex items-center gap-2"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-5 shadow-sm rounded-[4px] border-0 cursor-pointer flex items-center gap-1.5 text-xs"
                 disabled={isApplying}
               >
                 {isApplying ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    提交中...
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    处理中...
                   </>
                 ) : (
-                  '提交审核申请'
+                  '确认公开'
                 )}
               </Button>
             </div>
