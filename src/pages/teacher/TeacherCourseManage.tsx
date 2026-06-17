@@ -323,6 +323,7 @@ export default function TeacherCourseManage() {
                   <div 
                     onClick={() => {
                       setPerspective('student');
+                      setActiveTab('editor');
                       setShowPerspectiveDropdown(false);
                     }}
                     className={cn(
@@ -350,26 +351,28 @@ export default function TeacherCourseManage() {
 
       <div className="flex flex-1 overflow-hidden relative z-10">
         {/* Left Sidebar Menu */}
-        <div className="w-[100px] bg-white border-r border-neutral-border/60 flex flex-col py-4 flex-shrink-0 z-10">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex flex-col items-center justify-center py-4 w-full transition-colors relative rounded-[4px]",
-                activeTab === tab.id 
-                  ? "text-[#fa541c]" 
-                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-title"
-              )}
-            >
-              {activeTab === tab.id && (
-                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#fa541c]"></div>
-              )}
-              <tab.icon className="w-6 h-6 mb-2" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium tracking-wide">{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        {perspective === 'teacher' && (
+          <div className="w-[100px] bg-white border-r border-neutral-border/60 flex flex-col py-4 flex-shrink-0 z-10">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex flex-col items-center justify-center py-4 w-full transition-colors relative rounded-[4px]",
+                  activeTab === tab.id 
+                    ? "text-[#fa541c]" 
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-title"
+                )}
+              >
+                {activeTab === tab.id && (
+                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#fa541c]"></div>
+                )}
+                <tab.icon className="w-6 h-6 mb-2" strokeWidth={1.5} />
+                <span className="text-[13px] font-medium tracking-wide">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Right Content Area */}
         <div className="flex-1 overflow-y-auto relative no-scrollbar">
