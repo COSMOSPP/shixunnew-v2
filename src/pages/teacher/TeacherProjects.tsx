@@ -2165,33 +2165,33 @@ export default function TeacherProjects({
       )}
 
       {isApplyModalOpen && projectToApply && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          {/* Backdrop */}
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => !isApplying && setIsApplyModalOpen(false)}
+        >
           <div 
-            className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm"
-            onClick={() => !isApplying && setIsApplyModalOpen(false)}
-          ></div>
-          
-          {/* Modal Content */}
-          <div className="relative bg-white rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-neutral-100">
-            {/* Header */}
-            <div className="p-6 pb-4 flex items-center justify-between bg-white shrink-0">
-              <h2 className="text-xl font-bold text-neutral-800">
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
                 申请公开项目
               </h2>
               <button 
-                onClick={() => !isApplying && setIsApplyModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer rounded-full p-1 hover:bg-neutral-50"
+                onClick={() => setIsApplyModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors"
                 disabled={isApplying}
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
             
             {/* Body */}
-            <div className="px-6 py-4 bg-white overflow-y-auto space-y-5">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
               {/* Info Alert */}
-              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-xl p-4 flex gap-3 text-sm text-[#d4380d]">
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
                 <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
                 <div>
                   <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后全平台可见可用</p>
@@ -2202,19 +2202,19 @@ export default function TeacherProjects({
               </div>
 
               {/* Form */}
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-[13px] font-bold text-[#262626]">项目名称</label>
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">项目名称</label>
                   <input 
                     type="text" 
                     value={projectToApply.name} 
                     disabled 
-                    className="w-full text-[13px] text-neutral-600 bg-[#f5f5f5] px-3.5 py-2.5 rounded-lg border border-neutral-200 cursor-not-allowed"
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded px-3.5 py-2 cursor-not-allowed select-none"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-[13px] font-bold text-[#262626]">
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
                     公开范围 <span className="text-[#fa541c]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-4">
@@ -2226,7 +2226,7 @@ export default function TeacherProjects({
                         key={opt.key}
                         onClick={() => setApplyRange(opt.key as any)}
                         className={cn(
-                          "border p-4 rounded-xl cursor-pointer transition-all select-none flex flex-col gap-1",
+                          "border p-4 rounded cursor-pointer transition-all select-none flex flex-col gap-1",
                           applyRange === opt.key 
                             ? "border-[#fa541c] bg-[#fff5f0]/30"
                             : "border-neutral-200 bg-white hover:bg-neutral-50"
@@ -2241,38 +2241,38 @@ export default function TeacherProjects({
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-[13px] font-bold text-[#262626]">
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
                     申请说明 <span className="text-[#fa541c]">*</span>
                   </label>
                   <textarea
                     value={applyUsageSuggestion}
                     onChange={(e) => setApplyUsageSuggestion(e.target.value)}
                     placeholder="请描述该项目的申请公开原因及相关说明..."
-                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-lg px-3.5 py-3 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
                   />
                 </div>
               </div>
             </div>
             
             {/* Footer */}
-            <div className="p-6 pt-2 bg-white flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setIsApplyModalOpen(false)} 
                 variant="outline" 
-                className="border-neutral-200 hover:bg-neutral-50 text-neutral-600 font-semibold h-9 px-6 cursor-pointer bg-white rounded-lg text-[13px]"
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                 disabled={isApplying}
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSubmitApplication} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-semibold h-9 px-6 shadow-sm rounded-lg border-0 cursor-pointer flex items-center gap-1.5 text-[13px]"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                 disabled={isApplying}
               >
                 {isApplying ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
                     提交中...
                   </>
                 ) : (
