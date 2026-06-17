@@ -4,7 +4,7 @@ import {
   ArrowLeft, BarChart2, BookOpen, Users, 
   Download, Plus, Search, FileText, CheckCircle, 
   Clock, MoreVertical, Settings, BarChart, Copy,
-  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info
+  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info, HelpCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -59,6 +59,8 @@ export default function TeacherCourseManage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('editor');
+  const [perspective, setPerspective] = useState<'teacher' | 'student'>('teacher');
+  const [showPerspectiveDropdown, setShowPerspectiveDropdown] = useState(false);
   const [editorSubTab, setEditorSubTab] = useState<'directory' | 'assignments'>('directory');
   const [showCourseDetail, setShowCourseDetail] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{title: string, type: string} | null>(null);
@@ -270,11 +272,81 @@ export default function TeacherCourseManage() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#f5f7fa] -mt-6 -mx-6 md:-mx-8 overflow-hidden">
       {/* Top Header */}
-      <div className="h-14 bg-white flex items-center px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] relative z-20">
+      <div className="h-14 bg-white flex items-center justify-between px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] relative z-20">
         <button onClick={() => navigate(-1)} className="flex items-center gap-3 text-neutral-title font-medium hover:text-[#fa541c] transition-colors rounded-[4px]">
           <ArrowLeft className="w-4 h-4" /> 人工智能基础与实践
         </button>
+
+        {/* Perspective Switcher */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-neutral-500">
+            <span className="text-[14px]">视角:</span>
+            <HelpCircle className="w-4 h-4 cursor-pointer hover:text-neutral-700 transition-colors" title="切换视角可以预览不同角色下的页面展示效果" />
+          </div>
+          
+          <div className="relative">
+            <button 
+              onClick={() => setShowPerspectiveDropdown(!showPerspectiveDropdown)}
+              className={cn(
+                "h-9 px-3 w-[120px] bg-white border rounded-[4px] flex items-center justify-between transition-all duration-150 text-[14px] text-neutral-700 font-medium select-none",
+                showPerspectiveDropdown 
+                  ? "border-[#fa541c] shadow-[0_0_0_2px_rgba(250,84,28,0.15)] text-[#fa541c]" 
+                  : "border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c]"
+              )}
+            >
+              <span>{perspective === 'teacher' ? '开课老师' : '学生'}</span>
+              {showPerspectiveDropdown ? (
+                <ChevronUp className="w-4 h-4 text-[#fa541c]" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-neutral-400" />
+              )}
+            </button>
+            
+            {showPerspectiveDropdown && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowPerspectiveDropdown(false)}></div>
+                <div className="absolute right-0 top-full mt-1.5 w-[120px] bg-white rounded-lg border border-neutral-100 shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div 
+                    onClick={() => {
+                      setPerspective('teacher');
+                      setShowPerspectiveDropdown(false);
+                    }}
+                    className={cn(
+                      "px-3 py-2 text-[14px] cursor-pointer transition-colors font-medium text-left",
+                      perspective === 'teacher' 
+                        ? "bg-[#fff2e8] text-[#fa541c]" 
+                        : "text-neutral-700 hover:bg-[#fff2e8] hover:text-[#fa541c]"
+                    )}
+                  >
+                    开课老师
+                  </div>
+                  <div 
+                    onClick={() => {
+                      setPerspective('student');
+                      setShowPerspectiveDropdown(false);
+                    }}
+                    className={cn(
+                      "px-3 py-2 text-[14px] cursor-pointer transition-colors font-medium text-left",
+                      perspective === 'student' 
+                        ? "bg-[#fff2e8] text-[#fa541c]" 
+                        : "text-neutral-700 hover:bg-[#fff2e8] hover:text-[#fa541c]"
+                    )}
+                  >
+                    学生
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
+
+      {perspective === 'student' && (
+        <div className="mx-6 mt-4 bg-orange-50 border border-orange-200 text-[#fa541c] px-4 py-3 rounded-lg flex items-center gap-3 text-[14px] font-medium shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 relative z-20">
+          <Info className="w-5 h-5 flex-shrink-0" />
+          <span>您当前正在以「学生视角」预览此页面。页面中的所有编辑、删除、课件添加及管理操作已自动隐藏。</span>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden relative z-10">
         {/* Left Sidebar Menu */}
@@ -407,66 +479,70 @@ export default function TeacherCourseManage() {
                               <h3 className="text-lg font-bold text-neutral-title">{chapter.chapter} {chapter.title}</h3>
                             </div>
                             <div className="flex items-center gap-3 text-neutral-400">
-                              <div className="relative" onClick={(e) => e.stopPropagation()}>
-                                <PlusCircle 
-                                  className="w-5 h-5 cursor-pointer hover:text-[#fa541c] transition-colors" 
-                                  onClick={() => setAddMenuOpenIndex(addMenuOpenIndex === i ? null : i)}
-                                />
-                                {addMenuOpenIndex === i && (
-                                  <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setAddMenuOpenIndex(null)}></div>
-                                    <div className="absolute right-0 top-8 w-64 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up">
-                                      {[
-                                        { title: '教学课件', desc: '支持图文、PPT 文档、视频等', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', action: () => {setShowTeachingMaterialModal(true); setAddMenuOpenIndex(null);} },
-                                        { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', action: () => {setShowExperimentMaterialModal(true); setAddMenuOpenIndex(null);} },
-                                        { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', action: () => {setShowInteractiveMaterialModal(true); setAddMenuOpenIndex(null);} }
-                                      ].map((item, idx) => (
-                                        <div key={idx} onClick={item.action} className="flex items-start gap-3 p-2.5 rounded-[4px] hover:bg-neutral-50 cursor-pointer transition-colors group">
-                                          <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", item.bg, item.color)}>
-                                            <item.icon className="w-4 h-4" />
+                              {perspective === 'teacher' && (
+                                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                  <PlusCircle 
+                                    className="w-5 h-5 cursor-pointer hover:text-[#fa541c] transition-colors" 
+                                    onClick={() => setAddMenuOpenIndex(addMenuOpenIndex === i ? null : i)}
+                                  />
+                                  {addMenuOpenIndex === i && (
+                                    <>
+                                      <div className="fixed inset-0 z-40" onClick={() => setAddMenuOpenIndex(null)}></div>
+                                      <div className="absolute right-0 top-8 w-64 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up">
+                                        {[
+                                          { title: '教学课件', desc: '支持图文、PPT 文档、视频等', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', action: () => {setShowTeachingMaterialModal(true); setAddMenuOpenIndex(null);} },
+                                          { title: '实验课件', desc: '通过 notebook 制作实训课件', icon: Code, color: 'text-orange-500', bg: 'bg-orange-50', action: () => {setShowExperimentMaterialModal(true); setAddMenuOpenIndex(null);} },
+                                          { title: '互动学习课件', desc: '知识点分段讲解视频融合实操', icon: MonitorPlay, color: 'text-blue-500', bg: 'bg-blue-50', action: () => {setShowInteractiveMaterialModal(true); setAddMenuOpenIndex(null);} }
+                                        ].map((item, idx) => (
+                                          <div key={idx} onClick={item.action} className="flex items-start gap-3 p-2.5 rounded-[4px] hover:bg-neutral-50 cursor-pointer transition-colors group">
+                                            <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", item.bg, item.color)}>
+                                              <item.icon className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                              <div className="text-[14px] font-bold text-neutral-800 mb-0.5 group-hover:text-[#fa541c] transition-colors text-left">{item.title}</div>
+                                              <div className="text-[11px] text-neutral-400 text-left">{item.desc}</div>
+                                            </div>
                                           </div>
-                                          <div>
-                                            <div className="text-[14px] font-bold text-neutral-800 mb-0.5 group-hover:text-[#fa541c] transition-colors text-left">{item.title}</div>
-                                            <div className="text-[11px] text-neutral-400 text-left">{item.desc}</div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                              <div className="relative" onClick={(e) => e.stopPropagation()}>
-                                <MoreVertical 
-                                  className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setChapterMenuOpenIndex(chapterMenuOpenIndex === i ? null : i);
-                                  }}
-                                />
-                                {chapterMenuOpenIndex === i && (
-                                  <>
-                                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setChapterMenuOpenIndex(null); }}></div>
-                                    <div className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
-                                      <div 
-                                        className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setShowEditChapterModal(true);
-                                          setChapterMenuOpenIndex(null);
-                                        }}
-                                      >编辑</div>
-                                      <div 
-                                        className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setShowDeleteChapterModal(true);
-                                          setChapterMenuOpenIndex(null);
-                                        }}
-                                      >删除</div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              {perspective === 'teacher' && (
+                                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                  <MoreVertical 
+                                    className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setChapterMenuOpenIndex(chapterMenuOpenIndex === i ? null : i);
+                                    }}
+                                  />
+                                  {chapterMenuOpenIndex === i && (
+                                    <>
+                                      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setChapterMenuOpenIndex(null); }}></div>
+                                      <div className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
+                                        <div 
+                                          className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowEditChapterModal(true);
+                                            setChapterMenuOpenIndex(null);
+                                          }}
+                                        >编辑</div>
+                                        <div 
+                                          className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowDeleteChapterModal(true);
+                                            setChapterMenuOpenIndex(null);
+                                          }}
+                                        >删除</div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )}
                               {isCollapsed ? <ChevronDown className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" /> : <ChevronUp className="w-5 h-5 cursor-pointer hover:text-neutral-600 transition-colors" />}
                             </div>
                           </div>
@@ -506,41 +582,45 @@ export default function TeacherCourseManage() {
                                       </div>
                                     </div>
                                     <div className="relative" onClick={(e) => e.stopPropagation()}>
-                                      <MoreVertical 
-                                        className={cn(
-                                          "w-4 h-4 cursor-pointer transition-all", 
-                                          lessonMenuOpenIndex === `${i}-${idx}` 
-                                            ? "text-[#fa541c] opacity-100 scale-110" 
-                                            : "text-neutral-300 group-hover:text-neutral-500 opacity-0 group-hover:opacity-100"
-                                        )}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setLessonMenuOpenIndex(lessonMenuOpenIndex === `${i}-${idx}` ? null : `${i}-${idx}`);
-                                        }}
-                                      />
-                                      {lessonMenuOpenIndex === `${i}-${idx}` && (
+                                      {perspective === 'teacher' && (
                                         <>
-                                          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setLessonMenuOpenIndex(null); }}></div>
-                                          <div className="absolute right-0 top-6 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
-                                            <div 
-                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
-                                                setShowEditLessonModal(true);
-                                                setLessonMenuOpenIndex(null);
-                                              }}
-                                            >编辑</div>
-                                            <div 
-                                              className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
-                                                setShowDeleteLessonModal(true);
-                                                setLessonMenuOpenIndex(null);
-                                              }}
-                                            >删除</div>
-                                          </div>
+                                          <MoreVertical 
+                                            className={cn(
+                                              "w-4 h-4 cursor-pointer transition-all", 
+                                              lessonMenuOpenIndex === `${i}-${idx}` 
+                                                ? "text-[#fa541c] opacity-100 scale-110" 
+                                                : "text-neutral-300 group-hover:text-neutral-500 opacity-0 group-hover:opacity-100"
+                                            )}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setLessonMenuOpenIndex(lessonMenuOpenIndex === `${i}-${idx}` ? null : `${i}-${idx}`);
+                                            }}
+                                          />
+                                          {lessonMenuOpenIndex === `${i}-${idx}` && (
+                                            <>
+                                              <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setLessonMenuOpenIndex(null); }}></div>
+                                              <div className="absolute right-0 top-6 w-32 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 z-50 p-2 animation-slide-up flex flex-col gap-1">
+                                                <div 
+                                                  className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
+                                                    setShowEditLessonModal(true);
+                                                    setLessonMenuOpenIndex(null);
+                                                  }}
+                                                >编辑</div>
+                                                <div 
+                                                  className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
+                                                    setShowDeleteLessonModal(true);
+                                                    setLessonMenuOpenIndex(null);
+                                                  }}
+                                                >删除</div>
+                                              </div>
+                                            </>
+                                          )}
                                         </>
                                       )}
                                     </div>
@@ -617,9 +697,11 @@ export default function TeacherCourseManage() {
                           </h2>
                           <p className="text-[13px] text-neutral-500 mt-1">管理课程测验与作业，设置规则并进行在线批阅打分。</p>
                         </div>
-                        <Button onClick={() => setShowCreateTaskModal(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
-                          <Plus className="w-4 h-4 mr-2" /> 创建作业任务
-                        </Button>
+                        {perspective === 'teacher' && (
+                          <Button onClick={() => setShowCreateTaskModal(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
+                            <Plus className="w-4 h-4 mr-2" /> 创建作业任务
+                          </Button>
+                        )}
                       </div>
 
                       {/* 统计概览 Cards */}
@@ -661,11 +743,13 @@ export default function TeacherCourseManage() {
                                       <span className="flex items-center gap-1.5"><BarChart className="w-4 h-4 text-blue-500" /> 平均分: {task.avgScore}</span>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3 rounded-[4px]">
-                                      <Edit className="w-3.5 h-3.5 mr-1.5"/> 编辑
-                                  </Button>
-                                </div>
+                                {perspective === 'teacher' && (
+                                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3 rounded-[4px]">
+                                        <Edit className="w-3.5 h-3.5 mr-1.5"/> 编辑
+                                    </Button>
+                                  </div>
+                                )}
                             </div>
                             
                             <div className="bg-neutral-50/80 rounded-xl p-5 border border-neutral-100 flex items-center justify-between">
@@ -838,20 +922,22 @@ export default function TeacherCourseManage() {
                       <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                       <input type="text" placeholder="搜索用户名或学号..." className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-colors bg-white" />
                     </div>
-                    <div className="flex gap-3">
-                      <Button 
-                        onClick={handleBatchAuthorize}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
-                      >
-                        批量授权
-                      </Button>
-                      <Button 
-                        onClick={handleBatchRevokeAuth}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
-                      >
-                        批量解除授权
-                      </Button>
-                    </div>
+                    {perspective === 'teacher' && (
+                      <div className="flex gap-3">
+                        <Button 
+                          onClick={handleBatchAuthorize}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
+                        >
+                          批量授权
+                        </Button>
+                        <Button 
+                          onClick={handleBatchRevokeAuth}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
+                        >
+                          批量解除授权
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-white rounded overflow-hidden border border-neutral-200">
@@ -859,25 +945,27 @@ export default function TeacherCourseManage() {
                       <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
                           <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                            <th className="p-4 font-medium w-12 text-center">
-                              <button 
-                                type="button"
-                                onClick={() => toggleSelectAllStudents(selectedStudents.length !== studentList.length || studentList.length === 0)}
-                                className={cn(
-                                  "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                                  selectedStudents.length === studentList.length && studentList.length > 0
-                                    ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                    : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                                )}
-                              >
-                                {selectedStudents.length === studentList.length && studentList.length > 0 && <span className="text-[10px] font-bold">✓</span>}
-                              </button>
-                            </th>
+                            {perspective === 'teacher' && (
+                              <th className="p-4 font-medium w-12 text-center">
+                                <button 
+                                  type="button"
+                                  onClick={() => toggleSelectAllStudents(selectedStudents.length !== studentList.length || studentList.length === 0)}
+                                  className={cn(
+                                    "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                                    selectedStudents.length === studentList.length && studentList.length > 0
+                                      ? "bg-[#fa541c] border-[#fa541c] text-white"
+                                      : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                                  )}
+                                >
+                                  {selectedStudents.length === studentList.length && studentList.length > 0 && <span className="text-[10px] font-bold">✓</span>}
+                                </button>
+                              </th>
+                            )}
                             <th className="p-4 font-medium">用户账号</th>
                             <th className="p-4 font-medium">用户名</th>
                             <th className="p-4 font-medium">用户组</th>
                             <th className="p-4 font-medium">授权时间</th>
-                            <th className="p-4 font-medium text-left">操作</th>
+                            {perspective === 'teacher' && <th className="p-4 font-medium text-left">操作</th>}
                           </tr>
                         </thead>
                         <tbody>
@@ -943,17 +1031,19 @@ export default function TeacherCourseManage() {
                       </h2>
                       <p className="text-[13px] text-neutral-500 mt-1">实时统计所有选课学生的学习进度与考核数据，数据每 15 分钟刷新一次。</p>
                     </div>
-                    <Button 
-                      onClick={() => {
-                        setShowExportModal(true);
-                        setExportProgress(0);
-                        setIsExporting(false);
-                        setExportCompleted(false);
-                      }}
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all"
-                    >
-                      <Download className="w-4 h-4 mr-2" /> 导出详细数据报告
-                    </Button>
+                    {perspective === 'teacher' && (
+                      <Button 
+                        onClick={() => {
+                          setShowExportModal(true);
+                          setExportProgress(0);
+                          setIsExporting(false);
+                          setExportCompleted(false);
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all"
+                      >
+                        <Download className="w-4 h-4 mr-2" /> 导出详细数据报告
+                      </Button>
+                    )}
                   </div>
                   
                   {/* Top Key Metrics */}
