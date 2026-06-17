@@ -1440,10 +1440,13 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 新建教学课件 Modal */}
+      {/* 新建教学课件 Drawer */}
       {showTeachingMaterialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowTeachingMaterialModal(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
@@ -1457,7 +1460,7 @@ export default function TeacherCourseManage() {
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px]">
+            <div className="p-6 space-y-4 bg-white text-[13px] flex-1 overflow-y-auto">
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
@@ -1501,10 +1504,13 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 选择实验课件 Modal */}
+      {/* 选择实验课件 Drawer */}
       {showExperimentMaterialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden border border-neutral-100 flex flex-col h-[500px] animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowExperimentMaterialModal(false)}>
+          <div 
+            className="bg-white w-full max-w-[540px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
@@ -1537,7 +1543,7 @@ export default function TeacherCourseManage() {
                </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-2 bg-white text-[13px]">
+            <div className="flex-1 overflow-y-auto p-4 bg-white text-[13px]">
                {[
                  { id: 'IL511779172854', subtitle: '人工智能' },
                  { id: 'IL511779173126', subtitle: '人工智能' }
@@ -1574,7 +1580,7 @@ export default function TeacherCourseManage() {
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-between shrink-0">
-              <div className="text-[13px] text-neutral-500">已选 <span className="text-[#fa541c] font-bold">{selectedExperimentIndex !== null ? 1 : 0}</span> 项</div>
+              <div className="text-[13px] text-neutral-505 font-medium">已选 <span className="text-[#fa541c] font-bold">{selectedExperimentIndex !== null ? 1 : 0}</span> 项</div>
               <div className="flex gap-3">
                 <Button 
                   onClick={() => setShowExperimentMaterialModal(false)} 
@@ -1595,10 +1601,13 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 新建互动学习课件 Modal */}
+      {/* 新建互动学习课件 Drawer */}
       {showInteractiveMaterialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowInteractiveMaterialModal(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
@@ -1612,7 +1621,7 @@ export default function TeacherCourseManage() {
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px]">
+            <div className="p-6 space-y-4 bg-white text-[13px] flex-1 overflow-y-auto">
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
