@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Plus, FolderKanban, HelpCircle, FileQuestion, FileText, Database, BookOpen, Copy, Eye, User, Calendar, Clock, Search, Trash2, Edit, Check, X, Users, CreditCard, Cpu, ShieldCheck, AlertCircle, CheckCircle, ShieldAlert, BarChart3, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import TeacherExams from './TeacherExams';
 import TeacherDatasets from './TeacherDatasets';
 import TeacherPractices from './TeacherPractices';
 import TeacherAICenter from './TeacherAICenter';
-import { Layers, Info, Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Maximize2 } from 'lucide-react';
+import { Layers, Info, Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Maximize2, ChevronDown } from 'lucide-react';
 
 export default function TeacherHome() {
   const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'dataset' | 'exam' | 'practice' | 'aicenter'>('course');
@@ -98,9 +98,26 @@ export default function TeacherHome() {
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
   const [courseFormName, setCourseFormName] = useState('');
   const [courseFormMajor, setCourseFormMajor] = useState('');
-  const [courseFormTags, setCourseFormTags] = useState('');
+  const [courseFormTags, setCourseFormTags] = useState<string[]>([]);
+  const [isCourseTagDropdownOpen, setIsCourseTagDropdownOpen] = useState(false);
+  const [availableCourseTagsList] = useState<string[]>([
+    '必修', '选修', '核心课程', '专业课', '通识课', '实践课', '基础课'
+  ]);
+  const courseTagDropdownRef = useRef<HTMLDivElement>(null);
   const [courseFormDesc, setCourseFormDesc] = useState('');
   const [courseFormIntroduction, setCourseFormIntroduction] = useState('');
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (courseTagDropdownRef.current && !courseTagDropdownRef.current.contains(event.target as Node)) {
+        setIsCourseTagDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -186,7 +203,7 @@ export default function TeacherHome() {
         image: selectedCover || defaultCovers[0],
         state: 'active',
         major: courseFormMajor || '人工智能',
-        tags: courseFormTags || '必修, 核心课程',
+        tags: courseFormTags.join(', ') || '必修, 核心课程',
         introduction: courseFormIntroduction
       };
       const updated = [newCourse, ...coursesList];
@@ -202,7 +219,7 @@ export default function TeacherHome() {
             desc: courseFormDesc,
             image: selectedCover,
             major: courseFormMajor,
-            tags: courseFormTags,
+            tags: courseFormTags.join(', '),
             introduction: courseFormIntroduction
           };
         }
@@ -436,7 +453,8 @@ export default function TeacherHome() {
                   setEditingCourse(null); 
                   setCourseFormName('');
                   setCourseFormMajor('');
-                  setCourseFormTags('');
+                  setCourseFormTags([]);
+                  setIsCourseTagDropdownOpen(false);
                   setCourseFormDesc('');
                   setSelectedCover(defaultCovers[0]); 
                   setCourseFormIntroduction('');
@@ -512,7 +530,8 @@ export default function TeacherHome() {
                               setEditingCourse(course);
                               setCourseFormName(course.name);
                               setCourseFormMajor(course.major || '人工智能');
-                              setCourseFormTags(course.tags || '必修, 核心课程');
+                              setCourseFormTags(course.tags ? course.tags.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
+                              setIsCourseTagDropdownOpen(false);
                               setCourseFormDesc(course.desc);
                               setSelectedCover(course.image);
                               setCourseFormIntroduction(course.introduction || '');
@@ -670,13 +689,84 @@ export default function TeacherHome() {
                 <label className="text-[13px] font-bold text-[#262626] text-right">
                   标签 <span className="text-[#fa541c]">*</span>
                 </label>
-                <input 
-                  type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]" 
-                  value={courseFormTags}
-                  onChange={(e) => setCourseFormTags(e.target.value)}
-                  placeholder="请输入标签，用英文逗号分隔" 
-                />
+                <div ref={courseTagDropdownRef} className="relative w-full text-[13px]">
+                  <div
+                    onClick={() => setIsCourseTagDropdownOpen(!isCourseTagDropdownOpen)}
+                    className={cn(
+                      "min-h-[38px] w-full border rounded-[4px] px-3.5 py-1.5 flex flex-wrap items-center gap-1.5 transition-all text-[#262626] bg-white cursor-pointer select-none",
+                      isCourseTagDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "border-neutral-200 hover:border-neutral-300"
+                    )}
+                  >
+                    {courseFormTags.length === 0 ? (
+                      <span className="text-neutral-400 select-none">请选择课程标签</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5 items-center w-full pr-8">
+                        {courseFormTags.map(tag => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold border transition-all bg-neutral-50 text-neutral-600 border-neutral-200"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCourseFormTags(courseFormTags.filter(t => t !== tag));
+                              }}
+                              className="hover:bg-black/10 rounded-[4px] p-0.5 transition-colors cursor-pointer text-current flex items-center justify-center border-0 bg-transparent"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Right arrow */}
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                      <ChevronDown 
+                        className={cn("w-4 h-4 transition-transform duration-200 text-neutral-400", isCourseTagDropdownOpen && "rotate-180")} 
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  {isCourseTagDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {/* List of tag options */}
+                      <div className="max-h-[220px] overflow-y-auto custom-scrollbar">
+                        {availableCourseTagsList.map(tag => {
+                          const isSelected = courseFormTags.includes(tag);
+                          return (
+                            <div
+                              key={tag}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setCourseFormTags(courseFormTags.filter(t => t !== tag));
+                                } else {
+                                  setCourseFormTags([...courseFormTags, tag]);
+                                }
+                              }}
+                              className={cn(
+                                "px-4 py-2.5 text-left text-[13px] transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span className="font-medium">{tag}</span>
+                              {isSelected && (
+                                <Check className="w-3.5 h-3.5 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 3. 课程描述 */}
