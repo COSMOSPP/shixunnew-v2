@@ -70,7 +70,7 @@ export default function TeacherCourseManage() {
   const [expandedPaper, setExpandedPaper] = useState<string | null>("人工智能通讯课-期末考试");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showScoringRulesModal, setShowScoringRulesModal] = useState(false);
-  const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
+  const [showCreateChapterDrawer, setShowCreateChapterDrawer] = useState(false);
   const [addMenuOpenIndex, setAddMenuOpenIndex] = useState<number | null>(null);
   const [showTeachingMaterialModal, setShowTeachingMaterialModal] = useState(false);
   const [showExperimentMaterialModal, setShowExperimentMaterialModal] = useState(false);
@@ -362,8 +362,8 @@ export default function TeacherCourseManage() {
                        <button onClick={() => setEditorSubTab('assignments')} className={cn("pb-4 text-[15px] relative bottom-[-1px] rounded-[4px]", editorSubTab === 'assignments' ? "font-bold text-[#fa541c] border-b-2 border-[#fa541c]" : "font-medium text-neutral-500 hover:text-neutral-title transition-colors border-b-2 border-transparent")}>课程作业</button>
                      </div>
                      <div className="flex items-center gap-4 pb-3">
-                       <Button variant="outline" size="sm" onClick={() => setShowCreateLessonModal(true)} className="h-8 text-[#fa541c] border-[#fa541c] bg-transparent hover:bg-[#fa541c] hover:text-white rounded-[4px] flex items-center gap-1.5 transition-colors">
-                         <PlusCircle className="w-3.5 h-3.5" /> 新建课节
+                       <Button variant="outline" size="sm" onClick={() => setShowCreateChapterDrawer(true)} className="h-8 text-[#fa541c] border-[#fa541c] bg-transparent hover:bg-[#fa541c] hover:text-white rounded-[4px] flex items-center gap-1.5 transition-colors">
+                         <PlusCircle className="w-3.5 h-3.5" /> 新建章节
                        </Button>
                         <button 
                           onClick={() => {
@@ -1387,32 +1387,35 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 新建课节 Modal */}
-      {showCreateLessonModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      {/* 新建章节 Drawer */}
+      {showCreateChapterDrawer && (
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowCreateChapterDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
-                <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建课节
+                <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建章节
               </h2>
               <button 
-                onClick={() => setShowCreateLessonModal(false)} 
+                onClick={() => setShowCreateChapterDrawer(false)} 
                 className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px]">
+            <div className="p-6 space-y-4 bg-white text-[13px] flex-1 overflow-y-auto">
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 课节名称
+                  <span className="text-[#fa541c]">*</span> 章节名称
                 </label>
                 <input 
                   type="text" 
                   className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
-                  placeholder="请输入课节名称" 
+                  placeholder="请输入章节名称" 
                   autoFocus 
                 />
               </div>
@@ -1420,14 +1423,14 @@ export default function TeacherCourseManage() {
             {/* Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
-                onClick={() => setShowCreateLessonModal(false)} 
+                onClick={() => setShowCreateChapterDrawer(false)} 
                 variant="outline" 
                 className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
               >
                 取消
               </Button>
               <Button 
-                onClick={() => setShowCreateLessonModal(false)} 
+                onClick={() => setShowCreateChapterDrawer(false)} 
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
               >
                 添加
