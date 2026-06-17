@@ -87,10 +87,16 @@ export default function TeacherHome() {
   const [applyPublicCourse, setApplyPublicCourse] = useState<any>(null);
   const [applyReason, setApplyReason] = useState('');
   const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
-  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ show: boolean; courseId: number | null; courseName: string }>({
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
     show: false,
-    courseId: null,
-    courseName: ''
+    title: '',
+    message: '',
+    onConfirm: () => {}
   });
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -549,9 +555,33 @@ export default function TeacherHome() {
                             编辑
                           </button>
                           {course.status === '草稿' ? (
-                            <button onClick={() => handlePublishCourse(course.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">发布</button>
+                            <button 
+                              onClick={() => {
+                                setConfirmDialog({
+                                  show: true,
+                                  title: '确认发布课程',
+                                  message: `确定要发布课程 "${course.name}" 吗？发布后选课学生将可见该课程。`,
+                                  onConfirm: () => handlePublishCourse(course.id)
+                                });
+                              }} 
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
+                            >
+                              发布
+                            </button>
                           ) : (
-                            <button onClick={() => handleCancelPublishCourse(course.id)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">取消发布</button>
+                            <button 
+                              onClick={() => {
+                                setConfirmDialog({
+                                  show: true,
+                                  title: '确认取消发布',
+                                  message: `确定要取消发布课程 "${course.name}" 吗？取消发布后学生将无法访问该课程。`,
+                                  onConfirm: () => handleCancelPublishCourse(course.id)
+                                });
+                              }} 
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
+                            >
+                              取消发布
+                            </button>
                           )}
                           {course.scope === '私有' && (
                             <button 
@@ -570,10 +600,11 @@ export default function TeacherHome() {
                           <button 
                             onClick={() => {
                               if (course.scope === '租户' || course.scope === '平台') return;
-                              setDeleteConfirmModal({
+                              setConfirmDialog({
                                 show: true,
-                                courseId: course.id,
-                                courseName: course.name
+                                title: '确认删除课程',
+                                message: `确定要删除课程 "${course.name}" 吗？该操作不可撤销。`,
+                                onConfirm: () => handleDeleteCourse(course.id)
                               });
                             }}
                             disabled={course.scope === '租户' || course.scope === '平台'}
@@ -978,17 +1009,17 @@ export default function TeacherHome() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmModal.show && (
+      {/* Action Confirmation Modal */}
+      {confirmDialog.show && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626]">
-                确认删除课程
+                {confirmDialog.title}
               </h2>
               <button 
-                onClick={() => setDeleteConfirmModal(prev => ({ ...prev, show: false }))} 
+                onClick={() => setConfirmDialog(prev => ({ ...prev, show: false }))} 
                 className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -999,14 +1030,14 @@ export default function TeacherHome() {
             <div className="p-6 flex items-start gap-3 bg-white">
               <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
               <div className="text-[14px] text-neutral-750 leading-normal">
-                确定要删除课程 <strong className="text-neutral-900">"{deleteConfirmModal.courseName}"</strong> 吗？该操作不可撤销。
+                {confirmDialog.message}
               </div>
             </div>
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
-                onClick={() => setDeleteConfirmModal(prev => ({ ...prev, show: false }))} 
+                onClick={() => setConfirmDialog(prev => ({ ...prev, show: false }))} 
                 variant="outline" 
                 className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
               >
@@ -1014,10 +1045,8 @@ export default function TeacherHome() {
               </Button>
               <Button 
                 onClick={() => {
-                  if (deleteConfirmModal.courseId) {
-                    handleDeleteCourse(deleteConfirmModal.courseId);
-                  }
-                  setDeleteConfirmModal({ show: false, courseId: null, courseName: '' });
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(prev => ({ ...prev, show: false }));
                 }} 
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
