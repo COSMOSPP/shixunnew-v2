@@ -1407,14 +1407,14 @@ export default function TeacherCourseManage() {
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px] flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
+            <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
                   <span className="text-[#fa541c]">*</span> 章节名称
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                   placeholder="请输入章节名称" 
                   autoFocus 
                 />
@@ -1460,28 +1460,31 @@ export default function TeacherCourseManage() {
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px] flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 名称
+            <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
+                  <span className="text-[#fa541c]">*</span> 课件名称
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                   placeholder="请输入教学课件名称" 
                   autoFocus 
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 预估课时（分钟）
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
+                  <span className="text-[#fa541c]">*</span> 预估课时
                 </label>
-                <input 
-                  type="number" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
-                  placeholder="请输入预估课时（分钟）" 
-                  defaultValue={45} 
-                />
+                <div className="relative flex items-center">
+                  <input 
+                    type="number" 
+                    className="w-full border border-neutral-200 rounded-[4px] pl-3.5 pr-12 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                    placeholder="请输入" 
+                    defaultValue={45} 
+                  />
+                  <span className="absolute right-3.5 text-[12px] text-neutral-400 font-medium select-none">分钟</span>
+                </div>
               </div>
             </div>
             {/* Footer */}
@@ -1621,14 +1624,14 @@ export default function TeacherCourseManage() {
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px] flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 名称
+            <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
+                  <span className="text-[#fa541c]">*</span> 课件名称
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                   placeholder="请输入课件名称" 
                   autoFocus 
                 />
