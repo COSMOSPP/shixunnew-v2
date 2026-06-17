@@ -433,9 +433,9 @@ export default function TeacherHome() {
                   setCourseModalMode('create'); 
                   setIsCourseModalOpen(true); 
                 }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 shadow-sm"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm font-bold h-9 px-5 text-[13px] border-0 cursor-pointer transition-colors"
               >
-                <Plus className="w-4 h-4 mr-1" /> 新建课程
+                <Plus className="w-4 h-4 mr-1.5" /> 新建课程
               </Button>
             </div>
             
@@ -609,81 +609,102 @@ export default function TeacherHome() {
         )}
       </div>
 
-      {/* Course Dialog (Create/Edit) */}
+      {/* Course Dialog (Create/Edit Drawer) - Styled exactly like projects creation drawer */}
       {isCourseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div key={courseModalMode + (editingCourse?.id || '')} className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => setIsCourseModalOpen(false)}
+        >
+          <div 
+            key={courseModalMode + (editingCourse?.id || '')}
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 {courseModalMode === 'create' ? <Plus className="w-5 h-5 text-[#fa541c]" /> : <Edit className="w-5 h-5 text-[#fa541c]" />} 
                 {courseModalMode === 'create' ? '新建课程' : '编辑课程'}
               </h2>
-              <button onClick={() => setIsCourseModalOpen(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
-                <X className="w-5 h-5" />
+              <button 
+                onClick={() => setIsCourseModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-              <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 课程名称
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
-                    value={courseFormName}
-                    onChange={(e) => setCourseFormName(e.target.value)}
-                    placeholder="请输入课程名称" 
-                    autoFocus={courseModalMode === 'create'} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 专业方向
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
-                    value={courseFormMajor}
-                    onChange={(e) => setCourseFormMajor(e.target.value)}
-                    placeholder="请输入专业方向" 
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 标签
+
+            {/* Scrollable Content Forms */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+              
+              {/* 1. 课程名称 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  课程名称 <span className="text-[#fa541c]">*</span>
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]" 
+                  value={courseFormName}
+                  onChange={(e) => setCourseFormName(e.target.value)}
+                  placeholder="请输入课程名称" 
+                  autoFocus={courseModalMode === 'create'} 
+                />
+              </div>
+
+              {/* 2. 专业方向 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  专业方向 <span className="text-[#fa541c]">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]" 
+                  value={courseFormMajor}
+                  onChange={(e) => setCourseFormMajor(e.target.value)}
+                  placeholder="请输入专业方向" 
+                />
+              </div>
+
+              {/* 3. 标签 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  标签 <span className="text-[#fa541c]">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]" 
                   value={courseFormTags}
                   onChange={(e) => setCourseFormTags(e.target.value)}
                   placeholder="请输入标签，用逗号分隔" 
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 课程简介
+
+              {/* 4. 课程简介 */}
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                  课程简介 <span className="text-[#fa541c]">*</span>
                 </label>
                 <textarea 
-                  className="w-full min-h-[80px] border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none" 
+                  className="w-full min-h-[100px] border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none" 
                   value={courseFormDesc}
                   onChange={(e) => setCourseFormDesc(e.target.value)}
                   placeholder="请输入课程简介"
                 ></textarea>
               </div>
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 课程图片
+
+              {/* 5. 课程图片 */}
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                  课程图片 <span className="text-[#fa541c]">*</span>
                 </label>
-                <div className="grid grid-cols-3 gap-3 mt-1">
+                <div className="grid grid-cols-3 gap-3">
                   {defaultCovers.map((cover, idx) => (
                     <div 
                       key={idx}
                       onClick={() => setSelectedCover(cover)}
                       className={cn(
-                        "h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all relative",
+                        "h-20 rounded-[4px] overflow-hidden cursor-pointer border-2 transition-all relative",
                         selectedCover === cover ? "border-[#fa541c] shadow-md scale-[1.02]" : "border-transparent hover:border-[#fa541c]/50 hover:scale-[1.02]"
                       )}
                     >
@@ -697,12 +718,22 @@ export default function TeacherHome() {
                   ))}
                 </div>
               </div>
+
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setIsCourseModalOpen(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsCourseModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
                 取消
               </Button>
-              <Button onClick={handleSaveCourse} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">
+              <Button 
+                onClick={handleSaveCourse} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
                 确认
               </Button>
             </div>

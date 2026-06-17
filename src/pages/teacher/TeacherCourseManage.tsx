@@ -1167,22 +1167,26 @@ export default function TeacherCourseManage() {
 
       {/* 选择试卷 Modal (Figure 2 Design) */}
       {showSelectPaperModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[1100px] overflow-hidden flex flex-col h-[600px]">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[16px] font-bold text-neutral-900">选择试卷</h2>
-              <button onClick={() => setShowSelectPaperModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-[4px] transition-colors">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[1100px] overflow-hidden flex flex-col h-[600px] animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">选择试卷</h2>
+              <button 
+                onClick={() => setShowSelectPaperModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 pb-0 flex justify-end">
+            <div className="p-5 pb-0 flex justify-end shrink-0 bg-white">
                <Button className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm font-bold h-9 px-5">
                  <Plus className="w-4 h-4 mr-1.5" /> 新建试卷
                </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-5 custom-scrollbar bg-white">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-neutral-100 text-[13px] text-neutral-900 font-bold bg-white">
@@ -1245,7 +1249,7 @@ export default function TeacherCourseManage() {
                         <td className="py-4 px-2 text-center relative">
                            <div className="flex items-center gap-3">
                              <div 
-                               className="w-4 h-4 border border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded text-neutral-400 flex items-center justify-center text-[10px] bg-neutral-50 transition-colors"
+                               className="w-4 h-4 border border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded text-neutral-400 flex items-center justify-center text-[10px] bg-neutral-50 transition-colors cursor-pointer"
                                onClick={(e) => {
                                  e.stopPropagation();
                                  setExpandedPaper(isExpanded ? null : paper.name);
@@ -1290,9 +1294,21 @@ export default function TeacherCourseManage() {
               </table>
             </div>
 
-            <div className="p-4 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 shrink-0">
-               <Button onClick={() => setShowSelectPaperModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px]">取消</Button>
-               <Button onClick={() => setShowSelectPaperModal(false)} className={cn("text-white h-9 px-6 rounded-[4px]", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>确定</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+               <Button 
+                 onClick={() => setShowSelectPaperModal(false)} 
+                 variant="outline" 
+                 className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+               >
+                 取消
+               </Button>
+               <Button 
+                 onClick={() => setShowSelectPaperModal(false)} 
+                 className={cn("text-white h-9 px-6 rounded-[4px] text-[13px] shadow-sm cursor-pointer transition-colors font-semibold", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}
+               >
+                 确定
+               </Button>
             </div>
           </div>
         </div>
@@ -1300,23 +1316,27 @@ export default function TeacherCourseManage() {
 
       {/* 评分规则 Modal */}
       {showScoringRulesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[560px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[560px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <Settings className="w-5 h-5 text-[#fa541c]" /> 配置评分维度
               </h2>
-              <button onClick={() => setShowScoringRulesModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowScoringRulesModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 flex-1 space-y-6">
+            <div className="p-6 flex-1 space-y-6 bg-white text-[13px]">
                <div className="bg-orange-50 border border-orange-100 p-3 rounded-[4px] flex items-start gap-2 mb-2">
                  <div className="text-orange-600 mt-0.5"><Award className="w-4 h-4" /></div>
                  <p className="text-[12px] text-orange-800 leading-relaxed">设置多个评分维度，方便批阅时打分。各个维度的分值总和应等于该任务的满分（100分）。</p>
                </div>
-
+ 
                <div className="space-y-3">
                  {[
                    { name: '代码功能完整性', desc: '实现所有要求的功能，能正常运行', score: 40 },
@@ -1338,17 +1358,29 @@ export default function TeacherCourseManage() {
                    </div>
                  ))}
                </div>
-
+ 
                <Button variant="outline" className="w-full border-dashed border-neutral-300 text-neutral-600 hover:text-[#fa541c] hover:border-orange-300 bg-neutral-50 hover:bg-orange-50 h-10 rounded-[4px]">
                  <Plus className="w-4 h-4 mr-2" /> 新增评分维度
                </Button>
             </div>
-
-            <div className="p-5 border-t border-neutral-100 bg-white shrink-0 flex items-center justify-between gap-3">
+ 
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 shrink-0 flex items-center justify-between gap-3">
               <span className="text-[13px] font-bold text-neutral-600">当前总分：<span className="text-[#fa541c] text-[16px]">100</span> 分</span>
               <div className="flex gap-3">
-                <Button onClick={() => setShowScoringRulesModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
-                <Button onClick={() => setShowScoringRulesModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存规则</Button>
+                <Button 
+                  onClick={() => setShowScoringRulesModal(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={() => setShowScoringRulesModal(false)} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  保存规则
+                </Button>
               </div>
             </div>
           </div>
@@ -1357,27 +1389,49 @@ export default function TeacherCourseManage() {
 
       {/* 新建课节 Modal */}
       {showCreateLessonModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建课节
               </h2>
-              <button onClick={() => setShowCreateLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowCreateLessonModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            {/* Body */}
+            <div className="p-6 space-y-4 bg-white text-[13px]">
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 课节名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课节名称" autoFocus />
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  placeholder="请输入课节名称" 
+                  autoFocus 
+                />
               </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowCreateLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
-              <Button onClick={() => setShowCreateLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowCreateLessonModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => setShowCreateLessonModal(false)} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                添加
+              </Button>
             </div>
           </div>
         </div>
@@ -1385,33 +1439,60 @@ export default function TeacherCourseManage() {
 
       {/* 新建教学课件 Modal */}
       {showTeachingMaterialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  新建教学课件
               </h2>
-              <button onClick={() => setShowTeachingMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowTeachingMaterialModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            {/* Body */}
+            <div className="p-6 space-y-4 bg-white text-[13px]">
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入教学课件名称" autoFocus />
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  placeholder="请输入教学课件名称" 
+                  autoFocus 
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 预估课时（分钟）
                 </label>
-                <input type="number" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入预估课时（分钟）" defaultValue={45} />
+                <input 
+                  type="number" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  placeholder="请输入预估课时（分钟）" 
+                  defaultValue={45} 
+                />
               </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowTeachingMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
-              <Button onClick={() => setShowTeachingMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowTeachingMaterialModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => setShowTeachingMaterialModal(false)} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                添加
+              </Button>
             </div>
           </div>
         </div>
@@ -1419,18 +1500,22 @@ export default function TeacherCourseManage() {
 
       {/* 选择实验课件 Modal */}
       {showExperimentMaterialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col h-[500px]">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden border border-neutral-100 flex flex-col h-[500px] animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择实验课件 <span className="text-[13px] text-blue-500 font-normal cursor-pointer hover:underline ml-2">帮助教程 <Info className="w-3.5 h-3.5 inline mb-0.5" /></span>
               </h2>
-              <button onClick={() => setShowExperimentMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowExperimentMaterialModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="px-6 py-3 border-b border-neutral-100 flex items-center justify-between">
+            <div className="px-6 py-3 border-b border-neutral-100 flex items-center justify-between bg-white shrink-0">
                <div className="text-[14px] font-bold text-neutral-700">我创建的</div>
                <div className="flex items-center gap-3">
                  {isSearchingExperiment ? (
@@ -1449,7 +1534,7 @@ export default function TeacherCourseManage() {
                </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto p-2 bg-white text-[13px]">
                {[
                  { id: 'IL511779172854', subtitle: '人工智能' },
                  { id: 'IL511779173126', subtitle: '人工智能' }
@@ -1484,11 +1569,23 @@ export default function TeacherCourseManage() {
                ))}
             </div>
 
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-between shrink-0">
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-between shrink-0">
               <div className="text-[13px] text-neutral-500">已选 <span className="text-[#fa541c] font-bold">{selectedExperimentIndex !== null ? 1 : 0}</span> 项</div>
               <div className="flex gap-3">
-                <Button onClick={() => setShowExperimentMaterialModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] rounded-[4px]">取消</Button>
-                <Button onClick={() => setShowExperimentMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-8 shadow-sm shadow-orange-500/20">确认</Button>
+                <Button 
+                  onClick={() => setShowExperimentMaterialModal(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={() => setShowExperimentMaterialModal(false)} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  确认
+                </Button>
               </div>
             </div>
           </div>
@@ -1497,27 +1594,49 @@ export default function TeacherCourseManage() {
 
       {/* 新建互动学习课件 Modal */}
       {showInteractiveMaterialModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  新建互动学习课件
               </h2>
-              <button onClick={() => setShowInteractiveMaterialModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowInteractiveMaterialModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            {/* Body */}
+            <div className="p-6 space-y-4 bg-white text-[13px]">
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入课件名称" autoFocus />
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  placeholder="请输入课件名称" 
+                  autoFocus 
+                />
               </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowInteractiveMaterialModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
-              <Button onClick={() => setShowInteractiveMaterialModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowInteractiveMaterialModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => setShowInteractiveMaterialModal(false)} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                添加
+              </Button>
             </div>
           </div>
         </div>
@@ -1525,13 +1644,17 @@ export default function TeacherCourseManage() {
 
       {/* 选择随堂作业 Modal */}
       {showAssignmentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col h-[560px]">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden border border-neutral-100 flex flex-col h-[560px] animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择随堂作业
               </h2>
-              <button onClick={() => setShowAssignmentModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowAssignmentModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1585,27 +1708,49 @@ export default function TeacherCourseManage() {
 
       {/* 编辑章节 Modal */}
       {showEditChapterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  编辑章节
               </h2>
-              <button onClick={() => setShowEditChapterModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowEditChapterModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            {/* Body */}
+            <div className="p-6 space-y-4 bg-white text-[13px]">
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
-                <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" defaultValue="第一课" autoFocus />
+                <input 
+                  type="text" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  defaultValue="第一课" 
+                  autoFocus 
+                />
               </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowEditChapterModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
-              <Button onClick={() => setShowEditChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowEditChapterModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => setShowEditChapterModal(false)} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                保存
+              </Button>
             </div>
           </div>
         </div>
@@ -1613,27 +1758,45 @@ export default function TeacherCourseManage() {
 
       {/* 删除确认 Modal */}
       {showDeleteChapterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col">
-            <div className="p-6 flex items-start gap-4">
-              <div className="w-1 h-5 bg-[#fa541c] rounded-full mt-1 shrink-0"></div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[18px] font-bold text-neutral-900">删除确认</h2>
-                  <button onClick={() => setShowDeleteChapterModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors rounded-[4px]">
-                    <X className="w-5 h-5" />
-                  </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Body */}
+            <div className="p-6 flex flex-col">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-1 h-5 bg-[#fa541c] rounded-full mt-1 shrink-0"></div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-[18px] font-bold text-neutral-900">删除确认</h2>
+                    <button 
+                      onClick={() => setShowDeleteChapterModal(false)} 
+                      className="text-neutral-400 hover:text-[#fa541c] transition-colors rounded-[4px] border-0 bg-transparent cursor-pointer p-0"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <p className="text-[14px] text-neutral-600 mb-2">
+                    确定要删除这个章吗？删除后将无法恢复
+                  </p>
+                  <p className="text-[13px] text-[#fa541c] font-medium">
+                    若该目录下存在子目录或学生学习数据将一并删除
+                  </p>
                 </div>
-                <p className="text-[14px] text-neutral-600 mb-4">
-                  确定要删除这个章吗？删除后将无法恢复
-                </p>
-                <p className="text-[14px] text-[#fa541c] font-medium mb-6">
-                  若该目录下存在子目录或学生学习数据将一并删除
-                </p>
-                <div className="flex justify-end gap-3">
-                  <Button onClick={() => setShowDeleteChapterModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200 rounded-[4px]">取消</Button>
-                  <Button onClick={() => setShowDeleteChapterModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 shadow-sm">确定</Button>
-                </div>
+              </div>
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-2">
+                <Button 
+                  onClick={() => setShowDeleteChapterModal(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={() => setShowDeleteChapterModal(false)} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-6 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  确定
+                </Button>
               </div>
             </div>
           </div>
@@ -1642,32 +1805,49 @@ export default function TeacherCourseManage() {
 
       {/* 编辑课时 Modal */}
       {showEditLessonModal && selectedEditLesson && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  编辑课时
               </h2>
-              <button onClick={() => setShowEditLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors">
+              <button 
+                onClick={() => setShowEditLessonModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            {/* Body */}
+            <div className="p-6 space-y-4 bg-white text-[13px]">
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                   defaultValue={selectedEditLesson.title} 
                   autoFocus 
                 />
               </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button onClick={() => setShowEditLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6 rounded-[4px]">取消</Button>
-              <Button onClick={() => setShowEditLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowEditLessonModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => setShowEditLessonModal(false)} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                保存
+              </Button>
             </div>
           </div>
         </div>
@@ -1675,27 +1855,45 @@ export default function TeacherCourseManage() {
 
       {/* 删除课时确认 Modal */}
       {showDeleteLessonModal && selectedEditLesson && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animation-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col">
-            <div className="p-6 flex items-start gap-4">
-              <div className="w-1 h-5 bg-[#fa541c] rounded-full mt-1 shrink-0"></div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[18px] font-bold text-neutral-900">删除课时确认</h2>
-                  <button onClick={() => setShowDeleteLessonModal(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors rounded-[4px]">
-                    <X className="w-5 h-5" />
-                  </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Body */}
+            <div className="p-6 flex flex-col">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-1 h-5 bg-[#fa541c] rounded-full mt-1 shrink-0"></div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-[18px] font-bold text-neutral-900">删除课时确认</h2>
+                    <button 
+                      onClick={() => setShowDeleteLessonModal(false)} 
+                      className="text-neutral-400 hover:text-[#fa541c] transition-colors rounded-[4px] border-0 bg-transparent cursor-pointer p-0"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <p className="text-[14px] text-neutral-600 mb-2">
+                    确定要删除 <strong>{selectedEditLesson.section} {selectedEditLesson.title}</strong> 吗？删除后将无法恢复。
+                  </p>
+                  <p className="text-[13px] text-[#fa541c] font-medium">
+                    该课时关联的学习数据与学生记录将一并删除。
+                  </p>
                 </div>
-                <p className="text-[14px] text-neutral-600 mb-4">
-                  确定要删除 <strong>{selectedEditLesson.section} {selectedEditLesson.title}</strong> 吗？删除后将无法恢复。
-                </p>
-                <p className="text-[14px] text-[#fa541c] font-medium mb-6">
-                  该课时关联的学习数据与学生记录将一并删除。
-                </p>
-                <div className="flex justify-end gap-3">
-                  <Button onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-[#fa541c] font-bold h-9 px-6 hover:bg-orange-50 hover:text-[#fa541c] hover:border-orange-200 rounded-[4px]">取消</Button>
-                  <Button onClick={() => setShowDeleteLessonModal(false)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 shadow-sm">确定</Button>
-                </div>
+              </div>
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-2">
+                <Button 
+                  onClick={() => setShowDeleteLessonModal(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={() => setShowDeleteLessonModal(false)} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-6 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  确定
+                </Button>
               </div>
             </div>
           </div>
@@ -1704,27 +1902,27 @@ export default function TeacherCourseManage() {
 
       {/* 邀请学生 Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[500px] overflow-hidden border border-neutral-200 flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[500px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 邀请学生入班
               </h2>
               <button 
                 onClick={() => setShowInviteModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             {/* Tabs */}
-            <div className="flex border-b border-neutral-100 px-6 bg-neutral-50/20">
+            <div className="flex border-b border-neutral-100 px-6 bg-neutral-50/20 shrink-0">
               <button 
                 onClick={() => setInviteActiveTab('link')}
                 className={cn(
-                  "py-3 text-[13px] font-bold border-b-2 transition-all mr-6 rounded-[4px]",
+                  "py-3 text-[13px] font-bold border-b-2 transition-all mr-6 rounded-[4px] border-0 bg-transparent cursor-pointer",
                   inviteActiveTab === 'link' 
                     ? "border-b-[#fa541c] text-[#fa541c]" 
                     : "border-transparent text-neutral-400 hover:text-neutral-600"
@@ -1735,7 +1933,7 @@ export default function TeacherCourseManage() {
               <button 
                 onClick={() => setInviteActiveTab('manual')}
                 className={cn(
-                  "py-3 text-[13px] font-bold border-b-2 transition-all rounded-[4px]",
+                  "py-3 text-[13px] font-bold border-b-2 transition-all rounded-[4px] border-0 bg-transparent cursor-pointer",
                   inviteActiveTab === 'manual' 
                     ? "border-b-[#fa541c] text-[#fa541c]" 
                     : "border-transparent text-neutral-400 hover:text-neutral-600"
@@ -1752,7 +1950,7 @@ export default function TeacherCourseManage() {
                   <p className="text-[12px] text-neutral-500">将下方邀请码或专属邀请链接发送给学生，学生在实操平台中输入或访问即可直接加入该实训班级：</p>
                   
                   {/* Invite Code */}
-                  <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-150 flex items-center justify-between">
+                  <div className="bg-neutral-50 rounded-[4px] p-4 border border-neutral-150 flex items-center justify-between">
                     <div>
                       <div className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider mb-1">班级专属邀请码</div>
                       <div className="text-xl font-mono font-bold text-neutral-800 tracking-wider">X8J9K2</div>
@@ -1762,28 +1960,28 @@ export default function TeacherCourseManage() {
                         navigator.clipboard.writeText("X8J9K2");
                         alert("邀请码复制成功！");
                       }}
-                      className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 font-bold text-[12px] px-3.5 h-8.5 rounded-[4px] transition-colors"
+                      className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-orange-50 font-bold text-[12px] px-3.5 h-9 rounded-[4px] transition-colors"
                     >
                       复制邀请码
                     </Button>
                   </div>
 
                   {/* Invite Link */}
-                  <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-150 space-y-2">
+                  <div className="bg-neutral-50 rounded-[4px] p-4 border border-neutral-150 space-y-2">
                     <div className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">班级邀请链接</div>
                     <div className="flex items-center gap-2">
                       <input 
                         type="text" 
                         readOnly 
                         value="https://platform.cosmos.com/join/course/1/X8J9K2" 
-                        className="flex-1 bg-white border border-neutral-200 rounded-[4px] px-3 py-1.5 text-[11px] text-neutral-600 focus:outline-none font-mono"
+                        className="flex-1 bg-white border border-neutral-200 rounded-[4px] px-3 py-1.5 text-[11px] text-neutral-600 focus:outline-none font-mono font-bold"
                       />
                       <Button 
                         onClick={() => {
                           navigator.clipboard.writeText("https://platform.cosmos.com/join/course/1/X8J9K2");
                           alert("邀请链接复制成功！");
                         }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold text-[12px] px-3.5 h-8.5 rounded-[4px] transition-colors shrink-0"
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold text-[12px] px-3.5 h-9 rounded-[4px] transition-colors shrink-0"
                       >
                         复制链接
                       </Button>
@@ -1799,7 +1997,7 @@ export default function TeacherCourseManage() {
                       rows={4}
                       value={inviteInput}
                       onChange={(e) => setInviteInput(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white resize-none"
+                      className="w-full border border-neutral-200 rounded-[4px] px-4 py-3 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white resize-none"
                     />
                     <div className="text-[11px] text-neutral-400">系统将自动向上述联系方式发送包含入班链接的短信或邮件通知。</div>
                   </div>
@@ -1808,11 +2006,11 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setShowInviteModal(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px] rounded-[4px]"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px]"
               >
                 关闭
               </Button>
@@ -1820,7 +2018,7 @@ export default function TeacherCourseManage() {
                 <Button 
                   onClick={handleSendInvite}
                   disabled={!inviteInput.trim()}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 text-[13px] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   发送邀请
                 </Button>
@@ -1832,11 +2030,11 @@ export default function TeacherCourseManage() {
 
       {/* 批量授权 Modal */}
       {showBatchImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[560px] overflow-hidden border border-neutral-200 flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[560px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <Paperclip className="w-5 h-5 text-[#fa541c]" /> 批量授权用户名单
               </h2>
               <button 
@@ -1845,7 +2043,7 @@ export default function TeacherCourseManage() {
                   setImportSelectedFile(null);
                   setImportProgress(0);
                 }} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1863,7 +2061,7 @@ export default function TeacherCourseManage() {
                   <span className="text-[12px] text-neutral-500">请使用我们预设的模板列属性格式，以避免解析错误。</span>
                   <Button 
                     onClick={() => alert("用户授权模版已下载到您的系统默认下载文件夹！")}
-                    className="bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-[12px] px-3.5 h-8.5 rounded-[4px] transition-colors shadow-2xs"
+                    className="bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50 font-bold text-[12px] px-3.5 h-9 rounded-[4px] transition-colors shadow-sm"
                   >
                     下载授权模板
                   </Button>
@@ -1882,7 +2080,7 @@ export default function TeacherCourseManage() {
                   {!importSelectedFile ? (
                     <div 
                       onClick={handleMockUploadFile}
-                      className="border-2 border-dashed border-neutral-200 rounded-xl p-6 flex flex-col items-center justify-center bg-neutral-50/50 hover:bg-orange-50/10 hover:border-orange-200 cursor-pointer transition-all group"
+                      className="border-2 border-dashed border-neutral-200 rounded-[4px] p-6 flex flex-col items-center justify-center bg-neutral-50/50 hover:bg-orange-50/10 hover:border-orange-200 cursor-pointer transition-all group"
                     >
                       <Paperclip className="w-8 h-8 text-neutral-300 group-hover:text-[#fa541c] transition-colors mb-2" />
                       <div className="text-[13px] font-bold text-neutral-700 mb-1 group-hover:text-[#fa541c] transition-colors">
@@ -1891,7 +2089,7 @@ export default function TeacherCourseManage() {
                       <div className="text-[11px] text-neutral-400">仅支持 .xlsx, .xls 格式文件，文件不超过 10 MB</div>
                     </div>
                   ) : (
-                    <div className="border border-neutral-200 rounded-xl p-4 bg-white space-y-3">
+                    <div className="border border-neutral-200 rounded-[4px] p-4 bg-white space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-[4px] bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -1942,7 +2140,7 @@ export default function TeacherCourseManage() {
                     </div>
                     <div className="pl-7 space-y-2">
                       <div className="text-[12px] text-neutral-500 mb-1">系统已成功解析出表格内的 3 位用户，请确认是否授权：</div>
-                      <div className="border border-neutral-150 rounded-xl overflow-hidden bg-neutral-50/30">
+                      <div className="border border-neutral-150 rounded-[4px] overflow-hidden bg-neutral-50/30">
                         <table className="w-full text-left text-[12px] border-collapse bg-white">
                           <thead>
                             <tr className="bg-neutral-50/80 border-b border-neutral-200 text-neutral-550 font-bold">
@@ -1975,7 +2173,7 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => {
                   setShowBatchImportModal(false);
@@ -1983,14 +2181,14 @@ export default function TeacherCourseManage() {
                   setImportProgress(0);
                 }} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px] rounded-[4px]"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px]"
               >
                 取消
               </Button>
               {importSelectedFile && importProgress === 100 && (
                 <Button 
                   onClick={handleConfirmBatchAuthorize}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 text-[13px] shadow-sm"
                 >
                   确认授权 (3名用户)
                 </Button>
@@ -2002,16 +2200,16 @@ export default function TeacherCourseManage() {
 
       {/* 导出学情数据报告 Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[540px] overflow-hidden border border-neutral-200 flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[540px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <Download className="w-5 h-5 text-[#fa541c]" /> 导出学情数据报告
               </h2>
               <button 
                 onClick={() => setShowExportModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2035,13 +2233,13 @@ export default function TeacherCourseManage() {
                             key={dim.id}
                             onClick={() => setExportDimension(dim.id)}
                             className={cn(
-                              "border-2 rounded-xl p-3.5 cursor-pointer transition-all hover:bg-neutral-50/50 flex flex-col text-left",
+                              "border-2 rounded-[4px] p-3.5 cursor-pointer transition-all hover:bg-neutral-50/50 flex flex-col text-left",
                               exportDimension === dim.id 
                                 ? "border-[#fa541c] bg-orange-50/10" 
                                 : "border-neutral-200 bg-white"
                             )}
                           >
-                            <span className="text-[13px] font-bold text-neutral-850 mb-0.5">{dim.title}</span>
+                            <span className="text-[13px] font-bold text-neutral-855 mb-0.5">{dim.title}</span>
                             <span className="text-[10px] text-neutral-400 leading-normal">{dim.desc}</span>
                           </div>
                         ))}
@@ -2051,7 +2249,7 @@ export default function TeacherCourseManage() {
                     {/* Columns Checkboxes */}
                     <div className="space-y-2 text-left">
                       <label className="text-[12px] font-bold text-neutral-700">包含数据指标段</label>
-                      <div className="grid grid-cols-2 gap-3 bg-neutral-50/50 border border-neutral-150 rounded-xl p-3.5">
+                      <div className="grid grid-cols-2 gap-3 bg-neutral-50/50 border border-neutral-200 rounded-[4px] p-3.5">
                         {[
                           { key: "info", label: "学生基本信息 (学号/联系方式)" },
                           { key: "progress", label: "课时完成进度 (视频完播率/时长)" },
@@ -2087,7 +2285,7 @@ export default function TeacherCourseManage() {
                               onChange={() => setExportFormat(fmt.id)}
                               className="w-3.5 h-3.5 accent-[#fa541c]"
                             />
-                            <span className="text-[12px] text-neutral-705 font-bold">{fmt.label}</span>
+                            <span className="text-[12px] text-neutral-700 font-bold">{fmt.label}</span>
                           </label>
                         ))}
                       </div>
@@ -2110,7 +2308,7 @@ export default function TeacherCourseManage() {
                     ></div>
                   </div>
 
-                  <div className="text-[11px] text-neutral-455 font-medium italic">
+                  <div className="text-[11px] text-neutral-450 font-medium italic">
                     {exportProgress < 30 ? "正在提取学生大纲及视频学习时长指标..." :
                      exportProgress < 75 ? "正在汇总课后作业及平时成绩权重..." :
                      "正在渲染离线 Excel 图表单元格结构并打包压缩..."}
@@ -2127,15 +2325,15 @@ export default function TeacherCourseManage() {
                   </div>
 
                   {/* Mock File Card */}
-                  <div className="w-full max-w-[380px] border border-neutral-200 rounded-xl p-4 bg-neutral-50/50 flex items-center gap-3.5">
+                  <div className="w-full max-w-[380px] border border-neutral-200 rounded-[4px] p-4 bg-neutral-50/50 flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-[4px] bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="text-left flex-1 min-w-0">
-                      <div className="text-[13px] font-bold text-neutral-850 truncate">
+                      <div className="text-[13px] font-bold text-neutral-800 truncate">
                         人工智能基础与实践_整体学情报告.{exportFormat}
                       </div>
-                      <div className="text-[11px] text-neutral-400 font-medium">134.5 KB &middot; 本地磁盘文件 &middot; 解析完毕</div>
+                      <div className="text-[11px] text-neutral-450 font-medium">134.5 KB &middot; 本地磁盘文件 &middot; 解析完毕</div>
                     </div>
                   </div>
                 </div>
@@ -2143,19 +2341,19 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               {!isExporting && !exportCompleted ? (
                 <>
                   <Button 
                     onClick={() => setShowExportModal(false)}
                     variant="outline"
-                    className="border-neutral-200 text-neutral-600 font-bold h-9.5 px-5 text-[13px] rounded-[4px]"
+                    className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px]"
                   >
                     取消
                   </Button>
                   <Button 
                     onClick={handleStartExport}
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-6 text-[13px] shadow-md shadow-orange-500/20"
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-6 text-[13px] shadow-sm"
                   >
                     开始生成报告
                   </Button>
@@ -2163,7 +2361,7 @@ export default function TeacherCourseManage() {
               ) : exportCompleted ? (
                 <Button 
                   onClick={() => setShowExportModal(false)}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9.5 px-8 text-[13px]"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold h-9 px-8 text-[13px]"
                 >
                   完成
                 </Button>
@@ -2175,36 +2373,36 @@ export default function TeacherCourseManage() {
 
       {/* 提示 Confirm Modal */}
       {confirmModal.show && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-[4px] shadow-xl w-full max-w-[420px] overflow-hidden border border-neutral-200 flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="px-5 pt-5 flex items-center justify-between">
-              <h2 className="text-[16px] font-bold text-neutral-900">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
                 {confirmModal.title}
               </h2>
               <button 
                 onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="px-5 py-4 flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-[#fa8c16] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
-              <div className="text-[14px] text-neutral-700 leading-normal">
+            <div className="p-6 flex items-start gap-3 bg-white">
+              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              <div className="text-[14px] text-neutral-750 leading-normal">
                 {confirmModal.message}
               </div>
             </div>
 
             {/* Footer */}
-            <div className="px-5 pb-5 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               {confirmModal.showCancel && (
                 <Button 
                   onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
                   variant="outline" 
-                  className="border-neutral-200 text-neutral-600 hover:bg-neutral-50 font-bold h-8 px-4 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+                  className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
                 >
                   取消
                 </Button>
@@ -2213,7 +2411,7 @@ export default function TeacherCourseManage() {
                 onClick={() => {
                   confirmModal.onConfirm();
                 }} 
-                className="bg-[#ff8f5b] hover:bg-[#ff7a45] text-white font-bold h-8 px-4 text-[13px] rounded-[4px] shadow-xs transition-colors border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
                 确定
               </Button>
@@ -2224,23 +2422,23 @@ export default function TeacherCourseManage() {
 
       {/* 批量解除授权 Modal */}
       {showBulkRevokeModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-[4px] shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[16px] font-bold text-neutral-900">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
                 批量解除授权
               </h2>
               <button 
                 onClick={() => setShowBulkRevokeModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="p-6 flex-1 flex flex-col">
+            <div className="p-6 flex-1 flex flex-col bg-white">
               <div className="border border-neutral-200 rounded-[4px] overflow-hidden bg-white">
                 <div className="overflow-y-auto max-h-[240px]">
                   <table className="w-full text-left text-[12px] border-collapse bg-white">
@@ -2271,11 +2469,11 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50/20 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setShowBulkRevokeModal(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
               >
                 取消
               </Button>
@@ -2285,7 +2483,7 @@ export default function TeacherCourseManage() {
                   setSelectedStudents([]);
                   setShowBulkRevokeModal(false);
                 }} 
-                className="bg-[#ff5722] hover:bg-[#e64a19] text-white font-bold h-8.5 px-5 text-[13px] rounded-[4px] shadow-xs transition-colors border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
                 确认
               </Button>
@@ -2296,23 +2494,23 @@ export default function TeacherCourseManage() {
 
       {/* 批量授权 Modal */}
       {showBulkAuthModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in text-left">
-          <div className="bg-white rounded-[4px] shadow-xl w-full max-w-[640px] overflow-hidden border border-neutral-200 flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[16px] font-bold text-neutral-900">
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
                 批量授权
               </h2>
               <button 
                 onClick={() => setShowBulkAuthModal(false)} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="p-6 flex-1 flex flex-col">
+            <div className="p-6 flex-1 flex flex-col bg-white">
               <div className="border border-neutral-200 rounded-[4px] overflow-hidden bg-white">
                 <div className="overflow-y-auto max-h-[240px]">
                   <table className="w-full text-left text-[12px] border-collapse bg-white">
@@ -2347,11 +2545,11 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50/20 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setShowBulkAuthModal(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-8.5 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
               >
                 取消
               </Button>
@@ -2365,7 +2563,7 @@ export default function TeacherCourseManage() {
                   setStudentList([...studentList, ...newStudents]);
                   setShowBulkAuthModal(false);
                 }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8.5 px-5 text-[13px] rounded-[4px] shadow-xs transition-colors border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
                 确认
               </Button>
