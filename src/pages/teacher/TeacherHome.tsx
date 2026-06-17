@@ -10,7 +10,7 @@ import TeacherExams from './TeacherExams';
 import TeacherDatasets from './TeacherDatasets';
 import TeacherPractices from './TeacherPractices';
 import TeacherAICenter from './TeacherAICenter';
-import { Layers, Info } from 'lucide-react';
+import { Layers, Info, Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Maximize2 } from 'lucide-react';
 
 export default function TeacherHome() {
   const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'dataset' | 'exam' | 'practice' | 'aicenter'>('course');
@@ -100,6 +100,7 @@ export default function TeacherHome() {
   const [courseFormMajor, setCourseFormMajor] = useState('');
   const [courseFormTags, setCourseFormTags] = useState('');
   const [courseFormDesc, setCourseFormDesc] = useState('');
+  const [courseFormIntroduction, setCourseFormIntroduction] = useState('');
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -185,7 +186,8 @@ export default function TeacherHome() {
         image: selectedCover || defaultCovers[0],
         state: 'active',
         major: courseFormMajor || '人工智能',
-        tags: courseFormTags || '必修, 核心课程'
+        tags: courseFormTags || '必修, 核心课程',
+        introduction: courseFormIntroduction
       };
       const updated = [newCourse, ...coursesList];
       setCoursesList(updated);
@@ -200,7 +202,8 @@ export default function TeacherHome() {
             desc: courseFormDesc,
             image: selectedCover,
             major: courseFormMajor,
-            tags: courseFormTags
+            tags: courseFormTags,
+            introduction: courseFormIntroduction
           };
         }
         return c;
@@ -436,6 +439,7 @@ export default function TeacherHome() {
                   setCourseFormTags('');
                   setCourseFormDesc('');
                   setSelectedCover(defaultCovers[0]); 
+                  setCourseFormIntroduction('');
                   setCourseModalMode('create'); 
                   setIsCourseModalOpen(true); 
                 }} 
@@ -511,6 +515,7 @@ export default function TeacherHome() {
                               setCourseFormTags(course.tags || '必修, 核心课程');
                               setCourseFormDesc(course.desc);
                               setSelectedCover(course.image);
+                              setCourseFormIntroduction(course.introduction || '');
                               setCourseModalMode('edit');
                               setIsCourseModalOpen(true);
                             }} 
@@ -636,9 +641,9 @@ export default function TeacherHome() {
               </h2>
               <button 
                 onClick={() => setIsCourseModalOpen(false)} 
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -660,21 +665,7 @@ export default function TeacherHome() {
                 />
               </div>
 
-              {/* 2. 专业方向 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right">
-                  专业方向 <span className="text-[#fa541c]">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]" 
-                  value={courseFormMajor}
-                  onChange={(e) => setCourseFormMajor(e.target.value)}
-                  placeholder="请输入专业方向" 
-                />
-              </div>
-
-              {/* 3. 标签 */}
+              {/* 2. 标签 */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                 <label className="text-[13px] font-bold text-[#262626] text-right">
                   标签 <span className="text-[#fa541c]">*</span>
@@ -684,27 +675,27 @@ export default function TeacherHome() {
                   className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]" 
                   value={courseFormTags}
                   onChange={(e) => setCourseFormTags(e.target.value)}
-                  placeholder="请输入标签，用逗号分隔" 
+                  placeholder="请输入标签，用英文逗号分隔" 
                 />
               </div>
 
-              {/* 4. 课程简介 */}
+              {/* 3. 课程描述 */}
               <div className="grid grid-cols-[100px_1fr] items-start gap-4">
                 <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
-                  课程简介 <span className="text-[#fa541c]">*</span>
+                  课程描述 <span className="text-[#fa541c]">*</span>
                 </label>
                 <textarea 
                   className="w-full min-h-[100px] border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none" 
                   value={courseFormDesc}
                   onChange={(e) => setCourseFormDesc(e.target.value)}
-                  placeholder="请输入课程简介"
+                  placeholder="请输入课程描述"
                 ></textarea>
               </div>
 
-              {/* 5. 课程图片 */}
+              {/* 4. 课程封面 */}
               <div className="grid grid-cols-[100px_1fr] items-start gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
-                  课程图片 <span className="text-[#fa541c]">*</span>
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">
+                  课程封面 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {defaultCovers.map((cover, idx) => (
@@ -712,18 +703,55 @@ export default function TeacherHome() {
                       key={idx}
                       onClick={() => setSelectedCover(cover)}
                       className={cn(
-                        "h-20 rounded-[4px] overflow-hidden cursor-pointer border-2 transition-all relative",
-                        selectedCover === cover ? "border-[#fa541c] shadow-md scale-[1.02]" : "border-transparent hover:border-[#fa541c]/50 hover:scale-[1.02]"
+                        "aspect-[5/2] rounded-[4px] overflow-hidden border-2 transition-all relative select-none cursor-pointer hover:border-[#fa541c]/50 hover:scale-[1.02]",
+                        selectedCover === cover 
+                          ? "border-[#fa541c] shadow-md shadow-orange-500/10 scale-[1.02]" 
+                          : "border-transparent"
                       )}
                     >
                       <img src={cover} alt={`cover-${idx}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       {selectedCover === cover && (
-                        <div className="absolute top-1.5 right-1.5 bg-[#fa541c] text-white rounded-full p-0.5 shadow-sm">
-                          <Check className="w-3 h-3" strokeWidth={3} />
+                        <div className="absolute top-1.5 right-1.5 bg-[#fa541c] text-white rounded-full p-0.5 shadow-md flex items-center justify-center w-5 h-5 animate-in zoom-in-50 duration-150">
+                          <Check className="w-3.5 h-3.5" strokeWidth={3} />
                         </div>
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* 5. 课程介绍 */}
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                  课程介绍 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div className="border border-neutral-200 rounded-[4px] overflow-hidden flex flex-col bg-white w-full">
+                  {/* Rich Text Toolbar */}
+                  <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 border-b border-neutral-200 bg-neutral-50/50 select-none">
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="加粗"><Bold className="w-3.5 h-3.5" /></button>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="斜体"><Italic className="w-3.5 h-3.5" /></button>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-[#fa541c]" title="文本颜色"><Type className="w-3.5 h-3.5" /></button>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="字体大小"><span className="text-[10px] font-bold font-serif leading-none relative top-[-0.5px]">Tt</span></button>
+                    <div className="w-px h-3.5 bg-neutral-200 mx-1"></div>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="无序列表"><List className="w-3.5 h-3.5" /></button>
+                    <div className="w-px h-3.5 bg-neutral-200 mx-1"></div>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="左对齐"><AlignLeft className="w-3.5 h-3.5" /></button>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="居中"><AlignCenter className="w-3.5 h-3.5" /></button>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="右对齐"><AlignRight className="w-3.5 h-3.5" /></button>
+                    <div className="w-px h-3.5 bg-neutral-200 mx-1"></div>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="撤销"><Undo2 className="w-3.5 h-3.5" /></button>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="重做"><Redo2 className="w-3.5 h-3.5" /></button>
+                    <div className="w-px h-3.5 bg-neutral-200 mx-1 flex-1"></div>
+                    <button type="button" className="p-1 hover:bg-neutral-200 rounded-[4px] transition-colors text-neutral-500" title="全屏"><Maximize2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                  
+                  {/* Rich Text Editor Textarea */}
+                  <textarea 
+                    placeholder="请输入课程介绍内容"
+                    value={courseFormIntroduction}
+                    onChange={(e) => setCourseFormIntroduction(e.target.value)}
+                    className="w-full min-h-[160px] p-4 text-[13px] focus:outline-none resize-none leading-relaxed text-[#262626] border-0"
+                  />
                 </div>
               </div>
 
