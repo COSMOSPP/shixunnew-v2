@@ -10,6 +10,7 @@ import TeacherExams from './TeacherExams';
 import TeacherDatasets from './TeacherDatasets';
 import TeacherPractices from './TeacherPractices';
 import TeacherAICenter from './TeacherAICenter';
+import { Layers, Info } from 'lucide-react';
 
 export default function TeacherHome() {
   const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'dataset' | 'exam' | 'practice' | 'aicenter'>('course');
@@ -86,6 +87,11 @@ export default function TeacherHome() {
   const [applyPublicCourse, setApplyPublicCourse] = useState<any>(null);
   const [applyReason, setApplyReason] = useState('');
   const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ show: boolean; courseId: number | null; courseName: string }>({
+    show: false,
+    courseId: null,
+    courseName: ''
+  });
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
@@ -540,9 +546,11 @@ export default function TeacherHome() {
                           <button 
                             onClick={() => {
                               if (course.scope === '租户' || course.scope === '平台') return;
-                              if (confirm(`确定要删除课程 "${course.name}" 吗？`)) {
-                                handleDeleteCourse(course.id);
-                              }
+                              setDeleteConfirmModal({
+                                show: true,
+                                courseId: course.id,
+                                courseName: course.name
+                              });
                             }}
                             disabled={course.scope === '租户' || course.scope === '平台'}
                             className={cn(
@@ -741,79 +749,161 @@ export default function TeacherHome() {
         </div>
       )}
 
-      {/* Apply for Public Modal */}
-      {isApplyPublicModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[500px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900">
+      {/* Apply for Public Drawer */}
+      {isApplyPublicModalOpen && applyPublicCourse && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => setIsApplyPublicModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
                 申请公开课程资源
               </h2>
-              <button onClick={() => setIsApplyPublicModalOpen(false)} className="text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 p-1.5 rounded-full transition-colors">
+              <button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 space-y-5">
-              <div className="bg-orange-50 text-orange-600 p-3 rounded-lg text-[13px] flex items-start gap-2 border border-orange-100">
-                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>申请公开后，课程需经过超管审核。审核通过将加入对应范围的公共课程库，相应师生可见可用。</span>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-700 block mb-2">
-                  <span className="text-[#fa541c]">*</span> 申请范围
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setApplyRange('租户')}
-                    className={cn(
-                      "flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all text-[14px]",
-                      applyRange === '租户' 
-                        ? "border-[#fa541c] bg-orange-50/30 text-[#fa541c] font-bold" 
-                        : "border-neutral-200 hover:border-[#fa541c]/30 text-neutral-600 bg-white"
-                    )}
-                  >
-                    租户
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setApplyRange('平台')}
-                    className={cn(
-                      "flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all text-[14px]",
-                      applyRange === '平台' 
-                        ? "border-[#fa541c] bg-orange-50/30 text-[#fa541c] font-bold" 
-                        : "border-neutral-200 hover:border-[#fa541c]/30 text-neutral-600 bg-white"
-                    )}
-                  >
-                    平台
-                  </button>
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后平台师生可见可用</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    申请公开后，课程需经过超管审核。审核通过将加入对应范围的公共课程库，相应师生可见可用。
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <label className="text-[13px] font-bold text-neutral-700 block mb-2">
-                  <span className="text-[#fa541c]">*</span> 申请说明
-                </label>
-                <textarea 
-                  value={applyReason}
-                  onChange={(e) => setApplyReason(e.target.value)}
-                  placeholder="请简述申请公开该课程的理由或推荐使用场景..." 
-                  className="w-full h-28 border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none transition-all"
-                ></textarea>
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">课程名称</label>
+                  <input 
+                    type="text" 
+                    value={applyPublicCourse.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-[4px] px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                    公开范围 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级可见' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
+                    ].map(opt => (
+                      <div 
+                        key={opt.key}
+                        onClick={() => setApplyRange(opt.key as any)}
+                        className={cn(
+                          "border p-4 rounded-[4px] cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyRange === opt.key 
+                            ? "border-[#fa541c] bg-[#fff5f0]/30 font-bold"
+                            : "border-neutral-200 bg-white hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className={cn("font-bold text-[13px]", applyRange === opt.key ? "text-[#fa541c]" : "text-[#262626]")}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 leading-normal">{opt.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    申请说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={applyReason}
+                    onChange={(e) => setApplyReason(e.target.value)}
+                    placeholder="请简述申请公开该课程的理由或推荐使用场景..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
               </div>
             </div>
-
-            <div className="p-5 border-t border-neutral-100 bg-neutral-50/30 flex items-center justify-end gap-3">
-              <Button onClick={() => setIsApplyPublicModalOpen(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 rounded-full text-[13px]">
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
                 取消
               </Button>
               <Button 
                 onClick={handleApplyPublic} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-8 rounded-full shadow-sm text-[13px]"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
               >
                 提交申请
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.show && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
+                确认删除课程
+              </h2>
+              <button 
+                onClick={() => setDeleteConfirmModal(prev => ({ ...prev, show: false }))} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex items-start gap-3 bg-white">
+              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              <div className="text-[14px] text-neutral-750 leading-normal">
+                确定要删除课程 <strong className="text-neutral-900">"{deleteConfirmModal.courseName}"</strong> 吗？该操作不可撤销。
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setDeleteConfirmModal(prev => ({ ...prev, show: false }))} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (deleteConfirmModal.courseId) {
+                    handleDeleteCourse(deleteConfirmModal.courseId);
+                  }
+                  setDeleteConfirmModal({ show: false, courseId: null, courseName: '' });
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
+              >
+                确定
               </Button>
             </div>
           </div>
