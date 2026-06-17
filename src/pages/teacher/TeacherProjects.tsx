@@ -706,17 +706,24 @@ export default function TeacherProjects({
 
   const handleApplyPublic = (proj: Project) => {
     setProjectToApply(proj);
+    setApplyRange('租户');
+    setApplyUsageSuggestion('');
     setIsApplyModalOpen(true);
   };
 
   const handleSubmitApplication = () => {
+    if (!applyUsageSuggestion.trim()) {
+      showToast('请填写申请说明');
+      return;
+    }
     setIsApplying(true);
     setTimeout(() => {
       setProjectsList(projectsList.map(p => 
-        p.id === projectToApply?.id ? { ...p, range: '平台', auditStatus: '已审核', status: '已发布' } : p
+        p.id === projectToApply?.id ? { ...p, range: applyRange, auditStatus: '已审核', status: '已发布' } : p
       ));
       setIsApplying(false);
       setIsApplyModalOpen(false);
+      setApplyUsageSuggestion('');
       showToast('项目已成功公开');
     }, 800);
   };
@@ -2161,54 +2168,115 @@ export default function TeacherProjects({
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-neutral-900/60 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm"
             onClick={() => !isApplying && setIsApplyModalOpen(false)}
           ></div>
           
           {/* Modal Content */}
-          <div className="relative bg-white rounded-xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-neutral-100">
+          <div className="relative bg-white rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-neutral-100">
             {/* Header */}
-            <div className="p-5 pb-3 flex items-center justify-between bg-white shrink-0">
-              <h2 className="text-[16px] font-bold text-neutral-800 flex items-center gap-2">
-                确认公开项目
+            <div className="p-6 pb-4 flex items-center justify-between bg-white shrink-0">
+              <h2 className="text-xl font-bold text-neutral-800">
+                申请公开项目
               </h2>
               <button 
                 onClick={() => !isApplying && setIsApplyModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer rounded-[4px]"
+                className="text-neutral-400 hover:text-neutral-600 transition-colors bg-transparent border-0 cursor-pointer rounded-full p-1 hover:bg-neutral-50"
                 disabled={isApplying}
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             
             {/* Body */}
-            <div className="px-5 py-4 bg-white text-[13px] text-neutral-600 leading-relaxed">
-              <p>确定要公开实战项目 <span className="font-bold text-neutral-800">「{projectToApply.name}」</span> 吗？</p>
-              <p className="mt-2 text-neutral-400 text-xs">公开后，该项目将被推送到公共资源库，全平台的所有院校和租户均可见并使用该项目。</p>
+            <div className="px-6 py-4 bg-white overflow-y-auto space-y-5">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-xl p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后全平台可见可用</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    提交申请后，超管将从 <strong>项目完整性、代码质量、文档规范、培训价值</strong> 四个维度进行审核。审核通过后将进入公共资源库。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[13px] font-bold text-[#262626]">项目名称</label>
+                  <input 
+                    type="text" 
+                    value={projectToApply.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-[#f5f5f5] px-3.5 py-2.5 rounded-lg border border-neutral-200 cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[13px] font-bold text-[#262626]">
+                    公开范围 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级可见' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
+                    ].map(opt => (
+                      <div 
+                        key={opt.key}
+                        onClick={() => setApplyRange(opt.key as any)}
+                        className={cn(
+                          "border p-4 rounded-xl cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyRange === opt.key 
+                            ? "border-[#fa541c] bg-[#fff5f0]/30"
+                            : "border-neutral-200 bg-white hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className={cn("font-bold text-[13px]", applyRange === opt.key ? "text-[#fa541c]" : "text-[#262626]")}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 leading-normal">{opt.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[13px] font-bold text-[#262626]">
+                    申请说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={applyUsageSuggestion}
+                    onChange={(e) => setApplyUsageSuggestion(e.target.value)}
+                    placeholder="请描述该项目的申请公开原因及相关说明..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-lg px-3.5 py-3 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
             </div>
             
             {/* Footer */}
-            <div className="p-4 bg-neutral-50/50 flex items-center justify-end gap-2.5 border-t border-neutral-100">
+            <div className="p-6 pt-2 bg-white flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setIsApplyModalOpen(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-8 px-4 cursor-pointer bg-white rounded-[4px] text-xs hover:bg-neutral-50"
+                className="border-neutral-200 hover:bg-neutral-50 text-neutral-600 font-semibold h-9 px-6 cursor-pointer bg-white rounded-lg text-[13px]"
                 disabled={isApplying}
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSubmitApplication} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-5 shadow-sm rounded-[4px] border-0 cursor-pointer flex items-center gap-1.5 text-xs"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-semibold h-9 px-6 shadow-sm rounded-lg border-0 cursor-pointer flex items-center gap-1.5 text-[13px]"
                 disabled={isApplying}
               >
                 {isApplying ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    处理中...
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    提交中...
                   </>
                 ) : (
-                  '确认公开'
+                  '提交审核申请'
                 )}
               </Button>
             </div>
