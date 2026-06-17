@@ -570,6 +570,13 @@ export default function TeacherProjects({
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      handleCreateNew();
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   const handleEditProject = (proj: Project) => {
     setCurrentProjectId(proj.id);
     setFormName(proj.name);

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import TeacherProjects from './TeacherProjects';
 import TeacherExams from './TeacherExams';
 import TeacherDatasets from './TeacherDatasets';
@@ -13,7 +13,10 @@ import TeacherAICenter from './TeacherAICenter';
 import { Layers, Info, Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Maximize2, ChevronDown } from 'lucide-react';
 
 export default function TeacherHome() {
-  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'dataset' | 'exam' | 'practice' | 'aicenter'>('course');
+  const location = useLocation();
+  const [activeSubTab, setActiveSubTab] = useState<'course' | 'project' | 'dataset' | 'exam' | 'practice' | 'aicenter'>(() => {
+    return (location.state as any)?.activeSubTab || 'course';
+  });
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [selectedCourseName, setSelectedCourseName] = useState<string | null>(null);
 
