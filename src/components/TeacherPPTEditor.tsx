@@ -5,7 +5,8 @@ import {
   List, ListOrdered, CheckSquare, AlignLeft, AlignCenter, AlignRight,
   PlaySquare, Code, Image as ImageIcon, Video, FileText, ChevronDown,
   MoreHorizontal, ChevronRight, File, Settings, Bot, ChevronLeft, Save, Play, Send,
-  MessageSquare, Cpu, BarChart, PlusCircle, X, Info, Plus, MonitorPlay, Minus, RotateCcw
+  MessageSquare, Cpu, BarChart, PlusCircle, X, Info, Plus, MonitorPlay, Minus, RotateCcw,
+  Search, Paperclip
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -374,12 +375,12 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
     }, 800);
   };
 
-  // Modals and drop-downs states
-  const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
+  // Drawers and drop-downs states
+  const [showCreateLessonDrawer, setShowCreateLessonDrawer] = useState(false);
   const [newLessonName, setNewLessonName] = useState("");
   const [activeLessonMenu, setActiveLessonMenu] = useState<{ cIdx: number, lIdx: number } | null>(null);
   
-  const [showEditLessonModal, setShowEditLessonModal] = useState(false);
+  const [showEditLessonDrawer, setShowEditLessonDrawer] = useState(false);
   const [editLessonName, setEditLessonName] = useState("");
   const [lessonToEdit, setLessonToEdit] = useState<{ cIdx: number, lIdx: number } | null>(null);
   
@@ -390,7 +391,18 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
   const [chapterActionMenuOpenIndex, setChapterActionMenuOpenIndex] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number, left: number }>({ top: 0, left: 0 });
   
-  const [newLessonType, setNewLessonType] = useState('doc');
+  const [showTeachingMaterialDrawer, setShowTeachingMaterialDrawer] = useState(false);
+  const [teachingMaterialName, setTeachingMaterialName] = useState("");
+  
+  const [showExperimentMaterialDrawer, setShowExperimentMaterialDrawer] = useState(false);
+  const [experimentMaterialName, setExperimentMaterialName] = useState("");
+  const [selectedExperimentIndex, setSelectedExperimentIndex] = useState<number | null>(null);
+  const [isSearchingExperiment, setIsSearchingExperiment] = useState(false);
+  
+  const [showInteractiveMaterialDrawer, setShowInteractiveMaterialDrawer] = useState(false);
+  const [interactiveMaterialName, setInteractiveMaterialName] = useState("");
+  
+  const [targetChapterIdx, setTargetChapterIdx] = useState<number>(0);
   
   const [showEditChapterModal, setShowEditChapterModal] = useState(false);
   const [editChapterName, setEditChapterName] = useState("");
@@ -412,7 +424,7 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
     if (!newLessonName.trim()) return;
     
     const updatedSyllabus = [...syllabus];
-    const targetChapter = updatedSyllabus[activeChapterIdx];
+    const targetChapter = updatedSyllabus[targetChapterIdx];
     if (targetChapter) {
       const sectionNum = `课时${targetChapter.lessons.length + 1}:`;
       targetChapter.lessons = [
@@ -422,20 +434,104 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
           title: newLessonName,
           locked: false,
           status: "未学习",
-          type: newLessonType
+          type: "doc"
         }
       ];
       setSyllabus(updatedSyllabus);
       setActiveLessonTitle(newLessonName);
     }
     setNewLessonName("");
-    setShowCreateLessonModal(false);
+    setShowCreateLessonDrawer(false);
+  };
+
+  const handleCreateTeachingMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!teachingMaterialName.trim()) return;
+
+    const updatedSyllabus = [...syllabus];
+    const targetChapter = updatedSyllabus[targetChapterIdx];
+    if (targetChapter) {
+      const sectionNum = `课时${targetChapter.lessons.length + 1}:`;
+      targetChapter.lessons = [
+        ...targetChapter.lessons,
+        {
+          section: sectionNum,
+          title: teachingMaterialName,
+          locked: false,
+          status: "未学习",
+          type: "doc"
+        }
+      ];
+      setSyllabus(updatedSyllabus);
+      setActiveLessonTitle(teachingMaterialName);
+    }
+    setTeachingMaterialName("");
+    setShowTeachingMaterialDrawer(false);
+  };
+
+  const handleCreateExperimentMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    let title = experimentMaterialName.trim();
+    if (!title && selectedExperimentIndex !== null) {
+      const experiments = [
+        { id: 'IL511779172854', subtitle: '人工智能' },
+        { id: 'IL511779173126', subtitle: '人工智能' }
+      ];
+      title = experiments[selectedExperimentIndex].id;
+    }
+    if (!title) return;
+
+    const updatedSyllabus = [...syllabus];
+    const targetChapter = updatedSyllabus[targetChapterIdx];
+    if (targetChapter) {
+      const sectionNum = `课时${targetChapter.lessons.length + 1}:`;
+      targetChapter.lessons = [
+        ...targetChapter.lessons,
+        {
+          section: sectionNum,
+          title: title,
+          locked: false,
+          status: "未学习",
+          type: "experiment"
+        }
+      ];
+      setSyllabus(updatedSyllabus);
+      setActiveLessonTitle(title);
+    }
+    setExperimentMaterialName("");
+    setSelectedExperimentIndex(null);
+    setShowExperimentMaterialDrawer(false);
+  };
+
+  const handleCreateInteractiveMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!interactiveMaterialName.trim()) return;
+
+    const updatedSyllabus = [...syllabus];
+    const targetChapter = updatedSyllabus[targetChapterIdx];
+    if (targetChapter) {
+      const sectionNum = `课时${targetChapter.lessons.length + 1}:`;
+      targetChapter.lessons = [
+        ...targetChapter.lessons,
+        {
+          section: sectionNum,
+          title: interactiveMaterialName,
+          locked: false,
+          status: "未学习",
+          type: "split_doc"
+        }
+      ];
+      setSyllabus(updatedSyllabus);
+      setActiveLessonTitle(interactiveMaterialName);
+    }
+    setInteractiveMaterialName("");
+    setShowInteractiveMaterialDrawer(false);
   };
 
   const handleOpenEditModal = (cIdx: number, lIdx: number, currentTitle: string) => {
     setLessonToEdit({ cIdx, lIdx });
     setEditLessonName(currentTitle);
-    setShowEditLessonModal(true);
+    setShowEditLessonDrawer(true);
   };
 
   const handleEditLesson = (e: React.FormEvent) => {
@@ -453,7 +549,7 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
         setActiveLessonTitle(editLessonName);
       }
     }
-    setShowEditLessonModal(false);
+    setShowEditLessonDrawer(false);
     setLessonToEdit(null);
   };
 
@@ -570,9 +666,9 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
               <span className="text-[14px] font-bold text-neutral-800">课程目录结构</span>
               <button 
                 onClick={() => {
-                  setNewLessonType('doc');
                   setNewLessonName("");
-                  setShowCreateLessonModal(true);
+                  setTargetChapterIdx(activeChapterIdx);
+                  setShowCreateLessonDrawer(true);
                 }}
                 className="text-[11px] bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe4d3] border border-[#ffbb96] px-2 py-0.5 rounded font-bold flex items-center gap-0.5 transition-colors"
               >
@@ -632,10 +728,19 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                                   key={idx} 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setNewLessonType(item.type);
-                                    setNewLessonName("");
+                                    setTargetChapterIdx(cIdx);
                                     setAddChapterMenuOpenIndex(null);
-                                    setShowCreateLessonModal(true);
+                                    if (item.type === 'doc') {
+                                      setTeachingMaterialName("");
+                                      setShowTeachingMaterialDrawer(true);
+                                    } else if (item.type === 'experiment') {
+                                      setExperimentMaterialName("");
+                                      setSelectedExperimentIndex(null);
+                                      setShowExperimentMaterialDrawer(true);
+                                    } else if (item.type === 'split_doc') {
+                                      setInteractiveMaterialName("");
+                                      setShowInteractiveMaterialDrawer(true);
+                                    }
                                   }} 
                                   className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-neutral-50 cursor-pointer transition-colors group/item"
                                 >
@@ -1419,27 +1524,35 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
         </div>
       </div>
 
-      {/* 新建课节 Modal */}
-      {showCreateLessonModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
+      {/* 新建课节 Drawer */}
+      {showCreateLessonDrawer && (
+        <div className="fixed inset-0 z-[300] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowCreateLessonDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <PlusCircle className="w-5 h-5 text-[#fa541c]" /> 新建课节
               </h2>
-              <button onClick={() => setShowCreateLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button 
+                onClick={() => setShowCreateLessonDrawer(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleCreateLesson}>
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+            {/* Body */}
+            <form onSubmit={handleCreateLesson} className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
                     <span className="text-[#fa541c]">*</span> 课节名称
                   </label>
                   <input 
                     type="text" 
-                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                     placeholder="请输入课节名称" 
                     value={newLessonName}
                     onChange={(e) => setNewLessonName(e.target.value)}
@@ -1448,36 +1561,300 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                   />
                 </div>
               </div>
-              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-                <Button type="button" onClick={() => setShowCreateLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-                <Button type="submit" className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">添加</Button>
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <Button 
+                  type="button"
+                  onClick={() => setShowCreateLessonDrawer(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  添加
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* 修改课节 Modal */}
-      {showEditLessonModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animation-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px] overflow-hidden border border-neutral-200 flex flex-col">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-neutral-900 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-[#fa541c]" /> 修改课节
+      {/* 新建教学课件 Drawer */}
+      {showTeachingMaterialDrawer && (
+        <div className="fixed inset-0 z-[300] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowTeachingMaterialDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                 新建教学课件
               </h2>
-              <button onClick={() => setShowEditLessonModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button 
+                onClick={() => setShowTeachingMaterialDrawer(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleEditLesson}>
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
+            {/* Body */}
+            <form onSubmit={handleCreateTeachingMaterial} className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
+                    <span className="text-[#fa541c]">*</span> 课件名称
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                    placeholder="请输入教学课件名称" 
+                    value={teachingMaterialName}
+                    onChange={(e) => setTeachingMaterialName(e.target.value)}
+                    autoFocus 
+                    required
+                  />
+                </div>
+              </div>
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <Button 
+                  type="button"
+                  onClick={() => setShowTeachingMaterialDrawer(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  添加
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 选择实验课件 Drawer */}
+      {showExperimentMaterialDrawer && (
+        <div className="fixed inset-0 z-[300] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowExperimentMaterialDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[540px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                 <div className="w-1 h-4 bg-[#fa541c] rounded-full"></div> 选择实验课件 <span className="text-[13px] text-blue-500 font-normal cursor-pointer hover:underline ml-2">帮助教程 <Info className="w-3.5 h-3.5 inline mb-0.5" /></span>
+              </h2>
+              <button 
+                onClick={() => setShowExperimentMaterialDrawer(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <form onSubmit={handleCreateExperimentMaterial} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white text-[13px]">
+                {/* 课件名称 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
+                    <span className="text-[#fa541c]">*</span> 课件名称
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                    placeholder="请输入课件名称" 
+                    value={experimentMaterialName}
+                    onChange={(e) => setExperimentMaterialName(e.target.value)}
+                  />
+                </div>
+
+                {/* Selection Section */}
+                <div className="border-t border-neutral-100 pt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                     <div className="text-[14px] font-bold text-neutral-700">我创建的</div>
+                     <div className="flex items-center gap-3">
+                       {isSearchingExperiment ? (
+                         <div className="flex items-center border border-[#fa541c] rounded-full px-3 h-8 overflow-hidden bg-white animation-slide-left">
+                           <Search className="w-3.5 h-3.5 text-[#fa541c] mr-2 shrink-0" />
+                           <input type="text" className="w-32 text-[13px] outline-none text-neutral-800 placeholder-neutral-400" placeholder="搜索课件..." autoFocus onBlur={() => setIsSearchingExperiment(false)} />
+                         </div>
+                       ) : (
+                         <div onClick={() => setIsSearchingExperiment(true)} className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-neutral-100 text-neutral-400 hover:text-[#fa541c] transition-colors">
+                           <Search className="w-4 h-4" />
+                         </div>
+                       )}
+                       <Button 
+                         type="button"
+                         onClick={() => navigate('/teacher', { state: { activeSubTab: 'project', openCreate: true } })} 
+                         variant="outline" 
+                         className="h-8 border-[#fa541c] text-[#fa541c] hover:bg-orange-50 hover:text-[#fa541c] font-bold px-3 transition-colors rounded-[4px]"
+                       >
+                         <Plus className="w-3.5 h-3.5 mr-1" /> 新建
+                       </Button>
+                     </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                     {[
+                       { id: 'IL511779172854', subtitle: '人工智能' },
+                       { id: 'IL511779173126', subtitle: '人工智能' }
+                     ].map((item, idx) => (
+                       <div 
+                         key={idx} 
+                         onClick={() => setSelectedExperimentIndex(idx)}
+                         className={cn(
+                           "flex items-center justify-between p-4 border border-b cursor-pointer group transition-all rounded-[4px] mb-1",
+                           selectedExperimentIndex === idx ? "bg-orange-50 border-orange-100 shadow-[0_2px_10px_rgba(250,84,28,0.05)]" : "hover:bg-neutral-50 border-neutral-50"
+                         )}
+                       >
+                         <div className="flex items-center gap-4">
+                           <div className={cn(
+                             "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                             selectedExperimentIndex === idx ? "bg-[#fa541c] text-white" : "bg-orange-100 text-[#fa541c] group-hover:bg-[#fa541c] group-hover:text-white"
+                           )}>
+                             <Code className="w-5 h-5" />
+                           </div>
+                           <div className="text-left">
+                             <div className="text-[15px] font-bold text-neutral-800 mb-1 group-hover:text-[#fa541c] transition-colors">{item.id}</div>
+                             <div className="text-[12px] text-neutral-400 flex items-center gap-1"><Paperclip className="w-3 h-3" /> {item.subtitle}</div>
+                           </div>
+                         </div>
+                         <div className={cn(
+                           "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                           selectedExperimentIndex === idx ? "border-[#fa541c] bg-[#fa541c]" : "border-neutral-300 group-hover:border-[#fa541c]"
+                         )}>
+                           {selectedExperimentIndex === idx && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                         </div>
+                       </div>
+                     ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-between shrink-0">
+                <div className="text-[13px] text-neutral-500 font-medium">已选 <span className="text-[#fa541c] font-bold">{selectedExperimentIndex !== null ? 1 : 0}</span> 项</div>
+                <div className="flex gap-3">
+                  <Button 
+                    type="button"
+                    onClick={() => setShowExperimentMaterialDrawer(false)} 
+                    variant="outline" 
+                    className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                  >
+                    取消
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                  >
+                    确认
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 新建互动学习课件 Drawer */}
+      {showInteractiveMaterialDrawer && (
+        <div className="fixed inset-0 z-[300] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowInteractiveMaterialDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                 新建互动学习课件
+              </h2>
+              <button 
+                onClick={() => setShowInteractiveMaterialDrawer(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Body */}
+            <form onSubmit={handleCreateInteractiveMaterial} className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
+                    <span className="text-[#fa541c]">*</span> 课件名称
+                  </label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                    placeholder="请输入课件名称" 
+                    value={interactiveMaterialName}
+                    onChange={(e) => setInteractiveMaterialName(e.target.value)}
+                    autoFocus 
+                    required
+                  />
+                </div>
+              </div>
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <Button 
+                  type="button"
+                  onClick={() => setShowInteractiveMaterialDrawer(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  添加
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 修改课节 Drawer */}
+      {showEditLessonDrawer && (
+        <div className="fixed inset-0 z-[300] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowEditLessonDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Settings className="w-5 h-5 text-[#fa541c]" /> 修改课节
+              </h2>
+              <button 
+                onClick={() => setShowEditLessonDrawer(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Body */}
+            <form onSubmit={handleEditLesson} className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
                     <span className="text-[#fa541c]">*</span> 课节名称
                   </label>
                   <input 
                     type="text" 
-                    className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                     placeholder="请输入课节名称" 
                     value={editLessonName}
                     onChange={(e) => setEditLessonName(e.target.value)}
@@ -1486,9 +1863,22 @@ export default function TeacherPPTEditor({ onClose, courseSyllabus, initialLesso
                   />
                 </div>
               </div>
-              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-                <Button type="button" onClick={() => setShowEditLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-                <Button type="submit" className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">保存</Button>
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <Button 
+                  type="button"
+                  onClick={() => setShowEditLessonDrawer(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  保存
+                </Button>
               </div>
             </form>
           </div>
