@@ -853,9 +853,10 @@ export default function TeacherCourseManage() {
                             </tbody>
                           </table>
                         </div>
+                      </div>
 
-                        {/* Pagination (matching TeacherHome course module style) */}
-                        <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-white">
+                      {/* Pagination (matching TeacherHome course module style) */}
+                      <div className="flex items-center justify-end p-4 gap-4 bg-transparent mt-2">
                           <span className="text-[13px] text-neutral-500">共 {filteredAssignments.length} 条</span>
                           <div className="flex items-center gap-2">
                             <Button 
@@ -911,8 +912,7 @@ export default function TeacherCourseManage() {
                             <option value={50}>50 条/页</option>
                           </select>
                         </div>
-                      </div>
-                    </>
+                      </>
                   ) : (
                     /* 批阅模式 (Grading Dashboard) */
                     <div className="flex flex-col h-full animation-slide-up">
