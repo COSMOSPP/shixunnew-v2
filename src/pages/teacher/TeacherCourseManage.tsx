@@ -81,10 +81,10 @@ export default function TeacherCourseManage() {
   const [selectedExperimentIndex, setSelectedExperimentIndex] = useState<number | null>(null);
   const [isSearchingExperiment, setIsSearchingExperiment] = useState(false);
   const [chapterMenuOpenIndex, setChapterMenuOpenIndex] = useState<number | null>(null);
-  const [showEditChapterModal, setShowEditChapterModal] = useState(false);
+  const [showEditChapterDrawer, setShowEditChapterDrawer] = useState(false);
   const [showDeleteChapterModal, setShowDeleteChapterModal] = useState(false);
   const [lessonMenuOpenIndex, setLessonMenuOpenIndex] = useState<string | null>(null);
-  const [showEditLessonModal, setShowEditLessonModal] = useState(false);
+  const [showEditLessonDrawer, setShowEditLessonDrawer] = useState(false);
   const [showDeleteLessonModal, setShowDeleteLessonModal] = useState(false);
   const [selectedEditLesson, setSelectedEditLesson] = useState<{ chapterIndex: number, lessonIndex: number, title: string, section: string } | null>(null);
   const [collapsedChapters, setCollapsedChapters] = useState<Record<number, boolean>>({});
@@ -529,7 +529,7 @@ export default function TeacherCourseManage() {
                                           className="px-4 py-2 text-[14px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer rounded-[4px] text-center transition-colors"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setShowEditChapterModal(true);
+                                            setShowEditChapterDrawer(true);
                                             setChapterMenuOpenIndex(null);
                                           }}
                                         >编辑</div>
@@ -608,7 +608,7 @@ export default function TeacherCourseManage() {
                                                   onClick={(e) => {
                                                     e.stopPropagation();
                                                     setSelectedEditLesson({ chapterIndex: i, lessonIndex: idx, title: lesson.title, section: lesson.section });
-                                                    setShowEditLessonModal(true);
+                                                    setShowEditLessonDrawer(true);
                                                     setLessonMenuOpenIndex(null);
                                                   }}
                                                 >编辑</div>
@@ -1822,31 +1822,34 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 编辑章节 Modal */}
-      {showEditChapterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      {/* 编辑章节 Drawer */}
+      {showEditChapterDrawer && (
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowEditChapterDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  编辑章节
               </h2>
               <button 
-                onClick={() => setShowEditChapterModal(false)} 
+                onClick={() => setShowEditChapterDrawer(false)} 
                 className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px]">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
+            <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                   defaultValue="第一课" 
                   autoFocus 
                 />
@@ -1855,14 +1858,14 @@ export default function TeacherCourseManage() {
             {/* Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
-                onClick={() => setShowEditChapterModal(false)} 
+                onClick={() => setShowEditChapterDrawer(false)} 
                 variant="outline" 
                 className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
               >
                 取消
               </Button>
               <Button 
-                onClick={() => setShowEditChapterModal(false)} 
+                onClick={() => setShowEditChapterDrawer(false)} 
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
               >
                 保存
@@ -1919,31 +1922,34 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 编辑课时 Modal */}
-      {showEditLessonModal && selectedEditLesson && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[480px] overflow-hidden border border-neutral-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      {/* 编辑课时 Drawer */}
+      {showEditLessonDrawer && selectedEditLesson && (
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in" onClick={() => setShowEditLessonDrawer(false)}>
+          <div 
+            className="bg-white w-full max-w-[480px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                  编辑课时
               </h2>
               <button 
-                onClick={() => setShowEditLessonModal(false)} 
+                onClick={() => setShowEditLessonDrawer(false)} 
                 className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             {/* Body */}
-            <div className="p-6 space-y-4 bg-white text-[13px]">
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-[#262626] flex items-center gap-1">
+            <div className="p-6 space-y-6 bg-white text-[13px] flex-1 overflow-y-auto">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right flex items-center justify-end gap-1">
                   <span className="text-[#fa541c]">*</span> 名称
                 </label>
                 <input 
                   type="text" 
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626]" 
                   defaultValue={selectedEditLesson.title} 
                   autoFocus 
                 />
@@ -1952,14 +1958,14 @@ export default function TeacherCourseManage() {
             {/* Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
-                onClick={() => setShowEditLessonModal(false)} 
+                onClick={() => setShowEditLessonDrawer(false)} 
                 variant="outline" 
                 className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
               >
                 取消
               </Button>
               <Button 
-                onClick={() => setShowEditLessonModal(false)} 
+                onClick={() => setShowEditLessonDrawer(false)} 
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-8 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
               >
                 保存
