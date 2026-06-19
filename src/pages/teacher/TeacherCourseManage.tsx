@@ -900,17 +900,17 @@ export default function TeacherCourseManage() {
                           </div>
                           <div className="relative">
                             <select 
-                              className="appearance-none text-[13px] border border-neutral-200 rounded-[8px] pl-3 pr-8 py-1 bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-neutral-600 cursor-pointer transition-all h-7 flex items-center"
+                              className="appearance-none text-[13px] border border-neutral-200 rounded-[8px] pl-3 pr-8 py-1 bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-black cursor-pointer transition-all h-7 flex items-center"
                               value={assignmentPageSize}
                               onChange={(e) => {
                                 setAssignmentPageSize(Number(e.target.value));
                                 setAssignmentPage(1);
                               }}
                             >
-                              <option value={5} className="bg-white text-neutral-700">5 条/页</option>
-                              <option value={10} className="bg-white text-neutral-700">10 条/页</option>
-                              <option value={20} className="bg-white text-neutral-700">20 条/页</option>
-                              <option value={50} className="bg-white text-neutral-700">50 条/页</option>
+                              <option value={5} className="bg-white text-black">5 条/页</option>
+                              <option value={10} className="bg-white text-black">10 条/页</option>
+                              <option value={20} className="bg-white text-black">20 条/页</option>
+                              <option value={50} className="bg-white text-black">50 条/页</option>
                             </select>
                             <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                           </div>
