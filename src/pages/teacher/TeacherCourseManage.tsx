@@ -148,11 +148,17 @@ export default function TeacherCourseManage() {
   const [assignments, setAssignments] = useState([
     { id: 1, title: '模块 1 综合测验：Python 基础', paperName: 'Python 基础语法与核心库测试', publishTime: '2026-05-10 12:00', deadline: '2026-05-20 23:59', submitCount: 45, totalCount: 50, avgScore: 88.5, toGrade: 12, rejected: 2 },
     { id: 2, title: '模块 2 实战作业：爬虫数据分析', paperName: '爬虫与 Pandas 数据处理大作业', publishTime: '2026-05-25 08:30', deadline: '2026-06-05 23:59', submitCount: 15, totalCount: 50, avgScore: '-', toGrade: 15, rejected: 0 },
+    { id: 3, title: '模块 3 实战作业：搭建 AI 聊天助手智能体', paperName: 'AI 聊天助手开发与集成测验', publishTime: '2026-06-01 09:00', deadline: '2026-06-15 23:59', submitCount: 38, totalCount: 50, avgScore: 92.0, toGrade: 0, rejected: 1 },
+    { id: 4, title: '模块 4 综合大作业：基于 ANN 算法的图像分类实践', paperName: '人工神经网络与图像分类期末考核', publishTime: '2026-06-10 10:00', deadline: '2026-06-25 23:59', submitCount: 12, totalCount: 50, avgScore: '-', toGrade: 12, rejected: 0 },
+    { id: 5, title: '模块 5 实战作业：机器学习预测房价', paperName: '线性回归与房价预测实训考核', publishTime: '2026-06-12 14:00', deadline: '2026-06-20 23:59', submitCount: 42, totalCount: 50, avgScore: 85.6, toGrade: 0, rejected: 0 }
   ]);
   const [editingAssignmentId, setEditingAssignmentId] = useState<number | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskPublishTime, setTaskPublishTime] = useState('2026-05-21T14:29');
   const [taskDeadline, setTaskDeadline] = useState('');
+  
+  const [assignmentPage, setAssignmentPage] = useState(1);
+  const [assignmentPageSize, setAssignmentPageSize] = useState(5); // default 5 items per page so pagination is visible
 
   const [showBulkRevokeModal, setShowBulkRevokeModal] = useState(false);
   const [showBulkAuthModal, setShowBulkAuthModal] = useState(false);
@@ -162,6 +168,20 @@ export default function TeacherCourseManage() {
       setTaskTitle(selectedPaperName);
     }
   }, [selectedPaperName, editingAssignmentId]);
+
+  React.useEffect(() => {
+    setAssignmentPage(1);
+  }, [assignmentSearchQuery]);
+
+  const filteredAssignments = assignments.filter(task => 
+    task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
+    task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredAssignments.length / assignmentPageSize) || 1;
+  const paginatedAssignments = filteredAssignments.slice(
+    (assignmentPage - 1) * assignmentPageSize,
+    assignmentPage * assignmentPageSize
+  );
 
   const handleBatchAuthorize = () => {
     setShowBulkAuthModal(true);
@@ -762,76 +782,68 @@ export default function TeacherCourseManage() {
                                 <th className="p-4 font-medium">试卷名称</th>
                                 <th className="p-4 font-medium">发布时间</th>
                                 <th className="p-4 font-medium">截止时间</th>
-                                <th className="p-4 font-medium text-right">操作</th>
+                                <th className="p-4 font-medium text-left">操作</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {assignments
-                                .filter(task => 
-                                  task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
-                                  task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
-                                )
-                                .map((task) => (
-                                  <tr key={task.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                                    <td className="p-4 text-neutral-800">
-                                      <div className="font-bold">{task.title}</div>
-                                      <div className="text-[11px] text-neutral-400 mt-0.5">满分: 100</div>
-                                    </td>
-                                    <td className="p-4 text-neutral-600 font-medium">{task.paperName}</td>
-                                    <td className="p-4 text-neutral-500">{task.publishTime}</td>
-                                    <td className="p-4 text-neutral-500">{task.deadline}</td>
-                                    <td className="p-4 text-right">
-                                      <div className="flex items-center justify-end gap-3.5">
-                                        <button 
-                                          onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
-                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                        >
-                                          详情
-                                        </button>
-                                        <button 
-                                          onClick={() => {
-                                            setEditingAssignmentId(task.id);
-                                            setSelectedPaperName(task.paperName);
-                                            setTaskTitle(task.title);
-                                            setTaskPublishTime(task.publishTime.replace(' ', 'T'));
-                                            setTaskDeadline(task.deadline.replace(' ', 'T'));
-                                            setShowEditTaskModal(true);
-                                          }}
-                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                        >
-                                          编辑
-                                        </button>
-                                        <button 
-                                          onClick={() => setShowGrading(true)}
-                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                        >
-                                          完成情况
-                                        </button>
-                                        <button 
-                                          onClick={() => {
-                                            setConfirmModal({
-                                              show: true,
-                                              title: '提示',
-                                              message: `确定要删除作业 "${task.title}" 吗？删除后不可恢复。`,
-                                              showCancel: true,
-                                              onConfirm: () => {
-                                                setAssignments(prev => prev.filter(a => a.id !== task.id));
-                                                setConfirmModal(prev => ({ ...prev, show: false }));
-                                              }
-                                            });
-                                          }}
-                                          className="text-red-500 hover:text-red-700 font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                        >
-                                          删除
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              {assignments.filter(task => 
-                                task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
-                                task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
-                              ).length === 0 && (
+                              {paginatedAssignments.map((task) => (
+                                <tr key={task.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                                  <td className="p-4 text-neutral-800">
+                                    <div className="font-bold">{task.title}</div>
+                                    <div className="text-[11px] text-neutral-400 mt-0.5">满分: 100</div>
+                                  </td>
+                                  <td className="p-4 text-neutral-600 font-medium">{task.paperName}</td>
+                                  <td className="p-4 text-neutral-500">{task.publishTime}</td>
+                                  <td className="p-4 text-neutral-500">{task.deadline}</td>
+                                  <td className="p-4 text-left">
+                                    <div className="flex items-center gap-3.5">
+                                      <button 
+                                        onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                        className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        详情
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setEditingAssignmentId(task.id);
+                                          setSelectedPaperName(task.paperName);
+                                          setTaskTitle(task.title);
+                                          setTaskPublishTime(task.publishTime.replace(' ', 'T'));
+                                          setTaskDeadline(task.deadline.replace(' ', 'T'));
+                                          setShowEditTaskModal(true);
+                                        }}
+                                        className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        编辑
+                                      </button>
+                                      <button 
+                                        onClick={() => setShowGrading(true)}
+                                        className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        完成情况
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setConfirmModal({
+                                            show: true,
+                                            title: '提示',
+                                            message: `确定要删除作业 "${task.title}" 吗？删除后不可恢复。`,
+                                            showCancel: true,
+                                            onConfirm: () => {
+                                              setAssignments(prev => prev.filter(a => a.id !== task.id));
+                                              setConfirmModal(prev => ({ ...prev, show: false }));
+                                            }
+                                          });
+                                        }}
+                                        className="text-red-500 hover:text-red-700 font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        删除
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                              {filteredAssignments.length === 0 && (
                                 <tr>
                                   <td colSpan={5} className="py-12 text-center text-[13px] text-neutral-400">
                                     暂无匹配的作业数据
@@ -840,6 +852,64 @@ export default function TeacherCourseManage() {
                               )}
                             </tbody>
                           </table>
+                        </div>
+
+                        {/* Pagination (matching TeacherHome course module style) */}
+                        <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-white">
+                          <span className="text-[13px] text-neutral-500">共 {filteredAssignments.length} 条</span>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 w-7 p-0 rounded-sm bg-white" 
+                              disabled={assignmentPage === 1}
+                              onClick={() => setAssignmentPage(prev => Math.max(prev - 1, 1))}
+                            >
+                              &lt;
+                            </Button>
+                            {Array.from({ length: totalPages }).map((_, index) => {
+                              const pageNum = index + 1;
+                              const isCurrent = pageNum === assignmentPage;
+                              return (
+                                <Button 
+                                  key={pageNum}
+                                  variant="outline" 
+                                  size="sm" 
+                                  className={cn(
+                                    "h-7 w-7 p-0 rounded-sm font-semibold transition-colors",
+                                    isCurrent 
+                                      ? "bg-[#fa541c] text-white border-[#fa541c] hover:bg-[#e84a15] hover:text-white" 
+                                      : "bg-white text-neutral-600 hover:text-[#fa541c] hover:border-orange-200"
+                                  )}
+                                  onClick={() => setAssignmentPage(pageNum)}
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            })}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 w-7 p-0 rounded-sm bg-white" 
+                              disabled={assignmentPage === totalPages}
+                              onClick={() => setAssignmentPage(prev => Math.min(prev + 1, totalPages))}
+                            >
+                              &gt;
+                            </Button>
+                          </div>
+                          <select 
+                            className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600 cursor-pointer"
+                            value={assignmentPageSize}
+                            onChange={(e) => {
+                              setAssignmentPageSize(Number(e.target.value));
+                              setAssignmentPage(1);
+                            }}
+                          >
+                            <option value={5}>5 条/页</option>
+                            <option value={10}>10 条/页</option>
+                            <option value={20}>20 条/页</option>
+                            <option value={50}>50 条/页</option>
+                          </select>
                         </div>
                       </div>
                     </>
