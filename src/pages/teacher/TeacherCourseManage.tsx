@@ -899,17 +899,17 @@ export default function TeacherCourseManage() {
                             </Button>
                           </div>
                           <select 
-                            className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600 cursor-pointer"
+                            className="text-[13px] border border-neutral-200 rounded-sm pl-2.5 pr-8 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600 cursor-pointer"
                             value={assignmentPageSize}
                             onChange={(e) => {
                               setAssignmentPageSize(Number(e.target.value));
                               setAssignmentPage(1);
                             }}
                           >
-                            <option value={5}>5 条/页</option>
-                            <option value={10}>10 条/页</option>
-                            <option value={20}>20 条/页</option>
-                            <option value={50}>50 条/页</option>
+                            <option value={5} className="bg-white text-neutral-700">5 条/页</option>
+                            <option value={10} className="bg-white text-neutral-700">10 条/页</option>
+                            <option value={20} className="bg-white text-neutral-700">20 条/页</option>
+                            <option value={50} className="bg-white text-neutral-700">50 条/页</option>
                           </select>
                         </div>
                       </>
