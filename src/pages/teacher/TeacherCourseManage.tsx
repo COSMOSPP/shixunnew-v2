@@ -144,8 +144,24 @@ export default function TeacherCourseManage() {
     onConfirm: () => {}
   });
 
+  const [assignmentSearchQuery, setAssignmentSearchQuery] = useState('');
+  const [assignments, setAssignments] = useState([
+    { id: 1, title: '模块 1 综合测验：Python 基础', paperName: 'Python 基础语法与核心库测试', publishTime: '2026-05-10 12:00', deadline: '2026-05-20 23:59', submitCount: 45, totalCount: 50, avgScore: 88.5, toGrade: 12, rejected: 2 },
+    { id: 2, title: '模块 2 实战作业：爬虫数据分析', paperName: '爬虫与 Pandas 数据处理大作业', publishTime: '2026-05-25 08:30', deadline: '2026-06-05 23:59', submitCount: 15, totalCount: 50, avgScore: '-', toGrade: 15, rejected: 0 },
+  ]);
+  const [editingAssignmentId, setEditingAssignmentId] = useState<number | null>(null);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskPublishTime, setTaskPublishTime] = useState('2026-05-21T14:29');
+  const [taskDeadline, setTaskDeadline] = useState('');
+
   const [showBulkRevokeModal, setShowBulkRevokeModal] = useState(false);
   const [showBulkAuthModal, setShowBulkAuthModal] = useState(false);
+
+  React.useEffect(() => {
+    if (selectedPaperName && !editingAssignmentId) {
+      setTaskTitle(selectedPaperName);
+    }
+  }, [selectedPaperName, editingAssignmentId]);
 
   const handleBatchAuthorize = () => {
     setShowBulkAuthModal(true);
@@ -700,11 +716,6 @@ export default function TeacherCourseManage() {
                           </h2>
                           <p className="text-[13px] text-neutral-500 mt-1">管理课程测验与作业，设置规则并进行在线批阅打分。</p>
                         </div>
-                        {perspective === 'teacher' && (
-                          <Button onClick={() => setShowCreateTaskModal(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-10 px-6 shadow-md shadow-orange-500/20 font-bold transition-all">
-                            <Plus className="w-4 h-4 mr-2" /> 创建作业任务
-                          </Button>
-                        )}
                       </div>
 
                       {/* 统计概览 Cards */}
@@ -712,7 +723,7 @@ export default function TeacherCourseManage() {
                         {[
                           { label: '平均提交率', value: '85.2%', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
                           { label: '全局平均分', value: '88.5', icon: BarChart, color: 'text-blue-500', bg: 'bg-blue-50' },
-                          { label: '待批改总数', value: '27', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-50' },
+                          { label: '待批改总数', value: '27', icon: Clock, color: 'text-[#fa541c]', bg: 'bg-orange-50' },
                           { label: '延期申请', value: '3', icon: Paperclip, color: 'text-purple-500', bg: 'bg-purple-50' },
                         ].map((stat, i) => (
                           <div key={i} className="p-5 rounded-2xl border border-neutral-200 bg-white shadow-sm flex items-center gap-4 hover:shadow-md hover:border-orange-200 transition-all">
@@ -727,66 +738,132 @@ export default function TeacherCourseManage() {
                         ))}
                       </div>
 
-                      {/* Task List */}
-                      <div className="space-y-5">
-                        {[
-                          { title: '模块 1 综合测验：Python 基础', deadline: '2026-05-20', submitCount: 45, totalCount: 50, avgScore: 88.5, toGrade: 12, rejected: 2 },
-                          { title: '模块 2 实战作业：爬虫数据分析', deadline: '2026-06-05', submitCount: 15, totalCount: 50, avgScore: '-', toGrade: 15, rejected: 0 },
-                        ].map((task, i) => (
-                          <div key={i} className="bg-white border border-neutral-200 rounded-2xl p-6 hover:border-orange-200 hover:shadow-md transition-all group">
-                            <div className="flex justify-between items-start mb-6">
-                                <div>
-                                  <div className="flex items-center gap-3 mb-2">
-                                      <h3 className="text-[16px] font-bold text-neutral-900 group-hover:text-[#fa541c] transition-colors">{task.title}</h3>
-                                      <span className="px-2 py-0.5 bg-orange-50 text-[#fa541c] text-[11px] font-bold rounded border border-orange-100">满分: 100</span>
-                                  </div>
-                                  <div className="flex items-center gap-5 text-[13px] text-neutral-500">
-                                      <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 截止: {task.deadline}</span>
-                                      <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-500" /> 提交率: {task.submitCount}/{task.totalCount} ({Math.round(task.submitCount/task.totalCount*100)}%)</span>
-                                      <span className="flex items-center gap-1.5"><BarChart className="w-4 h-4 text-blue-500" /> 平均分: {task.avgScore}</span>
-                                  </div>
-                                </div>
-                                {perspective === 'teacher' && (
-                                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button onClick={() => setShowEditTaskModal(true)} variant="outline" className="text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 h-8 text-[13px] px-3 rounded-[4px]">
-                                        <Edit className="w-3.5 h-3.5 mr-1.5"/> 编辑
-                                    </Button>
-                                  </div>
-                                )}
-                            </div>
-                            
-                            <div className="bg-neutral-50/80 rounded-xl p-5 border border-neutral-100 flex items-center justify-between">
-                                <div className="flex gap-8">
-                                  <div className="flex flex-col">
-                                    <span className="text-[12px] text-neutral-500 mb-1 font-medium">待批改</span>
-                                    <span className="text-[20px] font-black text-[#fa541c]">{task.toGrade}</span>
-                                  </div>
-                                  <div className="w-px h-10 bg-neutral-200"></div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[12px] text-neutral-500 mb-1 font-medium">已打回重做</span>
-                                    <span className="text-[20px] font-black text-red-500">{task.rejected}</span>
-                                  </div>
-                                  <div className="w-px h-10 bg-neutral-200"></div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[12px] text-neutral-500 mb-1 font-medium">已批改完成</span>
-                                    <span className="text-[20px] font-black text-emerald-600">{task.submitCount - task.toGrade - task.rejected}</span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  {task.toGrade > 0 && (
-                                    <Button onClick={() => setShowGrading(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-orange-500/20 text-[13px] h-9 px-6 font-bold">
-                                        进入批阅模式 <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                  )}
-                                  {task.toGrade === 0 && (
-                                    <Button variant="outline" onClick={() => setShowGrading(true)} className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 text-[13px] h-9 px-6 font-bold rounded-[4px]">
-                                        查看批阅记录
-                                    </Button>
-                                  )}
-                                </div>
-                            </div>
-                          </div>
-                        ))}
+                      {/* Search & Buttons Toolbar */}
+                      <div className="flex items-center justify-between mb-6">
+                        {/* Search Input on Left */}
+                        <div className="relative w-80">
+                          <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input 
+                            type="text" 
+                            className="w-full pl-9 pr-4 py-2 border border-neutral-200 rounded-[4px] text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626] bg-white" 
+                            placeholder="搜索作业名称或试卷名称..."
+                            value={assignmentSearchQuery}
+                            onChange={(e) => setAssignmentSearchQuery(e.target.value)}
+                          />
+                        </div>
+                        
+                        {/* Buttons on Right */}
+                        <div className="flex items-center gap-3">
+                          <Button 
+                            onClick={() => navigate('/teacher/questions')} 
+                            variant="outline" 
+                            className="h-9 px-4 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 font-bold text-[13px] rounded-[4px] flex items-center gap-1.5 transition-all bg-white"
+                          >
+                            题目管理
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              setEditingAssignmentId(null);
+                              setSelectedPaperName('');
+                              setTaskTitle('');
+                              setTaskPublishTime('2026-05-21T14:29');
+                              setTaskDeadline('');
+                              setShowCreateTaskModal(true);
+                            }} 
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-4 shadow-sm shadow-orange-500/20 font-bold text-[13px] flex items-center gap-1.5 transition-all"
+                          >
+                            <Plus className="w-4 h-4" /> 新建作业
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Assignments Table */}
+                      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden mb-6">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-neutral-50/50 border-b border-neutral-200">
+                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">作业名称</th>
+                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">试卷名称</th>
+                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">发布时间</th>
+                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">截止时间</th>
+                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider text-right">操作栏</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-neutral-100">
+                            {assignments
+                              .filter(task => 
+                                task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
+                                task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
+                              )
+                              .map((task) => (
+                                <tr key={task.id} className="hover:bg-neutral-50/50 transition-colors">
+                                  <td className="px-6 py-4">
+                                    <div className="text-[13px] font-bold text-neutral-900">{task.title}</div>
+                                    <div className="text-[11px] text-neutral-400 mt-0.5">满分: 100</div>
+                                  </td>
+                                  <td className="px-6 py-4 text-[13px] text-neutral-600 font-medium">{task.paperName}</td>
+                                  <td className="px-6 py-4 text-[13px] text-neutral-500">{task.publishTime}</td>
+                                  <td className="px-6 py-4 text-[13px] text-neutral-500">{task.deadline}</td>
+                                  <td className="px-6 py-4 text-right">
+                                    <div className="flex items-center justify-end gap-3.5">
+                                      <button 
+                                        onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                        className="text-[13px] text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        详情
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setEditingAssignmentId(task.id);
+                                          setSelectedPaperName(task.paperName);
+                                          setTaskTitle(task.title);
+                                          setTaskPublishTime(task.publishTime.replace(' ', 'T'));
+                                          setTaskDeadline(task.deadline.replace(' ', 'T'));
+                                          setShowEditTaskModal(true);
+                                        }}
+                                        className="text-[13px] text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        编辑
+                                      </button>
+                                      <button 
+                                        onClick={() => setShowGrading(true)}
+                                        className="text-[13px] text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        完成情况
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setConfirmModal({
+                                            show: true,
+                                            title: '提示',
+                                            message: `确定要删除作业 "${task.title}" 吗？删除后不可恢复。`,
+                                            showCancel: true,
+                                            onConfirm: () => {
+                                              setAssignments(prev => prev.filter(a => a.id !== task.id));
+                                              setConfirmModal(prev => ({ ...prev, show: false }));
+                                            }
+                                          });
+                                        }}
+                                        className="text-[13px] text-red-500 hover:text-red-700 font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                      >
+                                        删除
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            {assignments.filter(task => 
+                              task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
+                              task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
+                            ).length === 0 && (
+                              <tr>
+                                <td colSpan={5} className="py-12 text-center text-[13px] text-neutral-400">
+                                  暂无匹配的作业数据
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </>
                   ) : (
@@ -1168,8 +1245,19 @@ export default function TeacherCourseManage() {
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/40 backdrop-blur-sm animation-fade-in pr-0">
           <div className="bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.1)] w-full max-w-[600px] h-full flex flex-col animation-slide-left">
             <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[18px] font-bold text-neutral-900">新建作业</h2>
-              <button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-[4px] transition-colors">
+              <h2 className="text-[18px] font-bold text-neutral-900">{editingAssignmentId ? "编辑作业" : "新建作业"}</h2>
+              <button 
+                onClick={() => { 
+                  setShowCreateTaskModal(false); 
+                  setShowEditTaskModal(false); 
+                  setEditingAssignmentId(null);
+                  setSelectedPaperName('');
+                  setTaskTitle('');
+                  setTaskPublishTime('2026-05-21T14:29');
+                  setTaskDeadline('');
+                }} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-[4px] transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1195,20 +1283,36 @@ export default function TeacherCourseManage() {
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 作业名称：</label>
-                  <input type="text" className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" placeholder="请输入" defaultValue={selectedPaperName} />
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    placeholder="请输入" 
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                  />
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 发布时间：</label>
                   <div className="relative">
-                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" defaultValue="2026-05-21T14:29" />
+                    <input 
+                      type="datetime-local" 
+                      className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" 
+                      value={taskPublishTime}
+                      onChange={(e) => setTaskPublishTime(e.target.value)}
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 截止时间：</label>
                   <div className="relative">
-                    <input type="datetime-local" className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-400" />
+                    <input 
+                      type="datetime-local" 
+                      className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" 
+                      value={taskDeadline}
+                      onChange={(e) => setTaskDeadline(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
@@ -1251,8 +1355,70 @@ export default function TeacherCourseManage() {
             </div>
 
             <div className="p-6 border-t border-neutral-100 bg-white shrink-0 flex justify-end gap-3">
-              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 rounded-[4px]">取消</Button>
-              <Button onClick={() => { setShowCreateTaskModal(false); setShowEditTaskModal(false); }} className={cn("text-white font-bold h-9 px-6 rounded-[4px]", selectedPaperName ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}>发布作业</Button>
+              <Button 
+                onClick={() => { 
+                  setShowCreateTaskModal(false); 
+                  setShowEditTaskModal(false); 
+                  setEditingAssignmentId(null);
+                  setSelectedPaperName('');
+                  setTaskTitle('');
+                  setTaskPublishTime('2026-05-21T14:29');
+                  setTaskDeadline('');
+                }} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 rounded-[4px]"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!selectedPaperName || !taskTitle) return;
+
+                  const formattedPublish = taskPublishTime.replace('T', ' ');
+                  const formattedDeadline = taskDeadline ? taskDeadline.replace('T', ' ') : '2099-02-28 00:00';
+
+                  if (editingAssignmentId !== null) {
+                    // Edit Mode
+                    setAssignments(prev => prev.map(a => a.id === editingAssignmentId ? {
+                      ...a,
+                      title: taskTitle,
+                      paperName: selectedPaperName,
+                      publishTime: formattedPublish,
+                      deadline: formattedDeadline,
+                    } : a));
+                  } else {
+                    // Add Mode
+                    const newId = Math.max(...assignments.map(a => a.id), 0) + 1;
+                    setAssignments(prev => [
+                      ...prev,
+                      {
+                        id: newId,
+                        title: taskTitle,
+                        paperName: selectedPaperName,
+                        publishTime: formattedPublish,
+                        deadline: formattedDeadline,
+                        submitCount: 0,
+                        totalCount: 50,
+                        avgScore: '-',
+                        toGrade: 0,
+                        rejected: 0
+                      }
+                    ]);
+                  }
+
+                  // Close modals & Reset states
+                  setShowCreateTaskModal(false);
+                  setShowEditTaskModal(false);
+                  setEditingAssignmentId(null);
+                  setSelectedPaperName('');
+                  setTaskTitle('');
+                  setTaskPublishTime('2026-05-21T14:29');
+                  setTaskDeadline('');
+                }} 
+                className={cn("text-white font-bold h-9 px-6 rounded-[4px]", (selectedPaperName && taskTitle) ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}
+              >
+                {editingAssignmentId ? "保存作业" : "发布作业"}
+              </Button>
             </div>
           </div>
         </div>
