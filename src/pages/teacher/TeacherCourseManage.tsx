@@ -709,10 +709,8 @@ export default function TeacherCourseManage() {
                 <div className="p-6 lg:p-8 animate-in fade-in duration-500 bg-neutral-50/30 rounded-b-[24px]">
                   {!showGrading ? (
                     <>
-                      <div className="flex justify-between items-center mb-8 border-b border-neutral-100 pb-5">
-                        <div>
-                          <h2 className="text-xl font-bold text-neutral-title">作业任务配置与批阅</h2>
-                        </div>
+                      <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-neutral-title">作业配置</h2>
                       </div>
 
                       {/* Search & Buttons Toolbar */}
