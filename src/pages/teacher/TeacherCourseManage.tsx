@@ -711,42 +711,19 @@ export default function TeacherCourseManage() {
                     <>
                       <div className="flex justify-between items-center mb-8 border-b border-neutral-100 pb-5">
                         <div>
-                          <h2 className="text-xl font-black text-neutral-900 flex items-center gap-2">
-                            <FileText className="w-6 h-6 text-[#fa541c]" /> 作业任务配置与批阅
-                          </h2>
-                          <p className="text-[13px] text-neutral-500 mt-1">管理课程测验与作业，设置规则并进行在线批阅打分。</p>
+                          <h2 className="text-xl font-bold text-neutral-title">作业任务配置与批阅</h2>
                         </div>
                       </div>
 
-                      {/* 统计概览 Cards */}
-                      <div className="grid grid-cols-4 gap-6 mb-8">
-                        {[
-                          { label: '平均提交率', value: '85.2%', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                          { label: '全局平均分', value: '88.5', icon: BarChart, color: 'text-blue-500', bg: 'bg-blue-50' },
-                          { label: '待批改总数', value: '27', icon: Clock, color: 'text-[#fa541c]', bg: 'bg-orange-50' },
-                          { label: '延期申请', value: '3', icon: Paperclip, color: 'text-purple-500', bg: 'bg-purple-50' },
-                        ].map((stat, i) => (
-                          <div key={i} className="p-5 rounded-2xl border border-neutral-200 bg-white shadow-sm flex items-center gap-4 hover:shadow-md hover:border-orange-200 transition-all">
-                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
-                              <stat.icon className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <div className="text-[12px] text-neutral-500 font-bold mb-0.5">{stat.label}</div>
-                              <div className="text-xl font-black text-neutral-900 leading-tight">{stat.value}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
                       {/* Search & Buttons Toolbar */}
-                      <div className="flex items-center justify-between mb-6">
-                        {/* Search Input on Left */}
-                        <div className="relative w-80">
-                          <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <div className="flex items-center justify-between mb-6 gap-4">
+                        {/* Search Input on Left (matching Members page style) */}
+                        <div className="flex items-center relative">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                           <input 
                             type="text" 
-                            className="w-full pl-9 pr-4 py-2 border border-neutral-200 rounded-[4px] text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-[#262626] bg-white" 
-                            placeholder="搜索作业名称或试卷名称..."
+                            placeholder="搜索作业名称或试卷名称..." 
+                            className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-colors bg-white text-[#262626]" 
                             value={assignmentSearchQuery}
                             onChange={(e) => setAssignmentSearchQuery(e.target.value)}
                           />
@@ -777,93 +754,95 @@ export default function TeacherCourseManage() {
                         </div>
                       </div>
 
-                      {/* Assignments Table */}
-                      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden mb-6">
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="bg-neutral-50/50 border-b border-neutral-200">
-                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">作业名称</th>
-                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">试卷名称</th>
-                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">发布时间</th>
-                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider">截止时间</th>
-                              <th className="px-6 py-4 text-[12px] font-bold text-neutral-500 uppercase tracking-wider text-right">操作栏</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-neutral-100">
-                            {assignments
-                              .filter(task => 
+                      {/* Assignments Table (matching Members page style) */}
+                      <div className="bg-white rounded overflow-hidden border border-neutral-200 mb-6">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                              <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                                <th className="p-4 font-medium">作业名称</th>
+                                <th className="p-4 font-medium">试卷名称</th>
+                                <th className="p-4 font-medium">发布时间</th>
+                                <th className="p-4 font-medium">截止时间</th>
+                                <th className="p-4 font-medium text-right">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {assignments
+                                .filter(task => 
+                                  task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
+                                  task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
+                                )
+                                .map((task) => (
+                                  <tr key={task.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                                    <td className="p-4 text-neutral-800">
+                                      <div className="font-bold">{task.title}</div>
+                                      <div className="text-[11px] text-neutral-400 mt-0.5">满分: 100</div>
+                                    </td>
+                                    <td className="p-4 text-neutral-600 font-medium">{task.paperName}</td>
+                                    <td className="p-4 text-neutral-500">{task.publishTime}</td>
+                                    <td className="p-4 text-neutral-500">{task.deadline}</td>
+                                    <td className="p-4 text-right">
+                                      <div className="flex items-center justify-end gap-3.5">
+                                        <button 
+                                          onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                        >
+                                          详情
+                                        </button>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingAssignmentId(task.id);
+                                            setSelectedPaperName(task.paperName);
+                                            setTaskTitle(task.title);
+                                            setTaskPublishTime(task.publishTime.replace(' ', 'T'));
+                                            setTaskDeadline(task.deadline.replace(' ', 'T'));
+                                            setShowEditTaskModal(true);
+                                          }}
+                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                        >
+                                          编辑
+                                        </button>
+                                        <button 
+                                          onClick={() => setShowGrading(true)}
+                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                        >
+                                          完成情况
+                                        </button>
+                                        <button 
+                                          onClick={() => {
+                                            setConfirmModal({
+                                              show: true,
+                                              title: '提示',
+                                              message: `确定要删除作业 "${task.title}" 吗？删除后不可恢复。`,
+                                              showCancel: true,
+                                              onConfirm: () => {
+                                                setAssignments(prev => prev.filter(a => a.id !== task.id));
+                                                setConfirmModal(prev => ({ ...prev, show: false }));
+                                              }
+                                            });
+                                          }}
+                                          className="text-red-500 hover:text-red-700 font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                        >
+                                          删除
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              {assignments.filter(task => 
                                 task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
                                 task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
-                              )
-                              .map((task) => (
-                                <tr key={task.id} className="hover:bg-neutral-50/50 transition-colors">
-                                  <td className="px-6 py-4">
-                                    <div className="text-[13px] font-bold text-neutral-900">{task.title}</div>
-                                    <div className="text-[11px] text-neutral-400 mt-0.5">满分: 100</div>
-                                  </td>
-                                  <td className="px-6 py-4 text-[13px] text-neutral-600 font-medium">{task.paperName}</td>
-                                  <td className="px-6 py-4 text-[13px] text-neutral-500">{task.publishTime}</td>
-                                  <td className="px-6 py-4 text-[13px] text-neutral-500">{task.deadline}</td>
-                                  <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-3.5">
-                                      <button 
-                                        onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
-                                        className="text-[13px] text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                      >
-                                        详情
-                                      </button>
-                                      <button 
-                                        onClick={() => {
-                                          setEditingAssignmentId(task.id);
-                                          setSelectedPaperName(task.paperName);
-                                          setTaskTitle(task.title);
-                                          setTaskPublishTime(task.publishTime.replace(' ', 'T'));
-                                          setTaskDeadline(task.deadline.replace(' ', 'T'));
-                                          setShowEditTaskModal(true);
-                                        }}
-                                        className="text-[13px] text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                      >
-                                        编辑
-                                      </button>
-                                      <button 
-                                        onClick={() => setShowGrading(true)}
-                                        className="text-[13px] text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                      >
-                                        完成情况
-                                      </button>
-                                      <button 
-                                        onClick={() => {
-                                          setConfirmModal({
-                                            show: true,
-                                            title: '提示',
-                                            message: `确定要删除作业 "${task.title}" 吗？删除后不可恢复。`,
-                                            showCancel: true,
-                                            onConfirm: () => {
-                                              setAssignments(prev => prev.filter(a => a.id !== task.id));
-                                              setConfirmModal(prev => ({ ...prev, show: false }));
-                                            }
-                                          });
-                                        }}
-                                        className="text-[13px] text-red-500 hover:text-red-700 font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
-                                      >
-                                        删除
-                                      </button>
-                                    </div>
+                              ).length === 0 && (
+                                <tr>
+                                  <td colSpan={5} className="py-12 text-center text-[13px] text-neutral-400">
+                                    暂无匹配的作业数据
                                   </td>
                                 </tr>
-                              ))}
-                            {assignments.filter(task => 
-                              task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
-                              task.paperName.toLowerCase().includes(assignmentSearchQuery.toLowerCase())
-                            ).length === 0 && (
-                              <tr>
-                                <td colSpan={5} className="py-12 text-center text-[13px] text-neutral-400">
-                                  暂无匹配的作业数据
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </>
                   ) : (
