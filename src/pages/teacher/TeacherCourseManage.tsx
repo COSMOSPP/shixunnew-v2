@@ -159,6 +159,7 @@ export default function TeacherCourseManage() {
   
   const [assignmentPage, setAssignmentPage] = useState(1);
   const [assignmentPageSize, setAssignmentPageSize] = useState(5); // default 5 items per page so pagination is visible
+  const [isPageSizeDropdownOpen, setIsPageSizeDropdownOpen] = useState(false);
 
   const [showBulkRevokeModal, setShowBulkRevokeModal] = useState(false);
   const [showBulkAuthModal, setShowBulkAuthModal] = useState(false);
@@ -899,20 +900,40 @@ export default function TeacherCourseManage() {
                             </Button>
                           </div>
                           <div className="relative">
-                            <select 
-                              className="appearance-none text-[13px] border border-neutral-200 rounded-[8px] pl-3 pr-8 py-1 bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-black cursor-pointer transition-all h-7 flex items-center"
-                              value={assignmentPageSize}
-                              onChange={(e) => {
-                                setAssignmentPageSize(Number(e.target.value));
-                                setAssignmentPage(1);
-                              }}
+                            <button 
+                              type="button"
+                              onClick={() => setIsPageSizeDropdownOpen(!isPageSizeDropdownOpen)}
+                              className="appearance-none text-[13px] border border-neutral-200 rounded-[8px] pl-3 pr-8 py-1 bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 text-black cursor-pointer transition-all h-7 flex items-center gap-1.5 select-none text-left min-w-[76px] relative"
                             >
-                              <option value={5} className="bg-white text-black">5 条/页</option>
-                              <option value={10} className="bg-white text-black">10 条/页</option>
-                              <option value={20} className="bg-white text-black">20 条/页</option>
-                              <option value={50} className="bg-white text-black">50 条/页</option>
-                            </select>
-                            <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <span>{assignmentPageSize} 条/页</span>
+                              <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            </button>
+                            
+                            {isPageSizeDropdownOpen && (
+                              <>
+                                <div className="fixed inset-0 z-40" onClick={() => setIsPageSizeDropdownOpen(false)}></div>
+                                <div className="absolute right-0 bottom-8 z-50 w-24 bg-white border border-neutral-200 shadow-[0_4px_12px_rgba(0,0,0,0.08)] rounded-[8px] py-1 overflow-hidden animation-slide-up flex flex-col">
+                                  {[5, 10, 20, 50].map((size) => (
+                                    <div
+                                      key={size}
+                                      onClick={() => {
+                                        setAssignmentPageSize(size);
+                                        setAssignmentPage(1);
+                                        setIsPageSizeDropdownOpen(false);
+                                      }}
+                                      className={cn(
+                                        "px-3 py-2 text-[13px] transition-colors cursor-pointer text-left font-medium",
+                                        assignmentPageSize === size 
+                                          ? "bg-orange-50 text-[#fa541c] font-bold" 
+                                          : "bg-white text-black hover:bg-neutral-50"
+                                      )}
+                                    >
+                                      {size} 条/页
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </>
