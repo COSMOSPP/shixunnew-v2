@@ -1338,6 +1338,17 @@ export default function TeacherCourseManage() {
               <div className="space-y-6">
                 <h3 className="text-[15px] font-bold text-neutral-900">基础信息</h3>
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 作业名称：</label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
+                    placeholder="请输入" 
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 选择试卷：</label>
                   <div className="text-[14px] flex items-center gap-3">
                     <span className={selectedPaperName ? "text-neutral-900 font-medium" : "text-neutral-400"}>
@@ -1353,22 +1364,11 @@ export default function TeacherCourseManage() {
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 作业名称：</label>
-                  <input 
-                    type="text" 
-                    className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
-                    placeholder="请输入" 
-                    value={taskTitle}
-                    onChange={(e) => setTaskTitle(e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 发布时间：</label>
                   <div className="relative">
                     <input 
                       type="datetime-local" 
-                      className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" 
+                      className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600 accent-[#fa541c]" 
                       value={taskPublishTime}
                       onChange={(e) => setTaskPublishTime(e.target.value)}
                     />
@@ -1380,7 +1380,7 @@ export default function TeacherCourseManage() {
                   <div className="relative">
                     <input 
                       type="datetime-local" 
-                      className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600" 
+                      className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-600 accent-[#fa541c]" 
                       value={taskDeadline}
                       onChange={(e) => setTaskDeadline(e.target.value)}
                     />
@@ -1395,12 +1395,12 @@ export default function TeacherCourseManage() {
                   <label className="text-[14px] text-neutral-700 text-right mt-1"><span className="text-[#fa541c]">*</span> 分配至：</label>
                   <div className="space-y-4 text-[14px] text-neutral-700">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="radio" name="assign" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer" defaultChecked />
+                      <input type="radio" name="assign" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer accent-[#fa541c]" defaultChecked />
                       <span>全部学生</span>
                     </label>
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" name="assign" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer" />
+                        <input type="radio" name="assign" className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer accent-[#fa541c]" />
                         <span>部分学生</span>
                       </label>
                       <span className="text-neutral-400">未选择</span>

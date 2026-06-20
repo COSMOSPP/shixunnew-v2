@@ -185,3 +185,16 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
 }
+
+/* Custom DateTime Picker styling */
+input[type="datetime-local"] {
+  accent-color: #fa541c;
+}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: brightness(0) saturate(100%) invert(47%) sepia(87%) saturate(1478%) hue-rotate(345deg) brightness(98%) contrast(96%);
+  transition: opacity 0.2s;
+}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.7;
+}
