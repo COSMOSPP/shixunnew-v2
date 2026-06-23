@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, PlusCircle, Edit, Trash2, Compass, MoreHorizontal } from 'lucide-react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, MonitorPlay, PlusCircle, Edit, Trash2, Compass, MoreHorizontal, Pin, Camera, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import TeacherPPTEditor from './TeacherPPTEditor';
@@ -75,11 +75,268 @@ const COURSE_SYLLABUS: Chapter[] = [
   }
 ];
 
+const NEW_QUESTIONS = [
+  {
+    id: 1,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "存储分为哪些类型",
+    options: ["并行存储", "对象存储", "云硬盘", "文件存储"]
+  },
+  {
+    id: 2,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "在深度学习中，用于多分类任务的输出层激活函数通常是？",
+    options: ["A. Sigmoid", "B. Tanh", "C. Softmax", "D. ReLU"]
+  },
+  {
+    id: 3,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "关于有监督学习，以下说法正确的是？",
+    options: ["A. 不需要训练数据", "B. 必须包含输入和对应的标签", "C. 只能做聚类任务", "D. 不需要优化器"]
+  },
+  {
+    id: 4,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "以下哪一个不是常用的机器学习评估指标？",
+    options: ["A. 准确率 (Accuracy)", "B. 精确率 (Precision)", "C. 学习率 (Learning Rate)", "D. 召回率 (Recall)"]
+  },
+  {
+    id: 5,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "人工神经网络中，神经元的基本计算过程是？",
+    options: ["A. 加权求和并经过激活函数", "B. 矩阵求逆", "C. 随机游走", "D. 傅里叶变换"]
+  },
+  {
+    id: 6,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "卷积神经网络（CNN）中卷积层的主要作用是？",
+    options: ["A. 特征提取", "B. 降维", "C. 分类", "D. 数据增强"]
+  },
+  {
+    id: 7,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "在训练神经网络时，如果模型在训练集上表现极好但在测试集上表现极差，这通常被称为？",
+    options: ["A. 欠拟合 (Underfitting)", "B. 过拟合 (Overfitting)", "C. 梯度消失", "D. 鞍点"]
+  },
+  {
+    id: 8,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "用于防止神经网络过拟合的常用正则化方法是？",
+    options: ["A. Dropout", "B. Adam", "C. ReLU", "D. MSE"]
+  },
+  {
+    id: 9,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "深度学习中常用作优化算法的是？",
+    options: ["A. Adam / SGD", "B. Sigmoid", "C. ResNet", "D. Word2Vec"]
+  },
+  {
+    id: 10,
+    type: "single",
+    typeName: "单选题",
+    score: 1,
+    title: "在自然语言处理中，Transformer架构的核心机制是？",
+    options: ["A. 自注意力机制 (Self-Attention)", "B. 循环神经网络 (RNN)", "C. 隐马尔可夫模型", "D. 卷积操作"]
+  },
+  {
+    id: 11,
+    type: "multi",
+    typeName: "多选题",
+    score: 2,
+    title: "以下哪些属于人工智能的核心技术领域？",
+    options: ["A. 机器学习", "B. 计算机视觉", "C. 自然语言处理", "D. 传统关系型数据库"]
+  },
+  {
+    id: 12,
+    type: "multi",
+    typeName: "多选题",
+    score: 2,
+    title: "下列深度学习框架中，开源且广泛使用的是？",
+    options: ["A. PyTorch", "B. TensorFlow", "C. MindSpore", "D. GCC 编译器"]
+  },
+  {
+    id: 13,
+    type: "multi",
+    typeName: "多选题",
+    score: 2,
+    title: "评价分类模型性能时，混淆矩阵（Confusion Matrix）包含哪些基本元素？",
+    options: ["A. 真正例 (TP)", "B. 假正例 (FP)", "C. 真负例 (TN)", "D. 假负例 (FN)"]
+  },
+  {
+    id: 14,
+    type: "multi",
+    typeName: "多选题",
+    score: 2,
+    title: "在数据预处理阶段，常见的数据清洗操作包括？",
+    options: ["A. 处理缺失值", "B. 去除异常值", "C. 归一化/标准化", "D. 直接删除半数以上特征"]
+  },
+  {
+    id: 15,
+    type: "multi",
+    typeName: "多选题",
+    score: 2,
+    title: "下列关于人工神经网络中“偏置（Bias）”的说法，正确的是？",
+    options: ["A. 偏置允许激活函数在横轴上左右移动", "B. 偏置是神经网络需要通过反向传播训练的参数", "C. 偏置是固定不变的超参数", "D. 偏置可以看作是神经元激活的阈值偏好"]
+  },
+  {
+    id: 16,
+    type: "practical",
+    typeName: "实训题",
+    score: 10,
+    title: "基于人工神经网络算法的图像分类实践",
+    content: "一、实验主题\n基于人工神经网络算法的图像分类实践\n\n二、实验目的\n掌握有监督学习的基本概念与人工神经网络的核心原理；\n学会使用torchvision库加载手写数字数据集并进行数据预处理；\n学会运用pytorch构建卷积神经网络模型，掌握模型结构的设置方法；\n掌握运用交叉验证、网格搜索等技术实现模型调优，提升模型泛化能力；\n掌握运用准确率、精确率、召回率、F1-score指标评估模型性能的方法；\n能够处理神经网络训练过程中的结构设置、参数调优和防止过拟合等常见问题，提升对有监督学习任务的理解和实际问题分析能力。\n\n三、实验内容\n安装pytorch和torchvision，并导入torch、torchvision、matplotlib、sklearn库；\n运用torch和torchvision实现计算单元设置和数据集预处理；\n运用pytorch构建循环神经网络模型，包括卷积层、池化层和全连接层；\n运用交叉验证、网格搜索技术实现卷积神经网络超参数调优，提升模型性能；\n运用准确率、精确率、召回率、F1-score指标评估模型性能；\n可视化展示最佳模型预测结果。"
+  },
+  {
+    id: 17,
+    type: "practical",
+    typeName: "实训题",
+    score: 10,
+    title: "基于卷积神经网络(CNN)的手写数字识别(MNIST)",
+    content: "一、实验主题\n基于卷积神经网络(CNN)的手写数字识别(MNIST)\n\n二、实验目的\n理解卷积操作、池化操作对图像局部特征提取的作用；\n掌握在PyTorch中搭建经典LeNet-5或自定义CNN结构的方法；\n学会利用训练集训练CNN并使用验证集调整超参数（如卷积核大小、步长等）。\n\n三、实验内容\n1. 下载并加载MNIST手写数字数据集，绘制样本图像；\n2. 搭建包含两个卷积层和两个全连接层的经典神经网络；\n3. 运行模型训练，记录并可视化每个Epoch的Loss和Accuracy变化。"
+  },
+  {
+    id: 18,
+    type: "practical",
+    typeName: "实训题",
+    score: 10,
+    title: "智能音箱产品数据分析与对话系统评估",
+    content: "一、实验主题\n智能音箱产品数据分析与对话系统评估\n\n二、实验目的\n掌握对话交互意图识别准确度的计算方法；\n学会清洗和解析用户会话日志，统计各意图的请求频率；\n评估意图识别模型的召回率和精确率，找出识别较差的意图类型。\n\n三、实验内容\n1. 导入对话日志文件，进行文本去噪与标签映射；\n2. 计算意图识别的混淆矩阵，统计总体Accuracy与各意图下的F1-score；\n3. 提出优化意见，输出评估分析报告。"
+  }
+];
+
 export default function CourseDetail({ onBack, onShowLearningPath, initialLesson, isTeacher }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
   const [showStudentAnswering, setShowStudentAnswering] = useState(false);
   const [answeringAnswers, setAnsweringAnswers] = useState<Record<number, number>>({});
   const [expandedAssignment, setExpandedAssignment] = useState<number | null>(1);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [markedQuestions, setMarkedQuestions] = useState<Set<number>>(new Set());
+  const [userAnswers, setUserAnswers] = useState<Record<number, any>>({});
+  const [examTimeLeft, setExamTimeLeft] = useState(600); // 10 minutes count down
+
+  useEffect(() => {
+    if (!showStudentAnswering) return;
+    setExamTimeLeft(600); // Reset timer
+    (window as any).__EXAM_TIME_LEFT__ = 600;
+    window.dispatchEvent(new CustomEvent("answering-time-change"));
+    setUserAnswers({});
+    setMarkedQuestions(new Set());
+    setCurrentQuestionIdx(0);
+  }, [showStudentAnswering]);
+
+  useEffect(() => {
+    (window as any).__IS_ANSWERING__ = showStudentAnswering;
+    window.dispatchEvent(new CustomEvent("answering-state-change"));
+    return () => {
+      (window as any).__IS_ANSWERING__ = false;
+      window.dispatchEvent(new CustomEvent("answering-state-change"));
+    };
+  }, [showStudentAnswering]);
+
+  useEffect(() => {
+    if (!showStudentAnswering) return;
+    const interval = setInterval(() => {
+      setExamTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          alert("考试时间到，已自动为您关闭答题！");
+          setShowStudentAnswering(false);
+          (window as any).__EXAM_TIME_LEFT__ = 0;
+          window.dispatchEvent(new CustomEvent("answering-time-change"));
+          return 0;
+        }
+        const nextTime = prev - 1;
+        (window as any).__EXAM_TIME_LEFT__ = nextTime;
+        window.dispatchEvent(new CustomEvent("answering-time-change"));
+        return nextTime;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showStudentAnswering]);
+
+  const toggleMarkQuestion = (idx: number) => {
+    setMarkedQuestions(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectOption = (qIdx: number, optIdx: number, type: string) => {
+    if (type === 'single') {
+      setUserAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
+    } else {
+      const currentAnswers = userAnswers[qIdx] || [];
+      const updatedAnswers = currentAnswers.includes(optIdx)
+        ? currentAnswers.filter((x: number) => x !== optIdx)
+        : [...currentAnswers, optIdx];
+      setUserAnswers(prev => ({ ...prev, [qIdx]: updatedAnswers }));
+    }
+  };
+
+  const handleSubmitAnswering = () => {
+    const totalQuestionsCount = NEW_QUESTIONS.length;
+    const answeredCount = Object.keys(userAnswers).filter(k => {
+      const ans = userAnswers[Number(k)];
+      return ans !== undefined && (Array.isArray(ans) ? ans.length > 0 : true);
+    }).length;
+
+    const unansweredCount = totalQuestionsCount - answeredCount;
+
+    if (unansweredCount > 0) {
+      if (!window.confirm(`您还有 ${unansweredCount} 道题未作答，确定要提交试卷吗？`)) {
+        return;
+      }
+    } else {
+      if (!window.confirm("确定要提交试卷吗？提交后将无法修改答案。")) {
+        return;
+      }
+    }
+
+    // Calculate score
+    let score = 0;
+    NEW_QUESTIONS.forEach((q, idx) => {
+      const answer = userAnswers[idx];
+      if (q.type === 'single') {
+        if (answer === 0) {
+          score += q.score;
+        }
+      } else if (q.type === 'multi') {
+        if (Array.isArray(answer) && answer.length === 2 && answer.includes(0) && answer.includes(1)) {
+          score += q.score;
+        }
+      } else if (q.type === 'practical') {
+        if (answer === true) {
+          score += q.score;
+        }
+      }
+    });
+
+    alert(`试卷提交成功！您的最终得分是：${score} 分（总分 50 分）`);
+    setShowStudentAnswering(false);
+  };
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 59, seconds: 15 });
 
   useEffect(() => {
@@ -108,6 +365,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
   const [activeExperimentTab, setActiveExperimentTab] = useState('course');
   const [teacherActionMode, setTeacherActionMode] = useState<'detail' | 'preview' | 'edit'>('detail');
   const [showReportModal, setShowReportModal] = useState(false);
+  const [isJoined, setIsJoined] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
   const [datasetTab, setDatasetTab] = useState('public');
   const [importedDatasets, setImportedDatasets] = useState<string[]>([]);
@@ -324,185 +582,269 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
   };
 
   if (showStudentAnswering) {
-    const questions = [
-      {
-        id: 1,
-        title: "神经网络中ReLU是？",
-        options: ["A 激活函数", "B 损失函数", "C 优化器", "D 正则化方法"]
-      },
-      {
-        id: 2,
-        title: "以下哪项不是深度学习框架？",
-        options: ["A PyTorch", "B Java", "C Keras", "D Caffe"]
-      },
-      {
-        id: 3,
-        title: "监督学习与无监督学习的主要区别是？",
-        options: ["A 计算设备", "B 算法数据", "C 数据大小", "D 标签存在与否"]
-      },
-      {
-        id: 4,
-        title: "人工智能的英文缩写是？",
-        options: ["A AI", "B UI", "C AR", "D VR"]
-      },
-      {
-        id: 5,
-        title: "训练集、验证集和测试集的比例通常为？",
-        options: ["A 8:2:2", "B 6:2:2", "C 7:2:1", "D 5:5:0"]
-      }
-    ];
+    const question = NEW_QUESTIONS[currentQuestionIdx];
+    const isMarked = markedQuestions.has(currentQuestionIdx);
 
-    const correctAnswers: Record<number, number> = {
-      1: 0,
-      2: 1,
-      3: 3,
-      4: 0,
-      5: 2
+    const formatExamTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     };
 
-    const handleSubmit = () => {
-      const unansweredCount = questions.length - Object.keys(answeringAnswers).length;
-      if (unansweredCount > 0) {
-        if (!window.confirm(`您还有 ${unansweredCount} 道题未作答，确定要提交吗？`)) {
-          return;
-        }
+    const renderQuestionCircle = (idx: number, displayNum: number) => {
+      const isCurrent = currentQuestionIdx === idx;
+      const isMarked = markedQuestions.has(idx);
+      const ans = userAnswers[idx];
+      const isAnswered = ans !== undefined && (Array.isArray(ans) ? ans.length > 0 : true);
+
+      let circleColorClass = "";
+      if (isCurrent) {
+        circleColorClass = "border-2 border-[#fa541c] text-[#fa541c] bg-white font-bold shadow-xs";
+      } else if (isAnswered) {
+        circleColorClass = "bg-[#fa541c] border-[#fa541c] text-white font-medium";
+      } else {
+        circleColorClass = "border-neutral-300 text-neutral-600 bg-white hover:border-[#fa541c] hover:text-[#fa541c]";
       }
 
-      let score = 0;
-      Object.entries(answeringAnswers).forEach(([qId, selectedIdx]) => {
-        if (correctAnswers[Number(qId)] === selectedIdx) {
-          score += 20;
-        }
-      });
-
-      alert(`作业提交成功！您的得分是：${score}分（共100分）`);
-      setShowStudentAnswering(false);
+      return (
+        <div 
+          key={idx}
+          onClick={() => setCurrentQuestionIdx(idx)}
+          className={cn(
+            "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
+            circleColorClass
+          )}
+        >
+          {displayNum}
+          {isMarked && (
+            <span className="absolute top-[-1px] right-[-1px] w-2.5 h-2.5 bg-orange-500 rounded-full border border-white"></span>
+          )}
+        </div>
+      );
     };
-
-    const padZero = (num: number) => String(num).padStart(2, '0');
 
     return (
       <div className="min-h-screen bg-[#f5f7fa] flex flex-col font-sans -mt-6 -mx-6 md:-mx-8 animate-in fade-in duration-300">
-        {/* Top Banner (Orange Theme) */}
-        <div className="bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] pt-6 pb-16 px-10 relative overflow-hidden shrink-0">
-          
-          {/* Background decorations */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute -right-20 -top-20 w-[400px] h-[400px] border-[40px] border-white/5 rounded-full"></div>
-            <div className="absolute -right-10 top-10 w-[300px] h-[300px] border-[2px] border-white/10 rounded-full"></div>
-            
-            {/* Decorative cubes representing AI/Tech */}
-            <div className="absolute right-10 top-1/2 -translate-y-1/2 opacity-20 transform rotate-12 flex flex-wrap w-[200px] gap-2">
-              {[...Array(9)].map((_, i) => (
-                <div key={i} className="w-14 h-14 bg-white/40 rounded shadow-lg backdrop-blur-sm"></div>
-              ))}
-            </div>
-          </div>
+        {/* Content Container */}
+        <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
+          {/* Left Answering Area */}
+          <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
+            {/* Scrollable Question Content */}
+            <div className="flex-1 overflow-y-auto px-10 pt-8 pb-4">
+              {/* Question Paper Title */}
+              <h1 className="text-[17px] font-bold text-neutral-title mb-6 pb-4 border-b border-neutral-100">
+                中国电信云网资源管理(三级)云网资源管理(三级)
+              </h1>
 
-          <div className="max-w-[1200px] mx-auto relative z-10 flex justify-between items-end">
-            <div className="text-white">
-              <div className="flex items-center gap-2 text-[12px] text-white/70 mb-4 font-medium tracking-wider">
-                <button onClick={() => setShowStudentAnswering(false)} className="hover:text-white transition-colors flex items-center gap-1 bg-transparent border-none outline-none cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5" /> 课程
+              {/* Question Type and Score */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="text-[15px] font-bold text-neutral-title">
+                  {currentQuestionIdx + 1}、{question.typeName} <span className="text-[13px] text-neutral-caption font-normal ml-1">({question.score}分)</span>
+                </div>
+                <button 
+                  onClick={() => toggleMarkQuestion(currentQuestionIdx)}
+                  className={cn(
+                    "flex items-center gap-1.5 text-[12px] border px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer bg-white",
+                    isMarked 
+                      ? "bg-orange-50 border-[#fa541c] text-[#fa541c] font-bold" 
+                      : "border-neutral-200 hover:border-[#fa541c] hover:text-[#fa541c] text-neutral-500"
+                  )}
+                >
+                  <Pin className="w-3.5 h-3.5" />
+                  <span>标记</span>
                 </button>
-                <span>/</span>
-                <span>人工智能基础与实践</span>
-                <span>/</span>
-                <span className="text-white">人工智能通讯课-客观题</span>
               </div>
-              
-              <h1 className="text-[28px] font-bold mb-4 tracking-wider">人工智能通讯课-客观题</h1>
-              
-              <div className="flex items-center gap-6 text-[13px] text-white/90">
-                <span>学生：张同学</span>
-                <span>作业时长：90分钟</span>
-              </div>
-            </div>
-            
-            <div className="text-white flex flex-col items-end">
-               <div className="text-[12px] text-white/80 mb-2 tracking-widest font-medium">倒计时</div>
-               <div className="flex items-baseline gap-2">
-                 <div className="flex items-baseline gap-1">
-                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{timeLeft.days}</div>
-                   <span className="text-[12px] opacity-80">天</span>
-                 </div>
-                 <div className="flex items-baseline gap-1">
-                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{padZero(timeLeft.hours)}</div>
-                   <span className="text-[12px] opacity-80">时</span>
-                 </div>
-                 <div className="flex items-baseline gap-1">
-                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{padZero(timeLeft.minutes)}</div>
-                   <span className="text-[12px] opacity-80">分</span>
-                 </div>
-                 <div className="flex items-baseline gap-1">
-                   <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/20">{padZero(timeLeft.seconds)}</div>
-                   <span className="text-[12px] opacity-80">秒</span>
-                 </div>
-               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 -mt-8 relative z-20 pb-20 px-4">
-          <div className="max-w-[1000px] mx-auto bg-white rounded-t-xl rounded-b-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 min-h-[600px] border border-neutral-100 flex flex-col">
-            
-            <div className="flex items-center gap-2 mb-10 pb-4 border-b border-neutral-100">
-              <CheckCircle2 className="w-5 h-5 text-[#fa541c]" />
-              <h2 className="text-[16px] font-bold text-neutral-800">
-                单选题 <span className="text-[13px] text-neutral-400 font-normal ml-2 tracking-wide">(第 1-10 题, 每题 2 分, 共 30 分)</span>
-              </h2>
-            </div>
+              {/* Question Body */}
+              {question.type !== 'practical' ? (
+                <div>
+                  {/* Clean Light-Bordered Question block */}
+                  <div className="bg-[#fcfcfd] border border-neutral-200 text-neutral-title rounded-lg p-5 mb-6 text-[15px] font-bold leading-relaxed min-h-[80px] flex items-center shadow-xs">
+                    {question.title}
+                  </div>
 
-            <div className="space-y-12 flex-1">
-              {questions.map((q) => (
-                <div key={q.id} className="space-y-4">
-                  <h3 className="text-[15px] font-bold text-neutral-800 leading-relaxed">
-                    {q.id}、{q.title}
-                  </h3>
-                  <div className="space-y-2 pl-6">
-                    {q.options.map((opt, i) => {
-                      const isSelected = answeringAnswers[q.id] === i;
+                  {/* Options */}
+                  <div className="space-y-3">
+                    {question.options?.map((opt, optIdx) => {
+                      const isChecked = question.type === 'single'
+                        ? userAnswers[currentQuestionIdx] === optIdx
+                        : (userAnswers[currentQuestionIdx] || []).includes(optIdx);
                       return (
-                        <div 
-                          key={i} 
-                          onClick={() => setAnsweringAnswers({...answeringAnswers, [q.id]: i})}
+                        <div
+                          key={optIdx}
+                          onClick={() => handleSelectOption(currentQuestionIdx, optIdx, question.type)}
                           className={cn(
-                            "text-[14px] cursor-pointer transition-colors flex items-center gap-3 px-4 py-2.5 rounded-lg border",
-                            isSelected 
-                              ? "bg-orange-50/50 border-[#fa541c] text-[#fa541c] font-medium" 
-                              : "border-transparent hover:bg-neutral-50 text-neutral-600 hover:text-[#fa541c]"
+                            "flex items-center gap-3 px-5 py-4 border rounded-xl cursor-pointer transition-all select-none",
+                            isChecked 
+                              ? "bg-orange-50/20 border-[#fa541c] shadow-xs" 
+                              : "bg-[#fafafa]/85 border-neutral-150 hover:bg-neutral-100/50"
                           )}
                         >
-                           <span className={cn(
-                             "w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
-                             isSelected ? "border-[#fa541c] bg-[#fa541c]" : "border-neutral-300"
-                           )}>
-                             {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
-                           </span>
-                           {opt}
+                          {question.type === 'single' ? (
+                            <div className={cn(
+                              "w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
+                              isChecked ? "border-[#fa541c]" : "border-neutral-300"
+                            )}>
+                              {isChecked && <div className="w-2 h-2 bg-[#fa541c] rounded-full animate-scale-up"></div>}
+                            </div>
+                          ) : (
+                            <div className={cn(
+                              "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors",
+                              isChecked ? "border-[#fa541c] bg-[#fa541c] text-white" : "border-neutral-300"
+                            )}>
+                              {isChecked && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                            </div>
+                          )}
+                          <span className={cn(
+                            "text-[14px] transition-colors",
+                            isChecked ? "text-[#fa541c] font-bold" : "text-neutral-title"
+                          )}>{opt}</span>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              ))}
+              ) : (
+                /* Practical Questions layout exactly as Figure 2 */
+                <div className="space-y-4">
+                  <div className="border border-neutral-200 rounded-lg p-5 bg-white overflow-y-auto max-h-[50vh] text-[14px] leading-relaxed text-[#333] text-left shadow-xs">
+                    <div className="border border-neutral-200 rounded-md p-3 mb-4 font-bold text-neutral-title bg-neutral-50/50">
+                      {question.title}
+                    </div>
+                    <div className="whitespace-pre-wrap font-medium space-y-1">
+                      {question.content}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="flex justify-end mt-12 pt-6 border-t border-neutral-100">
-              <Button 
-                onClick={handleSubmit}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-8 h-10 text-[14px] font-bold shadow-sm rounded-md transition-all flex items-center gap-1.5"
+            {/* Bottom Actions Row */}
+            <div className="flex items-center justify-between px-10 py-5 border-t border-neutral-100 bg-white shrink-0 shadow-[0_-4px_16px_rgba(0,0,0,0.02)] z-10">
+              <Button
+                variant="outline"
+                disabled={currentQuestionIdx === 0}
+                onClick={() => setCurrentQuestionIdx(prev => prev - 1)}
+                className="border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-6 h-9.5 text-[13px] font-bold rounded-[4px]"
               >
-                提交作业
+                上一题
+              </Button>
+              
+              <div className="flex items-center gap-3">
+                {question.type === 'practical' && (
+                  <Button 
+                    onClick={() => {
+                      alert("已进入实训环境，可在此开展编程开发与实训实操！");
+                      setUserAnswers(prev => ({ ...prev, [currentQuestionIdx]: true }));
+                    }}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1.5"
+                  >
+                    <span className="text-[14px]">⚡</span> 开始答题
+                  </Button>
+                )}
+                
+                <Button 
+                  onClick={() => {
+                    if (currentQuestionIdx < NEW_QUESTIONS.length - 1) {
+                      setCurrentQuestionIdx(prev => prev + 1);
+                    } else {
+                      handleSubmitAnswering();
+                    }
+                  }}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1"
+                >
+                  {currentQuestionIdx === NEW_QUESTIONS.length - 1 ? "提交试卷" : "下一题"}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar navigation */}
+          <div className="w-80 border-l border-neutral-border flex flex-col bg-white px-6 py-6 shrink-0 justify-between">
+            <div className="overflow-y-auto flex-1 no-scrollbar">
+              {/* Profile Avatar */}
+              <div className="flex flex-col items-center pb-5 border-b border-neutral-150 mb-5">
+                <img 
+                  src="https://picsum.photos/seed/studentavatar/150/150" 
+                  alt="Student Avatar" 
+                  className="w-[120px] h-[150px] object-cover rounded-lg border border-neutral-200 shadow-md mb-2"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Grid lists */}
+              <div className="space-y-5">
+                {/* Single choices */}
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">单选题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'single').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+
+                {/* Multiple choices */}
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">多选题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'multi').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+
+                {/* Practical questions */}
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">实训题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'practical').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Legend & Submission */}
+            <div className="border-t border-neutral-150 pt-5 mt-4">
+              <div className="flex items-center justify-around text-[12px] text-neutral-caption mb-5">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-4 h-4 rounded-full bg-neutral-400"></div>
+                  <span>已答</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-4 h-4 rounded-full border border-neutral-300 bg-white"></div>
+                  <span>未答</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-4 h-4 rounded-full border-2 border-[#fa541c] bg-white"></div>
+                  <span>当前</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-4 h-4 rounded-full border border-neutral-300 bg-white relative flex items-center justify-center">
+                    <span className="absolute top-[0px] right-[0px] w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                  </div>
+                  <span>标记</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleSubmitAnswering}
+                className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3 font-bold shadow-lg shadow-orange-500/10 rounded-[4px] transition-all text-sm cursor-pointer"
+              >
+                提交试卷
               </Button>
             </div>
-
           </div>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
@@ -520,13 +862,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
           
           {/* Decorative background elements */}
           <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 h-96 bg-white/40 rounded-full blur-3xl pointer-events-none z-0"></div>
-          <div className="absolute right-32 top-1/2 -translate-y-1/2 pointer-events-none z-0">
-            {/* Abstract illustration placeholder */}
-            <div className="w-64 h-48 bg-gradient-to-br from-[#fa541c]/20 to-[#ff9c6e]/20 rounded-xl backdrop-blur-sm border border-white/50 shadow-xl flex items-center justify-center transform rotate-3">
-              <div className="w-32 h-32 bg-white/60 rounded-lg shadow-inner flex items-center justify-center">
-                <PlayCircle className="w-16 h-16 text-[#fa541c]/60" />
-              </div>
-            </div>
+          <div className="absolute right-32 top-1/2 -translate-y-1/2 z-10">
           </div>
         </div>
 
@@ -551,43 +887,58 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             </div>
           </div>
 
-          {/* Title & Meta */}
-          <div className="max-w-3xl">
-            <h1 className="text-4xl font-bold text-neutral-title mb-6">Python 基础</h1>
-            
-            {/* Teacher Intro */}
-            <div className="flex items-center gap-4 mb-6 mt-[-10px]">
-              <img src="https://picsum.photos/seed/teacher/48/48" className="w-10 h-10 rounded-full border-2 border-[#fff2e8]" alt="Teacher" />
+          {/* Title & Meta with Image on Left */}
+          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+            {/* Left: Course Image */}
+            <div className="z-10 shrink-0">
+              <div className="w-[320px] h-[180px] rounded-xl overflow-hidden border-[6px] border-white shadow-2xl transition-transform duration-300 hover:scale-[1.02]">
+                <img 
+                  src="https://picsum.photos/seed/python/640/360" 
+                  alt="Python Course Cover" 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+
+            {/* Right: Info */}
+            <div className="flex-1 w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <h1 className="text-4xl font-bold text-neutral-title">Python 基础</h1>
+                <Button 
+                  className="bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe4d3] border border-[#ffbb96] shadow-sm h-8.5 px-4 text-[13px] flex items-center gap-1.5 shrink-0 rounded-[8px] self-start sm:self-auto"
+                  onClick={() => setShowReportModal(true)}
+                >
+                  <span className="text-[14px]">✨</span> 生成个性化学习报告
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-8 text-[14px] text-neutral-body mb-6">
+                <div>课程学时 <span className="font-medium text-neutral-title ml-2">5 章节 | 5 课节 | 180 分钟</span></div>
+              </div>
+
               <div>
-                <div className="text-[14px] font-bold text-neutral-title flex items-center gap-2">
-                  李老师
-                  <span className="text-[10px] font-normal px-1.5 py-0.5 bg-[#fa541c]/10 text-[#fa541c] rounded-full border border-[#fa541c]/20">资深讲师</span>
-                </div>
-                <div className="text-[12px] text-neutral-body mt-0.5">曾在大厂主导架构研发，10年丰富教学实战经验，授课风格通俗易懂</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-8 text-[14px] text-neutral-body mb-8">
-              <div>适合人群 <span className="font-medium text-neutral-title ml-2">零基础</span></div>
-              <div>教学模式 <span className="font-medium text-neutral-title ml-2">Mo-Lab</span></div>
-              <div>课程学时 <span className="font-medium text-neutral-title ml-2">5 章节 | 5 课节 | 180 分钟</span></div>
-            </div>
-
-            {/* Rating & Enrollment */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-1.5 text-[#faad14]">
-                <Star className="w-5 h-5 fill-current" />
-                <span className="text-lg font-bold">1.2w</span>
-                <span className="text-[13px] font-medium text-neutral-title ml-0.5">人收藏</span>
-              </div>
-              <div className="w-px h-6 bg-neutral-border"></div>
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  <img src="https://picsum.photos/seed/u1/32/32" className="w-8 h-8 rounded-full border-2 border-[#fff2e8]" alt="User" />
-                  <img src="https://picsum.photos/seed/u2/32/32" className="w-8 h-8 rounded-full border-2 border-[#fff2e8]" alt="User" />
-                  <img src="https://picsum.photos/seed/u3/32/32" className="w-8 h-8 rounded-full border-2 border-[#fff2e8]" alt="User" />
-                </div>
-                <span className="text-[14px] text-neutral-body"><span className="text-[#fa541c] font-medium">9246</span> 人加入学习</span>
+                <button 
+                  onClick={() => setIsJoined(!isJoined)}
+                  className={cn(
+                    "flex items-center gap-2 px-8 py-3 rounded-[8px] font-bold text-[15px] shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer",
+                    isJoined 
+                      ? "bg-[#52c41a] hover:bg-[#73d13d] text-white shadow-[#52c41a]/20 hover:shadow-[#52c41a]/30" 
+                      : "bg-gradient-to-r from-[#fa541c] to-[#ff7a45] hover:from-[#ff7a45] hover:to-[#ff9c6e] text-white shadow-[#fa541c]/20 hover:shadow-[#fa541c]/30"
+                  )}
+                >
+                  {isJoined ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      已加入，开始学习
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5" />
+                      加入课程
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -649,15 +1000,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
           {activeTab === 'syllabus' && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-300">
             <div className="bg-white rounded-[16px] shadow-sm p-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-neutral-title">课程目录</h2>
-                <Button 
-                  className="bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe4d3] border border-[#ffbb96] shadow-sm h-8 px-4 text-[13px] flex items-center gap-1.5"
-                  onClick={() => setShowReportModal(true)}
-                >
-                  <span className="text-[14px]">✨</span> 生成个性化学习报告
-                </Button>
-              </div>
+              <h2 className="text-lg font-bold text-neutral-title mb-4">课程目录</h2>
             <div className="space-y-6">
               {syllabus.map((chapter, i) => (
                 <div key={i} className="flex flex-col">
@@ -673,15 +1016,15 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                         <span>预计学习 <span className="font-bold text-neutral-title">{chapter.duration}</span> 分钟</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <BookOpen className="w-4 h-4 text-neutral-caption" />
+                        <FileText className="w-4 h-4 text-emerald-500" />
                         <span><span className="font-bold text-neutral-title">{chapter.videos}</span> 个教学课件</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Monitor className="w-4 h-4 text-neutral-caption" />
+                        <Code className="w-4 h-4 text-[#fa541c]" />
                         <span><span className="font-bold text-neutral-title">{chapter.docs}</span> 个实验课件</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Code className="w-4 h-4 text-neutral-caption" />
+                        <Monitor className="w-4 h-4 text-blue-500" />
                         <span><span className="font-bold text-neutral-title">{chapter.experiments}</span> 个互动学习课件</span>
                       </div>
                       {isTeacher && chapter.assignments > 0 && (
@@ -718,19 +1061,20 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                           <div className="flex items-center gap-6">
                             <span className="text-[14px] text-neutral-body w-12">{lesson.section}</span>
                             <div className="flex items-center gap-3">
-                              {/* Progress Marker */}
-                              {lesson.status === '已完成' ? (
-                                 <CheckCircle2 className="w-4 h-4 text-[#52c41a]" />
-                              ) : lesson.status === '学习中' ? (
-                                 <div className="w-4 h-4 rounded-full border-2 border-[#fa541c] border-t-transparent animate-spin"></div>
-                              ) : (
-                                 <div className="w-4 h-4 rounded-full border-2 border-neutral-300"></div>
-                              )}
-                              {lesson.type === 'video' && <BookOpen className="w-4 h-4 text-neutral-400" />}
-                              {lesson.type === 'doc' && <BookOpen className="w-4 h-4 text-neutral-400" />}
-                              {lesson.type === 'split_doc' && <Monitor className="w-4 h-4 text-neutral-400" />}
-                              {lesson.type === 'experiment' && <Code className="w-4 h-4 text-neutral-400" />}
-                              {lesson.type === 'assignment' && <CheckSquare className="w-4 h-4 text-neutral-400" />}
+
+                              <div className={cn(
+                                "w-6 h-6 rounded flex items-center justify-center shrink-0",
+                                lesson.type === 'split_doc' ? "bg-blue-50 text-blue-500" : 
+                                lesson.type === 'experiment' ? "bg-orange-50 text-[#fa541c]" :
+                                lesson.type === 'assignment' ? "bg-rose-50 text-rose-500" :
+                                "bg-emerald-50 text-emerald-500"
+                              )}>
+                                {lesson.type === 'split_doc' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
+                                 lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
+                                 lesson.type === 'assignment' ? <CheckSquare className="w-3.5 h-3.5" /> :
+                                 <FileText className="w-3.5 h-3.5" />
+                                }
+                              </div>
                               <span className={cn(
                                 "text-[14px] transition-colors",
                                 lesson.locked ? "text-neutral-body" : "text-neutral-title group-hover:text-[#fa541c]"
@@ -766,106 +1110,85 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
           </div>
           )}
           {activeTab === 'assignments' && (
-            <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
               {[
                 {
                   id: 1,
-                  title: "1. 人工智能通讯作业",
-                  deadline: "截止时间: 2099/02/28 00:00:00",
-                  hasDetail: true,
-                  sectionTitle: "客观题",
-                  items: [
-                    {
-                      label: "1. 客观题 18 道，共 100 分",
-                      desc: "客观题包括单选题、多选题、判断题、填空题、简答题、思考题、编程题"
-                    },
-                    {
-                      label: "2. 答题限时: 90 分钟",
-                      desc: "客观题需在 90 分钟内完成答题，过程中无法暂停，仅支持提交一次，请提前合理安排时间"
-                    }
-                  ],
-                  btnText: "开始答题"
+                  title: "1.  黑白棋(Mini AlphaGo)",
+                  deadline: "截止时间 2099/02/28 00:00",
+                  objectiveCount: "1. 客观题 3 道，共 3 分",
+                  objectiveTypes: "客观题包括：单选题、填空题、简答题",
+                  practicalCount: "1. 实训题 2 道，共 20 分",
+                  practicalTypes: "实训题包括：1、搭建AI 聊天助手智能体、2、人脸识别",
+                  instructions: "作业说明：答题时间：2026/04/20 14:02:16 – 2026/05/12 23:59:00 ， 可在发布作业后 22 天 内分多次进入答题仅支持提交一次答案，请提前合理安排时间"
                 },
                 {
                   id: 2,
-                  title: "2. 搭建 AI 聊天助手智能体作业",
-                  deadline: "截止时间: 2099/02/28 00:00:00",
-                  hasDetail: false
-                },
-                {
-                  id: 3,
-                  title: "3. 实验报告 (理工类): 基于人工神经网络算法的图像分类实践",
-                  deadline: "截止时间: 2099/02/28 00:00:00",
-                  hasDetail: false
+                  title: "2.  手写数字识别与垃圾分类",
+                  deadline: "截止时间 2099/02/28 00:00",
+                  objectiveCount: "1. 客观题 3 道，共 3 分",
+                  objectiveTypes: "客观题包括：单选题、填空题、简答题",
+                  practicalCount: "1. 实训题 2 道，共 20 分",
+                  practicalTypes: "实训题包括：1、搭建AI 聊天助手智能体、2、人脸识别",
+                  instructions: "作业说明：答题时间：2026/04/20 14:02:16 – 2026/05/12 23:59:00 ， 可在发布作业后 22 天 内分多次进入答题仅支持提交一次答案，请提前合理安排时间"
                 }
-              ].map((assignment) => {
-                const isExpanded = expandedAssignment === assignment.id;
-                return (
-                  <div key={assignment.id} className="bg-white rounded-[16px] shadow-sm overflow-hidden border border-neutral-100/60 transition-all duration-300">
-                    {/* Header Row */}
-                    <div 
-                      onClick={() => {
-                        if (assignment.hasDetail) {
-                          setExpandedAssignment(isExpanded ? null : assignment.id);
-                        }
-                      }}
-                      className={cn(
-                        "flex items-center justify-between p-6 select-none transition-colors",
-                        assignment.hasDetail ? "cursor-pointer hover:bg-neutral-50/30" : "cursor-default"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-[15px] font-bold text-neutral-title">{assignment.title}</span>
+              ].map((assignment) => (
+                <div key={assignment.id} className="bg-white rounded-[16px] shadow-sm border border-neutral-100/60 p-6 flex flex-col gap-4">
+                  {/* Top Header Row */}
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                    <span className="text-[16px] font-bold text-neutral-title">{assignment.title}</span>
+                    <span className="text-[13px] text-neutral-caption">{assignment.deadline}</span>
+                  </div>
+
+                  {/* Inner Box with light grey background */}
+                  <div className="bg-[#fafafa] rounded-[12px] p-5 border border-neutral-100 flex flex-col gap-5 text-[14px]">
+                    {/* Objective Questions Section */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-neutral-title flex items-center gap-2">
+                          <span className="w-1.5 h-3.5 bg-[#fa541c] rounded-full"></span>
+                          客观题
+                        </span>
+                        <Button 
+                          onClick={() => {
+                            setShowStudentAnswering(true);
+                            setAnsweringAnswers({});
+                          }}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 h-8.5 text-[13px] font-bold shadow-sm rounded-md transition-all flex items-center gap-1"
+                        >
+                          开始答题
+                        </Button>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-[13px] text-neutral-caption">{assignment.deadline}</span>
-                        {assignment.hasDetail && (
-                          <ChevronDown className={cn("w-4 h-4 text-neutral-caption transition-transform duration-300", isExpanded && "transform rotate-180")} />
-                        )}
+                      <div className="pl-3.5 space-y-1">
+                        <div className="text-neutral-title font-medium">{assignment.objectiveCount}</div>
+                        <div className="text-[12px] text-neutral-caption">{assignment.objectiveTypes}</div>
                       </div>
                     </div>
 
-                    {/* Detailed Content */}
-                    {isExpanded && assignment.hasDetail && (
-                      <div className="px-8 pb-8 pt-2 border-t border-neutral-100/60 animate-in slide-in-from-top-2 duration-300">
-                        <div className="mt-4 bg-[#fafafa] rounded-[12px] p-6 border border-neutral-100 flex flex-col gap-6">
-                          <div className="flex items-start gap-4">
-                            <div className="w-9 h-9 rounded-lg bg-[#fff2e8] flex items-center justify-center text-[#fa541c] shrink-0 mt-0.5 shadow-xs">
-                              <FileText className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 space-y-4">
-                              <h3 className="text-[15px] font-bold text-neutral-title flex items-center gap-2">
-                                {assignment.sectionTitle}
-                              </h3>
-                              
-                              <div className="space-y-4 pl-1">
-                                {assignment.items?.map((item, idx) => (
-                                  <div key={idx} className="space-y-1.5">
-                                    <div className="text-[14px] font-bold text-neutral-title">{item.label}</div>
-                                    <div className="text-[13px] text-neutral-body leading-relaxed pl-4">{item.desc}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
+                    <div className="h-px bg-neutral-150/70"></div>
 
-                          <div className="pt-2 pl-[52px]">
-                            <Button 
-                              onClick={() => {
-                                setShowStudentAnswering(true);
-                                setAnsweringAnswers({});
-                              }}
-                              className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-md transition-all flex items-center gap-1.5"
-                            >
-                              {assignment.btnText}
-                            </Button>
-                          </div>
-                        </div>
+                    {/* Practical Questions Section */}
+                    <div className="space-y-2">
+                      <span className="font-bold text-neutral-title flex items-center gap-2">
+                        <span className="w-1.5 h-3.5 bg-blue-500 rounded-full"></span>
+                        实训题
+                      </span>
+                      <div className="pl-3.5 space-y-1">
+                        <div className="text-neutral-title font-medium">{assignment.practicalCount}</div>
+                        <div className="text-[12px] text-neutral-caption">{assignment.practicalTypes}</div>
                       </div>
-                    )}
+                    </div>
+
+                    <div className="h-px bg-neutral-150/70"></div>
+
+                    {/* Instructions Section */}
+                    <div className="text-[12px] text-neutral-body leading-relaxed pl-3.5">
+                      <span className="font-bold text-neutral-title">作业说明：</span>
+                      {assignment.instructions.replace("作业说明：", "")}
+                    </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -1435,7 +1758,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                         <span className="font-bold text-neutral-title text-[14px]">{i + 1} {chapter.title}</span>
                       </div>
                       <div className="flex flex-col">
-                        {chapter.lessons.map((lesson, idx) => {
+                        {chapter.lessons.filter(l => isTeacher || l.type !== 'assignment').map((lesson, idx) => {
                           const isActive = lesson.title === playingLesson.title;
                           const isMenuOpen = activeLessonMenu?.cIdx === i && activeLessonMenu?.lIdx === idx;
                           return (
@@ -1454,8 +1777,21 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                                 }
                               }}
                             >
-                              <div className="flex items-center gap-2 w-full pr-4">
+                              <div className="flex items-center gap-2.5 w-full pr-4">
                                 <span className={cn("shrink-0", isActive ? "text-[#fa541c] font-medium" : "text-neutral-body")}>{i + 1}-{idx + 1}</span>
+                                <div className={cn(
+                                  "w-6 h-6 rounded flex items-center justify-center shrink-0",
+                                  lesson.type === 'split_doc' ? "bg-blue-50 text-blue-500" : 
+                                  lesson.type === 'experiment' ? "bg-orange-50 text-[#fa541c]" :
+                                  lesson.type === 'assignment' ? "bg-rose-50 text-rose-500" :
+                                  "bg-emerald-50 text-emerald-500"
+                                )}>
+                                  {lesson.type === 'split_doc' ? <MonitorPlay className="w-3.5 h-3.5" /> : 
+                                   lesson.type === 'experiment' ? <Code className="w-3.5 h-3.5" /> :
+                                   lesson.type === 'assignment' ? <CheckSquare className="w-3.5 h-3.5" /> :
+                                   <FileText className="w-3.5 h-3.5" />
+                                  }
+                                </div>
                                 <span className={cn("truncate", isActive ? "font-medium" : "")}>{lesson.title}</span>
                               </div>
                               {lesson.locked ? (
@@ -1504,9 +1840,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                                       </>
                                     )}
                                   </div>
-                                ) : (
-                                  <div className={cn("w-3.5 h-3.5 shrink-0 rounded-full border border-neutral-300", isActive && "border-[#fa541c] border-2")}></div>
-                                )
+                                ) : null
                               )}
                             </div>
                           );

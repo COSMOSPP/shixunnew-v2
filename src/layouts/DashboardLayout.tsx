@@ -33,7 +33,9 @@ import {
   Globe,
   Building,
   Activity,
-  Zap
+  Zap,
+  Clock,
+  Webcam
 } from "lucide-react";
 
 interface NavItem {
@@ -51,6 +53,31 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  const [isAnswering, setIsAnswering] = React.useState(!!(window as any).__IS_ANSWERING__);
+  const [examTimeLeft, setExamTimeLeft] = React.useState((window as any).__EXAM_TIME_LEFT__ || 600);
+
+  const formatExamTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  React.useEffect(() => {
+    const handleAnsweringChange = () => {
+      setIsAnswering(!!(window as any).__IS_ANSWERING__);
+      setExamTimeLeft((window as any).__EXAM_TIME_LEFT__ || 600);
+    };
+    const handleTimeChange = () => {
+      setExamTimeLeft((window as any).__EXAM_TIME_LEFT__ || 600);
+    };
+    window.addEventListener("answering-state-change", handleAnsweringChange);
+    window.addEventListener("answering-time-change", handleTimeChange);
+    return () => {
+      window.removeEventListener("answering-state-change", handleAnsweringChange);
+      window.removeEventListener("answering-time-change", handleTimeChange);
+    };
+  }, []);
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -137,103 +164,123 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
           </Link>
           
           {/* Top Navigation */}
-          <nav className="hidden md:flex items-center h-full gap-1">
-            {type === "admin" && (
-              <div className="relative h-full flex items-center mr-2" ref={moduleRef}>
-                <div 
-                  className={cn(
-                    "h-full flex items-center gap-1.5 px-3 transition-colors cursor-pointer text-white font-medium relative hover:bg-white/10 rounded-md",
-                    isAnyModuleActive ? "text-white bg-white/10" : "text-gray-300 hover:text-white"
-                  )}
-                  onClick={() => setIsModuleOpen(!isModuleOpen)}
-                >
-                  <span className="text-[14px]">人工智能</span>
-                  <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isModuleOpen ? "rotate-180" : "")} />
-                  {isAnyModuleActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#fa541c]" />
-                  )}
-                </div>
-                
-                {/* Dropdown Menu listing all six modules */}
-                {isModuleOpen && (
-                  <div className="absolute top-12 left-0 w-40 bg-[#1f1f1f] border border-gray-800 rounded-md shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="flex flex-col">
-                      {mergedModules.map((mod) => {
-                        const isActive = location.pathname === mod.href || location.pathname.startsWith(mod.href + "/");
-                        return (
-                            <Link 
-                              key={mod.href}
-                              to={mod.href} 
-                              className={cn(
-                                "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
-                                isActive 
-                                  ? "bg-white/5 text-[#fa541c] font-semibold" 
-                                  : "text-gray-300 hover:text-white hover:bg-white/10"
-                              )}
-                              onClick={() => setIsModuleOpen(false)}
-                            >
-                              {mod.title}
-                            </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {items
-              .filter(item => {
-                if (type === "admin") {
-                  return !["人工智能", "安全运维", "公有云", "私有云", "IT", "IP"].includes(item.title);
-                }
-                return true;
-              })
-              .map((item) => {
-                if (item.children) {
-                  return (
-                    <div key={item.title} className="h-full flex items-center relative group cursor-pointer px-3 hover:bg-white/10 transition-colors">
-                      <div className="flex items-center gap-2 text-[14px] font-medium text-gray-300 group-hover:text-white transition-colors">
-                        <item.icon className="w-4 h-4" />
-                        {item.title}
-                        <ChevronDown className="w-4 h-4" />
-                      </div>
-                      <div className="absolute top-full left-0 hidden group-hover:block pt-1 min-w-[160px]">
-                        <div className="rounded-[6px] border border-neutral-border bg-white p-2 shadow-lg">
-                          {item.children.map(child => (
-                            <Link key={child.href} to={child.href} className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">
-                              {child.title}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    to={item.href!}
+          {!isAnswering && (
+            <nav className="hidden md:flex items-center h-full gap-1">
+              {type === "admin" && (
+                <div className="relative h-full flex items-center mr-2" ref={moduleRef}>
+                  <div 
                     className={cn(
-                      "h-full flex items-center gap-2 px-3 text-[14px] font-medium transition-colors relative",
-                      isActive ? "text-white bg-white/10" : "text-gray-300 hover:text-white hover:bg-white/10"
+                      "h-full flex items-center gap-1.5 px-3 transition-colors cursor-pointer text-white font-medium relative hover:bg-white/10 rounded-md",
+                      isAnyModuleActive ? "text-white bg-white/10" : "text-gray-300 hover:text-white"
                     )}
+                    onClick={() => setIsModuleOpen(!isModuleOpen)}
                   >
-                    {isActive && (
+                    <span className="text-[14px]">人工智能</span>
+                    <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isModuleOpen ? "rotate-180" : "")} />
+                    {isAnyModuleActive && (
                       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#fa541c]" />
                     )}
-                    <item.icon className="w-4 h-4" />
-                    {item.title}
-                  </Link>
-                );
-              })}
-          </nav>
+                  </div>
+                  
+                  {/* Dropdown Menu listing all six modules */}
+                  {isModuleOpen && (
+                    <div className="absolute top-12 left-0 w-40 bg-[#1f1f1f] border border-gray-800 rounded-md shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="flex flex-col">
+                        {mergedModules.map((mod) => {
+                          const isActive = location.pathname === mod.href || location.pathname.startsWith(mod.href + "/");
+                          return (
+                              <Link 
+                                key={mod.href}
+                                to={mod.href} 
+                                className={cn(
+                                  "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
+                                  isActive 
+                                    ? "bg-white/5 text-[#fa541c] font-semibold" 
+                                    : "text-gray-300 hover:text-white hover:bg-white/10"
+                                )}
+                                onClick={() => setIsModuleOpen(false)}
+                              >
+                                {mod.title}
+                              </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {items
+                .filter(item => {
+                  if (type === "admin") {
+                    return !["人工智能", "安全运维", "公有云", "私有云", "IT", "IP"].includes(item.title);
+                  }
+                  return true;
+                })
+                .map((item) => {
+                  if (item.children) {
+                    return (
+                      <div key={item.title} className="h-full flex items-center relative group cursor-pointer px-3 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-2 text-[14px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                          <item.icon className="w-4 h-4" />
+                          {item.title}
+                          <ChevronDown className="w-4 h-4" />
+                        </div>
+                        <div className="absolute top-full left-0 hidden group-hover:block pt-1 min-w-[160px]">
+                          <div className="rounded-[6px] border border-neutral-border bg-white p-2 shadow-lg">
+                            {item.children.map(child => (
+                              <Link key={child.href} to={child.href} className="block px-3 py-2 hover:bg-[#fff2e8] hover:text-[#fa541c] rounded-[4px] text-[14px] text-neutral-title transition-colors">
+                                {child.title}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      to={item.href!}
+                      className={cn(
+                        "h-full flex items-center gap-2 px-3 text-[14px] font-medium transition-colors relative",
+                        isActive ? "text-white bg-white/10" : "text-gray-300 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      {isActive && (
+                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#fa541c]" />
+                      )}
+                      <item.icon className="w-4 h-4" />
+                      {item.title}
+                    </Link>
+                  );
+                })}
+            </nav>
+          )}
         </div>
 
         <div className="flex items-center gap-5 text-gray-300">
-          {isLoggedIn ? (
+          {isAnswering ? (
+            <div className="flex items-center gap-8 text-[13px] text-white/90 mr-4 select-none">
+              <div className="flex items-center gap-2">
+                <Webcam className="w-[18px] h-[18px] text-white/80" />
+                <span>正在监控</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-[18px] h-[18px] text-white/80" />
+                <span>距考试结束：</span>
+                <span className="font-mono font-bold text-base tracking-wide text-white">{formatExamTime(examTimeLeft)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20">
+                  <UserIcon className="w-4 h-4 text-white" />
+                </div>
+                <span>学生1</span>
+              </div>
+            </div>
+          ) : isLoggedIn ? (
             <>
               <Link to="/user/center/messages" className="relative hover:text-white transition-colors">
                 <Bell className="w-5 h-5" />

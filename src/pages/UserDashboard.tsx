@@ -64,11 +64,9 @@ export default function UserCourses() {
   const [selectedDirection, setSelectedDirection] = useState("还没想好，先看看");
   
   const [selectedTag, setSelectedTag] = useState("全部");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("全部");
   const [selectedPrice, setSelectedPrice] = useState("全部");
 
   const tagsList = ["全部", "机器学习", "算法", "人工智能", "神经网络", "深度学习", "CV", "NLP", "Prompt", "大语言模型", "模型微调", "RAG", "知识科普", "数据处理", "模型训练", "Deepseek", "LLM", "Agent", "向量数据库", "实战解读", "MCP"];
-  const difficultiesList = ["全部", "入门", "进阶", "高级"];
   const pricesList = ["全部", "免费", "付费"];
 
   const [teacherCourses, setTeacherCourses] = useState<any[]>([]);
@@ -227,25 +225,6 @@ export default function UserCourses() {
           </div>
         </div>
 
-        <div className="flex items-start gap-4">
-          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5 w-16">课程难度</span>
-          <div className="flex flex-wrap gap-2">
-            {difficultiesList.map((diff) => (
-              <button 
-                key={diff}
-                onClick={() => setSelectedDifficulty(diff)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-[13px] transition-colors border",
-                  selectedDifficulty === diff 
-                    ? "bg-[#fa541c] text-white border-transparent" 
-                    : "bg-white border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
-                )}
-              >
-                {diff}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Tabs & Search */}
@@ -648,124 +627,6 @@ export default function UserCourses() {
         </div>
       )}
 
-      {/* Course Recommendation Assistant Floating UI */}
-      {!isAssistantOpen && (
-        <button 
-          onClick={() => setIsAssistantOpen(true)}
-          className="fixed right-8 bottom-8 w-[56px] h-[56px] bg-gradient-to-r from-[#fa541c] to-[#ff7a45] rounded-full shadow-[0_8px_30px_rgb(250,84,28,0.3)] flex items-center justify-center text-white hover:-translate-y-1 hover:scale-105 transition-all duration-300 z-[100]"
-        >
-          <Bot className="w-7 h-7" />
-        </button>
-      )}
-
-      <div className={cn(
-        "fixed right-8 bottom-8 w-[380px] h-[600px] bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-neutral-border flex flex-col overflow-hidden z-[100] transition-all duration-400 transform origin-bottom-right",
-        isAssistantOpen ? "scale-100 opacity-100 translate-y-0" : "scale-50 opacity-0 translate-y-10 pointer-events-none"
-      )}>
-        {/* Chat Header */}
-        <div className="h-[60px] bg-gradient-to-r from-[#fa541c] to-[#ff7a45] flex items-center justify-between px-5 shrink-0 z-10 relative shadow-sm">
-          <div className="flex items-center gap-2 text-white font-bold text-[16px]">
-            <Bot className="w-5 h-5" /> ai助手
-          </div>
-          <button onClick={() => setIsAssistantOpen(false)} className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-lg">
-            <Minimize2 className="w-[18px] h-[18px]" />
-          </button>
-        </div>
-        
-        {/* Chat Body */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 bg-[#f9f9fc] flex flex-col gap-6 custom-scrollbar">
-          {chatHistory.map((msg, i) => (
-             <div key={i} className={cn("flex flex-col gap-1.5 max-w-[90%]", msg.role === 'user' ? "self-end items-end" : "self-start items-start")}>
-                {msg.role === 'assistant' && <div className="text-[12px] font-bold text-neutral-400 ml-1 flex items-center gap-1.5"><Bot className="w-3.5 h-3.5"/> ai助手</div>}
-                
-                {msg.isCourseCard ? (
-                   // Course Recommendation Card
-                   <div className="bg-white border border-neutral-border shadow-sm rounded-[16px] p-5 flex flex-col gap-4 w-[300px]">
-                      <div className="font-bold text-[15px] text-neutral-title pb-3 border-b border-neutral-border/60">为你精心定制的ai学习路径</div>
-                      <div className="flex flex-col relative before:content-[''] before:absolute before:left-[17px] before:top-[20px] before:bottom-[20px] before:w-[2px] before:bg-gradient-to-b before:from-[#ffbb96] before:to-[#fff2e8] before:z-0">
-                         {[
-                           { name: "Python 基础进阶", type: "理论课程", duration: "12小时" },
-                           { name: "LangChain框架实战", type: "工具集使用课程", duration: "8小时" },
-                           { name: "React+大模型应用", type: "前端UI课程", duration: "16小时" },
-                         ].map((c, idx) => (
-                           <div key={idx} className="flex gap-4 relative cursor-pointer group mb-5 last:mb-0" onClick={() => {
-                              setShowCourseDetail(true);
-                           }}>
-                             <div className="w-9 h-9 rounded-full bg-[#fff2e8] text-[#fa541c] flex items-center justify-center shrink-0 border-[3px] border-white shadow-sm z-10 group-hover:bg-[#fa541c] group-hover:text-white transition-all">
-                                <span className="font-bold text-[14px]">{idx + 1}</span>
-                             </div>
-                             <div className="flex flex-col bg-neutral-bg/60 px-3.5 py-2.5 rounded-xl group-hover:bg-[#fff2e8]/80 flex-1 border border-transparent group-hover:border-[#ffbb96] transition-colors shadow-sm">
-                               <span className="font-bold text-[14px] text-neutral-title group-hover:text-[#fa541c] transition-colors">{c.name}</span>
-                               <span className="text-[12px] text-neutral-caption mt-1 font-medium">{c.type} • {c.duration}</span>
-                             </div>
-                           </div>
-                         ))}
-                      </div>
-                      {msg.isCombo ? (
-                        <div className="flex flex-col gap-2 mt-2 pt-3 border-t border-neutral-border/60">
-                          <span className="text-[13px] text-neutral-title font-bold mb-1">是否需要基于推荐课件进行学习？</span>
-                          <button 
-                            onClick={() => {
-                               (window as any).__RECOMMENDED_MODE = true;
-                               const hist = [...chatHistory];
-                               hist.push({role: 'user', text: '确定基于推荐课件进行学习', isCourseCard: false} as any);
-                               hist.push({role: 'assistant', text: '已为您开启专属推荐环境！请直接点击上方课节路线图的任意一节进入学习环境，环境内的目录结构已为您自动精简为推荐课件组合。', isCourseCard: false} as any);
-                               setChatHistory(hist);
-                            }}
-                            className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-[#fa541c] to-[#ff7a45] text-white font-bold text-[13px] rounded-xl shadow-sm hover:shadow-md transition-all"
-                          >
-                             <CheckCircle2 className="w-4 h-4" /> 确定开启推荐环境
-                          </button>
-                          <button 
-                            className="flex items-center justify-center gap-2 w-full py-2 bg-neutral-100 text-neutral-body font-bold text-[13px] rounded-xl hover:bg-neutral-200 transition-all"
-                          >
-                             暂不需要
-                          </button>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => setShowLearningPathModal(true)}
-                          className="flex items-center justify-center gap-2 w-full py-3 mt-3 bg-gradient-to-r from-[#fa541c] to-[#ff7a45] text-white font-bold text-[14px] rounded-xl shadow-[0_4px_14px_rgba(250,84,28,0.3)] hover:shadow-[0_6px_20px_rgba(250,84,28,0.4)] hover:-translate-y-0.5 transition-all"
-                        >
-                           <CheckCircle2 className="w-4 h-4" /> 进入我的ai学习路径
-                        </button>
-                      )}
-                   </div>
-                ) : (
-                   <div className={cn(
-                     "px-4 py-3 rounded-[18px] text-[14px] leading-[1.6] shadow-sm font-medium", 
-                     msg.role === 'user' ? "bg-gradient-to-b from-[#fa541c] to-[#f0480e] text-white rounded-tr-sm" : "bg-white border border-neutral-border text-neutral-700 rounded-tl-sm"
-                   )}>
-                      {msg.text}
-                   </div>
-                )}
-             </div>
-          ))}
-        </div>
-        
-        {/* Quick Questions & Input Area */}
-        <div className="bg-white border-t border-neutral-border shrink-0 pb-6 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.02)] flex flex-col">
-          <div className="px-4 pb-4 pt-3 flex">
-            <div className="relative flex-1">
-              <input 
-                className="w-full bg-neutral-50 rounded-xl px-4 py-3.5 text-[14px] outline-none border border-neutral-200 focus:border-[#fa541c]/50 focus:bg-white transition-all pr-[52px] text-neutral-800 placeholder:text-neutral-400 font-medium"
-                placeholder="输入你的需求或点击上方快捷提问..."
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => {
-                  if(e.key === 'Enter') handleSendMsg(chatInput);
-                }}
-              />
-              <button 
-                className="absolute right-1.5 top-1.5 bottom-1.5 w-10 rounded-[10px] bg-gradient-to-b from-[#fa541c] to-[#e8480d] text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all"
-                onClick={() => handleSendMsg(chatInput)}
-              >
-                <Send className="w-4 h-4 ml-[-2px]" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
