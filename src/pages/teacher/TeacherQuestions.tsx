@@ -596,7 +596,6 @@ export default function TeacherQuestions() {
 
   // Modal form states
   const [newQuestionType, setNewQuestionType] = useState('单选题');
-  const [newQuestionTitle, setNewQuestionTitle] = useState('');
   const [newQuestionBank, setNewQuestionBank] = useState('');
   const [newQuestionDifficulty, setNewQuestionDifficulty] = useState('');
   const [newQuestionBody, setNewQuestionBody] = useState('');
@@ -614,6 +613,16 @@ export default function TeacherQuestions() {
   const [correctAnswerMultiple, setCorrectAnswerMultiple] = useState<string[]>([]);
   const [correctAnswerTrueFalse, setCorrectAnswerTrueFalse] = useState('正确');
   const [correctAnswerText, setCorrectAnswerText] = useState('');
+
+  // Blanks and score items states for Fill-in-the-blank questions
+  const [blanks, setBlanks] = useState<any[]>([
+    { id: '1', name: '填空1', value: '', proportion: 50 },
+    { id: '2', name: '填空2', value: '', proportion: 50 }
+  ]);
+  const [scoreItems, setScoreItems] = useState<any[]>([
+    { id: '1', blankId: '1', keywords: '', ratio: 100 },
+    { id: '2', blankId: '2', keywords: '', ratio: 100 }
+  ]);
 
   const [newQuestionAnalysis, setNewQuestionAnalysis] = useState('');
   const [newQuestionStatus, setNewQuestionStatus] = useState('启用');
@@ -793,10 +802,51 @@ export default function TeacherQuestions() {
     setOptions(rekeyed);
   };
 
+  const handleAddBlank = () => {
+    const nextId = String(blanks.length + 1);
+    const newBlank = {
+      id: nextId,
+      name: `填空${nextId}`,
+      value: '',
+      proportion: 0
+    };
+    setBlanks([...blanks, newBlank]);
+    setScoreItems([
+      ...scoreItems,
+      { id: String(Date.now()), blankId: nextId, keywords: '', ratio: 100 }
+    ]);
+  };
+
+  const handleDeleteBlank = (id: string) => {
+    const filteredBlanks = blanks.filter(b => b.id !== id);
+    const reindexedBlanks = filteredBlanks.map((b, index) => {
+      const newId = String(index + 1);
+      return {
+        ...b,
+        id: newId,
+        name: `填空${newId}`
+      };
+    });
+
+    const blankIdMapping: { [key: string]: string } = {};
+    filteredBlanks.forEach((b, index) => {
+      blankIdMapping[b.id] = String(index + 1);
+    });
+
+    const updatedScoreItems = scoreItems
+      .filter(item => item.blankId !== id)
+      .map(item => ({
+        ...item,
+        blankId: blankIdMapping[item.blankId] || item.blankId
+      }));
+
+    setBlanks(reindexedBlanks);
+    setScoreItems(updatedScoreItems);
+  };
+
   const handleCloseCreateModal = () => {
     setIsCreateModalOpen(false);
     setEditingQuestion(null);
-    setNewQuestionTitle('');
     setNewQuestionBank('');
     setIsQuestionBankDropdownOpen(false);
     setIsQuestionDifficultyDropdownOpen(false);
@@ -814,6 +864,14 @@ export default function TeacherQuestions() {
     setCorrectAnswerText('');
     setNewQuestionAnalysis('');
     setNewQuestionStatus('启用');
+    setBlanks([
+      { id: '1', name: '填空1', value: '', proportion: 50 },
+      { id: '2', name: '填空2', value: '', proportion: 50 }
+    ]);
+    setScoreItems([
+      { id: '1', blankId: '1', keywords: '', ratio: 100 },
+      { id: '2', blankId: '2', keywords: '', ratio: 100 }
+    ]);
     setShixunDescription(`### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述`);
     setShixunAnswerType('线上环境答题');
     setShixunDatasets([]);
@@ -854,7 +912,6 @@ export default function TeacherQuestions() {
 
   const handleEditQuestion = (q: any) => {
     setEditingQuestion(q);
-    setNewQuestionTitle(q.name);
     setNewQuestionBank(q.bank);
     setNewQuestionType(q.type);
     setNewQuestionDifficulty(q.difficulty);
@@ -864,6 +921,25 @@ export default function TeacherQuestions() {
       setTags(q.tags.split(', '));
     } else {
       setTags([]);
+    }
+    if (q.type === '填空题') {
+      setBlanks(q.blanks || [
+        { id: '1', name: '填空1', value: '', proportion: 50 },
+        { id: '2', name: '填空2', value: '', proportion: 50 }
+      ]);
+      setScoreItems(q.scoreItems || [
+        { id: '1', blankId: '1', keywords: '', ratio: 100 },
+        { id: '2', blankId: '2', keywords: '', ratio: 100 }
+      ]);
+    } else {
+      setBlanks([
+        { id: '1', name: '填空1', value: '', proportion: 50 },
+        { id: '2', name: '填空2', value: '', proportion: 50 }
+      ]);
+      setScoreItems([
+        { id: '1', blankId: '1', keywords: '', ratio: 100 },
+        { id: '2', blankId: '2', keywords: '', ratio: 100 }
+      ]);
     }
     setIsCreateModalOpen(true);
   };
@@ -979,20 +1055,34 @@ export default function TeacherQuestions() {
   };
 
   const handleSaveQuestion = () => {
-    const isSingleChoice = newQuestionType === '单选题';
-    const finalTitle = isSingleChoice ? newQuestionBody : newQuestionTitle;
+    const finalTitle = newQuestionBody;
 
-    if (isSingleChoice) {
-      if (!newQuestionBody.trim()) {
-        alert('请输入题目内容！');
+    if (!newQuestionBody.trim()) {
+      alert('请输入题目内容！');
+      return;
+    }
+
+    if (newQuestionType === '填空题') {
+      const totalProportion = blanks.reduce((sum, b) => sum + (b.proportion || 0), 0);
+      if (totalProportion !== 100) {
+        alert('得分占比的总和必须为 100%！当前总占比为 ' + totalProportion + '%');
         return;
       }
-    } else {
-      if (!newQuestionTitle.trim()) {
-        alert('请输入试题标题！');
+
+      const emptyBlank = blanks.find(b => !b.value.trim());
+      if (emptyBlank) {
+        alert(`请输入${emptyBlank.name}的正确答案！`);
+        return;
+      }
+
+      const emptyKeyword = scoreItems.find(item => !item.keywords.trim());
+      if (emptyKeyword) {
+        const correspondingBlank = blanks.find(b => b.id === emptyKeyword.blankId);
+        alert(`请填写对应于${correspondingBlank?.name || '填空'}的得分关键词！`);
         return;
       }
     }
+
     if (!newQuestionBank) {
       alert('请选择所属题库！');
       return;
@@ -1010,6 +1100,8 @@ export default function TeacherQuestions() {
             difficulty: newQuestionDifficulty || '中等',
             tags: tags.slice(0, 2).join(', ') || '',
             updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
+            blanks: newQuestionType === '填空题' ? blanks : undefined,
+            scoreItems: newQuestionType === '填空题' ? scoreItems : undefined,
           };
         }
         return q;
@@ -1028,7 +1120,9 @@ export default function TeacherQuestions() {
         creator: 'Momodel',
         updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
         scope: '私有',
-        auditStatus: '未审核'
+        auditStatus: '未审核',
+        blanks: newQuestionType === '填空题' ? blanks : undefined,
+        scoreItems: newQuestionType === '填空题' ? scoreItems : undefined,
       };
       setQuestionsList([newQuestion, ...questionsList]);
     }
@@ -1051,7 +1145,7 @@ export default function TeacherQuestions() {
           </div>
 
           {/* Table and Toolbar unified module */}
-          <div className="bg-white rounded-2xl border border-neutral-border shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-neutral-border shadow-sm overflow-hidden">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50">
               <div className="flex items-center gap-3">
                 <div className="relative w-72">
@@ -1751,22 +1845,6 @@ export default function TeacherQuestions() {
                 </div>
               </div>
 
-              {/* Title / Name Field */}
-              {newQuestionType !== '单选题' && (
-                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[13px] font-bold text-[#262626] text-right">
-                    试题标题 <span className="text-[#fa541c]">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newQuestionTitle}
-                    onChange={(e) => setNewQuestionTitle(e.target.value)}
-                    placeholder="请输入试题标题（如：大模型应用场景分析单选）"
-                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400"
-                  />
-                </div>
-              )}
-
               {/* Dropdowns (Belonging Bank, Difficulty) */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                 <label className="text-[13px] font-bold text-[#262626] text-right">
@@ -2065,6 +2143,211 @@ export default function TeacherQuestions() {
                     </div>
                   </div>
                 )
+              )}
+
+              {/* Fill-in-the-blank (填空题) Fields */}
+              {newQuestionType === '填空题' && (
+                <div className="space-y-5 animate-slide-up">
+                  {/* 试题答案 */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      试题答案 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="space-y-3.5 w-full">
+                      {blanks.map((blank) => (
+                        <div key={blank.id} className="flex items-center gap-3 w-full bg-white border border-neutral-200 rounded p-2 focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
+                          <span className="text-xs font-bold text-neutral-500 min-w-[50px] shrink-0 pl-1">{blank.name}</span>
+                          <input
+                            type="text"
+                            value={blank.value}
+                            onChange={(e) => {
+                              setBlanks(blanks.map(b => b.id === blank.id ? { ...b, value: e.target.value } : b));
+                            }}
+                            placeholder={`请输入${blank.name}的正确答案`}
+                            className="flex-1 bg-transparent border-0 outline-none text-xs text-neutral-700 placeholder:text-neutral-400"
+                          />
+                          {blanks.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBlank(blank.id)}
+                              className="text-neutral-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors cursor-pointer"
+                              title="删除"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={handleAddBlank}
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 增加填空
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 得分关键词 */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      得分关键词 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="space-y-3.5 w-full">
+                      <div className="border border-neutral-200 rounded overflow-hidden">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 font-bold">
+                              <th className="px-3 py-2.5 w-1/4">对应填空</th>
+                              <th className="px-3 py-2.5 w-1/3">得分关键词</th>
+                              <th className="px-3 py-2.5 w-1/4">得分比例 (%)</th>
+                              <th className="px-3 py-2.5 w-12 text-center">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {scoreItems.map((item) => (
+                              <tr key={item.id} className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                                <td className="px-3 py-2">
+                                  <select
+                                    value={item.blankId}
+                                    onChange={(e) => {
+                                      setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, blankId: e.target.value } : si));
+                                    }}
+                                    className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-white text-neutral-700 cursor-pointer"
+                                  >
+                                    {blanks.map(b => (
+                                      <option key={b.id} value={b.id}>{b.name}</option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td className="px-3 py-2">
+                                  <input
+                                    type="text"
+                                    value={item.keywords}
+                                    onChange={(e) => {
+                                      setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, keywords: e.target.value } : si));
+                                    }}
+                                    placeholder="请输入关键词"
+                                    className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400 bg-white"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <div className="flex items-center gap-1 border border-neutral-200 rounded max-w-[120px] bg-white overflow-hidden">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, ratio: Math.max(0, si.ratio - 10) } : si));
+                                      }}
+                                      className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-r border-neutral-200 transition-colors cursor-pointer"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="flex-1 text-center font-semibold text-xs select-none">
+                                      {item.ratio}%
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, ratio: Math.min(100, si.ratio + 10) } : si));
+                                      }}
+                                      className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-l border-neutral-200 transition-colors cursor-pointer"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 text-center">
+                                  {scoreItems.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setScoreItems(scoreItems.filter(si => si.id !== item.id));
+                                      }}
+                                      className="text-neutral-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors cursor-pointer"
+                                      title="删除"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScoreItems([...scoreItems, { id: String(Date.now()), blankId: blanks[0]?.id || '1', keywords: '', ratio: 100 }]);
+                        }}
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 增加得分关键词
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 得分占比 */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      得分占比 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="space-y-4 w-full">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {blanks.map((b) => (
+                          <div key={b.id} className="border border-neutral-200 rounded p-2.5 bg-white flex flex-col gap-1.5 shadow-sm">
+                            <span className="text-xs font-bold text-neutral-600">{b.name} 占比</span>
+                            <div className="flex items-center gap-1 border border-neutral-200 rounded bg-white overflow-hidden">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBlanks(blanks.map(blank => blank.id === b.id ? { ...blank, proportion: Math.max(0, blank.proportion - 5) } : blank));
+                                }}
+                                className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-r border-neutral-200 transition-colors cursor-pointer"
+                              >
+                                -
+                              </button>
+                              <span className="flex-1 text-center font-bold text-xs select-none">
+                                {b.proportion}%
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBlanks(blanks.map(blank => blank.id === b.id ? { ...blank, proportion: Math.min(100, blank.proportion + 5) } : blank));
+                                }}
+                                className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-l border-neutral-200 transition-colors cursor-pointer"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {(() => {
+                        const totalProportion = blanks.reduce((sum, b) => sum + (b.proportion || 0), 0);
+                        const isCorrect = totalProportion === 100;
+                        return (
+                          <div className={cn(
+                            "px-3 py-2 rounded text-xs flex items-center justify-between border",
+                            isCorrect 
+                              ? "bg-green-50 border-green-200 text-green-700 animate-fade-in" 
+                              : "bg-amber-50 border-amber-200 text-amber-700 animate-fade-in"
+                          )}>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold">当前总占比: {totalProportion}%</span>
+                              <span>(必须为100%)</span>
+                            </div>
+                            {isCorrect ? (
+                              <span className="font-bold text-green-700 flex items-center gap-1">✓ 占比正确</span>
+                            ) : (
+                              <span className="font-bold text-amber-700 flex items-center gap-1">⚠ 比例之和不等于100%</span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Practical Question (实训题) Fields */}
@@ -2991,7 +3274,7 @@ export default function TeacherQuestions() {
 
 
               {/* Correct Answer */}
-              {newQuestionType !== '实训题' && (
+              {newQuestionType !== '实训题' && newQuestionType !== '填空题' && (
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     正确答案 <span className="text-[#fa541c]">*</span>
