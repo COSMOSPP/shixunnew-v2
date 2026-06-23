@@ -941,6 +941,11 @@ export default function TeacherQuestions() {
         { id: '2', blankId: '2', keywords: '', ratio: 100 }
       ]);
     }
+    if (q.type === '简答题') {
+      setCorrectAnswerText(q.correctAnswer || '');
+    } else {
+      setCorrectAnswerText('');
+    }
     setIsCreateModalOpen(true);
   };
 
@@ -1083,6 +1088,13 @@ export default function TeacherQuestions() {
       }
     }
 
+    if (newQuestionType === '简答题') {
+      if (!correctAnswerText.trim()) {
+        alert('请输入检查脚本的配置内容！');
+        return;
+      }
+    }
+
     if (!newQuestionBank) {
       alert('请选择所属题库！');
       return;
@@ -1102,6 +1114,7 @@ export default function TeacherQuestions() {
             updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
             blanks: newQuestionType === '填空题' ? blanks : undefined,
             scoreItems: newQuestionType === '填空题' ? scoreItems : undefined,
+            correctAnswer: newQuestionType === '简答题' ? correctAnswerText : undefined,
           };
         }
         return q;
@@ -1123,6 +1136,7 @@ export default function TeacherQuestions() {
         auditStatus: '未审核',
         blanks: newQuestionType === '填空题' ? blanks : undefined,
         scoreItems: newQuestionType === '填空题' ? scoreItems : undefined,
+        correctAnswer: newQuestionType === '简答题' ? correctAnswerText : undefined,
       };
       setQuestionsList([newQuestion, ...questionsList]);
     }
@@ -3274,7 +3288,7 @@ export default function TeacherQuestions() {
 
 
               {/* Correct Answer */}
-              {newQuestionType !== '实训题' && newQuestionType !== '填空题' && (
+              {(newQuestionType === '单选题' || newQuestionType === '多选题' || newQuestionType === '判断题') && (
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     正确答案 <span className="text-[#fa541c]">*</span>
@@ -3337,16 +3351,65 @@ export default function TeacherQuestions() {
                         ))}
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
 
-                    {!(newQuestionType === '单选题' || newQuestionType === '多选题' || newQuestionType === '判断题') && (
-                      <input
-                        type="text"
-                        placeholder="请输入参考答案或评分标准..."
-                        value={correctAnswerText}
-                        onChange={(e) => setCorrectAnswerText(e.target.value)}
-                        className="w-full border border-neutral-200 bg-white rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400"
-                      />
-                    )}
+              {/* Check Script for 简答题 */}
+              {newQuestionType === '简答题' && (
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    检查脚本 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="w-full">
+                    <div className="relative border border-neutral-200 rounded overflow-hidden bg-white shadow-sm focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all w-full">
+                      {/* Top Action Bar */}
+                      <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-200 bg-neutral-50">
+                        <span className="text-xs font-semibold text-neutral-500 font-mono">SCRIPT EDITOR</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.onchange = (e: any) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (evt) => {
+                                  const text = evt.target?.result as string;
+                                  setCorrectAnswerText(text);
+                                };
+                                reader.readAsText(file);
+                              }
+                            };
+                            input.click();
+                          }}
+                          className="text-[#fa541c] hover:text-[#e84a15] text-[11px] font-bold transition-colors cursor-pointer bg-transparent border-0 flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" /> 加载文件
+                        </button>
+                      </div>
+
+                      {/* Code Input Area with Gutter */}
+                      <div className="flex min-h-[120px] bg-neutral-50/30 font-mono text-xs">
+                        {/* Line Numbers Gutter */}
+                        <div className="w-9 border-r border-neutral-200 bg-neutral-50 py-2.5 text-right pr-2 text-neutral-400 select-none flex flex-col leading-6">
+                          {(() => {
+                            const lines = correctAnswerText.split('\n');
+                            return lines.map((_, i) => (
+                              <span key={i}>{i + 1}</span>
+                            ));
+                          })()}
+                        </div>
+                        {/* Textarea */}
+                        <textarea
+                          value={correctAnswerText}
+                          onChange={(e) => setCorrectAnswerText(e.target.value)}
+                          placeholder="请输入配置内容"
+                          className="flex-1 bg-transparent border-0 outline-none resize-y py-2.5 px-3 leading-6 text-neutral-700 font-mono h-32 focus:ring-0 focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -3674,14 +3737,22 @@ export default function TeacherQuestions() {
 
               {/* Correct Answer */}
               <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-400">正确参考答案：</label>
-                <div className="bg-[#fff2e8]/40 border border-[#ffbb96]/40 rounded-xl p-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#fa541c]"></span>
-                  <span className="text-xs font-bold text-neutral-600">答案为：</span>
-                  <span className="px-3 py-1 bg-[#fa541c] text-white rounded-lg text-xs font-bold shadow-sm">
-                    {viewingQuestion.type === '单选题' ? 'B' : viewingQuestion.type === '多选题' ? 'A, B, C' : '正确'}
-                  </span>
-                </div>
+                <label className="text-[13px] font-bold text-neutral-400">
+                  {viewingQuestion.type === '简答题' ? '检查脚本：' : '正确参考答案：'}
+                </label>
+                {viewingQuestion.type === '简答题' ? (
+                  <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 font-mono text-xs text-neutral-700 whitespace-pre-wrap">
+                    {viewingQuestion.correctAnswer || '无检查脚本'}
+                  </div>
+                ) : (
+                  <div className="bg-[#fff2e8]/40 border border-[#ffbb96]/40 rounded-xl p-4 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#fa541c]"></span>
+                    <span className="text-xs font-bold text-neutral-600">答案为：</span>
+                    <span className="px-3 py-1 bg-[#fa541c] text-white rounded-lg text-xs font-bold shadow-sm">
+                      {viewingQuestion.type === '单选题' ? 'B' : viewingQuestion.type === '多选题' ? 'A, B, C' : '正确'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Answer Analysis */}
