@@ -1159,7 +1159,7 @@ export default function TeacherQuestions() {
           </div>
 
           {/* Table and Toolbar unified module */}
-          <div className="bg-white rounded border border-neutral-border shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-neutral-border overflow-hidden">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50">
               <div className="flex items-center gap-3">
                 <div className="relative w-72">
@@ -2121,7 +2121,7 @@ export default function TeacherQuestions() {
                     <button
                       type="button"
                       onClick={handleAddOption}
-                      className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                      className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-[4px] hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
                     >
                       <Plus className="w-3.5 h-3.5" /> 增加选项
                     </button>
@@ -2150,7 +2150,7 @@ export default function TeacherQuestions() {
                       <button
                         type="button"
                         onClick={handleAddOption}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-[4px] hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
                       >
                         <Plus className="w-3.5 h-3.5" /> 增加选项
                       </button>
@@ -2195,7 +2195,7 @@ export default function TeacherQuestions() {
                       <button
                         type="button"
                         onClick={handleAddBlank}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-[4px] hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
                       >
                         <Plus className="w-3.5 h-3.5" /> 增加填空
                       </button>
@@ -2294,7 +2294,7 @@ export default function TeacherQuestions() {
                         onClick={() => {
                           setScoreItems([...scoreItems, { id: String(Date.now()), blankId: blanks[0]?.id || '1', keywords: '', ratio: 100 }]);
                         }}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-[4px] hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
                       >
                         <Plus className="w-3.5 h-3.5" /> 增加得分关键词
                       </button>
@@ -2803,7 +2803,7 @@ export default function TeacherQuestions() {
                                       onClick={() => {
                                         setShixunEnvVars([...shixunEnvVars, { id: Date.now(), key: '', value: '' }]);
                                       }}
-                                      className="text-[10px] text-[#fa541c] border border-dashed border-[#fa541c] rounded px-3 py-1 hover:bg-[#fff2e8] transition-colors cursor-pointer bg-white"
+                                      className="text-[10px] text-[#fa541c] border border-dashed border-[#fa541c] rounded-[4px] px-3 py-1 hover:bg-[#fff2e8] transition-colors cursor-pointer bg-white"
                                     >
                                       + 添加环境变量
                                     </button>
@@ -3462,13 +3462,13 @@ export default function TeacherQuestions() {
               <Button 
                 onClick={handleCloseCreateModal}
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded-3xl cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded-[4px] cursor-pointer"
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSaveQuestion}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-3xl shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm cursor-pointer"
               >
                 确定
               </Button>
@@ -3774,7 +3774,7 @@ export default function TeacherQuestions() {
             <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-neutral-50/50">
               <Button 
                 onClick={() => setViewingQuestion(null)}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-3xl shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm cursor-pointer"
               >
                 关闭
               </Button>
@@ -4431,14 +4431,14 @@ export default function TeacherQuestions() {
               <Button 
                 onClick={() => setIsApplyPublicModalOpen(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-3xl text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                 disabled={isApplyingPublic}
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSubmitApplyPublic} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-3xl shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                 disabled={isApplyingPublic}
               >
                 {isApplyingPublic ? (
