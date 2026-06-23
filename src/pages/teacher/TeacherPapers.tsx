@@ -70,7 +70,7 @@ export default function TeacherPapers() {
       name: '列举AIGC在办公场景下的三种典型应用', 
       bank: 'Mo 体验课程试题库', 
       type: '简答题', 
-      difficulty: '初级', 
+      difficulty: '容易', 
       tag: '生成式AI与大模型应用', 
       grading: '人工评分', 
       scope: '未公开', 
@@ -84,7 +84,7 @@ export default function TeacherPapers() {
       name: '你认为人工智能是否会完全取代人类脑力劳动？请简述理由', 
       bank: 'Mo 体验课程试题库', 
       type: '思考题', 
-      difficulty: '高级', 
+      difficulty: '困难', 
       tag: '人工智能与大模型', 
       grading: '人工评分', 
       scope: '未公开', 
@@ -98,7 +98,7 @@ export default function TeacherPapers() {
       name: '机器学习中监督学习与无监督学习的核心区别是（ ）。', 
       bank: 'Mo 体验课程试题库', 
       type: '填空题', 
-      difficulty: '中级', 
+      difficulty: '中等', 
       tag: '机器学习基础', 
       grading: '自动评分', 
       scope: '未公开', 
@@ -112,7 +112,7 @@ export default function TeacherPapers() {
       name: '人工智能发展的三个历史阶段分别是自动控制、知识工程和（ ）。', 
       bank: 'Mo 体验课程试题库', 
       type: '填空题', 
-      difficulty: '初级', 
+      difficulty: '容易', 
       tag: '人工智能与大模型', 
       grading: '自动评分', 
       scope: '未公开', 
@@ -126,7 +126,7 @@ export default function TeacherPapers() {
       name: '神经网络中的激活函数主要作用是引入非线性因素', 
       bank: 'Mo 体验课程试题库', 
       type: '单选题', 
-      difficulty: '初级', 
+      difficulty: '较易', 
       tag: '神经网络与深度学习', 
       grading: '自动评分', 
       scope: '未公开', 
@@ -140,7 +140,7 @@ export default function TeacherPapers() {
       name: '机器学习基础期末选择题-随机森林的基分类器是（ ）。', 
       bank: 'Mo 体验课程试题库', 
       type: '单选题', 
-      difficulty: '中级', 
+      difficulty: '中等', 
       tag: '机器学习基础', 
       grading: '自动评分', 
       scope: '未公开', 
@@ -154,7 +154,7 @@ export default function TeacherPapers() {
       name: '机器学习多选题：关于支持向量机(SVM)，以下说法正确的有', 
       bank: 'Mo 体验课程试题库', 
       type: '多选题', 
-      difficulty: '中级', 
+      difficulty: '较难', 
       tag: '人工智能与大模型', 
       grading: '自动评分', 
       scope: '未公开', 
@@ -1072,7 +1072,7 @@ export default function TeacherPapers() {
                     <thead>
                       <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
                         <th className="p-2.5 font-bold">试题名称</th>
-                        <th className="p-2.5 font-bold">所属试题库名称</th>
+                        <th className="p-2.5 font-bold">所属题库名称</th>
                         <th className="p-2.5 font-bold">题型</th>
                         <th className="p-2.5 font-bold w-12 text-center">操作</th>
                       </tr>
@@ -1175,7 +1175,7 @@ export default function TeacherPapers() {
                     <thead>
                       <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
                         <th className="p-2.5 font-bold">试题名称</th>
-                        <th className="p-2.5 font-bold">所属试题库名称</th>
+                        <th className="p-2.5 font-bold">所属题库名称</th>
                         <th className="p-2.5 font-bold">题型</th>
                         <th className="p-2.5 font-bold w-12 text-center">操作</th>
                       </tr>
@@ -1569,9 +1569,9 @@ export default function TeacherPapers() {
                               <td className="py-2.5 px-4">
                                 <span className={cn(
                                   "px-1.5 py-0.5 rounded text-[10px] font-bold border",
-                                  q.difficulty === '初级' && "bg-green-50 text-green-600 border-green-150",
-                                  q.difficulty === '中级' && "bg-orange-50 text-[#fa541c] border-orange-150",
-                                  q.difficulty === '高级' && "bg-red-50 text-red-600 border-red-150"
+                                  (q.difficulty === '初级' || q.difficulty === '容易' || q.difficulty === '较易') && "bg-green-50 text-green-600 border-green-150",
+                                  (q.difficulty === '中级' || q.difficulty === '中等') && "bg-orange-50 text-[#fa541c] border-orange-150",
+                                  (q.difficulty === '高级' || q.difficulty === '较难' || q.difficulty === '困难') && "bg-red-50 text-red-600 border-red-150"
                                 )}>
                                   {q.difficulty}
                                 </span>

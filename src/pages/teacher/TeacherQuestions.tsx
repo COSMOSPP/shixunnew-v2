@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check } from 'lucide-react';
+import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { CustomSelect } from './TeacherProjects';
+
 
 // Helper component for Rich Text Editor (Edit / Preview)
 interface RichTextEditorProps {
@@ -28,7 +30,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white shadow-sm transition-all focus-within:border-[#fa541c]/50">
+    <div className="border border-neutral-200 rounded overflow-hidden bg-white shadow-sm transition-all focus-within:border-[#fa541c]/50">
       {/* Editor Header */}
       <div className="flex items-center justify-between bg-neutral-50 px-4 py-2 border-b border-neutral-200">
         <div className="flex items-center gap-2">
@@ -312,6 +314,45 @@ const getQuestionOptions = (q: any) => {
   ];
 };
 
+const ALL_SYSTEM_TAGS = [
+  '人工智能概述',
+  '大模型应用场景分析',
+  '机器学习基本概念与流程',
+  '大语言模型技术',
+  '人工智能导论',
+  '智能体',
+  '深度学习',
+  '自动驾驶',
+  '神经网络',
+  '自然语言处理'
+];
+
+const SHIXUN_VM_SPECS = [
+  { value: 'ecs.g6.large', label: '通用计算型 g6.large | 2核 8GB | 无GPU' },
+  { value: 'ecs.g6.xlarge', label: '通用计算型 g6.xlarge | 4核 16GB | 无GPU' },
+  { value: 'ecs.gn6i-c4g1.xlarge', label: 'GPU计算型 gn6i | 4核 16GB | T4 * 1 (16GB)' },
+  { value: 'ecs.gn7i-c8g1.2xlarge', label: 'GPU计算型 gn7i | 8核 32GB | A10G * 1 (24GB)' }
+];
+
+const parseSubnet = (subnetStr: string) => {
+  let standardStr = subnetStr;
+  if (!subnetStr || !subnetStr.includes('.')) {
+    standardStr = '192.168.1.0/24';
+  } else {
+    // extract IP range from string like 'subnet-default-a (192.168.1.0/24)'
+    const match = subnetStr.match(/192\.168\.\d+\.0\/\d+/);
+    if (match) {
+      standardStr = match[0];
+    }
+  }
+
+  const parts = standardStr.split(/[./]/);
+  const octet3 = parts[2] || '1';
+  const octet4 = parts[3] || '0';
+  const mask = parts[4] || '24';
+  return { octet3, octet4, mask };
+};
+
 export default function TeacherQuestions() {
   const location = useLocation();
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
@@ -321,6 +362,109 @@ export default function TeacherQuestions() {
   const [isImporting, setIsImporting] = useState(false);
   const [importFileName, setImportFileName] = useState('');
   const [viewingQuestion, setViewingQuestion] = useState<any | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [checkpointQuestion, setCheckpointQuestion] = useState<any | null>(null);
+  const [isCheckpointsModalOpen, setIsCheckpointsModalOpen] = useState(false);
+  const [editingCheckpoint, setEditingCheckpoint] = useState<any | null>(null);
+  const [isCheckpointFormOpen, setIsCheckpointFormOpen] = useState(false);
+  const [checkpointFormName, setCheckpointFormName] = useState('');
+  const [checkpointFormContent, setCheckpointFormContent] = useState('');
+  const [checkpointFormDesc, setCheckpointFormDesc] = useState('');
+  const [checkpointFormRatio, setCheckpointFormRatio] = useState<number>(20);
+  const [checkpoints, setCheckpoints] = useState<Record<number, any[]>>({
+    4: [
+      { id: '1', name: '依赖库配置检查', content: 'import torch; print(torch.__version__)', description: '检查主运行脚本是否包含必要的依赖库（如 PyTorch）', scoreRatio: 20 },
+      { id: '2', name: '训练数据集路径校验', content: 'import os; assert os.path.exists("data")', description: '验证训练数据集的路径配置是否正确', scoreRatio: 20 },
+      { id: '3', name: 'Epoch数超参检查', content: 'grep -E "epoch|batch_size" train.py', description: '检查模型训练部分的 Epoch 数与 Batch Size 设定', scoreRatio: 20 },
+      { id: '4', name: '推理端口响应测试', content: 'curl http://localhost:8080/predict', description: '测试 API 端口是否能成功响应推理请求', scoreRatio: 20 },
+      { id: '5', name: 'GPU加速可用性测试', content: 'nvidia-smi', description: '确认环境中的 GPU 资源可用性', scoreRatio: 20 }
+    ]
+  });
+
+  // Make Public modal states
+  const [isApplyPublicModalOpen, setIsApplyPublicModalOpen] = useState(false);
+  const [questionToApplyPublic, setQuestionToApplyPublic] = useState<any | null>(null);
+  const [applyPublicRange, setApplyPublicRange] = useState<'租户' | '平台'>('租户');
+  const [applyPublicReason, setApplyPublicReason] = useState('');
+  const [isApplyingPublic, setIsApplyingPublic] = useState(false);
+  const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
+  const [isBatchPublicOpen, setIsBatchPublicOpen] = useState(false);
+
+  // Click outside to close dropdowns
+  React.useEffect(() => {
+    const handleOutsideClick = () => {
+      setActiveDropdownId(null);
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => {
+      document.removeEventListener('click', handleOutsideClick);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    function handleQuestionTagClickOutside(event: MouseEvent) {
+      if (questionTagDropdownRef.current && !questionTagDropdownRef.current.contains(event.target as Node)) {
+        setIsQuestionTagDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleQuestionTagClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleQuestionTagClickOutside);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    function handleQuestionBankClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedSingle = singleQuestionBankDropdownRef.current && singleQuestionBankDropdownRef.current.contains(target);
+      if (!clickedSingle) {
+        setIsQuestionBankDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleQuestionBankClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleQuestionBankClickOutside);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    function handleQuestionDifficultyClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedSingle = singleQuestionDifficultyDropdownRef.current && singleQuestionDifficultyDropdownRef.current.contains(target);
+      if (!clickedSingle) {
+        setIsQuestionDifficultyDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleQuestionDifficultyClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleQuestionDifficultyClickOutside);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    function handleMoreActionsClickOutside(event: MouseEvent) {
+      if (moreActionsRef.current && !moreActionsRef.current.contains(event.target as Node)) {
+        setIsMoreActionsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleMoreActionsClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleMoreActionsClickOutside);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    function handleTemplateClickOutside(event: MouseEvent) {
+      if (templateDropdownRef.current && !templateDropdownRef.current.contains(event.target as Node)) {
+        setIsTemplateDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleTemplateClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleTemplateClickOutside);
+    };
+  }, []);
 
   // Question database states
   const [isBankListModalOpen, setIsBankListModalOpen] = useState(false);
@@ -328,10 +472,8 @@ export default function TeacherQuestions() {
   const [searchBankQuery, setSearchBankQuery] = useState('');
   const [isCreateBankOpen, setIsCreateBankOpen] = useState(false);
   const [newBankName, setNewBankName] = useState('');
-  const [newBankCategory, setNewBankCategory] = useState('AI技术');
   const [editingBank, setEditingBank] = useState<any | null>(null);
   const [editBankName, setEditBankName] = useState('');
-  const [editBankCategory, setEditBankCategory] = useState('');
   const [banksList, setBanksList] = useState([
     { id: 1, name: '人工智能通识D-uni', count: 124, category: 'AI技术', creator: 'Momodel', createdAt: '2025/11/20' },
     { id: 2, name: '深度学习基础题库', count: 86, category: 'AI技术', creator: 'Admin', createdAt: '2025/12/01' },
@@ -363,9 +505,9 @@ export default function TeacherQuestions() {
 
 1. 题目（必填）：
 2. 关键概念/知识点（选填）：
-3. 难度（必填）：初级/中级/高级
+3. 难度（必填）：容易/较易/中等/较难/困难
 4. 标签（选填）：
-5. 题型分布与题量（必填）：例如 -> 单选题 1 题，多选题 1 题，判断题 1 题，填空题 1 题，简答题 1 题，思考题 1 题，编程题 1 题`
+5. 题型分布与题量（必填）：例如 -> 单选题 1 题，多选题 1 题，判断题 1 题，填空题 1 题，简答题 1 题，实训题 1 题`
     }
   ]);
 
@@ -385,7 +527,7 @@ export default function TeacherQuestions() {
         name: '神经网络中激活函数的主要作用是提供非线性建模能力。',
         type: '单选题',
         bank: '人工智能通识D-uni',
-        difficulty: '中级',
+        difficulty: '中等',
         tags: '深度学习, 激活函数',
         grading: '自动评分',
         options: ['增加网络层数', '引入非线性因素，使网络能拟合复杂函数', '加速梯度下降的计算', '自动调节学习率'],
@@ -398,7 +540,7 @@ export default function TeacherQuestions() {
           name: '以下哪些方法常用于防止深度学习模型发生过拟合？',
           type: '多选题',
           bank: '人工智能通识D-uni',
-          difficulty: '高级',
+          difficulty: '困难',
           tags: '深度学习, 过拟合',
           grading: '自动评分',
           options: ['使用 Dropout 丢弃法', '增加训练数据量', '采用 L1 或 L2 正则化项', '提高模型的复杂度'],
@@ -410,7 +552,7 @@ export default function TeacherQuestions() {
           name: '在监督学习中，所有的算法都必须依赖手工标注的高质量标签数据。',
           type: '判断题',
           bank: '人工智能通识D-uni',
-          difficulty: '初级',
+          difficulty: '容易',
           tags: '监督学习',
           grading: '自动评分',
           options: ['正确', '错误'],
@@ -438,14 +580,14 @@ export default function TeacherQuestions() {
       bank: card.bank,
       type: card.type,
       status: '启用',
-      source: '智能出题',
+      source: '人工智能',
       difficulty: card.difficulty,
       tags: card.tags,
       grading: card.grading,
       creator: 'Momodel',
       updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
-      scope: '已公开',
-      auditStatus: '申请公开已通过'
+      scope: '平台',
+      auditStatus: '已通过'
     };
 
     setQuestionsList([newQuestion, ...questionsList]);
@@ -481,10 +623,18 @@ export default function TeacherQuestions() {
   const [shixunAnswerType, setShixunAnswerType] = useState('线上环境答题');
   const [shixunDatasets, setShixunDatasets] = useState<string[]>([]);
   const [isDatasetDropdownOpen, setIsDatasetDropdownOpen] = useState(false);
+  const [shixunOfflineFile, setShixunOfflineFile] = useState<string>('');
 
-  // Online environment configurations
-  const [shixunEnvType, setShixunEnvType] = useState<'container' | 'vm'>('container');
-  // Container config states
+  // Project Environment configuration states for shixun
+  const [shixunEnvType, setShixunEnvType] = useState<'容器' | '云主机'>('容器');
+  const [shixunRepoMode, setShixunRepoMode] = useState<'manual' | 'upload'>('manual');
+  const [shixunRepoUrl, setShixunRepoUrl] = useState('https://github.com/opencv/opencv.git');
+  const [shixunCreationMethod, setShixunCreationMethod] = useState<'template' | 'custom'>('template');
+  const [shixunTemplateValue, setShixunTemplateValue] = useState('通用模板');
+  const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
+  const templateDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Container custom config states
   const [shixunProjectSource, setShixunProjectSource] = useState<string>('');
   const [shixunCpuCores, setShixunCpuCores] = useState<string>('2');
   const [shixunMemoryGb, setShixunMemoryGb] = useState<string>('4');
@@ -496,28 +646,27 @@ export default function TeacherQuestions() {
   const [shixunStartCmd, setShixunStartCmd] = useState<string>('python main.py');
   const [shixunMultiInstance, setShixunMultiInstance] = useState<boolean>(false);
   // VM config states
-  const [shixunVmCpu, setShixunVmCpu] = useState<string>('4');
+  const [shixunVmCpu, setShixunVmCpu] = useState<string>('2');
   const [shixunVmMem, setShixunVmMem] = useState<string>('8');
-  const [shixunVmGpuPower, setShixunVmGpuPower] = useState<string>('50%');
-  const [shixunVmGpuMem, setShixunVmGpuMem] = useState<string>('8GB');
+  const [shixunVmGpuPower, setShixunVmGpuPower] = useState<string>('无');
+  const [shixunVmGpuMem, setShixunVmGpuMem] = useState<string>('0');
   const [shixunVmGpuCards, setShixunVmGpuCards] = useState<string>('0');
-  const [shixunVmSpec, setShixunVmSpec] = useState<string>('4核/8GB/无GPU');
+  const [shixunVmGpuModel, setShixunVmGpuModel] = useState<string>('无');
+  const [shixunVmSpec, setShixunVmSpec] = useState<string>('ecs.g6.large');
+  const [shixunVmSpecType, setShixunVmSpecType] = useState<'spec' | 'custom'>('spec');
   const [shixunVmImage, setShixunVmImage] = useState<string>('Ubuntu Server 22.04 LTS');
-  const [shixunVmStorageType, setShixunVmStorageType] = useState<string>('SSD云硬盘');
-  const [shixunVmSystemDisk, setShixunVmSystemDisk] = useState<string>('50');
+  const [shixunVmStorageType, setShixunVmStorageType] = useState<string>('SSD');
+  const [shixunVmStorageDataType, setShixunVmStorageDataType] = useState<string>('SSD');
+  const [shixunVmSystemDisk, setShixunVmSystemDisk] = useState<string>('40');
   const [shixunVmDataDisk, setShixunVmDataDisk] = useState<string>('100');
-  const [shixunVmVpc, setShixunVmVpc] = useState<string>('vpc-default (192.168.0.0/16)');
-  const [shixunVmSubnet, setShixunVmSubnet] = useState<string>('subnet-default-a (192.168.1.0/24)');
-  const [shixunVmVncType, setShixunVmVncType] = useState<'caddyVnc' | 'noVnc'>('caddyVnc');
+  const [shixunVmVpc, setShixunVmVpc] = useState<string>('vpc-default');
+  const [shixunVmSubnet, setShixunVmSubnet] = useState<string>('192.168.1.0/24');
+  const [shixunVmVncType, setShixunVmVncType] = useState<'caddyvnc' | 'novnc'>('novnc');
 
-  // Programming Question (编程题) specific states
-  const [codingLanguage, setCodingLanguage] = useState('Python');
-  const [codingMaxTime, setCodingMaxTime] = useState(1);
-  const [codingInputDesc, setCodingInputDesc] = useState('');
-  const [codingOutputDesc, setCodingOutputDesc] = useState('');
-  const [codingExamples, setCodingExamples] = useState<any[]>([{ id: 1, input: '', output: '' }]);
-  const [codingTestCases, setCodingTestCases] = useState<any[]>([{ id: 1, input: '', output: '', desc: '' }]);
-  const [codingInitCode, setCodingInitCode] = useState('def solution():\n    # Write your code here\n    pass');
+
+
+
+
 
   // Tag management
   const [tags, setTags] = useState<string[]>([
@@ -530,6 +679,14 @@ export default function TeacherQuestions() {
   const [tagInput, setTagInput] = useState('');
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [searchTagQuery, setSearchTagQuery] = useState('');
+  const [isQuestionTagDropdownOpen, setIsQuestionTagDropdownOpen] = useState(false);
+  const questionTagDropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isQuestionBankDropdownOpen, setIsQuestionBankDropdownOpen] = useState(false);
+  const singleQuestionBankDropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isQuestionDifficultyDropdownOpen, setIsQuestionDifficultyDropdownOpen] = useState(false);
+  const singleQuestionDifficultyDropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false);
+  const moreActionsRef = React.useRef<HTMLDivElement>(null);
 
   const [questionsList, setQuestionsList] = useState([
     {
@@ -537,15 +694,15 @@ export default function TeacherQuestions() {
       name: '智能体与传统程序最本质的区别是什么？',
       bank: '人工智能通识D-uni',
       type: '单选题',
-      status: '启用',
-      source: '人工出题',
-      difficulty: '初级',
+      status: '停用',
+      source: '人工智能',
+      difficulty: '容易',
       tags: '智能体',
       grading: '自动评分',
       creator: 'Momodel',
       updateTime: '2026/05/15 14:45',
-      scope: '已公开',
-      auditStatus: '申请公开已通过'
+      scope: '私有',
+      auditStatus: '未审核'
     },
     {
       id: 2,
@@ -553,14 +710,14 @@ export default function TeacherQuestions() {
       bank: '人工智能通识D-uni',
       type: '多选题',
       status: '启用',
-      source: '人工出题',
-      difficulty: '初级',
+      source: '人工智能',
+      difficulty: '较易',
       tags: '智能体',
       grading: '自动评分',
       creator: 'Momodel',
       updateTime: '2026/05/15 14:45',
-      scope: '已公开',
-      auditStatus: '申请公开已通过'
+      scope: '租户',
+      auditStatus: '已通过'
     },
     {
       id: 3,
@@ -569,19 +726,38 @@ export default function TeacherQuestions() {
       type: '填空题',
       status: '启用',
       source: '人工出题',
-      difficulty: '中级',
+      difficulty: '中等',
       tags: '',
       grading: '自动评分',
       creator: 'Momodel',
       updateTime: '2026/05/15 17:02',
-      scope: '已公开',
-      auditStatus: '申请公开已通过'
+      scope: '平台',
+      auditStatus: '已通过'
+    },
+    {
+      id: 4,
+      name: '基于大模型的端到端自动驾驶系统开发',
+      bank: '人工智能通识D-uni',
+      type: '实训题',
+      status: '启用',
+      source: '人工智能',
+      difficulty: '困难',
+      tags: '深度学习, 自动驾驶',
+      grading: '自动评分',
+      creator: 'Momodel',
+      updateTime: '2026/05/16 11:20',
+      scope: '私有',
+      auditStatus: '未审核'
     }
   ]);
 
+  const filteredQuestions = questionsList.filter(q => 
+    q.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedQuestions(questionsList.map(q => q.id));
+      setSelectedQuestions(filteredQuestions.map(q => q.id));
     } else {
       setSelectedQuestions([]);
     }
@@ -617,38 +793,13 @@ export default function TeacherQuestions() {
     setOptions(rekeyed);
   };
 
-  const handleSaveQuestion = () => {
-    if (!newQuestionTitle.trim()) {
-      alert('请输入试题标题！');
-      return;
-    }
-    if (!newQuestionBank) {
-      alert('请选择所属试题库！');
-      return;
-    }
-
-    const newQuestion = {
-      id: Date.now(),
-      name: newQuestionTitle,
-      bank: newQuestionBank,
-      type: newQuestionType,
-      status: newQuestionStatus,
-      source: '人工出题',
-      difficulty: newQuestionDifficulty || '中级',
-      tags: tags.slice(0, 2).join(', ') || '智能体',
-      grading: '自动评分',
-      creator: 'Momodel',
-      updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
-      scope: '已公开',
-      auditStatus: '申请公开已通过'
-    };
-
-    setQuestionsList([newQuestion, ...questionsList]);
+  const handleCloseCreateModal = () => {
     setIsCreateModalOpen(false);
-
-    // Reset states
+    setEditingQuestion(null);
     setNewQuestionTitle('');
     setNewQuestionBank('');
+    setIsQuestionBankDropdownOpen(false);
+    setIsQuestionDifficultyDropdownOpen(false);
     setNewQuestionDifficulty('');
     setNewQuestionBody('');
     setOptions([
@@ -667,7 +818,12 @@ export default function TeacherQuestions() {
     setShixunAnswerType('线上环境答题');
     setShixunDatasets([]);
     setIsDatasetDropdownOpen(false);
-    setShixunEnvType('container');
+    setShixunOfflineFile('');
+    setShixunEnvType('容器');
+    setShixunRepoMode('manual');
+    setShixunRepoUrl('https://github.com/opencv/opencv.git');
+    setShixunCreationMethod('template');
+    setShixunTemplateValue('通用模板');
     setShixunProjectSource('');
     setShixunCpuCores('2');
     setShixunMemoryGb('4');
@@ -678,29 +834,209 @@ export default function TeacherQuestions() {
     setShixunEnvVars([{ id: 1, key: '', value: '' }]);
     setShixunStartCmd('python main.py');
     setShixunMultiInstance(false);
-    setShixunVmCpu('4');
+    setShixunVmCpu('2');
     setShixunVmMem('8');
-    setShixunVmGpuPower('50%');
-    setShixunVmGpuMem('8GB');
+    setShixunVmGpuPower('无');
+    setShixunVmGpuMem('0');
     setShixunVmGpuCards('0');
-    setShixunVmSpec('4核/8GB/无GPU');
+    setShixunVmGpuModel('无');
+    setShixunVmSpec('ecs.g6.large');
+    setShixunVmSpecType('spec');
     setShixunVmImage('Ubuntu Server 22.04 LTS');
-    setShixunVmStorageType('SSD云硬盘');
-    setShixunVmSystemDisk('50');
+    setShixunVmStorageType('SSD');
+    setShixunVmStorageDataType('SSD');
+    setShixunVmSystemDisk('40');
     setShixunVmDataDisk('100');
-    setShixunVmVpc('vpc-default (192.168.0.0/16)');
-    setShixunVmSubnet('subnet-default-a (192.168.1.0/24)');
-    setShixunVmVncType('caddyVnc');
-    setCodingLanguage('Python');
-    setCodingMaxTime(1);
-    setCodingInputDesc('');
-    setCodingOutputDesc('');
-    setCodingExamples([{ id: 1, input: '', output: '' }]);
-    setCodingTestCases([{ id: 1, input: '', output: '', desc: '' }]);
-    setCodingInitCode('def solution():\n    # Write your code here\n    pass');
+    setShixunVmVpc('vpc-default');
+    setShixunVmSubnet('192.168.1.0/24');
+    setShixunVmVncType('novnc');
   };
 
-  const questionTypes = ['单选题', '多选题', '判断题', '填空题', '简答题', '思考题', '编程题', '实训题'];
+  const handleEditQuestion = (q: any) => {
+    setEditingQuestion(q);
+    setNewQuestionTitle(q.name);
+    setNewQuestionBank(q.bank);
+    setNewQuestionType(q.type);
+    setNewQuestionDifficulty(q.difficulty);
+    setNewQuestionStatus(q.status);
+    setNewQuestionBody(q.name);
+    if (q.tags) {
+      setTags(q.tags.split(', '));
+    } else {
+      setTags([]);
+    }
+    setIsCreateModalOpen(true);
+  };
+
+  const toggleQuestionStatus = (id: number) => {
+    setQuestionsList(questionsList.map(q => {
+      if (q.id === id) {
+        return {
+          ...q,
+          status: q.status === '启用' ? '禁用' : '启用'
+        };
+      }
+      return q;
+    }));
+  };
+
+  const handleOpenApplyPublic = (q: any) => {
+    setQuestionToApplyPublic(q);
+    setApplyPublicRange('租户');
+    setApplyPublicReason('');
+    setIsApplyPublicModalOpen(true);
+  };
+
+  const handleSubmitApplyPublic = () => {
+    if (!applyPublicReason.trim()) {
+      alert('请填写申请说明！');
+      return;
+    }
+    setIsApplyingPublic(true);
+    setTimeout(() => {
+      setIsApplyingPublic(false);
+      setIsApplyPublicModalOpen(false);
+      setQuestionsList(prev => prev.map(item => {
+        if (item.id === questionToApplyPublic.id) {
+          return {
+            ...item,
+            scope: applyPublicRange,
+            auditStatus: '未审核'
+          };
+        }
+        return item;
+      }));
+      alert('已成功提交公开申请！');
+    }, 1000);
+  };
+
+  const handleOpenCheckpoints = (q: any) => {
+    setCheckpointQuestion(q);
+    setIsCheckpointsModalOpen(true);
+    setIsCheckpointFormOpen(false);
+    setEditingCheckpoint(null);
+    setCheckpointFormName('');
+    setCheckpointFormContent('');
+    setCheckpointFormDesc('');
+    setCheckpointFormRatio(20);
+  };
+
+  const handleSaveCheckpoint = () => {
+    if (!checkpointQuestion) return;
+    if (!checkpointFormName.trim()) {
+      alert('请输入检查项名称！');
+      return;
+    }
+    const qId = checkpointQuestion.id;
+    const currentList = checkpoints[qId] || [];
+
+    if (editingCheckpoint) {
+      // Edit
+      const updatedList = currentList.map(item => 
+        item.id === editingCheckpoint.id 
+          ? { 
+              ...item, 
+              name: checkpointFormName.trim(), 
+              content: checkpointFormContent.trim(), 
+              description: checkpointFormDesc.trim(), 
+              scoreRatio: Number(checkpointFormRatio) || 0 
+            } 
+          : item
+      );
+      setCheckpoints({
+        ...checkpoints,
+        [qId]: updatedList
+      });
+    } else {
+      // Create
+      const newItem = {
+        id: Date.now().toString(),
+        name: checkpointFormName.trim(),
+        content: checkpointFormContent.trim(),
+        description: checkpointFormDesc.trim(),
+        scoreRatio: Number(checkpointFormRatio) || 0
+      };
+      setCheckpoints({
+        ...checkpoints,
+        [qId]: [...currentList, newItem]
+      });
+    }
+    setIsCheckpointFormOpen(false);
+    setEditingCheckpoint(null);
+  };
+
+  const handleDeleteCheckpoint = (itemId: string) => {
+    if (!checkpointQuestion) return;
+    if (confirm('确定要删除该检查项吗？')) {
+      const qId = checkpointQuestion.id;
+      const currentList = checkpoints[qId] || [];
+      const updatedList = currentList.filter(item => item.id !== itemId);
+      setCheckpoints({
+        ...checkpoints,
+        [qId]: updatedList
+      });
+    }
+  };
+
+  const handleSaveQuestion = () => {
+    const isSingleChoice = newQuestionType === '单选题';
+    const finalTitle = isSingleChoice ? newQuestionBody : newQuestionTitle;
+
+    if (isSingleChoice) {
+      if (!newQuestionBody.trim()) {
+        alert('请输入题目内容！');
+        return;
+      }
+    } else {
+      if (!newQuestionTitle.trim()) {
+        alert('请输入试题标题！');
+        return;
+      }
+    }
+    if (!newQuestionBank) {
+      alert('请选择所属题库！');
+      return;
+    }
+
+    if (editingQuestion) {
+      setQuestionsList(questionsList.map(q => {
+        if (q.id === editingQuestion.id) {
+          return {
+            ...q,
+            name: finalTitle,
+            bank: newQuestionBank,
+            type: newQuestionType,
+            status: newQuestionStatus,
+            difficulty: newQuestionDifficulty || '中等',
+            tags: tags.slice(0, 2).join(', ') || '',
+            updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
+          };
+        }
+        return q;
+      }));
+    } else {
+      const newQuestion = {
+        id: Date.now(),
+        name: finalTitle,
+        bank: newQuestionBank,
+        type: newQuestionType,
+        status: newQuestionStatus,
+        source: '人工出题',
+        difficulty: newQuestionDifficulty || '中等',
+        tags: tags.slice(0, 2).join(', ') || '智能体',
+        grading: '自动评分',
+        creator: 'Momodel',
+        updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
+        scope: '私有',
+        auditStatus: '未审核'
+      };
+      setQuestionsList([newQuestion, ...questionsList]);
+    }
+
+    handleCloseCreateModal();
+  };
+
+  const questionTypes = ['单选题', '多选题', '判断题', '填空题', '简答题', '实训题'];
   const filteredTags = tags.filter(tag => tag.toLowerCase().includes(searchTagQuery.toLowerCase()));
 
   return (
@@ -712,87 +1048,97 @@ export default function TeacherQuestions() {
               <h1 className="text-xl font-bold text-neutral-900">试题管理</h1>
               <p className="text-sm text-neutral-500 mb-0.5">新建试题、仅展示公开或您个人题库内试题，试题“启用”后可用于组卷</p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={() => setIsBankListModalOpen(true)} variant="outline" className="flex items-center gap-1.5 h-9 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]/30 transition-all cursor-pointer bg-white rounded shadow-sm">
-                <Database className="w-4 h-4" /> 题库管理
-              </Button>
-              <Button onClick={() => setView('ai')} variant="outline" className="flex items-center gap-1.5 h-9 border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-white rounded shadow-sm cursor-pointer">
-                <Brain className="w-4 h-4" /> 智能出题
-              </Button>
-              <Button onClick={() => setIsCreateModalOpen(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded cursor-pointer">
-                <Plus className="w-4 h-4" /> 新建试题
-              </Button>
-              <Button variant="outline" className="flex items-center gap-1.5 h-9 rounded border-neutral-200 text-neutral-600">
-                批量公开
-              </Button>
-              <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="flex items-center gap-1.5 h-9 rounded border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]/30 transition-all cursor-pointer">
-                导入
-              </Button>
-            </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-white rounded overflow-hidden">
+          {/* Table and Toolbar unified module */}
+          <div className="bg-white rounded-2xl border border-neutral-border shadow-sm overflow-hidden">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50">
+              <div className="flex items-center gap-3">
+                <div className="relative w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="请输入要搜索的内容"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 w-full bg-white border border-neutral-border rounded-full text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
+                <Button onClick={() => setIsCreateModalOpen(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1 shadow-sm h-9 px-4 rounded-[4px] text-xs font-semibold cursor-pointer border-0">
+                  <Plus className="w-3.5 h-3.5" /> 新建试题
+                </Button>
+                <Button onClick={() => setView('ai')} variant="outline" className="flex items-center h-9 px-4 border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-white rounded-[4px] text-xs font-medium cursor-pointer shadow-sm">
+                  智能出题
+                </Button>
+                <Button onClick={() => setIsBankListModalOpen(true)} variant="outline" className="flex items-center h-9 px-4 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]/30 transition-all cursor-pointer bg-white rounded-[4px] text-xs font-medium shadow-sm">
+                  题库管理
+                </Button>
+                <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="flex items-center h-9 px-4 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]/30 transition-all cursor-pointer bg-white rounded-[4px] text-xs font-medium shadow-sm">
+                  导入
+                </Button>
+                <Button onClick={() => setIsBatchPublicOpen(true)} variant="outline" className="flex items-center h-9 px-4 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]/30 transition-all cursor-pointer bg-white rounded-[4px] text-xs font-medium shadow-sm">
+                  批量公开
+                </Button>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                    <th className="p-4 font-medium w-12 text-center">
+                  <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600">
+                    <th className="pl-6 pr-3 py-3.5 font-medium w-12 text-left">
                       <button 
                         type="button"
-                        onClick={() => toggleSelectAll(selectedQuestions.length !== questionsList.length || questionsList.length === 0)}
+                        onClick={() => toggleSelectAll(selectedQuestions.length !== filteredQuestions.length || filteredQuestions.length === 0)}
                         className={cn(
-                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                          selectedQuestions.length === questionsList.length && questionsList.length > 0
+                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
+                          selectedQuestions.length === filteredQuestions.length && filteredQuestions.length > 0
                             ? "bg-[#fa541c] border-[#fa541c] text-white"
                             : "border-neutral-300 hover:border-[#fa541c] bg-white"
                         )}
                       >
-                        {selectedQuestions.length === questionsList.length && questionsList.length > 0 && <span className="text-[10px] font-bold">✓</span>}
+                        {selectedQuestions.length === filteredQuestions.length && filteredQuestions.length > 0 && <span className="text-[10px] font-bold">✓</span>}
                       </button>
                     </th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">试题名称 <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer" /></div>
+                    <th className="px-3 py-3.5 font-medium text-left">试题名称</th>
+                    <th className="px-3 py-3.5 font-medium text-left">
+                      <div className="flex items-center gap-1.5">所属题库 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">所属试题库 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">
+                    <th className="px-3 py-3.5 font-medium text-left">
                       <div className="flex items-center gap-1.5">题型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">
+                    <th className="px-3 py-3.5 font-medium text-left">
                       <div className="flex items-center gap-1.5">状态 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">来源</th>
-                    <th className="p-4 font-medium">难度</th>
-                    <th className="p-4 font-medium">
+                    <th className="px-3 py-3.5 font-medium text-left">来源</th>
+                    <th className="px-3 py-3.5 font-medium text-left">难度</th>
+                    <th className="px-3 py-3.5 font-medium text-left">
                       <div className="flex items-center gap-1.5">标签 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">评分方式</th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">创建人 <Search className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">
+                    <th className="px-3 py-3.5 font-medium text-left">创建人</th>
+                    <th className="px-3 py-3.5 font-medium text-left">
                       <div className="flex items-center gap-1.5">更新时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">
+                    <th className="px-3 py-3.5 font-medium text-left">
                       <div className="flex items-center gap-1.5">试题范围 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">
+                    <th className="px-3 py-3.5 font-medium text-left">
                       <div className="flex items-center gap-1.5">审核状态 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                     </th>
-                    <th className="p-4 font-medium">操作</th>
+                    <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {questionsList.map(q => (
-                    <tr key={q.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                      <td className="p-4 text-center">
+                  {filteredQuestions.map((q, index) => (
+                    <tr key={q.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredQuestions.length - 1 && "border-b-0")}>
+                      <td className="pl-6 pr-3 py-3 text-left">
                         <button 
                           type="button"
                           onClick={() => toggleSelect(q.id)}
                           className={cn(
-                            "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                            "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
                             selectedQuestions.includes(q.id)
                               ? "bg-[#fa541c] border-[#fa541c] text-white"
                               : "border-neutral-300 hover:border-[#fa541c] bg-white"
@@ -801,33 +1147,146 @@ export default function TeacherQuestions() {
                           {selectedQuestions.includes(q.id) && <span className="text-[10px] font-bold">✓</span>}
                         </button>
                       </td>
-                      <td className="p-4">
-                        <div className="text-neutral-800 max-w-[180px] truncate" title={q.name}>{q.name}</div>
+                      <td className="px-3 py-3">
+                        <div className="text-neutral-800 max-w-[160px] truncate" title={q.name}>{q.name}</div>
                       </td>
-                      <td className="p-4 text-neutral-600">{q.bank}</td>
-                      <td className="p-4 text-neutral-800">{q.type}</td>
-                      <td className="p-4">
+                      <td className="px-3 py-3 text-neutral-600">
+                        <div className="max-w-[130px] truncate" title={q.bank}>{q.bank}</div>
+                      </td>
+                      <td className="px-3 py-3 text-neutral-800">{q.type}</td>
+                      <td className="px-3 py-3">
                         <span className={cn("px-2 py-0.5 text-[12px] rounded border", q.status === '启用' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
                           {q.status}
                         </span>
                       </td>
-                      <td className="p-4 text-neutral-600">{q.source}</td>
-                      <td className="p-4 text-neutral-600">{q.difficulty}</td>
-                      <td className="p-4 text-neutral-600">{q.tags || '-'}</td>
-                      <td className="p-4 text-neutral-600">{q.grading}</td>
-                      <td className="p-4 text-neutral-600">{q.creator}</td>
-                      <td className="p-4 text-neutral-500">{q.updateTime}</td>
-                      <td className="p-4 text-[#fa541c]">
-                        <span className="px-2 py-0.5 bg-[#fff2e8] rounded text-[12px] border border-[#ffbb96]">{q.scope}</span>
+                      <td className="px-3 py-3 text-neutral-600">{q.source}</td>
+                      <td className="px-3 py-3 text-neutral-600">{q.difficulty}</td>
+                      <td className="px-3 py-3 text-neutral-600">
+                        <div className="max-w-[100px] truncate" title={q.tags || '-'}>{q.tags || '-'}</div>
                       </td>
-                      <td className={cn("p-4 font-medium", q.auditStatus === '申请公开已通过' ? "text-blue-600" : "text-[#fa541c]")}>
-                        {q.auditStatus}
+                      <td className="px-3 py-3 text-neutral-600">{q.creator}</td>
+                      <td className="px-3 py-3 text-neutral-500 text-[12px]">{q.updateTime}</td>
+                      <td className="px-3 py-3">
+                        {q.scope === '私有' && (
+                          <span className="px-2 py-0.5 bg-neutral-50 border border-neutral-200 rounded text-[12px] text-neutral-600">私有</span>
+                        )}
+                        {q.scope === '租户' && (
+                          <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-[12px] text-blue-600">租户</span>
+                        )}
+                        {q.scope === '平台' && (
+                          <span className="px-2 py-0.5 bg-[#fff2e8] border border-[#ffbb96] rounded text-[12px] text-[#fa541c]">平台</span>
+                        )}
+                        {!['私有', '租户', '平台'].includes(q.scope) && (
+                          <span className="px-2 py-0.5 bg-[#fff2e8] border border-[#ffbb96] rounded text-[12px] text-[#fa541c]">{q.scope}</span>
+                        )}
                       </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => setViewingQuestion(q)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer">查看</button>
-                          <button className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
-                          <button onClick={() => setQuestionsList(questionsList.filter(item => item.id !== q.id))} className="text-neutral-400 hover:text-neutral-600 transition-colors">删除</button>
+                      <td className="px-3 py-3 font-medium">
+                        {q.auditStatus === '已通过' ? (
+                          <span className="text-green-600">已通过</span>
+                        ) : q.auditStatus === '未审核' ? (
+                          <span className="text-amber-500">未审核</span>
+                        ) : (
+                          <span className="text-neutral-500">{q.auditStatus}</span>
+                        )}
+                      </td>
+                      <td className="pl-3 pr-6 py-3">
+                        <div className="flex items-center gap-2.5">
+                          {(() => {
+                            // Gather all available actions for this row
+                            const rowActions = [
+                              { label: '详情', onClick: () => setViewingQuestion(q), isDanger: false },
+                              { label: '编辑', onClick: () => handleEditQuestion(q), isDanger: false },
+                            ];
+                            
+                            if (q.status === '启用') {
+                              rowActions.push({ label: '公开', onClick: () => handleOpenApplyPublic(q), isDanger: false });
+                            }
+                            
+                            if (q.type === '实训题') {
+                              rowActions.push({ label: '检查项', onClick: () => handleOpenCheckpoints(q), isDanger: false });
+                            }
+                            
+                            rowActions.push({ 
+                              label: q.status === '启用' ? '停用' : '启用', 
+                              onClick: () => toggleQuestionStatus(q.id), 
+                              isDanger: false 
+                            });
+                            
+                            rowActions.push({ 
+                              label: '复制', 
+                              onClick: () => alert(`复制试题: ${q.name}`), 
+                              isDanger: false 
+                            });
+                            
+                            rowActions.push({ 
+                              label: '删除', 
+                              onClick: () => setQuestionsList(questionsList.filter(item => item.id !== q.id)), 
+                              isDanger: true 
+                            });
+
+                            const visibleActions = rowActions.slice(0, 2);
+                            const dropdownActions = rowActions.slice(2);
+
+                            return (
+                              <>
+                                {visibleActions.map((act) => (
+                                  <button
+                                    key={act.label}
+                                    type="button"
+                                    onClick={act.onClick}
+                                    className={cn(
+                                      "text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold whitespace-nowrap",
+                                      act.isDanger && "text-red-500 hover:text-red-700"
+                                    )}
+                                  >
+                                    {act.label}
+                                  </button>
+                                ))}
+
+                                {dropdownActions.length > 0 && (
+                                  <div className="relative inline-block">
+                                    <button 
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveDropdownId(activeDropdownId === q.id ? null : q.id);
+                                      }}
+                                      className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 flex items-center gap-0.5 text-xs font-semibold whitespace-nowrap"
+                                    >
+                                      <span>更多</span>
+                                      <ChevronDown className={cn("w-3 h-3 transition-transform duration-200 text-neutral-405", activeDropdownId === q.id && "rotate-180")} />
+                                    </button>
+                                    
+                                    {activeDropdownId === q.id && (
+                                      <div 
+                                        className="absolute right-0 mt-1.5 w-20 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[60] overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        {dropdownActions.map((act) => (
+                                          <button 
+                                            key={act.label}
+                                            type="button"
+                                            onClick={() => {
+                                              act.onClick();
+                                              setActiveDropdownId(null);
+                                            }}
+                                            className={cn(
+                                              "w-full text-left px-3 py-1.5 text-xs transition-colors bg-transparent border-0 cursor-pointer block font-medium",
+                                              act.isDanger 
+                                                ? "text-red-500 hover:bg-red-50" 
+                                                : "text-neutral-700 hover:bg-orange-50/40 hover:text-[#fa541c]"
+                                            )}
+                                          >
+                                            {act.label}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </td>
                     </tr>
@@ -837,8 +1296,8 @@ export default function TeacherQuestions() {
             </div>
             
             {/* Pagination */}
-            <div className="flex items-center justify-end p-4 gap-4 mt-2">
-              <span className="text-[13px] text-neutral-500">共 {questionsList.length} 条</span>
+            <div className="flex items-center justify-end px-6 py-4 gap-4 border-t border-neutral-border/30">
+              <span className="text-[13px] text-neutral-500">共 {filteredQuestions.length} 条</span>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
                 <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
@@ -965,7 +1424,7 @@ export default function TeacherQuestions() {
                       <div key={group.type} className="animate-slide-up">
                         {/* Group Header */}
                         <div className="flex items-center gap-2.5 border-b border-neutral-100 pb-3.5 mb-6 text-left">
-                          <div className="w-5.5 h-5.5 rounded-full bg-blue-50 text-[#1677ff] flex items-center justify-center flex-shrink-0 border border-blue-100">
+                          <div className="w-5.5 h-5.5 rounded-full bg-orange-50 border border-orange-100 text-[#fa541c] flex items-center justify-center flex-shrink-0">
                             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                           </div>
                           <span className="text-[14px] font-bold text-neutral-800">
@@ -1058,9 +1517,9 @@ export default function TeacherQuestions() {
   
   1. 题目（必填）：
   2. 关键概念/知识点（选填）：
-  3. 难度（必填）：初级/中级/高级
+  3. 难度（必填）：容易/较易/中等/较难/困难
   4. 标签（选填）：
-  5. 题型分布与题量（必填）：例如 -> 单选题 1 题，多选题 1 题，判断题 1 题，填空题 1 题，简答题 1 题，思考题 1 题，编程题 1 题`
+  5. 题型分布与题量（必填）：例如 -> 单选题 1 题，多选题 1 题，判断题 1 题，填空题 1 题，简答题 1 题，实训题 1 题`
                       }
                     ]);
                     setImportedIndexes([]);
@@ -1249,18 +1708,21 @@ export default function TeacherQuestions() {
       {isCreateModalOpen && (
         <div 
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
-          onClick={() => setIsCreateModalOpen(false)}
+          onClick={handleCloseCreateModal}
         >
           <div 
             className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
-              <h2 className="text-[15px] font-bold text-neutral-800">新建试题</h2>
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                {editingQuestion ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />}
+                {editingQuestion ? '编辑试题' : '新建试题'}
+              </h2>
               <button 
-                onClick={() => setIsCreateModalOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer"
+                onClick={handleCloseCreateModal}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1270,17 +1732,17 @@ export default function TeacherQuestions() {
             <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white">
               {/* Question Type Classification (Tabs) */}
               <div className="space-y-2">
-                <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar pb-1">
+                <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar">
                   {questionTypes.map((type) => (
                     <button
                       key={type}
                       type="button"
                       onClick={() => setNewQuestionType(type)}
                       className={cn(
-                        "pb-2 text-[13px] font-medium transition-all relative whitespace-nowrap cursor-pointer",
+                        "pb-2 text-[13px] font-medium transition-all relative whitespace-nowrap cursor-pointer -mb-[1px] border-b-2",
                         newQuestionType === type
-                          ? "text-[#fa541c] font-bold border-b-2 border-[#fa541c]"
-                          : "text-neutral-500 hover:text-neutral-800"
+                          ? "text-[#fa541c] font-bold border-[#fa541c]"
+                          : "text-neutral-500 hover:text-neutral-800 border-transparent"
                       )}
                     >
                       {type}
@@ -1290,160 +1752,267 @@ export default function TeacherQuestions() {
               </div>
 
               {/* Title / Name Field */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 试题标题：
-                </label>
-                <input
-                  type="text"
-                  value={newQuestionTitle}
-                  onChange={(e) => setNewQuestionTitle(e.target.value)}
-                  placeholder="请输入试题标题（如：大模型应用场景分析单选）"
-                  className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400"
-                />
-              </div>
+              {newQuestionType !== '单选题' && (
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    试题标题 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newQuestionTitle}
+                    onChange={(e) => setNewQuestionTitle(e.target.value)}
+                    placeholder="请输入试题标题（如：大模型应用场景分析单选）"
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400"
+                  />
+                </div>
+              )}
 
               {/* Dropdowns (Belonging Bank, Difficulty) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Belonging Question Bank */}
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 所属试题库：
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={newQuestionBank}
-                      onChange={(e) => setNewQuestionBank(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
-                    >
-                      <option value="">请选择所属试题库</option>
-                      {banksList.map(bank => (
-                        <option key={bank.id} value={bank.name}>{bank.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  所属题库 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div ref={singleQuestionBankDropdownRef} className="relative w-full text-xs">
+                  <div
+                    onClick={() => setIsQuestionBankDropdownOpen(!isQuestionBankDropdownOpen)}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                      isQuestionBankDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className={cn(newQuestionBank ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                      {newQuestionBank || "请选择所属题库"}
+                    </span>
+                    <ChevronDown 
+                      className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isQuestionBankDropdownOpen && "rotate-180")} 
+                    />
                   </div>
-                </div>
 
-                {/* Difficulty */}
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800">
-                    难度：
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={newQuestionDifficulty}
-                      onChange={(e) => setNewQuestionDifficulty(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
-                    >
-                      <option value="">请选择试题难度</option>
-                      <option value="初级">初级</option>
-                      <option value="中级">中级</option>
-                      <option value="高级">高级</option>
-                    </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  {/* Dropdown Menu */}
+                  {isQuestionBankDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                        <div
+                          onClick={() => {
+                            setNewQuestionBank("");
+                            setIsQuestionBankDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                            !newQuestionBank 
+                              ? "bg-orange-50 text-[#fa541c] font-bold"
+                              : "text-neutral-400 hover:bg-orange-50/40 hover:text-neutral-600"
+                          )}
+                        >
+                          <span>请选择所属题库</span>
+                          {!newQuestionBank && (
+                            <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                          )}
+                        </div>
+                        {banksList.map(bank => {
+                          const isSelected = newQuestionBank === bank.name;
+                          return (
+                            <div
+                              key={bank.id}
+                              onClick={() => {
+                                setNewQuestionBank(bank.name);
+                                setIsQuestionBankDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{bank.name}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Difficulty */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  选择难度 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div ref={singleQuestionDifficultyDropdownRef} className="relative w-full text-xs">
+                  <div
+                    onClick={() => setIsQuestionDifficultyDropdownOpen(!isQuestionDifficultyDropdownOpen)}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                      isQuestionDifficultyDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className={cn(newQuestionDifficulty ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                      {newQuestionDifficulty || "请选择试题难度"}
+                    </span>
+                    <ChevronDown 
+                      className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isQuestionDifficultyDropdownOpen && "rotate-180")} 
+                    />
                   </div>
+
+                  {/* Dropdown Menu */}
+                  {isQuestionDifficultyDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                        <div
+                          onClick={() => {
+                            setNewQuestionDifficulty("");
+                            setIsQuestionDifficultyDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                            !newQuestionDifficulty 
+                              ? "bg-orange-50 text-[#fa541c] font-bold"
+                              : "text-neutral-400 hover:bg-orange-50/40 hover:text-neutral-600"
+                          )}
+                        >
+                          <span>请选择试题难度</span>
+                          {!newQuestionDifficulty && (
+                            <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                          )}
+                        </div>
+                        {['容易', '较易', '中等', '较难', '困难'].map(diff => {
+                          const isSelected = newQuestionDifficulty === diff;
+                          return (
+                            <div
+                              key={diff}
+                              onClick={() => {
+                                setNewQuestionDifficulty(diff);
+                                setIsQuestionDifficultyDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{diff}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Tags Field */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800">
-                  标签：
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  标签
                 </label>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    {isAddingTag ? (
-                      <div className="flex items-center gap-1.5 bg-white border border-neutral-200 rounded-md p-1 shadow-sm">
-                        <input
-                          type="text"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          placeholder="输入新标签"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAddTag();
-                          }}
-                          className="px-2 py-0.5 text-xs focus:outline-none w-28 bg-white text-neutral-700"
-                          autoFocus
-                        />
-                        <button
-                          type="button"
-                          onClick={handleAddTag}
-                          className="text-[11px] bg-[#fa541c] hover:bg-[#e84a15] text-white px-2 py-0.5 rounded transition-colors font-medium cursor-pointer"
-                        >
-                          添加
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsAddingTag(false)}
-                          className="text-[11px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded transition-colors font-medium cursor-pointer"
-                        >
-                          取消
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setIsAddingTag(true)}
-                        className="h-7 px-3 border border-dashed border-neutral-300 hover:border-[#fa541c] hover:text-[#fa541c] rounded text-[11px] flex items-center gap-1 text-neutral-500 transition-colors font-medium bg-white cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> 新建标签
-                      </button>
+                <div ref={questionTagDropdownRef} className="relative w-full text-xs">
+                  <div
+                    onClick={() => setIsQuestionTagDropdownOpen(!isQuestionTagDropdownOpen)}
+                    className={cn(
+                      "min-h-[36px] w-full border border-neutral-200 rounded px-3.5 py-1.5 flex flex-wrap items-center gap-1.5 transition-all text-neutral-700 bg-white cursor-pointer select-none",
+                      isQuestionTagDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
                     )}
-
-                    {/* Tag Search */}
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type="text"
-                        value={searchTagQuery}
-                        onChange={(e) => setSearchTagQuery(e.target.value)}
-                        placeholder="搜索标签"
-                        className="pl-8 pr-2.5 h-7 text-[11px] border border-neutral-200 rounded focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white w-32 text-neutral-700 transition-all"
+                  >
+                    {tags.length === 0 ? (
+                      <span className="text-neutral-400 select-none">请选择标签</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5 items-center w-full pr-8">
+                        {tags.map(tag => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-50 border border-neutral-200 text-xs text-neutral-600 font-medium"
+                          >
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTags(tags.filter(t => t !== tag));
+                              }}
+                              className="hover:bg-black/10 rounded p-0.5 transition-colors cursor-pointer text-current flex items-center justify-center border-0"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Right arrow */}
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                      <ChevronDown 
+                        className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isQuestionTagDropdownOpen && "rotate-180")} 
                       />
                     </div>
                   </div>
 
-                  {/* Tags Pills List */}
-                  <div className="flex flex-wrap gap-2">
-                    {filteredTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2.5 py-1 bg-neutral-50 border border-neutral-200 rounded text-xs text-neutral-600 flex items-center gap-1 shadow-sm hover:border-neutral-300 transition-colors"
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => setTags(tags.filter(t => t !== tag))}
-                          className="text-neutral-400 hover:text-red-500 transition-colors text-[10px] ml-1 font-bold cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    ))}
-                    {filteredTags.length === 0 && (
-                      <span className="text-xs text-neutral-400 italic">无匹配的标签</span>
-                    )}
-                  </div>
+                  {/* Dropdown Menu */}
+                  {isQuestionTagDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                        {ALL_SYSTEM_TAGS.map(tag => {
+                          const isSelected = tags.includes(tag);
+                          return (
+                            <div
+                              key={tag}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setTags(tags.filter(t => t !== tag));
+                                } else {
+                                  setTags([...tags, tag]);
+                                }
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{tag}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Question Body Editor */}
-              <RichTextEditor
-                label="题目："
-                required
-                value={newQuestionBody}
-                onChange={setNewQuestionBody}
-                placeholder="请输入题目正文..."
-              />
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                  题目 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div className="w-full">
+                  <RichTextEditor
+                    label=""
+                    value={newQuestionBody}
+                    onChange={setNewQuestionBody}
+                    placeholder="请输入题目正文..."
+                  />
+                </div>
+              </div>
 
               {/* Answer Options ABCD (Show only for single and multiple selection) */}
-              {(newQuestionType === '单选题' || newQuestionType === '多选题') && (
-                <div className="space-y-3">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c] mr-1">*</span> 答案选项：
+              {newQuestionType === '单选题' ? (
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    答案选项 <span className="text-[#fa541c]">*</span>
                   </label>
-                  <div className="space-y-3.5">
+                  <div className="space-y-3.5 w-full">
                     {options.map((opt) => (
                       <RichTextEditor
                         key={opt.id}
@@ -1457,16 +2026,45 @@ export default function TeacherQuestions() {
                         onDelete={options.length > 2 ? () => handleDeleteOption(opt.id) : undefined}
                       />
                     ))}
+                    <button
+                      type="button"
+                      onClick={handleAddOption}
+                      className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> 增加选项
+                    </button>
                   </div>
-                  
-                  <button
-                    type="button"
-                    onClick={handleAddOption}
-                    className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-lg hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> 增加选项
-                  </button>
                 </div>
+              ) : (
+                (newQuestionType === '多选题') && (
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      答案选项 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="space-y-3.5 w-full">
+                      {options.map((opt) => (
+                        <RichTextEditor
+                          key={opt.id}
+                          label={`选项${opt.key}`}
+                          value={opt.value}
+                          onChange={(val) => {
+                            setOptions(options.map(o => o.id === opt.id ? { ...o, value: val } : o));
+                          }}
+                          placeholder={`请输入选项${opt.key}的内容...`}
+                          isCollapsible
+                          onDelete={options.length > 2 ? () => handleDeleteOption(opt.id) : undefined}
+                        />
+                      ))}
+                      <button
+                        type="button"
+                        onClick={handleAddOption}
+                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 增加选项
+                      </button>
+                    </div>
+                  </div>
+                )
               )}
 
               {/* Practical Question (实训题) Fields */}
@@ -1474,353 +2072,311 @@ export default function TeacherQuestions() {
                 <div className="space-y-5 animate-slide-up">
                   
                   {/* 试题内容说明 */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 试题内容说明：
-                      <span className="text-xs text-neutral-400 font-normal ml-1">学生根据『试题内容说明』进行答题</span>
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      内容说明 <span className="text-[#fa541c]">*</span>
                     </label>
-                    <RichTextEditor
-                      label="内容说明："
-                      required
-                      value={shixunDescription}
-                      onChange={setShixunDescription}
-                    />
+                    <div className="w-full">
+                      <RichTextEditor
+                        label=""
+                        value={shixunDescription}
+                        onChange={setShixunDescription}
+                        placeholder="学生根据『试题内容说明』进行答题"
+                      />
+                    </div>
                   </div>
 
                   {/* 答题方式 */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 答题方式：
-                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      答题方式 <span className="text-[#fa541c]">*</span>
                     </label>
-                    <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
-                      {[
-                        { value: '线下做题，上传结果文件', label: '线下做题，上传结果文件' },
-                        { value: '线上环境答题', label: '线上环境答题' }
-                      ].map((item) => (
-                        <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                          <input
-                            type="radio"
-                            name="shixunAnswerType"
-                            value={item.value}
-                            checked={shixunAnswerType === item.value}
-                            onChange={() => setShixunAnswerType(item.value)}
-                            className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
-                          />
-                          <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                    {shixunAnswerType === '线上环境答题' && (
-                      <div className="space-y-4 animate-slide-up pl-1">
-                        <p className="text-[11px] text-neutral-400 leading-normal">
-                          点击【确定】后，可在开发环境内编辑详细的<span className="text-[#fa541c] font-medium">『试题内容说明』</span>文档
-                        </p>
+                    <div className="w-full space-y-4">
+                      <div className="flex flex-wrap gap-6 items-center p-3.5 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
+                        {[
+                          { value: '线下做题，上传结果文件', label: '线下做题，上传结果文件' },
+                          { value: '线上环境答题', label: '线上环境答题' }
+                        ].map((item) => (
+                          <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                            <input
+                              type="radio"
+                              name="shixunAnswerType"
+                              value={item.value}
+                              checked={shixunAnswerType === item.value}
+                              onChange={() => setShixunAnswerType(item.value)}
+                              className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                            />
+                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
+                          </label>
+                        ))}
+                      </div>
 
-                        {/* 环境配置 Card */}
-                        <div className="p-4 bg-neutral-50/50 border border-neutral-200/60 rounded-xl space-y-4">
-                          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                            <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
-                              <Sparkles className="w-3.5 h-3.5 text-[#fa541c]" /> 环境配置参数
-                            </span>
-                            
-                            {/* Segmented Control */}
-                            <div className="flex bg-neutral-200/60 p-0.5 rounded-lg text-[11px] font-semibold">
-                              <button
-                                type="button"
-                                onClick={() => setShixunEnvType('container')}
-                                className={cn(
-                                  "px-3 py-1 rounded-md transition-all cursor-pointer border-0 bg-transparent text-xs",
-                                  shixunEnvType === 'container'
-                                    ? "bg-[#fa541c] text-white shadow-sm font-bold"
-                                    : "text-neutral-500 hover:text-neutral-800"
-                                )}
-                              >
-                                容器环境
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setShixunEnvType('vm')}
-                                className={cn(
-                                  "px-3 py-1 rounded-md transition-all cursor-pointer border-0 bg-transparent text-xs",
-                                  shixunEnvType === 'vm'
-                                    ? "bg-[#fa541c] text-white shadow-sm font-bold"
-                                    : "text-neutral-500 hover:text-neutral-800"
-                                )}
-                              >
-                                虚拟机环境
-                              </button>
+                  </div>
+                  </div>
+
+                  {shixunAnswerType === '线上环境答题' && (
+                    <>
+                      {/* 2. 选择环境类型 */}
+                      <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                        <label className="text-[13px] font-bold text-[#262626] text-right">
+                          选择环境类型 <span className="text-[#fa541c]">*</span>
+                        </label>
+                        <div className="flex items-center gap-6 text-[13px]">
+                          {[
+                            { value: '容器', label: '容器' },
+                            { value: '云主机', label: '云主机' }
+                          ].map(opt => (
+                            <label key={opt.value} className="flex items-center gap-2 select-none cursor-pointer text-xs text-neutral-700">
+                              <input
+                                type="radio"
+                                name="shixunEnvType"
+                                value={opt.value}
+                                checked={shixunEnvType === opt.value}
+                                onChange={() => setShixunEnvType(opt.value as any)}
+                                className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                              />
+                              <span className="font-semibold">{opt.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 容器独有的配置: 源仓库地址 + 创建方式 */}
+                      {shixunEnvType === '容器' && (
+                        <>
+                          {/* 3. 源仓库地址 */}
+                          <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                            <label className="text-[13px] font-bold text-[#262626] text-right">
+                              源仓库地址 <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <div className="flex items-center gap-6 text-[13px]">
+                              {[
+                                { value: 'manual', label: '手动添加' },
+                                { value: 'upload', label: '本地文件上传' }
+                              ].map(opt => (
+                                <label key={opt.value} className="flex items-center gap-2 select-none cursor-pointer text-xs text-neutral-700">
+                                  <input
+                                    type="radio"
+                                    name="shixunRepoMode"
+                                    value={opt.value}
+                                    checked={shixunRepoMode === opt.value}
+                                    onChange={() => {
+                                      setShixunRepoMode(opt.value as any);
+                                      setShixunRepoUrl(opt.value === 'manual' ? 'https://github.com/opencv/opencv.git' : '');
+                                    }}
+                                    className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                                  />
+                                  <span className="font-semibold">{opt.label}</span>
+                                </label>
+                              ))}
                             </div>
                           </div>
 
-                          {/* 容器参数 */}
-                          {shixunEnvType === 'container' && (
-                            <div className="space-y-4 animate-fade-in text-left">
-                              {/* 项目源码 */}
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                  <span className="text-[#fa541c]">*</span> 项目源码：
-                                </label>
-                                <div 
-                                  onClick={() => {
-                                    setShixunProjectSource('project_template_' + Date.now().toString().slice(-4) + '.zip');
-                                  }}
-                                  className={cn(
-                                    "border border-dashed rounded-lg p-3.5 flex flex-col items-center justify-center bg-white transition-all cursor-pointer text-center",
-                                    shixunProjectSource
-                                      ? "border-[#fa541c] bg-[#fff2e8]/10"
-                                      : "border-neutral-200 hover:border-[#fa541c] hover:bg-neutral-50"
-                                  )}
-                                >
-                                  {shixunProjectSource ? (
-                                    <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800">
-                                      <span>📄</span>
-                                      <span>{shixunProjectSource}</span>
-                                      <button 
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setShixunProjectSource('');
-                                        }}
-                                        className="text-[10px] text-red-500 hover:underline ml-2 cursor-pointer border-0 bg-transparent font-bold"
-                                      >
-                                        删除
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <div className="text-[11px] text-neutral-500">
-                                      点击上传项目源码压缩文件（支持 .zip, .tar.gz）
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* 资源配置 */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">CPU 核数：</label>
-                                  <div className="relative">
-                                    <input
-                                      type="number"
-                                      value={shixunCpuCores}
-                                      onChange={(e) => setShixunCpuCores(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                      min="1"
-                                    />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">核</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">内存 (GB)：</label>
-                                  <div className="relative">
-                                    <input
-                                      type="number"
-                                      value={shixunMemoryGb}
-                                      onChange={(e) => setShixunMemoryGb(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                      min="1"
-                                    />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">GB</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* GPU */}
-                              <div className="bg-neutral-100/40 p-3 rounded-lg border border-neutral-200/50 space-y-2.5">
-                                <div className="text-[11px] font-bold text-neutral-700">GPU 资源配置：</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">算力比例：</label>
-                                    <select
-                                      value={shixunGpuPower}
-                                      onChange={(e) => setShixunGpuPower(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                    >
-                                      <option value="无GPU">无 GPU</option>
-                                      <option value="10%">10% 算力</option>
-                                      <option value="25%">25% 算力</option>
-                                      <option value="50%">50% 算力</option>
-                                      <option value="100%">100% 独占</option>
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">显存：</label>
-                                    <select
-                                      value={shixunGpuMem}
-                                      onChange={(e) => setShixunGpuMem(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                    >
-                                      <option value="0GB">无显存</option>
-                                      <option value="2GB">2 GB</option>
-                                      <option value="4GB">4 GB</option>
-                                      <option value="8GB">8 GB</option>
-                                      <option value="16GB">16 GB</option>
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">卡数：</label>
-                                    <input
-                                      type="number"
-                                      value={shixunGpuCards}
-                                      onChange={(e) => setShixunGpuCards(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none"
-                                      min="0"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* 选择镜像 */}
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-neutral-600 block">选择镜像：</label>
-                                <div className="relative">
-                                  <select
-                                    value={shixunContainerImage}
-                                    onChange={(e) => setShixunContainerImage(e.target.value)}
-                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
-                                  >
-                                    <option value="Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1">Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1 (深度学习推荐)</option>
-                                    <option value="Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0">Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0</option>
-                                    <option value="Python 3.10 Development Environment">Python 3.10 Development Environment (通用编程)</option>
-                                    <option value="Node.js 18 + Frontend SDK">Node.js 18 + Frontend SDK</option>
-                                  </select>
-                                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                                </div>
-                              </div>
-
-                              {/* 环境变量配置 */}
-                              <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-neutral-600 block">环境变量配置：</label>
-                                <div className="space-y-2">
-                                  {shixunEnvVars.map((ev, idx) => (
-                                    <div key={ev.id} className="flex gap-2 items-center">
-                                      <input
-                                        type="text"
-                                        placeholder="Key (如: PATH)"
-                                        value={ev.key}
-                                        onChange={(e) => {
-                                          const newVars = [...shixunEnvVars];
-                                          newVars[idx].key = e.target.value;
-                                          setShixunEnvVars(newVars);
-                                        }}
-                                        className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
-                                      />
-                                      <span className="text-neutral-400 text-xs font-bold">=</span>
-                                      <input
-                                        type="text"
-                                        placeholder="Value"
-                                        value={ev.value}
-                                        onChange={(e) => {
-                                          const newVars = [...shixunEnvVars];
-                                          newVars[idx].value = e.target.value;
-                                          setShixunEnvVars(newVars);
-                                        }}
-                                        className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setShixunEnvVars(shixunEnvVars.filter(v => v.id !== ev.id));
-                                        }}
-                                        className="text-neutral-400 hover:text-red-500 font-bold p-1 cursor-pointer border-0 bg-transparent"
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  ))}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setShixunEnvVars([...shixunEnvVars, { id: Date.now(), key: '', value: '' }]);
-                                    }}
-                                    className="text-[10px] text-[#fa541c] border border-dashed border-[#fa541c] rounded px-3 py-1 hover:bg-[#fff2e8] transition-colors cursor-pointer bg-white"
-                                  >
-                                    + 添加环境变量
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* 容器启动命令 */}
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-neutral-600 block">容器启动命令：</label>
+                          {/* Mode-specific Controls (对齐右侧) */}
+                          <div className="grid grid-cols-[100px_1fr] gap-4 animate-fade-in">
+                            <div />
+                            <div className="w-full">
+                              {shixunRepoMode === 'manual' ? (
                                 <input
                                   type="text"
-                                  value={shixunStartCmd}
-                                  onChange={(e) => setShixunStartCmd(e.target.value)}
-                                  placeholder="如: python main.py"
-                                  className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                  placeholder="请输入源仓库地址 (如: git@github.com:... 或 https://...)"
+                                  value={shixunRepoUrl}
+                                  onChange={(e) => setShixunRepoUrl(e.target.value)}
+                                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] transition-all text-[#262626] font-mono bg-white"
                                 />
-                              </div>
-
-                              {/* 多实例配置 */}
-                              <label className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 py-1">
-                                <input
-                                  type="checkbox"
-                                  checked={shixunMultiInstance}
-                                  onChange={(e) => setShixunMultiInstance(e.target.checked)}
-                                  className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer bg-white"
-                                />
-                                <span className="font-bold text-neutral-700">支持多实例配置</span>
-                              </label>
-                            </div>
-                          )}
-
-                          {/* 虚拟机参数 */}
-                          {shixunEnvType === 'vm' && (
-                            <div className="space-y-4 animate-fade-in text-left">
-                              {/* 资源配置与规格 */}
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">资源配置与规格：</label>
-                                  <span className="text-[10px] text-neutral-400 font-bold">快捷选择规格或手动设定</span>
-                                </div>
-                                <div className="relative">
-                                  <select
-                                    value={shixunVmSpec}
+                              ) : (
+                                <div className="space-y-2.5 w-full">
+                                  <input
+                                    type="file"
+                                    id="shixun-repo-file-upload"
+                                    accept=".zip,.tar.gz,.tgz,.rar"
+                                    className="hidden"
                                     onChange={(e) => {
-                                      const val = e.target.value;
-                                      setShixunVmSpec(val);
-                                      if (val === '2核/4GB/无GPU') {
-                                        setShixunVmCpu('2');
-                                        setShixunVmMem('4');
-                                        setShixunVmGpuPower('无GPU');
-                                        setShixunVmGpuMem('0GB');
-                                        setShixunVmGpuCards('0');
-                                      } else if (val === '4核/8GB/无GPU') {
-                                        setShixunVmCpu('4');
-                                        setShixunVmMem('8');
-                                        setShixunVmGpuPower('无GPU');
-                                        setShixunVmGpuMem('0GB');
-                                        setShixunVmGpuCards('0');
-                                      } else if (val === '8核/16GB/T4-1卡') {
-                                        setShixunVmCpu('8');
-                                        setShixunVmMem('16');
-                                        setShixunVmGpuPower('100%');
-                                        setShixunVmGpuMem('16GB');
-                                        setShixunVmGpuCards('1');
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        setShixunRepoUrl(file.name);
                                       }
                                     }}
-                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                  />
+                                  <label
+                                    htmlFor="shixun-repo-file-upload"
+                                    className="flex flex-col items-center justify-center border border-dashed border-neutral-300 hover:border-[#fa541c]/50 bg-neutral-50/10 hover:bg-neutral-50/30 rounded-[8px] p-6 cursor-pointer transition-all gap-2 text-center"
                                   >
-                                    <option value="自定义">自定义资源配置</option>
-                                    <option value="2核/4GB/无GPU">2核 / 4GB / 无GPU (常规实例)</option>
-                                    <option value="4核/8GB/无GPU">4核 / 8GB / 无GPU (通用计算型)</option>
-                                    <option value="8核/16GB/T4-1卡">8核 / 16GB / T4-1卡 GPU独占实例 (深度学习推荐)</option>
-                                  </select>
-                                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <Upload className="w-5 h-5 text-[#fa541c]" strokeWidth={1.5} />
+                                    <span className="text-xs text-[#262626] font-bold">点击选择或拖拽源码文件上传</span>
+                                    <span className="text-[10px] text-neutral-400 font-medium">单文件上限 100MB</span>
+                                  </label>
+
+                                  {shixunRepoUrl && (
+                                    <div className="flex items-center justify-between text-[11px] text-green-700 bg-green-50 border border-green-200 px-3.5 py-2 rounded-[4px] font-bold animate-in fade-in duration-200">
+                                      <span className="truncate flex items-center gap-1.5">
+                                        <span>✓ 已就绪:</span>
+                                        <span className="font-mono">{shixunRepoUrl}</span>
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setShixunRepoUrl('')}
+                                        className="text-neutral-400 hover:text-red-500 ml-2 cursor-pointer bg-transparent border-0 font-bold"
+                                      >
+                                        清除
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
-                                
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5">
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 4. 创建方式 */}
+                          <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                            <label className="text-[13px] font-bold text-[#262626] text-right">
+                              创建方式
+                            </label>
+                            <div className="flex items-center gap-6 text-[13px]">
+                              {[
+                                { value: 'template', label: '模板创建' },
+                                { value: 'custom', label: '自定义' }
+                              ].map(opt => (
+                                <label key={opt.value} className="flex items-center gap-2 select-none cursor-pointer text-xs text-neutral-700">
+                                  <input
+                                    type="radio"
+                                    name="shixunCreationMethod"
+                                    value={opt.value}
+                                    checked={shixunCreationMethod === opt.value}
+                                    onChange={() => setShixunCreationMethod(opt.value as any)}
+                                    className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                                  />
+                                  <span className="font-semibold">{opt.label}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          {shixunCreationMethod === 'template' && (
+                            <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                              <div />
+                              <div ref={templateDropdownRef} className="relative w-full text-xs">
+                                <div
+                                  onClick={() => setIsTemplateDropdownOpen(!isTemplateDropdownOpen)}
+                                  className={cn(
+                                    "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                                    isTemplateDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                                  )}
+                                >
+                                  <span className="text-neutral-700 font-medium">
+                                    {shixunTemplateValue}
+                                  </span>
+                                  <ChevronDown 
+                                    className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isTemplateDropdownOpen && "rotate-180")} 
+                                  />
+                                </div>
+
+                                {/* Template Menu */}
+                                {isTemplateDropdownOpen && (
+                                  <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                      {[
+                                        { value: '通用模板', label: '通用模板' },
+                                        { value: 'AI模型开发模板', label: 'AI模型开发模板' },
+                                        { value: '数据挖掘算法模板', label: '数据挖掘算法模板' },
+                                        { value: 'Java微服务模板', label: 'Java微服务模板' }
+                                      ].map(tmpl => {
+                                        const isSelected = shixunTemplateValue === tmpl.value;
+                                        return (
+                                          <div
+                                            key={tmpl.value}
+                                            onClick={() => {
+                                              setShixunTemplateValue(tmpl.value);
+                                              setIsTemplateDropdownOpen(false);
+                                            }}
+                                            className={cn(
+                                              "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                              isSelected 
+                                                ? "bg-orange-50 text-[#fa541c] font-bold"
+                                                : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                                            )}
+                                          >
+                                            <span>{tmpl.label}</span>
+                                            {isSelected && (
+                                              <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* 自定义/云主机的详细参数配置 (自定义 Details) */}
+                      {(shixunEnvType === '云主机' || shixunCreationMethod === 'custom') && (
+                        <div className="grid grid-cols-[100px_1fr] items-start gap-4 animate-fade-in">
+                          <div />
+                          <div className="w-full border border-neutral-200 rounded-[8px] p-5 bg-white space-y-6 shadow-sm">
+                            
+                            {/* Header (容器环境 or 云主机环境) */}
+                            <div className="text-xs font-bold text-neutral-800 border-b border-neutral-100 pb-3 flex items-center gap-1.5 justify-between">
+                              <span className="flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-[#fa541c]" /> 
+                                {shixunEnvType === '容器' ? '自定义容器环境配置' : '云主机环境配置'}
+                              </span>
+                            </div>
+
+                            {/* 容器自定义配置 */}
+                            {shixunEnvType === '容器' ? (
+                              <div className="space-y-4 animate-fade-in text-left">
+                                {/* 项目源码 */}
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+                                    <span className="text-[#fa541c]">*</span> 项目源码：
+                                  </label>
+                                  <div 
+                                    onClick={() => {
+                                      setShixunProjectSource('project_template_' + Date.now().toString().slice(-4) + '.zip');
+                                    }}
+                                    className={cn(
+                                      "border border-dashed rounded-lg p-3.5 flex flex-col items-center justify-center bg-white transition-all cursor-pointer text-center",
+                                      shixunProjectSource
+                                        ? "border-[#fa541c] bg-[#fff2e8]/10"
+                                        : "border-neutral-200 hover:border-[#fa541c] hover:bg-neutral-50"
+                                    )}
+                                  >
+                                    {shixunProjectSource ? (
+                                      <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800">
+                                        <span>📄</span>
+                                        <span>{shixunProjectSource}</span>
+                                        <button 
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShixunProjectSource('');
+                                          }}
+                                          className="text-[10px] text-red-500 hover:underline ml-2 cursor-pointer border-0 bg-transparent font-bold"
+                                        >
+                                          删除
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="text-[11px] text-neutral-500">
+                                        点击上传项目源码压缩文件（支持 .zip, .tar.gz）
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* 资源配置 */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">CPU 核数：</label>
+                                    <label className="text-[11px] font-bold text-neutral-600 block">CPU 核数：</label>
                                     <div className="relative">
                                       <input
                                         type="number"
-                                        value={shixunVmCpu}
-                                        onChange={(e) => {
-                                          setShixunVmCpu(e.target.value);
-                                          setShixunVmSpec('自定义');
-                                        }}
+                                        value={shixunCpuCores}
+                                        onChange={(e) => setShixunCpuCores(e.target.value)}
                                         className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
                                         min="1"
                                       />
@@ -1828,15 +2384,12 @@ export default function TeacherQuestions() {
                                     </div>
                                   </div>
                                   <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">内存 (GB)：</label>
+                                    <label className="text-[11px] font-bold text-neutral-600 block">内存 (GB)：</label>
                                     <div className="relative">
                                       <input
                                         type="number"
-                                        value={shixunVmMem}
-                                        onChange={(e) => {
-                                          setShixunVmMem(e.target.value);
-                                          setShixunVmSpec('自定义');
-                                        }}
+                                        value={shixunMemoryGb}
+                                        onChange={(e) => setShixunMemoryGb(e.target.value)}
                                         className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
                                         min="1"
                                       />
@@ -1845,528 +2398,605 @@ export default function TeacherQuestions() {
                                   </div>
                                 </div>
 
-                                {/* VM GPU */}
-                                <div className="bg-neutral-100/40 p-2.5 rounded-lg border border-neutral-200/50 grid grid-cols-3 gap-2 mt-1">
-                                  <div className="space-y-1">
-                                    <label className="text-[9px] font-semibold text-neutral-500 block">GPU算力：</label>
-                                    <select
-                                      value={shixunVmGpuPower}
-                                      onChange={(e) => {
-                                        setShixunVmGpuPower(e.target.value);
-                                        setShixunVmSpec('自定义');
-                                      }}
-                                      className="w-full border border-neutral-200 rounded-lg px-2 py-0.5 text-[10px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                    >
-                                      <option value="无GPU">无 GPU</option>
-                                      <option value="25%">25% 算力</option>
-                                      <option value="50%">50% 算力</option>
-                                      <option value="100%">100% 独占</option>
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[9px] font-semibold text-neutral-500 block">GPU显存：</label>
-                                    <select
-                                      value={shixunVmGpuMem}
-                                      onChange={(e) => {
-                                        setShixunVmGpuMem(e.target.value);
-                                        setShixunVmSpec('自定义');
-                                      }}
-                                      className="w-full border border-neutral-200 rounded-lg px-2 py-0.5 text-[10px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                    >
-                                      <option value="0GB">无显存</option>
-                                      <option value="8GB">8 GB</option>
-                                      <option value="16GB">16 GB</option>
-                                      <option value="24GB">24 GB</option>
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[9px] font-semibold text-neutral-500 block">GPU卡数：</label>
-                                    <input
-                                      type="number"
-                                      value={shixunVmGpuCards}
-                                      onChange={(e) => {
-                                        setShixunVmGpuCards(e.target.value);
-                                        setShixunVmSpec('自定义');
-                                      }}
-                                      className="w-full border border-neutral-200 rounded-lg px-2 py-0.5 text-[10px] bg-white text-neutral-700 focus:outline-none"
-                                      min="0"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* 选择虚拟机镜像 */}
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-neutral-600 block">选择虚拟机镜像：</label>
-                                <div className="relative">
-                                  <select
-                                    value={shixunVmImage}
-                                    onChange={(e) => setShixunVmImage(e.target.value)}
-                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
-                                  >
-                                    <option value="Ubuntu Server 22.04 LTS">Ubuntu Server 22.04 LTS (深度学习常用)</option>
-                                    <option value="CentOS Stream 9 x86_64">CentOS Stream 9 x86_64</option>
-                                    <option value="Windows Server 2022 Core">Windows Server 2022 Core (支持图形界面)</option>
-                                  </select>
-                                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                                </div>
-                              </div>
-
-                              {/* 存储配置 */}
-                              <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-neutral-600 block">存储配置：</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">存储类型：</label>
-                                    <select
-                                      value={shixunVmStorageType}
-                                      onChange={(e) => setShixunVmStorageType(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-2.5 py-1 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                    >
-                                      <option value="SSD云硬盘">SSD云硬盘 (高性能)</option>
-                                      <option value="高效云盘">高效云盘 (通用)</option>
-                                      <option value="SATA云磁盘">SATA云磁盘 (大容量低成本)</option>
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">系统盘 (GB)：</label>
-                                    <div className="relative">
-                                      <input
-                                        type="number"
-                                        value={shixunVmSystemDisk}
-                                        onChange={(e) => setShixunVmSystemDisk(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-xs bg-white text-neutral-700 focus:outline-none"
-                                        min="20"
-                                      />
-                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400 font-bold">GB</span>
+                                {/* GPU */}
+                                <div className="bg-neutral-100/40 p-3 rounded-lg border border-neutral-200/50 space-y-2.5">
+                                  <div className="text-[11px] font-bold text-neutral-700">GPU 资源配置：</div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div className="space-y-1">
+                                      <label className="text-[10px] font-semibold text-neutral-500 block">算力比例：</label>
+                                      <select
+                                        value={shixunGpuPower}
+                                        onChange={(e) => setShixunGpuPower(e.target.value)}
+                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                      >
+                                        <option value="无GPU">无 GPU</option>
+                                        <option value="10%">10% 算力</option>
+                                        <option value="25%">25% 算力</option>
+                                        <option value="50%">50% 算力</option>
+                                        <option value="100%">100% 独占</option>
+                                      </select>
                                     </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-semibold text-neutral-500 block">数据盘 (GB)：</label>
-                                    <div className="relative">
+                                    <div className="space-y-1">
+                                      <label className="text-[10px] font-semibold text-neutral-500 block">显存：</label>
+                                      <select
+                                        value={shixunGpuMem}
+                                        onChange={(e) => setShixunGpuMem(e.target.value)}
+                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                      >
+                                        <option value="0GB">无显存</option>
+                                        <option value="2GB">2 GB</option>
+                                        <option value="4GB">4 GB</option>
+                                        <option value="8GB">8 GB</option>
+                                        <option value="16GB">16 GB</option>
+                                      </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[10px] font-semibold text-neutral-500 block">卡数：</label>
                                       <input
                                         type="number"
-                                        value={shixunVmDataDisk}
-                                        onChange={(e) => setShixunVmDataDisk(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-xs bg-white text-neutral-700 focus:outline-none"
+                                        value={shixunGpuCards}
+                                        onChange={(e) => setShixunGpuCards(e.target.value)}
+                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none"
                                         min="0"
                                       />
-                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400 font-bold">GB</span>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
 
-                              {/* 网络配置 */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* 选择镜像 */}
                                 <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">VPC 网络：</label>
+                                  <label className="text-[11px] font-bold text-neutral-600 block">选择镜像：</label>
                                   <div className="relative">
                                     <select
-                                      value={shixunVmVpc}
-                                      onChange={(e) => setShixunVmVpc(e.target.value)}
+                                      value={shixunContainerImage}
+                                      onChange={(e) => setShixunContainerImage(e.target.value)}
                                       className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
                                     >
-                                      <option value="vpc-default (192.168.0.0/16)">vpc-default (192.168.0.0/16)</option>
-                                      <option value="vpc-training (172.16.0.0/12)">vpc-training (172.16.0.0/12)</option>
+                                      <option value="Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1">Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1 (深度学习推荐)</option>
+                                      <option value="Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0">Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0</option>
+                                      <option value="Python 3.10 Development Environment">Python 3.10 Development Environment (通用编程)</option>
+                                      <option value="Node.js 18 + Frontend SDK">Node.js 18 + Frontend SDK</option>
                                     </select>
                                     <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                   </div>
                                 </div>
-                                <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">子网：</label>
-                                  <div className="relative">
-                                    <select
-                                      value={shixunVmSubnet}
-                                      onChange={(e) => setShixunVmSubnet(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+
+                                {/* 环境变量配置 */}
+                                <div className="space-y-2">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">环境变量配置：</label>
+                                  <div className="space-y-2">
+                                    {shixunEnvVars.map((ev, idx) => (
+                                      <div key={ev.id} className="flex gap-2 items-center">
+                                        <input
+                                          type="text"
+                                          placeholder="Key (如: PATH)"
+                                          value={ev.key}
+                                          onChange={(e) => {
+                                            const newVars = [...shixunEnvVars];
+                                            newVars[idx].key = e.target.value;
+                                            setShixunEnvVars(newVars);
+                                          }}
+                                          className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
+                                        />
+                                        <span className="text-neutral-400 text-xs font-bold">=</span>
+                                        <input
+                                          type="text"
+                                          placeholder="Value"
+                                          value={ev.value}
+                                          onChange={(e) => {
+                                            const newVars = [...shixunEnvVars];
+                                            newVars[idx].value = e.target.value;
+                                            setShixunEnvVars(newVars);
+                                          }}
+                                          className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setShixunEnvVars(shixunEnvVars.filter(v => v.id !== ev.id));
+                                          }}
+                                          className="text-neutral-400 hover:text-red-500 font-bold p-1 cursor-pointer border-0 bg-transparent"
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setShixunEnvVars([...shixunEnvVars, { id: Date.now(), key: '', value: '' }]);
+                                      }}
+                                      className="text-[10px] text-[#fa541c] border border-dashed border-[#fa541c] rounded px-3 py-1 hover:bg-[#fff2e8] transition-colors cursor-pointer bg-white"
                                     >
-                                      <option value="subnet-default-a (192.168.1.0/24)">subnet-default-a (192.168.1.0/24)</option>
-                                      <option value="subnet-default-b (192.168.2.0/24)">subnet-default-b (192.168.2.0/24)</option>
-                                    </select>
-                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                      + 添加环境变量
+                                    </button>
                                   </div>
                                 </div>
-                              </div>
 
-                              {/* VNC 远程桌面类型 */}
-                              <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-neutral-600 block">VNC 远程桌面类型：</label>
-                                <div className="flex gap-6 items-center">
-                                  {[
-                                    { value: 'caddyVnc', label: 'caddyVnc' },
-                                    { value: 'noVnc', label: 'noVnc' }
-                                  ].map((item) => (
-                                    <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                                      <input
-                                        type="radio"
-                                        name="shixunVmVncType"
-                                        value={item.value}
-                                        checked={shixunVmVncType === item.value}
-                                        onChange={() => setShixunVmVncType(item.value as 'caddyVnc' | 'noVnc')}
-                                        className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
-                                      />
-                                      <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
-                                    </label>
-                                  ))}
+                                {/* 容器启动命令 */}
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-neutral-600 block">容器启动命令：</label>
+                                  <input
+                                    type="text"
+                                    value={shixunStartCmd}
+                                    onChange={(e) => setShixunStartCmd(e.target.value)}
+                                    placeholder="如: python main.py"
+                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                  />
                                 </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
 
-                  {/* 数据集选择 */}
-                  <div className="space-y-3 pt-1">
-                    <div className="flex items-center gap-2">
-                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                        <span className="text-[#fa541c]">*</span> 数据集选择：
-                      </label>
-                      <span className="text-[12px] text-neutral-400 font-normal">用于学生实训答题过程中训练或验证模型的数据集</span>
-                    </div>
-
-                    <div className="relative pl-1">
-                      <button
-                        type="button"
-                        onClick={() => setIsDatasetDropdownOpen(!isDatasetDropdownOpen)}
-                        className="h-9 border border-dashed border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] rounded-lg text-xs flex items-center justify-center px-4 transition-all font-medium cursor-pointer bg-white"
-                      >
-                        添加数据集
-                      </button>
-
-                      {isDatasetDropdownOpen && (
-                        <div className="absolute z-10 w-[320px] mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 max-h-48 overflow-y-auto custom-scrollbar animate-fade-in left-1">
-                          {AVAILABLE_DATASETS.map((ds) => {
-                            const isSelected = shixunDatasets.includes(ds.name);
-                            return (
-                              <label
-                                key={ds.name}
-                                className="flex items-center justify-between px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-xs text-neutral-700 select-none"
-                              >
-                                <div className="flex items-center gap-2.5">
+                                {/* 多实例配置 */}
+                                <label className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 py-1 font-bold font-semibold">
                                   <input
                                     type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => {
-                                      if (isSelected) {
-                                        setShixunDatasets(shixunDatasets.filter(name => name !== ds.name));
-                                      } else {
-                                        setShixunDatasets([...shixunDatasets, ds.name]);
-                                      }
-                                    }}
-                                    className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer"
+                                    checked={shixunMultiInstance}
+                                    onChange={(e) => setShixunMultiInstance(e.target.checked)}
+                                    className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer bg-white"
                                   />
-                                  <span className="font-medium">{ds.name}</span>
+                                  <span>支持多实例配置</span>
+                                </label>
+                              </div>
+                            ) : (
+                              /* 云主机自定义配置 */
+                              <div className="space-y-6 animate-fade-in text-left">
+                                
+                                {/* 选择镜像 */}
+                                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                                    选择镜像 <span className="text-[#fa541c]">*</span>
+                                  </label>
+                                  <CustomSelect
+                                    value={shixunVmImage}
+                                    onChange={(val) => setShixunVmImage(val)}
+                                    options={[
+                                      { value: 'Ubuntu Server 22.04 LTS', label: 'Ubuntu Server 22.04 LTS (深度学习常用)' },
+                                      { value: 'CentOS Stream 9 x86_64', label: 'CentOS Stream 9 x86_64' },
+                                      { value: 'Windows Server 2022 Core', label: 'Windows Server 2022 Core (支持图形界面)' }
+                                    ]}
+                                    className="font-mono"
+                                  />
                                 </div>
-                                <span className="text-[10px] text-neutral-400">{ds.size}</span>
-                              </label>
+
+                                {/* 算力配置 Container */}
+                                <div className="space-y-4">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[13px] font-bold text-[#262626]">
+                                      算力配置 <span className="text-[#fa541c]">*</span>
+                                    </span>
+                                    
+                                    <div className="flex bg-neutral-100 rounded p-0.5 border border-neutral-200 max-w-max">
+                                      {[
+                                        { key: 'spec', label: '规格选择' },
+                                        { key: 'custom', label: '自定义资源' }
+                                      ].map(opt => (
+                                        <button
+                                          key={opt.key}
+                                          type="button"
+                                          onClick={() => setShixunVmSpecType(opt.key as 'spec' | 'custom')}
+                                          className={cn(
+                                            "px-3 py-1 text-center text-[11px] rounded-[4px] transition-all cursor-pointer font-bold border-0",
+                                            shixunVmSpecType === opt.key 
+                                              ? "bg-white text-[#fa541c] shadow-sm"
+                                              : "text-neutral-500 hover:text-neutral-800"
+                                          )}
+                                        >
+                                          {opt.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {shixunVmSpecType === 'spec' ? (
+                                    /* VM SPEC TYPE */
+                                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                                      <label className="text-[13px] text-neutral-550 text-right">选择规格</label>
+                                      <CustomSelect
+                                        value={shixunVmSpec}
+                                        onChange={(val) => {
+                                          setShixunVmSpec(val);
+                                          if (val === 'ecs.g6.large') {
+                                            setShixunVmCpu('2');
+                                            setShixunVmMem('8');
+                                            setShixunVmGpuModel('无');
+                                            setShixunVmGpuCards('0');
+                                          } else if (val === 'ecs.g6.xlarge') {
+                                            setShixunVmCpu('4');
+                                            setShixunVmMem('16');
+                                            setShixunVmGpuModel('无');
+                                            setShixunVmGpuCards('0');
+                                          } else if (val === 'ecs.gn6i-c4g1.xlarge') {
+                                            setShixunVmCpu('4');
+                                            setShixunVmMem('16');
+                                            setShixunVmGpuModel('T4');
+                                            setShixunVmGpuCards('1');
+                                          } else if (val === 'ecs.gn7i-c8g1.2xlarge') {
+                                            setShixunVmCpu('8');
+                                            setShixunVmMem('32');
+                                            setShixunVmGpuModel('A10G');
+                                            setShixunVmGpuCards('1');
+                                          }
+                                        }}
+                                        options={SHIXUN_VM_SPECS}
+                                      />
+                                    </div>
+                                  ) : (
+                                    /* CUSTOM CPU/MEM/GPU CONFIG */
+                                    <div className="space-y-4">
+                                      {/* CPU and Memory Row */}
+                                      <div className="grid grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                          <span className="text-[13px] text-neutral-550 text-right pr-3">CPU</span>
+                                          <input
+                                            type="text"
+                                            placeholder="请输入"
+                                            value={shixunVmCpu}
+                                            onChange={(e) => setShixunVmCpu(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] bg-white"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">核</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                          <span className="text-[13px] text-neutral-550 text-right pr-3">内存</span>
+                                          <input
+                                            type="text"
+                                            placeholder="请输入"
+                                            value={shixunVmMem}
+                                            onChange={(e) => setShixunVmMem(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] bg-white"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">GB</span>
+                                        </div>
+                                      </div>
+
+                                      {/* GPU Model and count row */}
+                                      <div className="grid grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                          <span className="text-[13px] text-neutral-550 text-right pr-3">GPU型号</span>
+                                          <CustomSelect
+                                            value={shixunVmGpuModel}
+                                            onChange={(val) => setShixunVmGpuModel(val)}
+                                            options={[
+                                              { value: '4090', label: '4090' },
+                                              { value: 'A100', label: 'A100' },
+                                              { value: 'T4', label: 'NVIDIA T4' },
+                                              { value: 'A10G', label: 'NVIDIA A10G' },
+                                              { value: '无', label: '无 GPU' }
+                                            ]}
+                                          />
+                                          <div />
+                                        </div>
+
+                                        <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                          <span className="text-[13px] text-neutral-550 text-right pr-3">GPU</span>
+                                          <input
+                                            type="text"
+                                            placeholder="请输入"
+                                            value={shixunVmGpuCards}
+                                            disabled={shixunVmGpuModel === '无'}
+                                            onChange={(e) => setShixunVmGpuCards(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] disabled:bg-neutral-50 bg-white"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">张</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 存储配置 */}
+                                <div className="space-y-3">
+                                  <span className="text-[13px] font-bold text-[#262626] block border-b border-neutral-100 pb-1.5">
+                                    存储配置 <span className="text-[#fa541c]">*</span>
+                                  </span>
+                                  
+                                  <div className="space-y-3.5 pl-4">
+                                    {/* 系统盘 */}
+                                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                                      <span className="text-[13px] text-neutral-550 text-right">系统盘</span>
+                                      <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">存储类型</span>
+                                          <CustomSelect
+                                            value={shixunVmStorageType}
+                                            onChange={(val) => setShixunVmStorageType(val)}
+                                            options={[
+                                              { value: 'SSD', label: 'SSD' },
+                                              { value: 'HDD', label: 'HDD' },
+                                              { value: 'ESSD', label: 'ESSD' }
+                                            ]}
+                                          />
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">大小</span>
+                                          <input
+                                            type="text"
+                                            placeholder="输入大小"
+                                            value={shixunVmSystemDisk}
+                                            onChange={(e) => setShixunVmSystemDisk(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-[13px] text-[#262626] bg-white"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold shrink-0">GB</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* 数据盘 */}
+                                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                                      <span className="text-[13px] text-neutral-550 text-right">数据盘</span>
+                                      <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">存储类型</span>
+                                          <CustomSelect
+                                            value={shixunVmStorageDataType}
+                                            onChange={(val) => setShixunVmStorageDataType(val)}
+                                            options={[
+                                              { value: 'SSD', label: 'SSD' },
+                                              { value: 'HDD', label: 'HDD' },
+                                              { value: 'ESSD', label: 'ESSD' }
+                                            ]}
+                                          />
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-1">
+                                          <span className="text-xs text-neutral-400 shrink-0">大小</span>
+                                          <input
+                                            type="text"
+                                            placeholder="输入大小"
+                                            value={shixunVmDataDisk}
+                                            onChange={(e) => setShixunVmDataDisk(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-[13px] text-[#262626] bg-white"
+                                          />
+                                          <span className="text-[13px] text-[#262626] font-bold shrink-0">GB</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 网络配置 */}
+                                <div className="space-y-3">
+                                  <span className="text-[13px] font-bold text-[#262626] block border-b border-neutral-100 pb-1.5">
+                                    网络配置 <span className="text-[#fa541c]">*</span>
+                                  </span>
+
+                                  <div className="space-y-3.5 pl-4">
+                                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                                      <span className="text-[13px] text-neutral-550 text-right">子网</span>
+                                      
+                                      <div className="flex items-center gap-1.5 text-[13px]">
+                                        <input
+                                          type="text"
+                                          value="192"
+                                          disabled
+                                          className="w-12 text-center bg-neutral-50 border border-neutral-200 rounded py-1.5 text-[13px] text-neutral-500 cursor-not-allowed select-none focus:outline-none"
+                                        />
+                                        <span className="text-neutral-400 font-bold">.</span>
+                                        
+                                        <input
+                                          type="text"
+                                          value="168"
+                                          disabled
+                                          className="w-12 text-center bg-neutral-50 border border-neutral-200 rounded py-1.5 text-[13px] text-neutral-500 cursor-not-allowed select-none focus:outline-none"
+                                        />
+                                        <span className="text-neutral-400 font-bold">.</span>
+                                        
+                                        <select
+                                          value={(() => {
+                                            const { octet3 } = parseSubnet(shixunVmSubnet);
+                                            return octet3;
+                                          })()}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            const currentSubnet = shixunVmSubnet;
+                                            const { mask } = parseSubnet(currentSubnet);
+                                            setShixunVmSubnet(`192.168.${val}.0/${mask}`);
+                                          }}
+                                          className="px-2 py-1.5 border border-neutral-200 rounded text-[13px] text-[#262626] bg-white focus:outline-none focus:border-[#fa541c] disabled:bg-neutral-50 disabled:text-neutral-500 cursor-pointer min-w-[50px] text-center font-bold"
+                                        >
+                                          <option value="1">1</option>
+                                          <option value="2">2</option>
+                                          <option value="3">3</option>
+                                          <option value="4">4</option>
+                                          <option value="5">5</option>
+                                        </select>
+                                        <span className="text-neutral-400 font-bold">.</span>
+                                        
+                                        <input
+                                          type="text"
+                                          value="0"
+                                          disabled
+                                          className="w-12 text-center bg-neutral-50 border border-neutral-200 rounded py-1.5 text-[13px] text-neutral-500 cursor-not-allowed select-none focus:outline-none"
+                                        />
+                                        <span className="text-neutral-400 font-bold">/</span>
+                                        
+                                        <select
+                                          value={(() => {
+                                            const { mask } = parseSubnet(shixunVmSubnet);
+                                            return mask;
+                                          })()}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            const currentSubnet = shixunVmSubnet;
+                                            const { octet3 } = parseSubnet(currentSubnet);
+                                            setShixunVmSubnet(`192.168.${octet3}.0/${val}`);
+                                          }}
+                                          className="px-2 py-1.5 border border-neutral-200 rounded text-[13px] text-[#262626] bg-white focus:outline-none focus:border-[#fa541c] disabled:bg-neutral-50 disabled:text-neutral-500 cursor-pointer min-w-[58px] text-center font-bold"
+                                        >
+                                          <option value="16">16</option>
+                                          <option value="24">24</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* VNC类型 */}
+                                <div className="space-y-3">
+                                  <span className="text-[13px] font-bold text-[#262626] block border-b border-neutral-100 pb-1.5">
+                                    VNC类型 <span className="text-[#fa541c]">*</span>
+                                  </span>
+
+                                  <div className="flex items-center gap-6 text-[13px] pl-4">
+                                    {[
+                                      { value: 'caddyvnc', label: 'caddyvnc' },
+                                      { value: 'novnc', label: 'novnc' }
+                                    ].map(opt => (
+                                      <label key={opt.value} className="flex items-center gap-2 select-none cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="shixunVmVncTypeRadio"
+                                          value={opt.value}
+                                          checked={shixunVmVncType.toLowerCase() === opt.value.toLowerCase()}
+                                          onChange={() => setShixunVmVncType(opt.value as any)}
+                                          className="w-4 h-4 accent-[#fa541c] cursor-pointer"
+                                        />
+                                        <span className="font-medium text-[#262626]">{opt.label}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                              </div>
+                            )}
+
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {shixunAnswerType === '线下做题，上传结果文件' && (
+                    <div className="grid grid-cols-[100px_1fr] items-start gap-4 animate-fade-in">
+                      <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                        内容关联文件
+                      </label>
+                      <div className="w-full space-y-2.5">
+                        <input
+                          type="file"
+                          id="shixun-offline-file-upload"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setShixunOfflineFile(file.name);
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor="shixun-offline-file-upload"
+                          className="flex flex-col items-center justify-center border border-dashed border-neutral-300 hover:border-[#fa541c]/50 bg-neutral-50/10 hover:bg-neutral-50/30 rounded-[8px] p-6 cursor-pointer transition-all gap-2 text-center"
+                        >
+                          <Upload className="w-5 h-5 text-[#fa541c]" strokeWidth={1.5} />
+                          <span className="text-xs text-[#262626] font-bold">点击选择或拖拽文件上传</span>
+                          <span className="text-[10px] text-neutral-400 font-medium">单文件上限 100MB</span>
+                        </label>
+
+                        {shixunOfflineFile && (
+                          <div className="flex items-center justify-between text-[11px] text-green-700 bg-green-50 border border-green-200 px-3.5 py-2 rounded-[4px] font-bold animate-in fade-in duration-200">
+                            <span className="truncate flex items-center gap-1.5">
+                              <span>✓ 已关联:</span>
+                              <span className="font-mono">{shixunOfflineFile}</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShixunOfflineFile('')}
+                              className="text-neutral-400 hover:text-red-500 ml-2 cursor-pointer bg-transparent border-0 font-bold"
+                            >
+                              清除
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 数据集选择 */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-1">
+                      数据集选择
+                    </label>
+                    <div className="w-full space-y-3">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsDatasetDropdownOpen(!isDatasetDropdownOpen)}
+                          className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> 添加数据集
+                        </button>
+
+                        {isDatasetDropdownOpen && (
+                          <div className="absolute z-10 w-[320px] mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 max-h-48 overflow-y-auto custom-scrollbar animate-fade-in left-1">
+                            {AVAILABLE_DATASETS.map((ds) => {
+                              const isSelected = shixunDatasets.includes(ds.name);
+                              return (
+                                <label
+                                  key={ds.name}
+                                  className="flex items-center justify-between px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-xs text-neutral-700 select-none"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => {
+                                        if (isSelected) {
+                                          setShixunDatasets(shixunDatasets.filter(name => name !== ds.name));
+                                        } else {
+                                          setShixunDatasets([...shixunDatasets, ds.name]);
+                                        }
+                                      }}
+                                      className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer"
+                                    />
+                                    <span className="font-medium">{ds.name}</span>
+                                  </div>
+                                  <span className="text-[10px] text-neutral-400">{ds.size}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 已选数据集展示 */}
+                      {shixunDatasets.length > 0 && (
+                        <div className="space-y-2 pl-1 pt-1">
+                          {shixunDatasets.map((datasetName) => {
+                            const dsInfo = AVAILABLE_DATASETS.find(d => d.name === datasetName) || { name: datasetName, size: '未知大小' };
+                            return (
+                              <div key={datasetName} className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg animate-slide-up">
+                                <div className="flex items-center gap-2 text-xs text-neutral-700">
+                                  <Database className="w-4 h-4 text-[#fa541c]" />
+                                  <span className="font-medium">{dsInfo.name}</span>
+                                  <span className="text-neutral-400 text-[10px]">({dsInfo.size})</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setShixunDatasets(shixunDatasets.filter(name => name !== datasetName))}
+                                  className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
                             );
                           })}
                         </div>
                       )}
                     </div>
-
-                    {/* 已选数据集展示 */}
-                    {shixunDatasets.length > 0 && (
-                      <div className="space-y-2 pl-1 pt-1">
-                        {shixunDatasets.map((datasetName) => {
-                          const dsInfo = AVAILABLE_DATASETS.find(d => d.name === datasetName) || { name: datasetName, size: '未知大小' };
-                          return (
-                            <div key={datasetName} className="flex items-center justify-between p-2.5 bg-[#fff2e8]/20 border border-[#ffbb96]/45 rounded-lg animate-slide-up">
-                              <div className="flex items-center gap-2 text-xs text-neutral-700">
-                                <Database className="w-4 h-4 text-[#fa541c]" />
-                                <span className="font-medium">{dsInfo.name}</span>
-                                <span className="text-neutral-400 text-[10px]">({dsInfo.size})</span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setShixunDatasets(shixunDatasets.filter(name => name !== datasetName))}
-                                className="text-neutral-400 hover:text-red-500 transition-colors text-xs font-bold p-1 cursor-pointer"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
                   </div>
-
                 </div>
               )}
 
-              {/* Programming Question (编程题) Fields */}
-              {newQuestionType === '编程题' && (
-                <div className="space-y-5 animate-slide-up">
-                  
-                  {/* Grid fields: Language & Timeout */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 编程语言 */}
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                        <span className="text-[#fa541c]">*</span> 编程语言：
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={codingLanguage}
-                          onChange={(e) => setCodingLanguage(e.target.value)}
-                          className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer font-medium"
-                        >
-                          <option value="Python">Python</option>
-                          <option value="C++">C++</option>
-                          <option value="Java">Java</option>
-                          <option value="Go">Go</option>
-                          <option value="JavaScript">JavaScript</option>
-                        </select>
-                        <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                    </div>
 
-                    {/* 单个测试集最大测评时长 */}
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                        <span className="text-[#fa541c]">*</span> 单个测试集最大测评时长：
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          value={codingMaxTime}
-                          onChange={(e) => setCodingMaxTime(Number(e.target.value))}
-                          min={1}
-                          className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all"
-                        />
-                        <span className="text-xs text-neutral-600 shrink-0 font-medium">秒</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 输入描述 */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 输入描述：
-                    </label>
-                    <RichTextEditor
-                      label="输入描述："
-                      required
-                      value={codingInputDesc}
-                      onChange={setCodingInputDesc}
-                      placeholder="请输入输入描述..."
-                    />
-                  </div>
-
-                  {/* 输出描述 */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 输出描述：
-                    </label>
-                    <RichTextEditor
-                      label="输出描述："
-                      required
-                      value={codingOutputDesc}
-                      onChange={setCodingOutputDesc}
-                      placeholder="请输入输出描述..."
-                    />
-                  </div>
-
-                  {/* 输入输出样例 */}
-                  <div className="space-y-3">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 输入输出样例：
-                    </label>
-
-                    <div className="space-y-4 pl-1">
-                      {codingExamples.map((item, idx) => (
-                        <div key={item.id} className="border border-[#d9e8ff] rounded-xl overflow-hidden shadow-2xs">
-                          {/* Banner Header exactly like Image 1 */}
-                          <div className="bg-[#e6f4ff] border-b border-[#d9e8ff] px-4 py-2.5 flex items-center justify-between text-xs font-bold text-[#1677ff]">
-                            <div className="flex items-center gap-2">
-                              <span className="w-4.5 h-4.5 rounded-full bg-[#1677ff] text-white flex items-center justify-center text-[10px] font-black">✓</span>
-                              <span>样例 {idx + 1}</span>
-                            </div>
-                            {codingExamples.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => setCodingExamples(codingExamples.filter(x => x.id !== item.id))}
-                                className="text-neutral-400 hover:text-red-500 transition-colors text-[11px] font-bold cursor-pointer"
-                              >
-                                删除
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Inputs body */}
-                          <div className="p-4 space-y-3.5 bg-white">
-                            {/* Input Area */}
-                            <div className="space-y-1">
-                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                <span className="text-[#fa541c]">*</span> 输入：
-                              </span>
-                              <textarea
-                                value={item.input}
-                                onChange={(e) => {
-                                  setCodingExamples(codingExamples.map(x => x.id === item.id ? { ...x, input: e.target.value } : x));
-                                }}
-                                rows={3}
-                                placeholder="请输入样例的输入内容"
-                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
-                              />
-                            </div>
-
-                            {/* Output Area */}
-                            <div className="space-y-1">
-                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                <span className="text-[#fa541c]">*</span> 输出：
-                              </span>
-                              <textarea
-                                value={item.output}
-                                onChange={(e) => {
-                                  setCodingExamples(codingExamples.map(x => x.id === item.id ? { ...x, output: e.target.value } : x));
-                                }}
-                                rows={3}
-                                placeholder="请输入样例的输出内容"
-                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Add example button styled in theme color orange */}
-                      <button
-                        type="button"
-                        onClick={() => setCodingExamples([...codingExamples, { id: Date.now(), input: '', output: '' }])}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-lg hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> 新增样例
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 测试用例 */}
-                  <div className="space-y-3">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                      <span className="text-[#fa541c]">*</span> 测试用例：
-                    </label>
-
-                    <div className="space-y-4 pl-1">
-                      {codingTestCases.map((item, idx) => (
-                        <div key={item.id} className="border border-[#d9e8ff] rounded-xl overflow-hidden shadow-2xs">
-                          {/* Banner Header exactly like Image 1 */}
-                          <div className="bg-[#e6f4ff] border-b border-[#d9e8ff] px-4 py-2.5 flex items-center justify-between text-xs font-bold text-[#1677ff]">
-                            <div className="flex items-center gap-2">
-                              <span className="w-4.5 h-4.5 rounded-full bg-[#1677ff] text-white flex items-center justify-center text-[10px] font-black">✓</span>
-                              <span>测试用例 {idx + 1}</span>
-                            </div>
-                            {codingTestCases.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => setCodingTestCases(codingTestCases.filter(x => x.id !== item.id))}
-                                className="text-neutral-400 hover:text-red-500 transition-colors text-[11px] font-bold cursor-pointer"
-                              >
-                                删除
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Inputs body */}
-                          <div className="p-4 space-y-3.5 bg-white">
-                            {/* Input Area */}
-                            <div className="space-y-1">
-                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                <span className="text-[#fa541c]">*</span> 输入：
-                              </span>
-                              <textarea
-                                value={item.input}
-                                onChange={(e) => {
-                                  setCodingTestCases(codingTestCases.map(x => x.id === item.id ? { ...x, input: e.target.value } : x));
-                                }}
-                                rows={3}
-                                placeholder="请输入测试用例的输入内容"
-                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
-                              />
-                            </div>
-
-                            {/* Output Area */}
-                            <div className="space-y-1">
-                              <span className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                <span className="text-[#fa541c]">*</span> 输出：
-                              </span>
-                              <textarea
-                                value={item.output}
-                                onChange={(e) => {
-                                  setCodingTestCases(codingTestCases.map(x => x.id === item.id ? { ...x, output: e.target.value } : x));
-                                }}
-                                rows={3}
-                                placeholder="请输入测试用例的预期输出"
-                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
-                              />
-                            </div>
-
-                            {/* Explanation Area */}
-                            <div className="space-y-1">
-                              <span className="text-[11px] font-bold text-neutral-500 block">说明：</span>
-                              <textarea
-                                value={item.desc}
-                                onChange={(e) => {
-                                  setCodingTestCases(codingTestCases.map(x => x.id === item.id ? { ...x, desc: e.target.value } : x));
-                                }}
-                                rows={3}
-                                placeholder="请输入测试用例的相关说明"
-                                className="w-full border border-neutral-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] resize-none text-neutral-700 bg-white leading-relaxed"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Add case button styled in theme color orange */}
-                      <button
-                        type="button"
-                        onClick={() => setCodingTestCases([...codingTestCases, { id: Date.now(), input: '', output: '', desc: '' }])}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-lg hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> 新增用例
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 学生初始代码 Console exactly like Image 2 */}
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
-                      学生初始代码：
-                      <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
-                    </label>
-                    <div className="border border-neutral-200 rounded-lg overflow-hidden bg-neutral-950 text-white font-mono p-3 shadow-sm transition-all focus-within:border-[#fa541c]/50 flex">
-                      {/* Line numbers column */}
-                      <div className="text-neutral-600 text-right pr-3.5 select-none border-r border-neutral-800 mr-3 text-xs leading-relaxed py-1 w-8 font-mono">
-                        {codingInitCode.split('\n').map((_, index) => (
-                          <div key={index}>{index + 1}</div>
-                        ))}
-                      </div>
-                      {/* Textarea Code Console */}
-                      <textarea
-                        value={codingInitCode}
-                        onChange={(e) => setCodingInitCode(e.target.value)}
-                        rows={7}
-                        placeholder="请输入学生初始代码..."
-                        className="flex-1 bg-transparent text-xs text-emerald-400 focus:outline-none resize-y leading-relaxed font-mono py-1 custom-scrollbar whitespace-pre"
-                      />
-                    </div>
-                  </div>
-
-                </div>
-              )}
 
               {/* Correct Answer */}
-              {(newQuestionType !== '实训题' && newQuestionType !== '编程题') && (
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                    <span className="text-[#fa541c]">*</span> 正确答案：
+              {newQuestionType !== '实训题' && (
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    正确答案 <span className="text-[#fa541c]">*</span>
                   </label>
-                  
-                  <div className="p-4 bg-neutral-50/50 border border-neutral-200/60 rounded-xl">
+                  <div className="p-4 bg-neutral-50/50 border border-neutral-200/60 rounded w-full">
                     {newQuestionType === '单选题' && (
                       <div className="flex flex-wrap gap-6 items-center">
                         {options.map((opt) => (
@@ -2377,7 +3007,7 @@ export default function TeacherQuestions() {
                               value={opt.key}
                               checked={correctAnswerSingle === opt.key}
                               onChange={() => setCorrectAnswerSingle(opt.key)}
-                              className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
+                              className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
                             />
                             <span className="group-hover:text-[#fa541c] transition-colors font-medium">选项 {opt.key}</span>
                           </label>
@@ -2399,7 +3029,7 @@ export default function TeacherQuestions() {
                                   setCorrectAnswerMultiple([...correctAnswerMultiple, opt.key]);
                                 }
                               }}
-                              className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer"
+                              className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer bg-white"
                             />
                             <span className="group-hover:text-[#fa541c] transition-colors font-medium">选项 {opt.key}</span>
                           </label>
@@ -2417,7 +3047,7 @@ export default function TeacherQuestions() {
                               value={val}
                               checked={correctAnswerTrueFalse === val}
                               onChange={() => setCorrectAnswerTrueFalse(val)}
-                              className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
+                              className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
                             />
                             <span className="group-hover:text-[#fa541c] transition-colors font-medium">{val}</span>
                           </label>
@@ -2431,7 +3061,7 @@ export default function TeacherQuestions() {
                         placeholder="请输入参考答案或评分标准..."
                         value={correctAnswerText}
                         onChange={(e) => setCorrectAnswerText(e.target.value)}
-                        className="w-full border border-neutral-200 bg-white rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400"
+                        className="w-full border border-neutral-200 bg-white rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400"
                       />
                     )}
                   </div>
@@ -2440,21 +3070,27 @@ export default function TeacherQuestions() {
 
               {/* Answer Analysis */}
               {newQuestionType !== '实训题' && (
-                <RichTextEditor
-                  label="答案解析："
-                  value={newQuestionAnalysis}
-                  onChange={setNewQuestionAnalysis}
-                  placeholder="请输入详细的答案解析 and 解题思路..."
-                />
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    答案解析
+                  </label>
+                  <div className="w-full">
+                    <RichTextEditor
+                      label=""
+                      value={newQuestionAnalysis}
+                      onChange={setNewQuestionAnalysis}
+                      placeholder="请输入详细的答案解析和解题思路..."
+                    />
+                  </div>
+                </div>
               )}
 
               {/* Status */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
-                  状态：
-                  <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  状态
                 </label>
-                <div className="flex gap-6 items-center">
+                <div className="flex gap-6 items-center w-full">
                   {[
                     { value: '启用', label: '启用', desc: '启用后可用于组卷' },
                     { value: '停用', label: '停用', desc: '停用后暂不可用' }
@@ -2466,7 +3102,7 @@ export default function TeacherQuestions() {
                         value={item.value}
                         checked={newQuestionStatus === item.value}
                         onChange={() => setNewQuestionStatus(item.value)}
-                        className="w-4 h-4 text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
+                        className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
                       />
                       <span className="group-hover:text-[#fa541c] transition-colors font-medium">{item.label}</span>
                     </label>
@@ -2478,15 +3114,15 @@ export default function TeacherQuestions() {
             {/* Drawer Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50">
               <Button 
-                onClick={() => setIsCreateModalOpen(false)}
+                onClick={handleCloseCreateModal}
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded-3xl cursor-pointer"
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSaveQuestion}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-3xl shadow-sm cursor-pointer"
               >
                 确定
               </Button>
@@ -2495,43 +3131,44 @@ export default function TeacherQuestions() {
         </div>
       )}
 
-      {/* 批量导入 Modal */}
+      {/* 批量导入 Drawer (从右侧滑出) */}
       {isImportModalOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
           onClick={() => setIsImportModalOpen(false)}
         >
           <div 
-            className="bg-white w-full max-w-[520px] rounded-2xl shadow-2xl border border-neutral-100 p-6 flex flex-col relative animate-scale-up"
+            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4">
-              <div className="flex items-center gap-2 border-l-4 border-[#fa541c] pl-2.5">
-                <span className="text-[16px] font-bold text-neutral-800">批量导入</span>
-              </div>
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Upload className="w-5 h-5 text-[#fa541c]" />
+                批量导入试题
+              </h2>
               <button 
                 onClick={() => setIsImportModalOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1 rounded-full transition-colors cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Form Content */}
-            <div className="space-y-4">
-              {/* 所属试题库 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 所属试题库：
+            {/* Drawer Content */}
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
+              {/* 所属题库 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  <span className="text-[#fa541c]">*</span> 所属题库
                 </label>
-                <div className="relative">
+                <div className="relative w-full">
                   <select
                     value={importBank}
                     onChange={(e) => setImportBank(e.target.value)}
-                    className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
                   >
-                    <option value="">请选择所属试题库</option>
+                    <option value="">请选择所属题库</option>
                     {banksList.map(bank => (
                       <option key={bank.id} value={bank.name}>{bank.name}</option>
                     ))}
@@ -2541,9 +3178,9 @@ export default function TeacherQuestions() {
               </div>
 
               {/* 本地文件上传 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 本地文件：
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                  <span className="text-[#fa541c]">*</span> 本地文件
                 </label>
                 
                 {/* Drag and Drop Zone */}
@@ -2553,14 +3190,14 @@ export default function TeacherQuestions() {
                     setImportFileName('人工智能通识批量导入模板.xlsx');
                   }}
                   className={cn(
-                    "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center bg-neutral-50/30 transition-all cursor-pointer group text-center",
+                    "border-2 border-dashed rounded-[8px] p-8 flex flex-col items-center justify-center bg-neutral-50/30 transition-all cursor-pointer group text-center w-full",
                     importFileName
                       ? "border-[#fa541c] bg-[#fff2e8]/10"
                       : "border-neutral-200 hover:border-[#fa541c] hover:bg-neutral-50"
                   )}
                 >
                   <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm transition-transform group-hover:scale-110",
+                    "w-10 h-10 rounded-[8px] flex items-center justify-center mb-3 shadow-sm transition-transform group-hover:scale-110",
                     importFileName ? "bg-[#fa541c] text-white" : "bg-neutral-100 text-neutral-400 group-hover:bg-[#fff2e8]/60 group-hover:text-[#fa541c]"
                   )}>
                     <Upload className="w-5 h-5" />
@@ -2574,7 +3211,7 @@ export default function TeacherQuestions() {
                           e.stopPropagation();
                           setImportFileName('');
                         }}
-                        className="text-[10px] text-red-500 hover:underline cursor-pointer"
+                        className="text-[10px] text-red-500 hover:underline cursor-pointer border-0 bg-transparent font-medium"
                       >
                         清除并重新上传
                       </button>
@@ -2591,38 +3228,41 @@ export default function TeacherQuestions() {
               </div>
 
               {/* Tips Section */}
-              <div className="border border-[#ffbb96] bg-[#fff2e8]/30 rounded-xl p-4 flex items-start gap-3 relative overflow-hidden">
-                <span className="bg-[#fa541c] text-white px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0 mt-0.5 shadow-sm">
-                  Tips
-                </span>
-                <div className="flex-1 flex justify-between items-start gap-4">
-                  <p className="text-[11px] text-neutral-600 leading-relaxed font-medium">
-                    上传前请先按照 Excel 格式填写试题内容，仅支持单选题、多选题、判断题、填空题、简答题、思考题、编程题批量导入
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => alert('已为您成功触发模板下载！')}
-                    className="text-[#fa541c] hover:text-[#e84a15] text-xs font-bold whitespace-nowrap hover:underline cursor-pointer flex items-center"
-                  >
-                    下载模板
-                  </button>
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <div />
+                <div className="border border-[#ffbb96] bg-[#fff2e8]/30 rounded-[8px] p-4 flex items-start gap-3 relative overflow-hidden w-full">
+                  <span className="bg-[#fa541c] text-white px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0 mt-0.5 shadow-sm">
+                    Tips
+                  </span>
+                  <div className="flex-1 flex justify-between items-start gap-4">
+                    <p className="text-[11px] text-neutral-600 leading-relaxed font-medium">
+                      上传前请先按照 Excel 格式填写试题内容，仅支持单选题、多选题、判断题、填空题、简答题、实训题批量导入
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => alert('已为您成功触发模板下载！')}
+                      className="text-[#fa541c] hover:text-[#e84a15] text-xs font-bold whitespace-nowrap hover:underline cursor-pointer flex items-center border-0 bg-transparent"
+                    >
+                      下载模板
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-neutral-100 pt-4 mt-5">
+            {/* Drawer Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setIsImportModalOpen(false)}
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
               >
                 取消
               </Button>
               <Button 
                 onClick={() => {
                   if (!importBank) {
-                    alert('请选择所属试题库！');
+                    alert('请选择所属题库！');
                     return;
                   }
                   if (!importFileName) {
@@ -2638,13 +3278,13 @@ export default function TeacherQuestions() {
                       type: '简答题',
                       status: '启用',
                       source: '批量导入',
-                      difficulty: '中级',
+                      difficulty: '中等',
                       tags: '深度学习, 卷积神经网络',
                       grading: '人工评分',
                       creator: 'Momodel',
                       updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
-                      scope: '已公开',
-                      auditStatus: '申请公开已通过'
+                      scope: '私有',
+                      auditStatus: '未审核'
                     };
                     setQuestionsList([importedQ, ...questionsList]);
                     setIsImporting(false);
@@ -2654,7 +3294,7 @@ export default function TeacherQuestions() {
                   }, 1200);
                 }}
                 disabled={isImporting}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm cursor-pointer border-0"
               >
                 {isImporting ? '导入中...' : '导入'}
               </Button>
@@ -2699,19 +3339,15 @@ export default function TeacherQuestions() {
                 </div>
               </div>
 
-              {/* Grid: Bank, Difficulty, Creator */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Grid: Bank, Difficulty */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-neutral-400">所属试题库</label>
+                  <label className="text-[11px] font-bold text-neutral-400">所属题库</label>
                   <p className="text-xs text-neutral-700 bg-neutral-50 px-3 py-2 rounded-lg font-medium">{viewingQuestion.bank}</p>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold text-neutral-400">难度级别</label>
                   <p className="text-xs text-neutral-700 bg-neutral-50 px-3 py-2 rounded-lg font-medium">{viewingQuestion.difficulty}</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-neutral-400">评分方式</label>
-                  <p className="text-xs text-neutral-700 bg-neutral-50 px-3 py-2 rounded-lg font-medium">{viewingQuestion.grading}</p>
                 </div>
               </div>
 
@@ -2784,7 +3420,7 @@ export default function TeacherQuestions() {
             <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-neutral-50/50">
               <Button 
                 onClick={() => setViewingQuestion(null)}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-lg shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-3xl shadow-sm cursor-pointer"
               >
                 关闭
               </Button>
@@ -2793,10 +3429,228 @@ export default function TeacherQuestions() {
         </div>
       )}
 
-      {/* 题库管理 Modal */}
+      {/* 实训题检查项 Drawer (从右侧滑出) */}
+      {isCheckpointsModalOpen && checkpointQuestion && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => {
+            setIsCheckpointsModalOpen(false);
+            setCheckpointQuestion(null);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                {isCheckpointFormOpen ? (editingCheckpoint ? '编辑检查项' : '新建检查项') : '实训题检查项配置'}
+              </h2>
+              <button 
+                onClick={() => {
+                  setIsCheckpointsModalOpen(false);
+                  setCheckpointQuestion(null);
+                }}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Drawer Content */}
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
+              {/* Question Name Info Box */}
+              <div className="bg-neutral-50/50 border border-neutral-200/50 rounded-[8px] p-4 flex flex-col gap-1 text-xs mb-2">
+                <span className="text-neutral-400 block font-bold mb-0.5">关联试题名称</span>
+                <span className="font-bold text-neutral-800 text-[13px]">{checkpointQuestion.name}</span>
+              </div>
+
+              {!isCheckpointFormOpen ? (
+                // LIST/TABLE VIEW
+                <div className="space-y-4 flex-1 flex flex-col min-h-0 text-left">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-bold text-neutral-800">检查项配置列表</span>
+                    <Button 
+                      onClick={() => {
+                        setEditingCheckpoint(null);
+                        setCheckpointFormName('');
+                        setCheckpointFormContent('');
+                        setCheckpointFormDesc('');
+                        setCheckpointFormRatio(20);
+                        setIsCheckpointFormOpen(true);
+                      }}
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-8 px-3.5 rounded-[4px] text-xs font-semibold cursor-pointer border-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      新建
+                    </Button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[380px]">
+                    <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                      <thead>
+                        <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
+                          <th className="p-3">检查项名称</th>
+                          <th className="p-3">检查项内容</th>
+                          <th className="p-3">检查项描述</th>
+                          <th className="p-3 w-20 text-center">得分比例</th>
+                          <th className="p-3 w-24 text-center">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-100 text-neutral-700 font-medium">
+                        {(checkpoints[checkpointQuestion.id] || []).map((cp) => (
+                          <tr key={cp.id} className="hover:bg-neutral-50/30 transition-colors">
+                            <td className="p-3 font-semibold text-neutral-850 max-w-[120px] truncate" title={cp.name}>
+                              {cp.name}
+                            </td>
+                            <td className="p-3 max-w-[140px] truncate text-neutral-500 font-mono" title={cp.content}>
+                              {cp.content}
+                            </td>
+                            <td className="p-3 max-w-[160px] truncate text-neutral-500" title={cp.description}>
+                              {cp.description}
+                            </td>
+                            <td className="p-3 text-center font-mono font-bold text-neutral-800">
+                              {cp.scoreRatio}%
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-3">
+                                <button
+                                  onClick={() => {
+                                    setEditingCheckpoint(cp);
+                                    setCheckpointFormName(cp.name);
+                                    setCheckpointFormContent(cp.content);
+                                    setCheckpointFormDesc(cp.description);
+                                    setCheckpointFormRatio(cp.scoreRatio);
+                                    setIsCheckpointFormOpen(true);
+                                  }}
+                                  className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border-0 bg-transparent p-0 cursor-pointer font-semibold"
+                                >
+                                  编辑
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteCheckpoint(cp.id)}
+                                  className="text-xs text-red-400 hover:text-red-600 transition-colors border-0 bg-transparent p-0 cursor-pointer font-semibold"
+                                >
+                                  删除
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {(checkpoints[checkpointQuestion.id] || []).length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-neutral-450 italic bg-neutral-50/10">
+                              暂无检查项，请点击右上角“新建”进行添加
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                // FORM VIEW (Style matches 新建试题 drawer layout: grid grid-cols-[100px_1fr] items-center gap-4)
+                <div className="space-y-5 animate-slide-up text-left">
+                  {/* Name field */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      检查项名称 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={checkpointFormName}
+                      onChange={(e) => setCheckpointFormName(e.target.value)}
+                      placeholder="如：依赖库配置检查"
+                      className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 transition-all placeholder:text-neutral-400"
+                    />
+                  </div>
+
+                  {/* Content field */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      检查项内容 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <textarea
+                      value={checkpointFormContent}
+                      onChange={(e) => setCheckpointFormContent(e.target.value)}
+                      placeholder="请输入检查命令或判定脚本内容..."
+                      className="w-full border border-neutral-200 rounded px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 transition-all placeholder:text-neutral-400 resize-none h-24 font-mono"
+                    />
+                  </div>
+
+                  {/* Description field */}
+                  <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                      检查项描述
+                    </label>
+                    <textarea
+                      value={checkpointFormDesc}
+                      onChange={(e) => setCheckpointFormDesc(e.target.value)}
+                      placeholder="请输入关于此项检查的具体描述和评分指南..."
+                      className="w-full border border-neutral-200 rounded px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 transition-all placeholder:text-neutral-400 resize-none h-24"
+                    />
+                  </div>
+
+                  {/* ScoreRatio field */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      得分比例 (%) <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={checkpointFormRatio}
+                      onChange={(e) => setCheckpointFormRatio(Number(e.target.value))}
+                      placeholder="如 20"
+                      className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 transition-all placeholder:text-neutral-400"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              {isCheckpointFormOpen ? (
+                <>
+                  <Button 
+                    onClick={() => {
+                      setIsCheckpointFormOpen(false);
+                      setEditingCheckpoint(null);
+                    }}
+                    variant="outline"
+                    className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+                  >
+                    取消
+                  </Button>
+                  <Button 
+                    onClick={handleSaveCheckpoint}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm cursor-pointer border-0"
+                  >
+                    保存
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  onClick={() => {
+                    setIsCheckpointsModalOpen(false);
+                    setCheckpointQuestion(null);
+                  }}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm cursor-pointer border-0"
+                >
+                  关闭
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 题库管理 Drawer (从右侧滑出) */}
       {isBankListModalOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
           onClick={() => {
             setIsBankListModalOpen(false);
             setIsCreateBankOpen(false);
@@ -2804,29 +3658,29 @@ export default function TeacherQuestions() {
           }}
         >
           <div 
-            className="bg-white w-full max-w-[680px] rounded-2xl shadow-2xl border border-neutral-100 p-6 flex flex-col relative animate-scale-up"
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4">
-              <div className="flex items-center gap-2 border-l-4 border-[#fa541c] pl-2.5">
-                <span className="text-[16px] font-bold text-neutral-800">
-                  {viewingBankDetail ? `${viewingBankDetail.name} 详情` : "题库管理"}
-                </span>
-              </div>
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Database className="w-5 h-5 text-[#fa541c]" />
+                {viewingBankDetail ? `${viewingBankDetail.name} 详情` : "题库管理"}
+              </h2>
               <button 
                 onClick={() => {
                   setIsBankListModalOpen(false);
                   setIsCreateBankOpen(false);
                   setViewingBankDetail(null);
                 }}
-                className="text-neutral-400 hover:text-[#fa541c] p-1 rounded-full transition-colors cursor-pointer bg-transparent border-0"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {viewingBankDetail ? (
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white space-y-5 text-left flex flex-col min-h-0">
+              {viewingBankDetail ? (
               // BANK DETAIL VIEW
               <div className="space-y-4 flex-1 flex flex-col min-h-0 text-left">
                 {/* Back Link */}
@@ -2838,11 +3692,7 @@ export default function TeacherQuestions() {
                 </button>
 
                 {/* Info Card Grid */}
-                <div className="bg-neutral-50/50 border border-neutral-200/50 rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                  <div>
-                    <span className="text-neutral-400 block mb-0.5">题库分类</span>
-                    <span className="font-semibold text-neutral-700">{viewingBankDetail.category}</span>
-                  </div>
+                <div className="bg-neutral-50/50 border border-neutral-200/50 rounded-[8px] p-4 grid grid-cols-3 gap-4 text-xs">
                   <div>
                     <span className="text-neutral-400 block mb-0.5">创建人</span>
                     <span className="font-semibold text-neutral-700">{viewingBankDetail.creator}</span>
@@ -2866,7 +3716,7 @@ export default function TeacherQuestions() {
                 </div>
 
                 {/* Questions List in this Bank */}
-                <div className="flex-1 overflow-y-auto max-h-[260px] border border-neutral-100 rounded-xl bg-white custom-scrollbar">
+                <div className="flex-1 overflow-y-auto max-h-[260px] border border-neutral-100 rounded-[8px] bg-white custom-scrollbar">
                   <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                     <thead>
                       <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
@@ -2929,12 +3779,12 @@ export default function TeacherQuestions() {
                       placeholder="搜索题库名称..."
                       value={searchBankQuery}
                       onChange={(e) => setSearchBankQuery(e.target.value)}
-                      className="w-full pl-9 pr-4 py-1.5 border border-neutral-200 rounded-lg text-xs bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
+                      className="w-full pl-9 pr-4 py-1.5 border border-neutral-200 rounded text-xs bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
                     />
                   </div>
                   <Button 
                     onClick={() => setIsCreateBankOpen(!isCreateBankOpen)}
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-8 px-3 rounded-[4px] text-xs font-semibold cursor-pointer"
                   >
                     {isCreateBankOpen ? '取消新建' : '新建题库'}
                   </Button>
@@ -2942,7 +3792,7 @@ export default function TeacherQuestions() {
 
                 {/* Create Bank Inline Form */}
                 {isCreateBankOpen && (
-                  <div className="bg-neutral-50 border border-neutral-200/60 rounded-xl p-4 mb-4 space-y-3 animate-slide-up text-left">
+                  <div className="bg-neutral-50 border border-neutral-200/60 rounded-[8px] p-4 mb-4 space-y-3 animate-slide-up text-left">
                     <div className="text-xs font-bold text-neutral-800">新建题库</div>
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold text-neutral-600 block">题库名称：</label>
@@ -2951,7 +3801,7 @@ export default function TeacherQuestions() {
                         placeholder="如：自然语言处理基础"
                         value={newBankName}
                         onChange={(e) => setNewBankName(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded px-3 py-1.5 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c]"
                       />
                     </div>
                     <div className="flex justify-end pt-1">
@@ -2973,7 +3823,7 @@ export default function TeacherQuestions() {
                           setNewBankName('');
                           setIsCreateBankOpen(false);
                         }}
-                        className="border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8] h-7 px-4 rounded text-xs font-semibold shadow-sm cursor-pointer"
+                        className="border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8] h-7 px-4 rounded-[4px] text-xs font-semibold shadow-sm cursor-pointer"
                       >
                         保存
                       </Button>
@@ -2982,13 +3832,12 @@ export default function TeacherQuestions() {
                 )}
 
                 {/* Banks List Table */}
-                <div className="flex-1 overflow-y-auto max-h-[300px] border border-neutral-100 rounded-xl bg-white custom-scrollbar">
+                <div className="flex-1 overflow-y-auto max-h-[300px] border border-neutral-100 rounded-[8px] bg-white custom-scrollbar">
                   <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                     <thead>
                       <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
                         <th className="p-3">题库名称</th>
                         <th className="p-3 w-20 text-center">试题数量</th>
-                        <th className="p-3">题库分类</th>
                         <th className="p-3">创建人</th>
                         <th className="p-3">创建时间</th>
                         <th className="p-3 w-24 text-center">操作</th>
@@ -3001,11 +3850,6 @@ export default function TeacherQuestions() {
                           <tr key={bank.id} className="hover:bg-neutral-50/50 transition-colors">
                             <td className="p-3 font-semibold text-neutral-800">{bank.name}</td>
                             <td className="p-3 text-center font-mono">{bank.count}</td>
-                            <td className="p-3">
-                              <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded text-[10px] font-medium border border-neutral-200/40">
-                                {bank.category}
-                              </span>
-                            </td>
                             <td className="p-3 text-neutral-500">{bank.creator}</td>
                             <td className="p-3 text-neutral-500 font-mono">{bank.createdAt}</td>
                             <td className="p-3 text-center">
@@ -3014,7 +3858,6 @@ export default function TeacherQuestions() {
                                   onClick={() => {
                                     setEditingBank(bank);
                                     setEditBankName(bank.name);
-                                    setEditBankCategory(bank.category);
                                   }}
                                   className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border-0 bg-transparent p-0 cursor-pointer font-semibold"
                                 >
@@ -3042,7 +3885,7 @@ export default function TeacherQuestions() {
                         ))}
                       {banksList.filter(b => b.name.toLowerCase().includes(searchBankQuery.trim().toLowerCase())).length === 0 && (
                         <tr>
-                          <td colSpan={6} className="p-8 text-center text-neutral-400">
+                          <td colSpan={5} className="p-8 text-center text-neutral-400">
                             暂无匹配的题库
                           </td>
                         </tr>
@@ -3053,15 +3896,17 @@ export default function TeacherQuestions() {
               </>
             )}
 
-            {/* Footer */}
-            <div className="pt-4 border-t border-neutral-100 mt-4 flex justify-end">
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => {
                   setIsBankListModalOpen(false);
                   setIsCreateBankOpen(false);
                   setViewingBankDetail(null);
                 }}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-lg shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm cursor-pointer border-0"
               >
                 关闭
               </Button>
@@ -3077,7 +3922,7 @@ export default function TeacherQuestions() {
           onClick={() => setEditingBank(null)}
         >
           <div 
-            className="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl border border-neutral-100 p-6 flex flex-col relative animate-scale-up"
+            className="bg-white w-full max-w-[500px] rounded-[8px] shadow-2xl border border-neutral-100 p-6 flex flex-col relative animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -3103,28 +3948,8 @@ export default function TeacherQuestions() {
                   type="text"
                   value={editBankName}
                   onChange={(e) => setEditBankName(e.target.value)}
-                  className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
+                  className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs bg-white text-neutral-800 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
                 />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c]">*</span> 题库分类：
-                </label>
-                <div className="relative">
-                  <select
-                    value={editBankCategory}
-                    onChange={(e) => setEditBankCategory(e.target.value)}
-                    className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-700 transition-all cursor-pointer"
-                  >
-                    <option value="AI技术">AI技术</option>
-                    <option value="自然语言处理">自然语言处理</option>
-                    <option value="机器学习">机器学习</option>
-                    <option value="计算机视觉">计算机视觉</option>
-                    <option value="其它">其它</option>
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
               </div>
             </div>
 
@@ -3133,7 +3958,7 @@ export default function TeacherQuestions() {
               <Button 
                 onClick={() => setEditingBank(null)}
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer"
               >
                 取消
               </Button>
@@ -3143,12 +3968,299 @@ export default function TeacherQuestions() {
                     alert('请输入题库名称！');
                     return;
                   }
-                  setBanksList(banksList.map(b => b.id === editingBank.id ? { ...b, name: editBankName.trim(), category: editBankCategory } : b));
+                  setBanksList(banksList.map(b => b.id === editingBank.id ? { ...b, name: editBankName.trim() } : b));
                   setEditingBank(null);
                 }}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm cursor-pointer"
               >
                 保存
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 申请公开试题 Modal (参考项目公开弹出层样式) */}
+      {isApplyPublicModalOpen && questionToApplyPublic && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => !isApplyingPublic && setIsApplyPublicModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                申请公开试题
+              </h2>
+              <button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+                disabled={isApplyingPublic}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px] text-left">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后可用于租户/平台组卷</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    提交申请后，超管将从 <strong>试题完整性、题干描述、答案解析、参考价值</strong> 四个维度进行审核。审核通过后将进入公共试题库。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">试题名称</label>
+                  <input 
+                    type="text" 
+                    value={questionToApplyPublic.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                    公开范围 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级可见' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
+                    ].map(opt => (
+                      <div 
+                        key={opt.key}
+                        onClick={() => setApplyPublicRange(opt.key as any)}
+                        className={cn(
+                          "border p-4 rounded cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyPublicRange === opt.key 
+                            ? "border-[#fa541c] bg-[#fff5f0]/30"
+                            : "border-neutral-200 bg-white hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className={cn("font-bold text-[13px]", applyPublicRange === opt.key ? "text-[#fa541c]" : "text-[#262626]")}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 leading-normal">{opt.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    申请说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={applyPublicReason}
+                    onChange={(e) => setApplyPublicReason(e.target.value)}
+                    placeholder="请描述该试题的申请公开原因及相关说明..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-3xl text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                disabled={isApplyingPublic}
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleSubmitApplyPublic} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-3xl shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                disabled={isApplyingPublic}
+              >
+                {isApplyingPublic ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                    提交中...
+                  </>
+                ) : (
+                  '提交审核申请'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量公开试题 Drawer */}
+      {isBatchPublicOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => setIsBatchPublicOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                批量公开试题
+              </h2>
+              <button 
+                onClick={() => setIsBatchPublicOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px] text-left">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后可用于租户/平台组卷</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    提交申请后，超管将从 <strong>试题完整性、题干描述、答案解析、参考价值</strong> 四个维度进行审核。审核通过后将进入公共试题库。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">已选试题</label>
+                  <div className="w-full">
+                    {selectedQuestions.length > 0 ? (
+                      <div className="border border-neutral-200 rounded-lg p-3 bg-neutral-50/40 space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar">
+                        <div className="text-xs text-neutral-400 mb-1.5 font-bold">已选择 {selectedQuestions.length} 道试题：</div>
+                        {selectedQuestions.map(id => {
+                          const q = questionsList.find(item => item.id === id);
+                          return (
+                            <div key={id} className="text-xs text-neutral-700 flex items-center justify-between border-b border-neutral-100 pb-1.5 last:border-0 last:pb-0 font-medium">
+                              <span className="truncate max-w-[450px]">{q ? q.name : `试题 ID: ${id}`}</span>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedQuestions(selectedQuestions.filter(x => x !== id))}
+                                className="text-neutral-400 hover:text-red-500 transition-colors cursor-pointer border-0 bg-transparent"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="border border-dashed border-red-200 bg-red-50/30 text-red-500 rounded-lg p-6 text-center text-xs font-bold">
+                        ⚠️ 您尚未在列表中勾选任何试题，请先关闭此页并在列表中选择试题！
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                    公开范围 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级可见' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
+                    ].map(opt => (
+                      <div 
+                        key={opt.key}
+                        onClick={() => setApplyPublicRange(opt.key as any)}
+                        className={cn(
+                          "border p-4 rounded cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyPublicRange === opt.key 
+                            ? "border-[#fa541c] bg-[#fff5f0]/30"
+                            : "border-neutral-200 bg-white hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className={cn("font-bold text-[13px]", applyPublicRange === opt.key ? "text-[#fa541c]" : "text-[#262626]")}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 leading-normal">{opt.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    申请说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={applyPublicReason}
+                    onChange={(e) => setApplyPublicReason(e.target.value)}
+                    placeholder="请描述申请公开原因及相关说明..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsBatchPublicOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedQuestions.length === 0) {
+                    alert('请先选择要公开的试题！');
+                    return;
+                  }
+                  if (!applyPublicReason.trim()) {
+                    alert('请填写申请说明！');
+                    return;
+                  }
+                  setIsApplyingPublic(true);
+                  setTimeout(() => {
+                    setQuestionsList(questionsList.map(q => {
+                      if (selectedQuestions.includes(q.id)) {
+                        return {
+                          ...q,
+                          scope: applyPublicRange,
+                          auditStatus: '已通过'
+                        };
+                      }
+                      return q;
+                    }));
+                    setIsApplyingPublic(false);
+                    setIsBatchPublicOpen(false);
+                    setSelectedQuestions([]);
+                    setApplyPublicReason('');
+                    alert(`批量公开申请已提交！已成功将选中的 ${selectedQuestions.length} 道试题设置为【${applyPublicRange}级公开】。`);
+                  }, 1200);
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                disabled={isApplyingPublic || selectedQuestions.length === 0}
+              >
+                {isApplyingPublic ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                    提交中...
+                  </>
+                ) : (
+                  '提交审核申请'
+                )}
               </Button>
             </div>
           </div>
