@@ -921,7 +921,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                     />
                     <label
                       htmlFor="submit-answer-file-input"
-                      className="border border-neutral-300 rounded-[4px] px-3.5 py-1.5 bg-neutral-50 hover:bg-neutral-100 cursor-pointer text-xs text-neutral-600 transition-colors font-bold select-none"
+                      className="border border-[#fa541c] rounded-[4px] px-3.5 py-1.5 bg-transparent hover:bg-[#fa541c]/5 cursor-pointer text-xs text-[#fa541c] transition-colors font-bold select-none"
                     >
                       选择文件
                     </label>
