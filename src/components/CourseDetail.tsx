@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, ArrowLeft, CheckCircle2, X, Map, Clock, FileText, Code, CheckSquare, ChevronDown, List, Search, Check, BarChart, Save, Plus, Play, Square, RotateCcw, Layers, Cpu, Database, Activity, HardDrive, Download, Eye, FileDigit, BookOpen, Monitor, MonitorPlay, PlusCircle, Edit, Trash2, Compass, MoreHorizontal, Pin, Camera, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -864,6 +865,96 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             </div>
           </div>
         </div>
+
+        {/* 提交答案 Drawer */}
+        {isSubmitAnswerDrawerOpen && createPortal(
+          <div 
+            className="fixed inset-0 z-[400] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+            onClick={() => setIsSubmitAnswerDrawerOpen(false)}
+          >
+            <div 
+              className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                  提交答案
+                </h2>
+                <button 
+                  onClick={() => setIsSubmitAnswerDrawerOpen(false)} 
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+                {/* 题目名称 */}
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-0.5">
+                    题目名称 <span className="text-neutral-400 font-normal">：</span>
+                  </label>
+                  <div className="text-[13px] text-neutral-800 font-bold leading-normal">
+                    {NEW_QUESTIONS[currentQuestionIdx]?.title}
+                  </div>
+                </div>
+
+                {/* 上传答案文件 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    上传答案文件 <span className="text-neutral-400 font-normal">：</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      id="submit-answer-file-input"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setSelectedAnswerFile(file.name);
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="submit-answer-file-input"
+                      className="border border-neutral-300 rounded-[4px] px-3.5 py-1.5 bg-neutral-50 hover:bg-neutral-100 cursor-pointer text-xs text-neutral-600 transition-colors font-bold select-none"
+                    >
+                      选择文件
+                    </label>
+                    <span className="text-xs text-neutral-400">
+                      {selectedAnswerFile || "未选择任何文件"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <Button 
+                  onClick={() => setIsSubmitAnswerDrawerOpen(false)} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setUserAnswers(prev => ({ ...prev, [currentQuestionIdx]: true }));
+                    setIsSubmitAnswerDrawerOpen(false);
+                    alert("答案提交成功！");
+                  }} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold flex items-center gap-1.5"
+                >
+                  <span>提交</span>
+                  <span className="flex items-center justify-center bg-white text-[#fa541c] rounded w-4.5 h-4.5 text-[10px] font-bold shadow-sm">⚡</span>
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
       </div>
     );
   }
@@ -2971,95 +3062,6 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
               <Button type="button" onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
               <Button type="button" onClick={handleDeleteLesson} className="bg-red-600 hover:bg-red-700 text-white font-bold h-10 px-8 shadow-md shadow-red-500/20">确定删除</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 提交答案 Drawer */}
-      {isSubmitAnswerDrawerOpen && (
-        <div 
-          className="fixed inset-0 z-[400] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
-          onClick={() => setIsSubmitAnswerDrawerOpen(false)}
-        >
-          <div 
-            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
-              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
-                提交答案
-              </h2>
-              <button 
-                onClick={() => setIsSubmitAnswerDrawerOpen(false)} 
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
-              {/* 题目名称 */}
-              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pt-0.5">
-                  题目名称 <span className="text-neutral-400 font-normal">：</span>
-                </label>
-                <div className="text-[13px] text-neutral-800 font-bold leading-normal">
-                  {NEW_QUESTIONS[currentQuestionIdx]?.title}
-                </div>
-              </div>
-
-              {/* 上传答案文件 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right">
-                  上传答案文件 <span className="text-neutral-400 font-normal">：</span>
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="file"
-                    id="submit-answer-file-input"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setSelectedAnswerFile(file.name);
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor="submit-answer-file-input"
-                    className="border border-neutral-300 rounded-[4px] px-3.5 py-1.5 bg-neutral-50 hover:bg-neutral-100 cursor-pointer text-xs text-neutral-600 transition-colors font-bold select-none"
-                  >
-                    选择文件
-                  </label>
-                  <span className="text-xs text-neutral-400">
-                    {selectedAnswerFile || "未选择任何文件"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
-              <Button 
-                onClick={() => setIsSubmitAnswerDrawerOpen(false)} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
-              >
-                取消
-              </Button>
-              <Button 
-                onClick={() => {
-                  setUserAnswers(prev => ({ ...prev, [currentQuestionIdx]: true }));
-                  setIsSubmitAnswerDrawerOpen(false);
-                  alert("答案提交成功！");
-                }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold flex items-center gap-1.5"
-              >
-                <span>提交</span>
-                <span className="flex items-center justify-center bg-white text-[#fa541c] rounded w-4.5 h-4.5 text-[10px] font-bold shadow-sm">⚡</span>
-              </Button>
             </div>
           </div>
         </div>
