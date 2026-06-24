@@ -647,11 +647,12 @@ export default function TeacherQuestions() {
   const [shixunProjectSource, setShixunProjectSource] = useState<string>('');
   const [shixunCpuCores, setShixunCpuCores] = useState<string>('2');
   const [shixunMemoryGb, setShixunMemoryGb] = useState<string>('4');
-  const [shixunGpuPower, setShixunGpuPower] = useState<string>('10%');
-  const [shixunGpuMem, setShixunGpuMem] = useState<string>('2GB');
+  const [shixunGpuPower, setShixunGpuPower] = useState<string>('无');
+  const [shixunGpuMem, setShixunGpuMem] = useState<string>('0');
   const [shixunGpuCards, setShixunGpuCards] = useState<string>('0');
-  const [shixunContainerImage, setShixunContainerImage] = useState<string>('Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1');
-  const [shixunEnvVars, setShixunEnvVars] = useState<Array<{ id: number, key: string, value: string }>>([{ id: 1, key: '', value: '' }]);
+  const [shixunGpuModel, setShixunGpuModel] = useState<string>('4090');
+  const [shixunContainerImage, setShixunContainerImage] = useState<string>('ctyun-python:3.10-slim-cpu');
+  const [shixunEnvVars, setShixunEnvVars] = useState<Array<{ id: number, key: string, value: string }>>([]);
   const [shixunStartCmd, setShixunStartCmd] = useState<string>('python main.py');
   const [shixunMultiInstance, setShixunMultiInstance] = useState<boolean>(false);
   // VM config states
@@ -2625,213 +2626,223 @@ export default function TeacherQuestions() {
 
                             {/* 容器自定义配置 */}
                             {shixunEnvType === '容器' ? (
-                              <div className="space-y-4 animate-fade-in text-left">
-                                {/* 项目源码 */}
-                                <div className="space-y-1.5">
-                                  <label className="text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                                    <span className="text-[#fa541c]">*</span> 项目源码：
-                                  </label>
-                                  <div 
-                                    onClick={() => {
-                                      setShixunProjectSource('project_template_' + Date.now().toString().slice(-4) + '.zip');
-                                    }}
-                                    className={cn(
-                                      "border border-dashed rounded-lg p-3.5 flex flex-col items-center justify-center bg-white transition-all cursor-pointer text-center",
-                                      shixunProjectSource
-                                        ? "border-[#fa541c] bg-[#fff2e8]/10"
-                                        : "border-neutral-200 hover:border-[#fa541c] hover:bg-neutral-50"
-                                    )}
+                              <div className="space-y-6 animate-fade-in text-left">
+                                {/* Tab Row (容器1) */}
+                                <div className="flex items-center justify-between border-b border-neutral-200 pb-px">
+                                  <div className="flex gap-1 overflow-x-auto">
+                                    <button
+                                      type="button"
+                                      className="px-5 py-2 text-xs font-bold rounded-t-[4px] transition-all cursor-default border border-b-0 bg-[#fa541c] text-white border-[#fa541c] font-black"
+                                    >
+                                      容器1
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="text-[#fa541c] hover:text-[#e84a15] text-[13px] font-bold cursor-pointer flex items-center gap-1 bg-transparent border-0 rounded-[4px]"
+                                    onClick={() => alert("目前支持配置1个容器实例。")}
                                   >
-                                    {shixunProjectSource ? (
-                                      <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800">
-                                        <span>📄</span>
-                                        <span>{shixunProjectSource}</span>
-                                        <button 
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShixunProjectSource('');
-                                          }}
-                                          className="text-[10px] text-red-500 hover:underline ml-2 cursor-pointer border-0 bg-transparent font-bold"
-                                        >
-                                          删除
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div className="text-[11px] text-neutral-500">
-                                        点击上传项目源码压缩文件（支持 .zip, .tar.gz）
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* 资源配置 */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  <div className="space-y-1">
-                                    <label className="text-[11px] font-bold text-neutral-600 block">CPU 核数：</label>
-                                    <div className="relative">
-                                      <input
-                                        type="number"
-                                        value={shixunCpuCores}
-                                        onChange={(e) => setShixunCpuCores(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                        min="1"
-                                      />
-                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">核</span>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[11px] font-bold text-neutral-600 block">内存 (GB)：</label>
-                                    <div className="relative">
-                                      <input
-                                        type="number"
-                                        value={shixunMemoryGb}
-                                        onChange={(e) => setShixunMemoryGb(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                        min="1"
-                                      />
-                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 font-bold">GB</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* GPU */}
-                                <div className="bg-neutral-100/40 p-3 rounded-lg border border-neutral-200/50 space-y-2.5">
-                                  <div className="text-[11px] font-bold text-neutral-700">GPU 资源配置：</div>
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <div className="space-y-1">
-                                      <label className="text-[10px] font-semibold text-neutral-500 block">算力比例：</label>
-                                      <select
-                                        value={shixunGpuPower}
-                                        onChange={(e) => setShixunGpuPower(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                      >
-                                        <option value="无GPU">无 GPU</option>
-                                        <option value="10%">10% 算力</option>
-                                        <option value="25%">25% 算力</option>
-                                        <option value="50%">50% 算力</option>
-                                        <option value="100%">100% 独占</option>
-                                      </select>
-                                    </div>
-                                    <div className="space-y-1">
-                                      <label className="text-[10px] font-semibold text-neutral-500 block">显存：</label>
-                                      <select
-                                        value={shixunGpuMem}
-                                        onChange={(e) => setShixunGpuMem(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
-                                      >
-                                        <option value="0GB">无显存</option>
-                                        <option value="2GB">2 GB</option>
-                                        <option value="4GB">4 GB</option>
-                                        <option value="8GB">8 GB</option>
-                                        <option value="16GB">16 GB</option>
-                                      </select>
-                                    </div>
-                                    <div className="space-y-1">
-                                      <label className="text-[10px] font-semibold text-neutral-500 block">卡数：</label>
-                                      <input
-                                        type="number"
-                                        value={shixunGpuCards}
-                                        onChange={(e) => setShixunGpuCards(e.target.value)}
-                                        className="w-full border border-neutral-200 rounded-lg px-2 py-1 text-[11px] bg-white text-neutral-700 focus:outline-none"
-                                        min="0"
-                                      />
-                                    </div>
-                                  </div>
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>添加容器</span>
+                                  </button>
                                 </div>
 
                                 {/* 选择镜像 */}
-                                <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">选择镜像：</label>
-                                  <div className="relative">
+                                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                                    选择镜像 <span className="text-[#fa541c]">*</span>
+                                  </label>
+                                  <div className="relative w-full text-xs">
                                     <select
                                       value={shixunContainerImage}
                                       onChange={(e) => setShixunContainerImage(e.target.value)}
-                                      className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                      className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer font-mono"
                                     >
+                                      <option value="ctyun-python:3.10-slim-cpu">ctyun-python:3.10-slim-cpu</option>
                                       <option value="Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1">Ubuntu 22.04 + PyTorch 2.1 + CUDA 12.1 (深度学习推荐)</option>
                                       <option value="Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0">Ubuntu 20.04 + TensorFlow 2.15 + CUDA 12.0</option>
                                       <option value="Python 3.10 Development Environment">Python 3.10 Development Environment (通用编程)</option>
                                       <option value="Node.js 18 + Frontend SDK">Node.js 18 + Frontend SDK</option>
                                     </select>
-                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                  </div>
+                                </div>
+
+                                {/* 算力配置 Container */}
+                                <div className="space-y-4">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[13px] font-bold text-[#262626]">
+                                      算力配置 <span className="text-[#fa541c]">*</span>
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-4">
+                                    {/* CPU and Memory Row */}
+                                    <div className="grid grid-cols-2 gap-6">
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-500 text-right pr-3">CPU</span>
+                                        <input
+                                          type="text"
+                                          value={shixunCpuCores}
+                                          onChange={(e) => setShixunCpuCores(e.target.value)}
+                                          className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] bg-white"
+                                        />
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">核</span>
+                                      </div>
+
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">内存</span>
+                                        <input
+                                          type="text"
+                                          value={shixunMemoryGb}
+                                          onChange={(e) => setShixunMemoryGb(e.target.value)}
+                                          className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] bg-white"
+                                        />
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">GB</span>
+                                      </div>
+                                    </div>
+
+                                    {/* GPU Model and count row */}
+                                    <div className="grid grid-cols-2 gap-6">
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">GPU型号</span>
+                                        <div className="relative w-full">
+                                          <select
+                                            value={shixunGpuModel}
+                                            onChange={(e) => setShixunGpuModel(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded-[4px] px-3 py-1.5 text-[13px] appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                          >
+                                            <option value="4090">4090</option>
+                                            <option value="A100">A100</option>
+                                            <option value="T4">NVIDIA T4</option>
+                                            <option value="A10G">NVIDIA A10G</option>
+                                            <option value="无">无 GPU</option>
+                                          </select>
+                                          <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        </div>
+                                        <div />
+                                      </div>
+
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">GPU</span>
+                                        <input
+                                          type="text"
+                                          value={shixunGpuCards}
+                                          onChange={(e) => setShixunGpuCards(e.target.value)}
+                                          className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] bg-white"
+                                        />
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">张</span>
+                                      </div>
+                                    </div>
+
+                                    {/* GPU Power and VRAM */}
+                                    <div className="grid grid-cols-2 gap-6">
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">算力</span>
+                                        <div className="relative w-full">
+                                          <select
+                                            value={shixunGpuPower}
+                                            onChange={(e) => setShixunGpuPower(e.target.value)}
+                                            className="w-full border border-neutral-200 rounded-[4px] px-3 py-1.5 text-[13px] appearance-none focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700 cursor-pointer"
+                                          >
+                                            <option value="无">无</option>
+                                            <option value="10%">10%</option>
+                                            <option value="25%">25%</option>
+                                            <option value="50%">50%</option>
+                                            <option value="100%">100%</option>
+                                          </select>
+                                          <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        </div>
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">%</span>
+                                      </div>
+
+                                      <div className="grid grid-cols-[80px_1fr_32px] items-center">
+                                        <span className="text-[13px] text-neutral-550 text-right pr-3">显存</span>
+                                        <input
+                                          type="text"
+                                          value={shixunGpuMem}
+                                          onChange={(e) => setShixunGpuMem(e.target.value)}
+                                          className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-[#262626] bg-white"
+                                        />
+                                        <span className="text-[13px] text-[#262626] font-bold pl-2 shrink-0">GB</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
 
                                 {/* 环境变量配置 */}
-                                <div className="space-y-2">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">环境变量配置：</label>
-                                  <div className="space-y-2">
-                                    {shixunEnvVars.map((ev, idx) => (
-                                      <div key={ev.id} className="flex gap-2 items-center">
-                                        <input
-                                          type="text"
-                                          placeholder="Key (如: PATH)"
-                                          value={ev.key}
-                                          onChange={(e) => {
-                                            const newVars = [...shixunEnvVars];
-                                            newVars[idx].key = e.target.value;
-                                            setShixunEnvVars(newVars);
-                                          }}
-                                          className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
-                                        />
-                                        <span className="text-neutral-400 text-xs font-bold">=</span>
-                                        <input
-                                          type="text"
-                                          placeholder="Value"
-                                          value={ev.value}
-                                          onChange={(e) => {
-                                            const newVars = [...shixunEnvVars];
-                                            newVars[idx].value = e.target.value;
-                                            setShixunEnvVars(newVars);
-                                          }}
-                                          className="flex-1 border border-neutral-200 rounded-lg px-3 py-1 text-[11px] focus:outline-none focus:border-[#fa541c] bg-white text-neutral-700"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setShixunEnvVars(shixunEnvVars.filter(v => v.id !== ev.id));
-                                          }}
-                                          className="text-neutral-400 hover:text-red-500 font-bold p-1 cursor-pointer border-0 bg-transparent"
-                                        >
-                                          ✕
-                                        </button>
-                                      </div>
-                                    ))}
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between border-b border-neutral-100 pb-1.5">
+                                    <span className="text-[13px] font-bold text-[#262626]">
+                                      环境变量配置 <span className="text-[#fa541c]">*</span>
+                                    </span>
                                     <button
                                       type="button"
                                       onClick={() => {
                                         setShixunEnvVars([...shixunEnvVars, { id: Date.now(), key: '', value: '' }]);
                                       }}
-                                      className="text-[10px] text-[#fa541c] border border-dashed border-[#fa541c] rounded-[4px] px-3 py-1 hover:bg-[#fff2e8] transition-colors cursor-pointer bg-white"
+                                      className="text-[#fa541c] hover:text-[#e84a15] text-xs font-bold bg-transparent border-0 cursor-pointer flex items-center gap-0.5 rounded-[4px]"
                                     >
-                                      + 添加环境变量
+                                      <Plus className="w-3 h-3" /> 添加变量
                                     </button>
+                                  </div>
+
+                                  <div className="space-y-2.5">
+                                    {shixunEnvVars && shixunEnvVars.length > 0 ? (
+                                      shixunEnvVars.map((variable, vIdx) => (
+                                        <div key={variable.id} className="flex gap-2 items-center">
+                                          <input
+                                            type="text"
+                                            placeholder="key"
+                                            value={variable.key}
+                                            onChange={(e) => {
+                                              const updated = [...shixunEnvVars];
+                                              updated[vIdx].key = e.target.value;
+                                              setShixunEnvVars(updated);
+                                            }}
+                                            className="flex-1 text-[13px] border border-neutral-200 rounded px-3 py-1.5 focus:outline-none focus:border-[#fa541c] font-mono text-[#262626] bg-white"
+                                          />
+                                          <span className="text-neutral-400 font-bold select-none">=</span>
+                                          <input
+                                            type="text"
+                                            placeholder="Value"
+                                            value={variable.value}
+                                            onChange={(e) => {
+                                              const updated = [...shixunEnvVars];
+                                              updated[vIdx].value = e.target.value;
+                                              setShixunEnvVars(updated);
+                                            }}
+                                            className="flex-1 text-[13px] border border-neutral-200 rounded px-3 py-1.5 focus:outline-none focus:border-[#fa541c] font-mono text-[#262626] bg-white"
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setShixunEnvVars(shixunEnvVars.filter(v => v.id !== variable.id));
+                                            }}
+                                            className="text-neutral-400 hover:text-red-500 p-1 cursor-pointer border-0 bg-transparent flex items-center rounded-[4px]"
+                                          >
+                                            <X className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-neutral-400 italic pl-2">暂无环境变量</p>
+                                    )}
                                   </div>
                                 </div>
 
-                                {/* 容器启动命令 */}
-                                <div className="space-y-1">
-                                  <label className="text-[11px] font-bold text-neutral-600 block">容器启动命令：</label>
-                                  <input
-                                    type="text"
+                                {/* 启动命令 */}
+                                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                                    启动命令 <span className="text-[#fa541c]">*</span>
+                                  </label>
+                                  <textarea
+                                    placeholder="请输入"
                                     value={shixunStartCmd}
                                     onChange={(e) => setShixunStartCmd(e.target.value)}
-                                    placeholder="如: python main.py"
-                                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-xs bg-white text-neutral-700 focus:outline-none focus:border-[#fa541c]"
+                                    className="w-full min-h-[80px] p-3 text-[13px] border border-neutral-200 rounded focus:outline-none focus:border-[#fa541c] resize-none leading-relaxed text-[#262626] font-mono bg-white"
                                   />
                                 </div>
-
-                                {/* 多实例配置 */}
-                                <label className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 py-1 font-bold font-semibold">
-                                  <input
-                                    type="checkbox"
-                                    checked={shixunMultiInstance}
-                                    onChange={(e) => setShixunMultiInstance(e.target.checked)}
-                                    className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 rounded focus:ring-[#fa541c] cursor-pointer bg-white"
-                                  />
-                                  <span>支持多实例配置</span>
-                                </label>
                               </div>
                             ) : (
                               /* 云主机自定义配置 */

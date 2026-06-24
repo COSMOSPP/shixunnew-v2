@@ -3,6 +3,7 @@ import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import TeacherPPTEditor from './TeacherPPTEditor';
+import TeacherExperimentIDE from '@/pages/teacher/TeacherExperimentIDE';
 
 interface CourseDetailProps {
   onBack: () => void;
@@ -225,6 +226,7 @@ const NEW_QUESTIONS = [
 export default function CourseDetail({ onBack, onShowLearningPath, initialLesson, isTeacher }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
   const [showStudentAnswering, setShowStudentAnswering] = useState(false);
+  const [showPracticalIDE, setShowPracticalIDE] = useState(false);
   const [answeringAnswers, setAnsweringAnswers] = useState<Record<number, number>>({});
   const [expandedAssignment, setExpandedAssignment] = useState<number | null>(1);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -306,11 +308,11 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
     const unansweredCount = totalQuestionsCount - answeredCount;
 
     if (unansweredCount > 0) {
-      if (!window.confirm(`您还有 ${unansweredCount} 道题未作答，确定要提交试卷吗？`)) {
+      if (!window.confirm(`您还有 ${unansweredCount} 道题未作答，确定要提交作业吗？`)) {
         return;
       }
     } else {
-      if (!window.confirm("确定要提交试卷吗？提交后将无法修改答案。")) {
+      if (!window.confirm("确定要提交作业吗？提交后将无法修改答案。")) {
         return;
       }
     }
@@ -334,7 +336,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
       }
     });
 
-    alert(`试卷提交成功！您的最终得分是：${score} 分（总分 50 分）`);
+    alert(`作业提交成功！您的最终得分是：${score} 分（总分 50 分）`);
     setShowStudentAnswering(false);
   };
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 59, seconds: 15 });
@@ -581,9 +583,15 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
     }
   };
 
+  if (showPracticalIDE) {
+    return <TeacherExperimentIDE onBack={() => setShowPracticalIDE(false)} />;
+  }
+
   if (showStudentAnswering) {
     const question = NEW_QUESTIONS[currentQuestionIdx];
     const isMarked = markedQuestions.has(currentQuestionIdx);
+    const practicalQuestions = NEW_QUESTIONS.filter(q => q.type === 'practical');
+    const currentPracticalIdx = practicalQuestions.findIndex(q => q.id === question.id);
 
     const formatExamTime = (seconds: number) => {
       const mins = Math.floor(seconds / 60);
@@ -624,13 +632,13 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
     };
 
     return (
-      <div className="min-h-screen bg-[#f5f7fa] flex flex-col font-sans -mt-6 -mx-6 md:-mx-8 animate-in fade-in duration-300">
+      <div className="min-h-screen bg-[#f5f7fa] flex flex-col font-sans -mt-6 -mx-6 md:-mx-8 pt-0 px-6 pb-6 md:pb-8 md:px-8 animate-in fade-in duration-300">
         {/* Content Container */}
-        <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
+        <div className="flex flex-1 overflow-hidden h-[calc(100vh-5rem)] md:h-[calc(100vh-5.5rem)] bg-white border border-neutral-200/80 shadow-lg">
           {/* Left Answering Area */}
           <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
             {/* Scrollable Question Content */}
-            <div className="flex-1 overflow-y-auto px-10 pt-8 pb-4">
+            <div className="flex-1 overflow-y-auto px-10 pt-12 pb-4">
               {/* Question Paper Title */}
               <h1 className="text-[17px] font-bold text-neutral-title mb-6 pb-4 border-b border-neutral-100">
                 中国电信云网资源管理(三级)云网资源管理(三级)
@@ -659,7 +667,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
               {question.type !== 'practical' ? (
                 <div>
                   {/* Clean Light-Bordered Question block */}
-                  <div className="bg-[#fcfcfd] border border-neutral-200 text-neutral-title rounded-lg p-5 mb-6 text-[15px] font-bold leading-relaxed min-h-[80px] flex items-center shadow-xs">
+                  <div className="text-neutral-title mb-6 text-[15px] font-bold leading-relaxed flex items-center">
                     {question.title}
                   </div>
 
@@ -674,30 +682,30 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                           key={optIdx}
                           onClick={() => handleSelectOption(currentQuestionIdx, optIdx, question.type)}
                           className={cn(
-                            "flex items-center gap-3 px-5 py-4 border rounded-xl cursor-pointer transition-all select-none",
+                            "group flex items-center gap-3 px-5 py-4 border rounded-[4px] cursor-pointer transition-all select-none",
                             isChecked 
-                              ? "bg-orange-50/20 border-[#fa541c] shadow-xs" 
-                              : "bg-[#fafafa]/85 border-neutral-150 hover:bg-neutral-100/50"
+                              ? "bg-transparent border-[#fa541c] shadow-xs" 
+                              : "bg-transparent border-neutral-150 hover:text-[#fa541c] hover:border-orange-200 hover:bg-[#fa541c]/5"
                           )}
                         >
                           {question.type === 'single' ? (
                             <div className={cn(
                               "w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
-                              isChecked ? "border-[#fa541c]" : "border-neutral-300"
+                              isChecked ? "border-[#fa541c]" : "border-neutral-300 group-hover:border-orange-200"
                             )}>
                               {isChecked && <div className="w-2 h-2 bg-[#fa541c] rounded-full animate-scale-up"></div>}
                             </div>
                           ) : (
                             <div className={cn(
                               "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors",
-                              isChecked ? "border-[#fa541c] bg-[#fa541c] text-white" : "border-neutral-300"
+                              isChecked ? "border-[#fa541c] bg-[#fa541c] text-white" : "border-neutral-300 group-hover:border-orange-200"
                             )}>
                               {isChecked && <Check className="w-3 h-3 text-white stroke-[3]" />}
                             </div>
                           )}
                           <span className={cn(
                             "text-[14px] transition-colors",
-                            isChecked ? "text-[#fa541c] font-bold" : "text-neutral-title"
+                            isChecked ? "text-[#fa541c] font-bold" : "text-neutral-title group-hover:text-[#fa541c]"
                           )}>{opt}</span>
                         </div>
                       );
@@ -733,13 +741,18 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
               <div className="flex items-center gap-3">
                 {question.type === 'practical' && (
                   <Button 
+                    variant="outline"
                     onClick={() => {
-                      alert("已进入实训环境，可在此开展编程开发与实训实操！");
+                      if (currentPracticalIdx === 0) {
+                        setShowPracticalIDE(true);
+                      } else {
+                        alert("答案提交成功！");
+                      }
                       setUserAnswers(prev => ({ ...prev, [currentQuestionIdx]: true }));
                     }}
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1.5"
+                    className="border-[#fa541c] text-[#fa541c] hover:bg-[#fa541c]/5 hover:text-[#e84a15] hover:border-[#e84a15] px-6 h-9.5 text-[13px] font-bold rounded-[4px] transition-all flex items-center gap-1.5"
                   >
-                    <span className="text-[14px]">⚡</span> 开始答题
+                    {currentPracticalIdx === 0 ? "开始答题" : "提交答案"}
                   </Button>
                 )}
                 
@@ -753,21 +766,21 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                   }}
                   className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1"
                 >
-                  {currentQuestionIdx === NEW_QUESTIONS.length - 1 ? "提交试卷" : "下一题"}
+                  {currentQuestionIdx === NEW_QUESTIONS.length - 1 ? "提交作业" : "下一题"}
                 </Button>
               </div>
             </div>
           </div>
 
           {/* Right Sidebar navigation */}
-          <div className="w-80 border-l border-neutral-border flex flex-col bg-white px-6 py-6 shrink-0 justify-between">
+          <div className="w-80 border-l border-neutral-border flex flex-col bg-white px-6 pt-12 pb-6 shrink-0 justify-between">
             <div className="overflow-y-auto flex-1 no-scrollbar">
               {/* Profile Avatar */}
               <div className="flex flex-col items-center pb-5 border-b border-neutral-150 mb-5">
                 <img 
                   src="https://picsum.photos/seed/studentavatar/150/150" 
                   alt="Student Avatar" 
-                  className="w-[120px] h-[150px] object-cover rounded-lg border border-neutral-200 shadow-md mb-2"
+                  className="w-full aspect-[16/9] object-cover rounded-lg border border-neutral-200 mb-2"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -813,7 +826,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             <div className="border-t border-neutral-150 pt-5 mt-4">
               <div className="flex items-center justify-around text-[12px] text-neutral-caption mb-5">
                 <div className="flex flex-col items-center gap-1.5">
-                  <div className="w-4 h-4 rounded-full bg-neutral-400"></div>
+                  <div className="w-4 h-4 rounded-full bg-[#fa541c]"></div>
                   <span>已答</span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
@@ -836,7 +849,14 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                 onClick={handleSubmitAnswering}
                 className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3 font-bold shadow-lg shadow-orange-500/10 rounded-[4px] transition-all text-sm cursor-pointer"
               >
-                提交试卷
+                提交作业
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setShowStudentAnswering(false)}
+                className="w-full mt-3 border-neutral-300 hover:text-[#fa541c] hover:border-orange-200 hover:bg-[#fa541c]/5 py-3 font-bold rounded-[4px] transition-all text-sm cursor-pointer"
+              >
+                退出试卷
               </Button>
             </div>
           </div>
@@ -1154,7 +1174,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                             setShowStudentAnswering(true);
                             setAnsweringAnswers({});
                           }}
-                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 h-8.5 text-[13px] font-bold shadow-sm rounded-md transition-all flex items-center gap-1"
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 h-8.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1"
                         >
                           开始答题
                         </Button>

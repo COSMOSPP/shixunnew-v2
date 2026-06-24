@@ -9,7 +9,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export default function TeacherExperimentIDE() {
+interface TeacherExperimentIDEProps {
+  onBack?: () => void;
+}
+
+export default function TeacherExperimentIDE({ onBack }: TeacherExperimentIDEProps = {}) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('launcher');
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
@@ -96,7 +100,13 @@ export default function TeacherExperimentIDE() {
       <header className="h-14 border-b border-neutral-200 flex items-center justify-between px-4 shrink-0 bg-white z-10 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (onBack) {
+                onBack();
+              } else {
+                navigate(-1);
+              }
+            }}
             className="flex items-center gap-1 text-[13px] font-medium text-neutral-600 hover:text-neutral-800 transition-colors"
           >
             <ChevronLeft className="w-4.5 h-4.5 text-neutral-500" /> 返回
