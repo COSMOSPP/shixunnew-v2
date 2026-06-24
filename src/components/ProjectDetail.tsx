@@ -22,7 +22,10 @@ interface ProjectDetailProps {
 }
 
 export default function ProjectDetail({ project, onBack, onStart }: ProjectDetailProps) {
-  const [activeTab, setActiveTab] = useState('source');
+  const [activeTab, setActiveTab] = useState('intro');
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState('v0.1.1');
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
@@ -58,11 +61,17 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                 <span className="text-neutral-title font-bold">{project.title}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-white hover:bg-neutral-50 text-[13px] font-medium text-neutral-title transition-all shadow-sm border border-neutral-200/50">
-                  <Bookmark className="w-4 h-4 text-[#fa541c]" /> 收藏
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-white hover:bg-neutral-50 text-[13px] font-medium text-neutral-title transition-all shadow-sm border border-neutral-200/50">
-                  <Share2 className="w-4 h-4" /> 分享
+                <button 
+                  onClick={() => setIsFavorited(!isFavorited)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-[13px] font-medium border shadow-sm",
+                    isFavorited 
+                      ? "bg-[#fa541c]/10 border-[#fa541c]/30 text-[#fa541c] hover:bg-[#fa541c]/20" 
+                      : "bg-white/50 hover:bg-white text-neutral-title border-neutral-200/20"
+                  )}
+                >
+                  <Star className={cn("w-4 h-4 transition-transform active:scale-95", isFavorited ? "text-[#fa541c] fill-[#fa541c]" : "")} /> 
+                  {isFavorited ? '已收藏' : '收藏'}
                 </button>
               </div>
             </div>
@@ -70,18 +79,16 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
             {/* Title & Meta */}
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-2 tracking-tight">{project.title}</h1>
-              
-              {/* Tags & Version */}
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-[12px] font-bold px-2.5 py-0.5 bg-white text-neutral-title rounded-md shadow-sm border border-neutral-200">
+                <span className="px-2 py-0.5 bg-[#f5f6f8] text-neutral-body text-[12px] rounded-[4px] font-medium">
                   官方认证
                 </span>
                 {project.tags.map((tag, i) => (
-                  <span key={i} className="text-[12px] font-medium px-2.5 py-0.5 bg-[#fa541c]/10 text-[#fa541c] border border-[#fa541c]/20 rounded-md">
+                  <span key={i} className="px-2 py-0.5 bg-[#f5f6f8] text-neutral-body text-[12px] rounded-[4px] font-medium">
                     {tag}
                   </span>
                 ))}
-                <span className="text-[12px] font-medium px-2.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-md">
+                <span className="px-2 py-0.5 bg-[#f5f6f8] text-neutral-body text-[12px] rounded-[4px] font-medium">
                   {project.difficulty}
                 </span>
               </div>
@@ -94,8 +101,12 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
               <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
                 <div className="flex items-center gap-6 bg-white px-4 py-2 rounded-[10px] shadow-sm border border-neutral-200/50">
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-neutral-500" />
-                    <span className="text-[13px] text-neutral-600 font-medium"><span className="text-[#fa541c] font-bold">{project.favorites || (project.rating > 10 ? project.rating : Math.floor(project.rating * 100))}</span> 人收藏</span>
+                    <Star className={cn("w-4 h-4 transition-colors", isFavorited ? "text-[#fa541c] fill-[#fa541c]" : "text-neutral-500")} />
+                    <span className="text-[13px] text-neutral-600 font-medium">
+                      <span className="text-[#fa541c] font-bold">
+                        {(project.favorites || (project.rating > 10 ? project.rating : Math.floor(project.rating * 100))) + (isFavorited ? 1 : 0)}
+                      </span> 人收藏
+                    </span>
                   </div>
                   <div className="w-px h-5 bg-neutral-200"></div>
                   <div className="flex items-center gap-2">
@@ -109,7 +120,7 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                   className="bg-gradient-to-r from-[#fa541c] to-[#ff8c3a] hover:from-[#e84a15] hover:to-[#ff7a22] text-white shadow-lg shadow-[#fa541c]/30 border-0 flex items-center gap-2 rounded-[10px] px-8 h-11 transition-all hover:-translate-y-0.5"
                 >
                   <Play className="w-4 h-4 fill-white" />
-                  <span className="font-bold text-[15px] tracking-wide">立刻使用此项目</span>
+                  <span className="font-bold text-[15px] tracking-wide">启动项目</span>
                 </Button>
               </div>
             </div>
@@ -125,6 +136,7 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
           <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               {[
+                { id: 'intro', label: '项目介绍', icon: Info },
                 { id: 'source', label: '源码', icon: Code },
               ].map((tab) => (
                 <button
@@ -140,14 +152,62 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1 text-neutral-500 cursor-pointer hover:text-neutral-900 transition-colors pr-4">
-              <span className="text-[14px] text-neutral-400">版本：</span>
-              <span className="text-[14px] text-neutral-500 mr-1">v0.1.1</span>
-              <ChevronDown className="w-4 h-4 text-neutral-400" />
+            <div className="relative">
+              <div 
+                onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
+                className="flex items-center gap-1 text-neutral-500 cursor-pointer hover:text-neutral-900 transition-colors pr-4 select-none"
+              >
+                <span className="text-[14px] text-neutral-400">版本：</span>
+                <span className="text-[14px] text-neutral-500 mr-1">{selectedVersion}</span>
+                <ChevronDown className={cn("w-4 h-4 text-neutral-400 transition-transform duration-200", isVersionDropdownOpen ? "rotate-180" : "")} />
+              </div>
+              {isVersionDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setIsVersionDropdownOpen(false)}></div>
+                  <div className="absolute right-4 top-8 bg-white border border-neutral-100 rounded-lg shadow-lg py-1.5 min-w-[100px] z-40 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {['v0.1.1', 'v0.1.0', 'v0.0.9'].map((ver) => (
+                      <button
+                        key={ver}
+                        onClick={() => {
+                          setSelectedVersion(ver);
+                          setIsVersionDropdownOpen(false);
+                        }}
+                        className={cn(
+                          "w-full text-left px-4 py-2 text-[13px] hover:bg-neutral-50 transition-colors",
+                          selectedVersion === ver ? "text-[#fa541c] font-bold" : "text-neutral-700"
+                        )}
+                      >
+                        {ver}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
-
-
+          {/* Intro Section */}
+          {activeTab === 'intro' && (
+            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+              <div className="bg-white rounded-[16px] shadow-sm p-8">
+                <h2 className="text-lg font-bold text-neutral-title mb-4">项目介绍</h2>
+                <p className="text-[14px] text-neutral-body leading-relaxed mb-6">
+                  {project.desc}
+                </p>
+                <div className="bg-[#fafafa] rounded-[12px] p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    "掌握实战项目开发流程",
+                    "学习主流模型构建与调试",
+                    "理解真实业务场景数据特征",
+                    "提升全栈/AI应用独立开发能力"
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-neutral-body text-[14px]">
+                       <CheckCircle2 className="w-4 h-4 text-[#fa541c]" /> {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Source Code Section */}
           {activeTab === 'source' && (
@@ -212,7 +272,6 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                 </div>
                 <div className="h-12 border-b border-neutral-100 flex items-center justify-between px-6 shrink-0">
                   <div className="text-[14px] text-[#fa541c]">master <span className="text-neutral-caption mx-1">/</span> <span className="text-[#fa541c]">readme.md</span></div>
-                  <div className="text-[13px] text-[#fa541c] cursor-pointer hover:underline">分享链接</div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
                   <div className="max-w-3xl">
@@ -297,28 +356,21 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                 <Clock className="w-4 h-4 mr-1.5" /> 2022/12/01
               </div>
             </div>
-
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-[#fa541c] overflow-hidden flex items-center justify-center shadow-sm">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SOL&backgroundColor=fa541c" alt="SOL" className="w-10 h-10" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#7c3aed] rounded flex items-center justify-center text-white text-[10px] border-[2px] border-white">
-                    🤖
-                  </div>
-                </div>
-                <span className="text-[17px] text-neutral-600 font-medium">SOL</span>
-              </div>
-              
-              <button className="w-12 h-12 rounded-full bg-[#fff2e8] flex items-center justify-center text-[#fa541c] hover:bg-[#ffd8bf] transition-colors">
-                <Download className="w-6 h-6" />
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => alert("项目已成功 Fork 到您的工作区！")}
+                className="flex-1 h-12 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[6px] font-bold text-[18px] transition-colors shadow-sm"
+              >
+                Fork
+              </button>
+              <button 
+                onClick={() => alert("正在下载项目源码...")}
+                className="w-12 h-12 border border-neutral-200 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-[#fa541c] hover:border-[#fa541c]/30 bg-white hover:bg-[#fff2e8] transition-colors shadow-sm"
+                title="下载源码"
+              >
+                <Download className="w-5 h-5" />
               </button>
             </div>
-
-            <button className="w-full h-12 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[6px] font-bold text-[18px] transition-colors shadow-sm">
-              Fork
-            </button>
           </div>
         </div>
       </div>

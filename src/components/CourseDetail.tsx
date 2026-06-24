@@ -226,6 +226,8 @@ const NEW_QUESTIONS = [
 
 export default function CourseDetail({ onBack, onShowLearningPath, initialLesson, isTeacher }: CourseDetailProps) {
   const [activeTab, setActiveTab] = useState('intro');
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isDatasetFavorited, setIsDatasetFavorited] = useState(false);
   const [showStudentAnswering, setShowStudentAnswering] = useState(false);
   const [showPracticalIDE, setShowPracticalIDE] = useState(false);
   const [isSubmitAnswerDrawerOpen, setIsSubmitAnswerDrawerOpen] = useState(false);
@@ -236,6 +238,16 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
   const [markedQuestions, setMarkedQuestions] = useState<Set<number>>(new Set());
   const [userAnswers, setUserAnswers] = useState<Record<number, any>>({});
   const [examTimeLeft, setExamTimeLeft] = useState(600); // 10 minutes count down
+  const [showSubmitConfirmModal, setShowSubmitConfirmModal] = useState(false);
+  const [submitConfirmMessage, setSubmitConfirmMessage] = useState('');
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
+  const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
+  const [calculatedScore, setCalculatedScore] = useState(0);
+
+  const userAnswersRef = React.useRef(userAnswers);
+  useEffect(() => {
+    userAnswersRef.current = userAnswers;
+  }, [userAnswers]);
 
   useEffect(() => {
     if (!showStudentAnswering) return;
@@ -262,8 +274,27 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
       setExamTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          alert("考试时间到，已自动为您关闭答题！");
-          setShowStudentAnswering(false);
+          
+          // Auto-submit and calculate score on timeout
+          let score = 0;
+          NEW_QUESTIONS.forEach((q, idx) => {
+            const answer = userAnswersRef.current[idx];
+            if (q.type === 'single') {
+              if (answer === 0) {
+                score += q.score;
+              }
+            } else if (q.type === 'multi') {
+              if (Array.isArray(answer) && answer.length === 2 && answer.includes(0) && answer.includes(1)) {
+                score += q.score;
+              }
+            } else if (q.type === 'practical') {
+              if (answer === true) {
+                score += q.score;
+              }
+            }
+          });
+          setCalculatedScore(score);
+          setShowTimeoutModal(true);
           (window as any).__EXAM_TIME_LEFT__ = 0;
           window.dispatchEvent(new CustomEvent("answering-time-change"));
           return 0;
@@ -311,15 +342,16 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
     const unansweredCount = totalQuestionsCount - answeredCount;
 
     if (unansweredCount > 0) {
-      if (!window.confirm(`您还有 ${unansweredCount} 道题未作答，确定要提交作业吗？`)) {
-        return;
-      }
+      setSubmitConfirmMessage(`您还有 ${unansweredCount} 道题未作答，确定要提交作业吗？`);
     } else {
-      if (!window.confirm("确定要提交作业吗？提交后将无法修改答案。")) {
-        return;
-      }
+      setSubmitConfirmMessage("确定要提交作业吗？提交后将无法修改答案。");
     }
+    setShowSubmitConfirmModal(true);
+  };
 
+  const handleConfirmSubmit = () => {
+    setShowSubmitConfirmModal(false);
+    
     // Calculate score
     let score = 0;
     NEW_QUESTIONS.forEach((q, idx) => {
@@ -339,8 +371,8 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
       }
     });
 
-    alert(`作业提交成功！您的最终得分是：${score} 分（总分 50 分）`);
-    setShowStudentAnswering(false);
+    setCalculatedScore(score);
+    setShowSubmitSuccessModal(true);
   };
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 59, seconds: 15 });
 
@@ -956,6 +988,103 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
           </div>,
           document.body
         )}
+
+        {/* 提交作业确认 Modal */}
+        {showSubmitConfirmModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+              <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+                <h2 className="text-[16px] font-bold text-[#fa541c] flex items-center gap-2">
+                  提示
+                </h2>
+                <button onClick={() => setShowSubmitConfirmModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <p className="text-[14px] text-neutral-700 font-medium">{submitConfirmMessage}</p>
+              </div>
+              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+                <Button type="button" onClick={() => setShowSubmitConfirmModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+                <Button type="button" onClick={handleConfirmSubmit} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">确定提交</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 考试时间到 Modal */}
+        {showTimeoutModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+              <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+                <h2 className="text-[16px] font-bold text-red-600 flex items-center gap-2">
+                  考试结束
+                </h2>
+                <button 
+                  onClick={() => {
+                    setShowTimeoutModal(false);
+                    setShowStudentAnswering(false);
+                  }} 
+                  className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <p className="text-[14px] text-neutral-700 font-medium">考试时间到，系统已自动提交您的作业！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+              </div>
+              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+                <Button 
+                  type="button" 
+                  onClick={() => {
+                    setShowTimeoutModal(false);
+                    setShowStudentAnswering(false);
+                  }} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20"
+                >
+                  确定
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 提交成功 Modal */}
+        {showSubmitSuccessModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+              <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+                <h2 className="text-[16px] font-bold text-green-600 flex items-center gap-2">
+                  提交成功
+                </h2>
+                <button 
+                  onClick={() => {
+                    setShowSubmitSuccessModal(false);
+                    setShowStudentAnswering(false);
+                  }} 
+                  className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <p className="text-[14px] text-neutral-700 font-medium">作业提交成功！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+              </div>
+              <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+                <Button 
+                  type="button" 
+                  onClick={() => {
+                    setShowSubmitSuccessModal(false);
+                    setShowStudentAnswering(false);
+                  }} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20"
+                >
+                  确定
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -996,8 +1125,17 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
               <span className="text-neutral-title">Python 基础</span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 hover:bg-white text-[13px] text-neutral-title transition-colors">
-                <Star className="w-4 h-4" /> 收藏
+              <button 
+                onClick={() => setIsFavorited(!isFavorited)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-[13px] font-medium",
+                  isFavorited 
+                    ? "bg-[#fa541c]/10 text-[#fa541c] hover:bg-[#fa541c]/20" 
+                    : "bg-white/50 hover:bg-white text-neutral-title"
+                )}
+              >
+                <Star className={cn("w-4 h-4 transition-transform active:scale-95", isFavorited ? "text-[#fa541c] fill-[#fa541c]" : "")} /> 
+                {isFavorited ? '已收藏' : '收藏'}
               </button>
             </div>
           </div>
@@ -2663,9 +2801,15 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                                  <p className="text-[13px] text-neutral-caption mt-2">{selectedDataset.desc}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="outline" size="sm" className="h-8 shadow-sm">
-                                   <Star className="w-4 h-4 mr-1" /> 收藏
-                                </Button>
+                                 <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className={cn("h-8 shadow-sm transition-colors", isDatasetFavorited ? "bg-[#fa541c]/10 text-[#fa541c] border-[#fa541c]/30" : "")}
+                                    onClick={() => setIsDatasetFavorited(!isDatasetFavorited)}
+                                 >
+                                    <Star className={cn("w-4 h-4 mr-1 transition-transform active:scale-95", isDatasetFavorited ? "text-[#fa541c] fill-[#fa541c]" : "")} /> 
+                                    {isDatasetFavorited ? "已收藏" : "收藏"}
+                                 </Button>
                                 {importedDatasets.includes(selectedDataset.name) ? (
                                    <Button 
                                       variant="outline" 
@@ -3063,6 +3207,103 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
               <Button type="button" onClick={() => setShowDeleteLessonModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
               <Button type="button" onClick={handleDeleteLesson} className="bg-red-600 hover:bg-red-700 text-white font-bold h-10 px-8 shadow-md shadow-red-500/20">确定删除</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 提交作业确认 Modal */}
+      {showSubmitConfirmModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-[#fa541c] flex items-center gap-2">
+                提示
+              </h2>
+              <button onClick={() => setShowSubmitConfirmModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-[14px] text-neutral-700 font-medium">{submitConfirmMessage}</p>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button type="button" onClick={() => setShowSubmitConfirmModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
+              <Button type="button" onClick={handleConfirmSubmit} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">确定提交</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 考试时间到 Modal */}
+      {showTimeoutModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-red-600 flex items-center gap-2">
+                考试结束
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowTimeoutModal(false);
+                  setShowStudentAnswering(false);
+                }} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-[14px] text-neutral-700 font-medium">考试时间到，系统已自动提交您的作业！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button 
+                type="button" 
+                onClick={() => {
+                  setShowTimeoutModal(false);
+                  setShowStudentAnswering(false);
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 提交成功 Modal */}
+      {showSubmitSuccessModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h2 className="text-[16px] font-bold text-green-600 flex items-center gap-2">
+                提交成功
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowSubmitSuccessModal(false);
+                  setShowStudentAnswering(false);
+                }} 
+                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-[14px] text-neutral-700 font-medium">作业提交成功！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+            </div>
+            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+              <Button 
+                type="button" 
+                onClick={() => {
+                  setShowSubmitSuccessModal(false);
+                  setShowStudentAnswering(false);
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20"
+              >
+                确定
+              </Button>
             </div>
           </div>
         </div>
