@@ -879,6 +879,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
               {/* Header */}
               <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
                 <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-[#fa541c]" />
                   提交答案
                 </h2>
                 <button 
@@ -894,7 +895,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                 {/* 题目名称 */}
                 <div className="grid grid-cols-[100px_1fr] items-start gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right pt-0.5">
-                    题目名称 <span className="text-neutral-400 font-normal">：</span>
+                    题目名称
                   </label>
                   <div className="text-[13px] text-neutral-800 font-bold leading-normal">
                     {NEW_QUESTIONS[currentQuestionIdx]?.title}
@@ -904,7 +905,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                 {/* 上传答案文件 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
-                    上传答案文件 <span className="text-neutral-400 font-normal">：</span>
+                    上传答案文件 <span className="text-[#fa541c]">*</span>
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -935,7 +936,8 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
               <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
                 <Button 
                   onClick={() => setIsSubmitAnswerDrawerOpen(false)} 
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                 >
                   取消
                 </Button>
@@ -945,10 +947,9 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
                     setIsSubmitAnswerDrawerOpen(false);
                     alert("答案提交成功！");
                   }} 
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold flex items-center gap-1.5"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                 >
-                  <span>提交</span>
-                  <span className="flex items-center justify-center bg-white text-[#fa541c] rounded w-4.5 h-4.5 text-[10px] font-bold shadow-sm">⚡</span>
+                  确认
                 </Button>
               </div>
             </div>
