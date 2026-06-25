@@ -4,7 +4,7 @@ import {
   Plus, Edit, Trash2, Sliders, Play, TrendingUp, BarChart2, Download, 
   Filter, AlertCircle, Check, RefreshCw, X, ChevronRight, Cpu, 
   AlertTriangle, Server, Database, Terminal, ShieldAlert, Copy, RefreshCcw, CheckCircle,
-  ChevronDown
+  ChevronDown, Eye, EyeOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,24 +50,13 @@ interface SystemLog {
   abnormal: boolean;
 }
 
-interface ResourcePoolSpec {
-  id: string;
-  cpu: number;      // 核心数 (C)
-  memory: number;   // 内存大小 (G)
-  storage: number;  // 存储大小 (G)
-  gpu?: string;     // GPU型号 (如 NVIDIA T4)
-}
-
 interface ResourcePool {
   id: string;
   name: string;
-  supportedTypes: ("容器" | "虚机" | "存储")[];
-  associatedPlatformIds: string[]; // 关联的云平台ID
-  specType: "规格化" | "无规格";
-  specs?: ResourcePoolSpec[];
-  syncStatus: "已同步" | "待同步" | "同步中" | "同步失败";
-  lastSyncTime?: string;
-  status: "已启用" | "未启用";
+  associatedPlugin: string;
+  createdAt: string;
+  ak?: string;
+  sk?: string;
 }
 
 // --- Initial Mock Data ---
@@ -139,54 +128,11 @@ const initialLogs: SystemLog[] = [
 ];
 
 const initialPools: ResourcePool[] = [
-  {
-    id: "pool-1",
-    name: "容器专属高算力资源池",
-    supportedTypes: ["容器"],
-    associatedPlatformIds: ["plat-5"],
-    specType: "无规格",
-    syncStatus: "已同步",
-    lastSyncTime: "2026-06-05 14:20",
-    status: "已启用"
-  },
-  {
-    id: "pool-2",
-    name: "企业私有虚机研发资源池",
-    supportedTypes: ["虚机"],
-    associatedPlatformIds: ["plat-2", "plat-6"],
-    specType: "规格化",
-    specs: [
-      { id: "spec-2-1", cpu: 2, memory: 4, storage: 50 },
-      { id: "spec-2-2", cpu: 4, memory: 8, storage: 100 },
-      { id: "spec-2-3", cpu: 8, memory: 16, storage: 200, gpu: "NVIDIA T4" }
-    ],
-    syncStatus: "已同步",
-    lastSyncTime: "2026-06-05 15:30",
-    status: "已启用"
-  },
-  {
-    id: "pool-3",
-    name: "混合公有云备份存储池",
-    supportedTypes: ["存储"],
-    associatedPlatformIds: ["plat-4", "plat-7"],
-    specType: "无规格",
-    syncStatus: "已同步",
-    lastSyncTime: "2026-06-05 16:00",
-    status: "已启用"
-  },
-  {
-    id: "pool-4",
-    name: "GPU高并发深度学习实训池",
-    supportedTypes: ["容器", "虚机"],
-    associatedPlatformIds: ["plat-5", "plat-3"],
-    specType: "规格化",
-    specs: [
-      { id: "spec-4-1", cpu: 8, memory: 32, storage: 500, gpu: "1*NVIDIA A100" },
-      { id: "spec-4-2", cpu: 16, memory: 64, storage: 1000, gpu: "2*NVIDIA A100" }
-    ],
-    syncStatus: "待同步",
-    status: "未启用"
-  }
+  { id: "pool-1", name: "k8s", associatedPlugin: "容器", createdAt: "2026-05-26 15:58", ak: "ak-k8s-example", sk: "sk-k8s-example" },
+  { id: "pool-2", name: "天翼云", associatedPlugin: "公有云", createdAt: "2025-05-08 15:24", ak: "ak-ctyun-example", sk: "sk-ctyun-example" },
+  { id: "pool-3", name: "idealpods", associatedPlugin: "私有云", createdAt: "2024-12-25 09:28", ak: "ak-pods-example", sk: "sk-pods-example" },
+  { id: "pool-4", name: "pve", associatedPlugin: "私有云", createdAt: "2024-11-23 10:35", ak: "ak-pve-example", sk: "sk-pve-example" },
+  { id: "pool-5", name: "ceph", associatedPlugin: "存储", createdAt: "2024-04-19 17:29", ak: "ak-ceph-example", sk: "sk-ceph-example" }
 ];
 
 // 6 months monitor metrics datasets
@@ -397,6 +343,10 @@ export default function AdminSystemPage() {
     setTimeout(() => {
       setToastMessage(null);
     }, 3000);
+  };
+
+  const handleSimulateExport = (title: string) => {
+    triggerToast(`📥 已成功模拟导出报表数据「${title}.csv」！`);
   };
 
   // ==================== TAB 1. 标签管理 ====================
@@ -641,12 +591,8 @@ export default function AdminSystemPage() {
     triggerToast(nextStatus === "启用" ? `⚡ 已启用云服务插件「${name}」` : `🔌 已禁用云服务插件「${name}」`);
   };
 
-  // ==================== TAB 3.5. 资源池配置管理 ====================
+  // ==================== TAB 3.5. 资源池管理 ====================
   const [searchPoolName, setSearchPoolName] = useState("");
-  const [filterPoolName, setFilterPoolName] = useState("");
-  const [filterPoolType, setFilterPoolType] = useState<string>("全部");
-  const [filterPoolSyncStatus, setFilterPoolSyncStatus] = useState<string>("全部");
-  const [selectedPoolIds, setSelectedPoolIds] = useState<string[]>([]);
   const [poolCurrentPage, setPoolCurrentPage] = useState(1);
   const [poolPageSize, setPoolPageSize] = useState(10);
 
@@ -655,65 +601,26 @@ export default function AdminSystemPage() {
 
   // Form Fields
   const [formPoolName, setFormPoolName] = useState("");
-  const [formPoolTypes, setFormPoolTypes] = useState<("容器" | "虚机" | "存储")[]>([]);
-  const [formPoolPlatforms, setFormPoolPlatforms] = useState<string[]>([]);
-  const [formPoolSpecType, setFormPoolSpecType] = useState<"规格化" | "无规格">("无规格");
-  const [formPoolSpecs, setFormPoolSpecs] = useState<ResourcePoolSpec[]>([]);
-  const [formPoolStatus, setFormPoolStatus] = useState<ResourcePool["status"]>("已启用");
+  const [formPoolPlugin, setFormPoolPlugin] = useState("容器");
 
-  // Simulated Sync states
-  const [syncingPoolId, setSyncingPoolId] = useState<string | null>(null);
-  const [batchSyncing, setBatchSyncing] = useState(false);
-
-  // Specifications manually adding helpers
-  const [newSpecCpu, setNewSpecCpu] = useState<number>(2);
-  const [newSpecMemory, setNewSpecMemory] = useState<number>(4);
-  const [newSpecStorage, setNewSpecStorage] = useState<number>(50);
-  const [newSpecGpu, setNewSpecGpu] = useState<string>("");
-
-  const handlePoolSearch = () => {
-    setFilterPoolName(searchPoolName);
-  };
-
-  const handlePoolKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handlePoolSearch();
-    }
-  };
+  // AK/SK Credential Modal States
+  const [showAkSkModal, setShowAkSkModal] = useState(false);
+  const [selectedPoolForAkSk, setSelectedPoolForAkSk] = useState<ResourcePool | null>(null);
+  const [formPoolAk, setFormPoolAk] = useState("");
+  const [formPoolSk, setFormPoolSk] = useState("");
+  const [showSkPassword, setShowSkPassword] = useState(false);
 
   const handleOpenCreatePool = () => {
     setEditingPool(null);
     setFormPoolName("");
-    setFormPoolTypes([]);
-    setFormPoolPlatforms([]);
-    setFormPoolSpecType("无规格");
-    setFormPoolSpecs([]);
-    setFormPoolStatus("已启用");
-    
-    // Clear spec form fields
-    setNewSpecCpu(2);
-    setNewSpecMemory(4);
-    setNewSpecStorage(50);
-    setNewSpecGpu("");
-
+    setFormPoolPlugin("容器");
     setShowPoolModal(true);
   };
 
   const handleOpenEditPool = (pool: ResourcePool) => {
     setEditingPool(pool);
     setFormPoolName(pool.name);
-    setFormPoolTypes(pool.supportedTypes.slice(0, 1));
-    setFormPoolPlatforms(pool.associatedPlatformIds);
-    setFormPoolSpecType(pool.specType);
-    setFormPoolSpecs(pool.specs || []);
-    setFormPoolStatus(pool.status);
-
-    // Clear spec form fields
-    setNewSpecCpu(2);
-    setNewSpecMemory(4);
-    setNewSpecStorage(50);
-    setNewSpecGpu("");
-
+    setFormPoolPlugin(pool.associatedPlugin);
     setShowPoolModal(true);
   };
 
@@ -723,14 +630,9 @@ export default function AdminSystemPage() {
       triggerToast("⚠️ 请填写资源池名称！");
       return;
     }
-    if (formPoolTypes.length === 0) {
-      triggerToast("⚠️ 请至少勾选一种云资源类型！");
-      return;
-    }
-    if (formPoolPlatforms.length === 0) {
-      triggerToast("⚠️ 请至少选择一个关联的云平台！");
-      return;
-    }
+
+    const now = new Date();
+    const formatTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     if (editingPool) {
       setPools(pools.map(p => 
@@ -738,11 +640,7 @@ export default function AdminSystemPage() {
           ? { 
               ...p, 
               name: formPoolName.trim(), 
-              supportedTypes: formPoolTypes, 
-              associatedPlatformIds: formPoolPlatforms, 
-              specType: formPoolSpecType, 
-              specs: formPoolSpecType === "规格化" ? formPoolSpecs : undefined,
-              status: formPoolStatus 
+              associatedPlugin: formPoolPlugin 
             } 
           : p
       ));
@@ -751,12 +649,10 @@ export default function AdminSystemPage() {
       const newPool: ResourcePool = {
         id: `pool-${Date.now()}`,
         name: formPoolName.trim(),
-        supportedTypes: formPoolTypes,
-        associatedPlatformIds: formPoolPlatforms,
-        specType: formPoolSpecType,
-        specs: formPoolSpecType === "规格化" ? formPoolSpecs : undefined,
-        syncStatus: "待同步",
-        status: formPoolStatus
+        associatedPlugin: formPoolPlugin,
+        createdAt: formatTime,
+        ak: "",
+        sk: ""
       };
       setPools([...pools, newPool]);
       triggerToast(`🎉 成功新建资源池：「${newPool.name}」`);
@@ -771,95 +667,25 @@ export default function AdminSystemPage() {
     }
   };
 
-  const handleTogglePoolStatus = (id: string, name: string, currentStatus: ResourcePool["status"]) => {
-    const nextStatus: ResourcePool["status"] = currentStatus === "已启用" ? "未启用" : "已启用";
+  const handleOpenAkSkModal = (pool: ResourcePool) => {
+    setSelectedPoolForAkSk(pool);
+    setFormPoolAk(pool.ak || "");
+    setFormPoolSk(pool.sk || "");
+    setShowSkPassword(false);
+    setShowAkSkModal(true);
+  };
+
+  const handleSaveAkSk = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPoolForAkSk) return;
+
     setPools(pools.map(p => 
-      p.id === id ? { ...p, status: nextStatus } : p
+      p.id === selectedPoolForAkSk.id 
+        ? { ...p, ak: formPoolAk.trim(), sk: formPoolSk.trim() } 
+        : p
     ));
-    triggerToast(nextStatus === "已启用" ? `⚡ 已启用资源池「${name}」` : `🔌 已禁用资源池「${name}」`);
-  };
-
-  const handleSyncPoolSpecs = (poolId: string, poolName: string) => {
-    setSyncingPoolId(poolId);
-    triggerToast(`🔄 正在建立安全信道，同步底层资源池「${poolName}」规格参数...`);
-    
-    setTimeout(() => {
-      const now = new Date();
-      const formatTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      
-      setPools(prevPools => prevPools.map(p => {
-        if (p.id === poolId) {
-          const defaultSpecs: ResourcePoolSpec[] = p.specType === "规格化" ? [
-            { id: `spec-${Date.now()}-1`, cpu: 2, memory: 4, storage: 50 },
-            { id: `spec-${Date.now()}-2`, cpu: 4, memory: 8, storage: 100 },
-            { id: `spec-${Date.now()}-3`, cpu: 8, memory: 16, storage: 200, gpu: "NVIDIA T4" }
-          ] : [];
-          return {
-            ...p,
-            syncStatus: "已同步",
-            lastSyncTime: formatTime,
-            specs: p.specType === "规格化" ? (p.specs && p.specs.length > 0 ? p.specs : defaultSpecs) : undefined
-          };
-        }
-        return p;
-      }));
-      setSyncingPoolId(null);
-      triggerToast(`✅ 资源池「${poolName}」物理规格同步成功！`);
-    }, 1500);
-  };
-
-  const handleBatchSyncPoolSpecs = () => {
-    if (selectedPoolIds.length === 0) return;
-    setBatchSyncing(true);
-    triggerToast(`🔄 正在批量拉取已选 ${selectedPoolIds.length} 个资源池的底层物理配置信息...`);
-
-    setTimeout(() => {
-      const now = new Date();
-      const formatTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-      setPools(prevPools => prevPools.map(p => {
-        if (selectedPoolIds.includes(p.id)) {
-          const defaultSpecs: ResourcePoolSpec[] = p.specType === "规格化" ? [
-            { id: `spec-${Date.now()}-1`, cpu: 2, memory: 4, storage: 50 },
-            { id: `spec-${Date.now()}-2`, cpu: 4, memory: 8, storage: 100 }
-          ] : [];
-          return {
-            ...p,
-            syncStatus: "已同步",
-            lastSyncTime: formatTime,
-            specs: p.specType === "规格化" ? (p.specs && p.specs.length > 0 ? p.specs : defaultSpecs) : undefined
-          };
-        }
-        return p;
-      }));
-      setBatchSyncing(false);
-      triggerToast(`✅ 已成功批量同步 ${selectedPoolIds.length} 个资源池的云端物理规格！`);
-    }, 1500);
-  };
-
-  const handleAddSpecToForm = () => {
-    if (newSpecCpu <= 0 || newSpecMemory <= 0 || newSpecStorage <= 0) {
-      triggerToast("⚠️ 请输入合理的规格数值！");
-      return;
-    }
-    const newSpec = {
-      id: `spec-${Date.now()}`,
-      cpu: newSpecCpu,
-      memory: newSpecMemory,
-      storage: newSpecStorage,
-      gpu: newSpecGpu.trim() || undefined
-    };
-    setFormPoolSpecs([...formPoolSpecs, newSpec]);
-    setNewSpecGpu("");
-    triggerToast("➕ 已添加一条规格！");
-  };
-
-  const handleRemoveSpecFromForm = (id: string) => {
-    setFormPoolSpecs(formPoolSpecs.filter(s => s.id !== id));
-  };
-
-  const handleSimulateExport = (filename: string) => {
-    triggerToast(`📥 正在整理报表数据，打包并生成导出文件 [${filename}.xlsx] ...`);
+    triggerToast(`🔑 成功保存资源池「${selectedPoolForAkSk.name}」的 AK/SK 凭证！`);
+    setShowAkSkModal(false);
   };
   // ==================== TAB 4. 平台级监控管理 ====================
   const [alarmCpuThreshold, setAlarmCpuThreshold] = useState(85);
@@ -1702,14 +1528,30 @@ export default function AdminSystemPage() {
                     {/* Status */}
                     <div className="space-y-1.5">
                       <label className="font-bold text-neutral-700 block text-xs">状态</label>
-                      <select
-                        value={formStatus}
-                        onChange={(e) => setFormStatus(e.target.value as any)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
-                      >
-                        <option value="启用">启用</option>
-                        <option value="未启用">未启用</option>
-                      </select>
+                      <div className="flex items-center gap-4 py-1 select-none font-semibold text-neutral-600">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="status-platform"
+                            value="启用"
+                            checked={formStatus === "启用"}
+                            onChange={() => setFormStatus("启用")}
+                            className="accent-[#fa541c]"
+                          />
+                          <span>启用</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="status-platform"
+                            value="未启用"
+                            checked={formStatus === "未启用"}
+                            onChange={() => setFormStatus("未启用")}
+                            className="accent-[#fa541c]"
+                          />
+                          <span>未启用</span>
+                        </label>
+                      </div>
                     </div>
 
                   </div>
@@ -1750,87 +1592,26 @@ export default function AdminSystemPage() {
             <div className="bg-white rounded border border-neutral-border overflow-hidden flex flex-col flex-1 min-h-0">
               
               {/* Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50 shrink-0 bg-white">
-                <div className="flex flex-wrap items-center gap-4">
-                  {/* Name Search */}
-                  <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                    <input
-                      type="text"
-                      placeholder="搜索资源池名称..."
-                      value={searchPoolName}
-                      onChange={(e) => {
-                        setSearchPoolName(e.target.value);
-                        setPoolCurrentPage(1);
-                      }}
-                      className="pl-9 pr-4 py-2 w-52 bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
-                    />
-                  </div>
-
-                  {/* Filter Type */}
-                  <div className="flex items-center gap-1.5 text-xs text-neutral-600 font-medium">
-                    <span>支持资源:</span>
-                    <select
-                      value={filterPoolType}
-                      onChange={(e) => {
-                        setFilterPoolType(e.target.value);
-                        setPoolCurrentPage(1);
-                      }}
-                      className="border border-neutral-200 rounded px-2.5 py-1.5 bg-white focus:outline-none focus:border-[#fa541c] text-xs font-semibold cursor-pointer text-neutral-800"
-                    >
-                      <option value="全部">全部类型</option>
-                      <option value="容器">容器</option>
-                      <option value="虚机">虚机</option>
-                      <option value="存储">存储</option>
-                    </select>
-                  </div>
-
-                  {/* Filter Sync Status */}
-                  <div className="flex items-center gap-1.5 text-xs text-neutral-600 font-medium">
-                    <span>同步状态:</span>
-                    <select
-                      value={filterPoolSyncStatus}
-                      onChange={(e) => {
-                        setFilterPoolSyncStatus(e.target.value);
-                        setPoolCurrentPage(1);
-                      }}
-                      className="border border-neutral-200 rounded px-2.5 py-1.5 bg-white focus:outline-none focus:border-[#fa541c] text-xs font-semibold cursor-pointer text-neutral-800"
-                    >
-                      <option value="全部">全部状态</option>
-                      <option value="已同步">已同步</option>
-                      <option value="待同步">待同步</option>
-                      <option value="同步中">同步中</option>
-                      <option value="同步失败">同步失败</option>
-                    </select>
-                  </div>
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50 shrink-0 bg-white">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="请输入"
+                    value={searchPoolName}
+                    onChange={(e) => {
+                      setSearchPoolName(e.target.value);
+                      setPoolCurrentPage(1);
+                    }}
+                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
+                  />
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleBatchSyncPoolSpecs}
-                    disabled={batchSyncing || selectedPoolIds.length === 0}
-                    className={cn(
-                      "h-8 px-4 text-xs font-semibold rounded-[4px] cursor-pointer transition-all border flex items-center gap-1.5",
-                      selectedPoolIds.length > 0
-                        ? "bg-[#fff2e8] border-[#ffbb96]/60 text-[#fa541c] hover:bg-[#ffe8d6]"
-                        : "bg-neutral-50 border-neutral-200 text-neutral-400 cursor-not-allowed"
-                    )}
-                  >
-                    {batchSyncing ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <RefreshCcw className="w-3.5 h-3.5" />
-                    )}
-                    <span>批量规格同步</span>
-                  </button>
-                  
-                  <button
-                    onClick={handleOpenCreatePool}
-                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-semibold px-4.5 py-1.5 rounded-[4px] transition-colors cursor-pointer border-0 shadow-sm flex items-center h-8"
-                  >
-                    新建
-                  </button>
-                </div>
+                <button
+                  onClick={handleOpenCreatePool}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-semibold px-4.5 py-1.5 rounded-[4px] transition-colors cursor-pointer border-0 shadow-sm flex items-center h-8"
+                >
+                  新建
+                </button>
               </div>
 
               {/* Table Container */}
@@ -1838,228 +1619,59 @@ export default function AdminSystemPage() {
                 <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none text-center">
-                      <th className="p-4 font-semibold w-12 text-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (selectedPoolIds.length === pools.length) {
-                              setSelectedPoolIds([]);
-                            } else {
-                              setSelectedPoolIds(pools.map(p => p.id));
-                            }
-                          }}
-                          className={cn(
-                            "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto border-neutral-300 bg-white",
-                            selectedPoolIds.length === pools.length && pools.length > 0
-                              ? "bg-[#fa541c] border-[#fa541c] text-white"
-                              : "hover:border-[#fa541c]"
-                          )}
-                        >
-                          {selectedPoolIds.length === pools.length && pools.length > 0 && <span className="text-[10px] font-bold">✓</span>}
-                        </button>
-                      </th>
                       <th className="p-4 font-semibold">资源池名称</th>
-                      <th className="p-4 font-semibold">支持资源类型</th>
-                      <th className="p-4 font-semibold">关联云平台</th>
-                      <th className="p-4 font-semibold">规格模式</th>
-                      <th className="p-4 font-semibold">同步规格明细</th>
-                      <th className="p-4 font-semibold">同步状态</th>
-                      <th className="p-4 font-semibold">最后同步时间</th>
-                      <th className="p-4 font-semibold">状态</th>
+                      <th className="p-4 font-semibold">关联云服务插件</th>
+                      <th className="p-4 font-semibold">创建时间</th>
                       <th className="p-4 font-semibold">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-center">
                     {(() => {
-                      const filteredPools = pools.filter(pool => {
-                        const matchesSearch = pool.name.toLowerCase().includes(searchPoolName.toLowerCase());
-                        const matchesType = filterPoolType === "全部" || pool.supportedTypes.includes(filterPoolType as any);
-                        const matchesSync = filterPoolSyncStatus === "全部" || pool.syncStatus === filterPoolSyncStatus;
-                        return matchesSearch && matchesType && matchesSync;
-                      });
-                      const totalPools = filteredPools.length;
+                      const filteredPools = pools.filter(pool => 
+                        pool.name.toLowerCase().includes(searchPoolName.toLowerCase()) ||
+                        pool.associatedPlugin.toLowerCase().includes(searchPoolName.toLowerCase())
+                      );
                       const poolStartIdx = (poolCurrentPage - 1) * poolPageSize;
                       const paginatedPools = filteredPools.slice(poolStartIdx, poolStartIdx + poolPageSize);
 
                       if (paginatedPools.length === 0) {
                         return (
                           <tr>
-                            <td colSpan={10} className="p-12 text-neutral-400">
+                            <td colSpan={4} className="p-12 text-neutral-400 text-center">
                               <AlertCircle className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-                              <span>没有检索到与当前过滤条件匹配的算力资源池。</span>
+                              <span>没有检索到与当前名称匹配的资源池。</span>
                             </td>
                           </tr>
                         );
                       }
 
-                      return paginatedPools.map((pool) => {
-                        const isChecked = selectedPoolIds.includes(pool.id);
-                        return (
-                          <tr key={pool.id} className="hover:bg-neutral-50/30 transition-colors text-[13px] border-b border-neutral-100 last:border-b-0">
-                            <td className="p-4 text-center">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (isChecked) {
-                                    setSelectedPoolIds(selectedPoolIds.filter(id => id !== pool.id));
-                                  } else {
-                                    setSelectedPoolIds([...selectedPoolIds, pool.id]);
-                                  }
-                                }}
-                                className={cn(
-                                  "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto border-neutral-300 bg-white",
-                                  isChecked
-                                    ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                    : "hover:border-[#fa541c]"
-                                )}
-                              >
-                                {isChecked && <span className="text-[10px] font-bold">✓</span>}
-                              </button>
-                            </td>
-
-                            <td className="p-4 font-semibold text-neutral-800">{pool.name}</td>
-
-                            <td className="p-4">
-                              <div className="flex items-center justify-center gap-1.5">
-                                {pool.supportedTypes.map(type => (
-                                  <span
-                                    key={type}
-                                    className={cn(
-                                      "px-1.5 py-0.5 rounded text-[11px] font-bold border",
-                                      type === "容器" ? "bg-green-50 border-green-200 text-green-600" :
-                                      type === "虚机" ? "bg-amber-50 border-amber-200 text-amber-600" :
-                                      "bg-blue-50 border-blue-200 text-blue-600"
-                                    )}
-                                  >
-                                    {type}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-
-                            <td className="p-4">
-                              <div className="flex flex-wrap items-center justify-center gap-2">
-                                {pool.associatedPlatformIds.map(platId => {
-                                  const plat = platforms.find(p => p.id === platId);
-                                  if (!plat) return null;
-                                  return (
-                                    <div key={platId} className="flex items-center gap-1.5 border border-neutral-200/60 bg-neutral-50 px-2 py-0.5 rounded shadow-3xs text-[11px] font-semibold text-neutral-800">
-                                      {renderPlatformLogo(plat.platformType)}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </td>
-
-                            <td className="p-4">
-                              <span className={cn(
-                                "px-2 py-0.5 rounded text-[12px] border font-medium font-sans inline-block",
-                                pool.specType === "规格化" ? "bg-[#fff2e8] border-[#ffbb96]/45 text-[#fa541c]" : "bg-neutral-50 border-neutral-200 text-neutral-500"
-                              )}>
-                                {pool.specType}
-                              </span>
-                            </td>
-
-                            <td className="p-4">
-                              {pool.specType === "无规格" ? (
-                                <span className="text-neutral-400 text-xs italic font-sans">直接透传配额</span>
-                              ) : (
-                                <div className="relative group inline-block select-none">
-                                  <span className="text-[#fa541c] hover:underline font-bold font-mono bg-[#fff2e8] px-2 py-0.5 rounded border border-[#ffbb96]/45 cursor-pointer text-xs">
-                                    {pool.specs?.length || 0} 个规格定义
-                                  </span>
-                                  {pool.specs && pool.specs.length > 0 && (
-                                    <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-neutral-900 text-white rounded-lg p-3.5 text-[11px] shadow-xl z-20 font-mono space-y-1.5 text-left leading-normal border border-neutral-800">
-                                      <div className="border-b border-neutral-850 pb-1.5 mb-1.5 font-black text-neutral-400 flex justify-between">
-                                        <span>规格类型</span>
-                                        <span>核心/内存/盘</span>
-                                      </div>
-                                      {pool.specs.map((spec, sIdx) => (
-                                        <div key={spec.id} className="flex justify-between items-center text-neutral-300">
-                                          <span>规格 #{sIdx + 1}</span>
-                                          <span className="text-emerald-400 font-bold">
-                                            {spec.cpu}C / {spec.memory}G / {spec.storage}G
-                                            {spec.gpu ? ` [${spec.gpu}]` : ""}
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </td>
-
-                            <td className="p-4">
-                              <span className={cn(
-                                "px-2 py-0.5 rounded text-[12px] border font-medium font-sans flex items-center gap-1.5 w-fit mx-auto",
-                                pool.syncStatus === "已同步" ? "bg-green-50 border-green-200 text-green-600" :
-                                pool.syncStatus === "待同步" ? "bg-amber-50 border-amber-200 text-amber-600" :
-                                pool.syncStatus === "同步中" ? "bg-blue-50 border-blue-200 text-blue-600" :
-                                "bg-red-50 border-red-200 text-red-600"
-                              )}>
-                                {pool.syncStatus === "同步中" && (
-                                  <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0 text-blue-500" />
-                                )}
-                                <span>{pool.syncStatus}</span>
-                              </span>
-                            </td>
-
-                            <td className="p-4 font-mono text-neutral-500">{pool.lastSyncTime || "-"}</td>
-
-                            <td className="p-4">
-                              <span className={cn(
-                                "px-2 py-0.5 rounded text-[12px] border font-medium font-sans inline-block",
-                                pool.status === "已启用" ? "bg-green-50 border-green-200 text-green-600" : "bg-neutral-50 border-neutral-200 text-neutral-500"
-                              )}>
-                                {pool.status}
-                              </span>
-                            </td>
-
-                            <td className="p-4 text-center">
-                              <button
-                                onClick={() => handleOpenEditPool(pool)}
-                                className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
-                              >
-                                编辑
-                              </button>
-                              <button
-                                onClick={() => handleDeletePool(pool.id, pool.name)}
-                                className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
-                              >
-                                删除
-                              </button>
-                              {pool.status === "已启用" ? (
-                                <button
-                                  onClick={() => handleTogglePoolStatus(pool.id, pool.name, pool.status)}
-                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
-                                >
-                                  禁用
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleTogglePoolStatus(pool.id, pool.name, pool.status)}
-                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
-                                >
-                                  启用
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                disabled={syncingPoolId === pool.id}
-                                onClick={() => handleSyncPoolSpecs(pool.id, pool.name)}
-                                className={cn(
-                                  "transition-colors font-bold cursor-pointer bg-transparent border-0 p-0 text-[13px]",
-                                  syncingPoolId === pool.id
-                                    ? "text-blue-500 cursor-not-allowed"
-                                    : "text-[#fa541c] hover:text-[#e84a15]"
-                                )}
-                              >
-                                {syncingPoolId === pool.id ? "同步中" : "规格同步"}
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      });
+                      return paginatedPools.map((pool) => (
+                        <tr key={pool.id} className="hover:bg-neutral-50/30 transition-colors text-[13px] border-b border-neutral-100 last:border-b-0">
+                          <td className="p-4 text-center font-semibold text-neutral-800">{pool.name}</td>
+                          <td className="p-4 text-center text-neutral-600">{pool.associatedPlugin}</td>
+                          <td className="p-4 text-center text-neutral-500 font-mono">{pool.createdAt}</td>
+                          <td className="p-4 text-center select-none">
+                            <button
+                              onClick={() => handleOpenEditPool(pool)}
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                            >
+                              编辑
+                            </button>
+                            <button
+                              onClick={() => handleDeletePool(pool.id, pool.name)}
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                            >
+                              删除
+                            </button>
+                            <button
+                              onClick={() => handleOpenAkSkModal(pool)}
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                            >
+                              AK/SK
+                            </button>
+                          </td>
+                        </tr>
+                      ));
                     })()}
                   </tbody>
                 </table>
@@ -2067,12 +1679,10 @@ export default function AdminSystemPage() {
 
               {/* Pagination */}
               {(() => {
-                const filteredPools = pools.filter(pool => {
-                  const matchesSearch = pool.name.toLowerCase().includes(searchPoolName.toLowerCase());
-                  const matchesType = filterPoolType === "全部" || pool.supportedTypes.includes(filterPoolType as any);
-                  const matchesSync = filterPoolSyncStatus === "全部" || pool.syncStatus === filterPoolSyncStatus;
-                  return matchesSearch && matchesType && matchesSync;
-                });
+                const filteredPools = pools.filter(pool => 
+                  pool.name.toLowerCase().includes(searchPoolName.toLowerCase()) ||
+                  pool.associatedPlugin.toLowerCase().includes(searchPoolName.toLowerCase())
+                );
                 const totalPools = filteredPools.length;
                 const totalPoolPages = Math.ceil(totalPools / poolPageSize) || 1;
 
@@ -2135,7 +1745,7 @@ export default function AdminSystemPage() {
             {/* --- Resource Pool Form Dialog Modal --- */}
             {showPoolModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs p-4 animate-fade-in">
-                <form onSubmit={handleSavePool} className="w-full max-w-[550px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
+                <form onSubmit={handleSavePool} className="w-full max-w-[440px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
                   
                   {/* Header */}
                   <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-border flex items-center justify-between shrink-0">
@@ -2153,7 +1763,7 @@ export default function AdminSystemPage() {
                   </div>
 
                   {/* Body inputs */}
-                  <div className="p-6 space-y-4 text-left overflow-y-auto max-h-[480px] custom-scrollbar text-neutral-700 font-sans">
+                  <div className="p-6 space-y-4 text-left font-sans text-neutral-700">
                     
                     {/* Pool Name */}
                     <div className="space-y-1.5">
@@ -2161,276 +1771,26 @@ export default function AdminSystemPage() {
                       <input
                         type="text"
                         required
-                        placeholder="请输入算力资源池名称，如：GPU研发核心算力池"
+                        placeholder="请输入资源池名称"
                         value={formPoolName}
                         onChange={(e) => setFormPoolName(e.target.value)}
                         className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
                       />
                     </div>
 
-                    {/* Supported Cloud Types */}
-                    <div className="space-y-2">
-                      <label className="font-bold text-neutral-700 block text-xs">云资源类型</label>
-                      <div className="flex gap-8 border-b border-neutral-100 pb-1 select-none font-semibold text-neutral-500">
-                        {["容器", "虚机", "存储"].map((type) => {
-                          const isChecked = formPoolTypes.includes(type as any);
-                          return (
-                            <button
-                              type="button"
-                              key={type}
-                              onClick={() => {
-                                setFormPoolTypes([type as any]);
-                                setFormPoolPlatforms([]);
-                              }}
-                              className={cn(
-                                "pb-2 text-sm font-medium transition-all relative whitespace-nowrap cursor-pointer border-0 bg-transparent px-1",
-                                isChecked
-                                  ? "text-[#fa541c] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#fa541c]"
-                                  : "text-neutral-500 hover:text-neutral-800"
-                              )}
-                            >
-                              {type}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Associated Platforms (Dynamic Filtered) */}
+                    {/* Associated Cloud Plugin */}
                     <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs flex items-center justify-between">
-                        <span>关联云平台</span>
-                        {formPoolTypes.length > 0 && (
-                          <span className="text-[10px] text-neutral-400 font-medium font-sans">
-                            已基于所选类型自动匹配支持的云平台列表
-                          </span>
-                        )}
-                      </label>
-                      
-                      {formPoolTypes.length === 0 ? (
-                        <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200 text-neutral-400 text-center select-none text-xs">
-                          请先在上方选择“云资源类型”
-                        </div>
-                      ) : (
-                        <div className="border border-neutral-200 rounded-lg p-3.5 bg-neutral-50/50 flex flex-wrap gap-2.5 max-h-[140px] overflow-y-auto custom-scrollbar">
-                          {platforms
-                            .filter(plat => {
-                              const matchesContainer = formPoolTypes.includes("容器") && (plat.type === "容器" || plat.platformType === "kubernetes");
-                              const matchesVM = formPoolTypes.includes("虚机") && (plat.type === "公有云" || plat.type === "私有云" || plat.type === "云主机");
-                              const matchesStorage = formPoolTypes.includes("存储") && plat.type === "存储";
-                              return matchesContainer || matchesVM || matchesStorage;
-                            })
-                            .map(plat => {
-                              const isChecked = formPoolPlatforms.includes(plat.id);
-                              return (
-                                <button
-                                  type="button"
-                                  key={plat.id}
-                                  onClick={() => {
-                                    if (isChecked) {
-                                      setFormPoolPlatforms(formPoolPlatforms.filter(id => id !== plat.id));
-                                    } else {
-                                      setFormPoolPlatforms([...formPoolPlatforms, plat.id]);
-                                    }
-                                  }}
-                                  className={cn(
-                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none",
-                                    isChecked
-                                      ? "bg-[#fff2e8] border-[#fa541c] text-[#fa541c]"
-                                      : "bg-white border-neutral-200 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
-                                  )}
-                                >
-                                  <span>{plat.name}</span>
-                                  <span className="scale-75 origin-right">{renderPlatformLogo(plat.platformType)}</span>
-                                </button>
-                              );
-                            })}
-                          {platforms.filter(plat => {
-                            const matchesContainer = formPoolTypes.includes("容器") && (plat.type === "容器" || plat.platformType === "kubernetes");
-                            const matchesVM = formPoolTypes.includes("虚机") && (plat.type === "公有云" || plat.type === "私有云" || plat.type === "云主机");
-                            const matchesStorage = formPoolTypes.includes("存储") && plat.type === "存储";
-                            return matchesContainer || matchesVM || matchesStorage;
-                          }).length === 0 && (
-                            <span className="text-neutral-400 italic">没有找到符合当前类型的可用云平台。</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Spec Mode Selection */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">物理/虚拟规格同步模式</label>
-                      <div className="flex gap-6 py-1 select-none font-semibold text-neutral-600">
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="specType"
-                            value="无规格"
-                            checked={formPoolSpecType === "无规格"}
-                            onChange={() => {
-                              setFormPoolSpecType("无规格");
-                              setFormPoolSpecs([]);
-                            }}
-                            className="accent-[#fa541c]"
-                          />
-                          <span>无规格 (透传配额，随需自由划拨)</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="specType"
-                            value="规格化"
-                            checked={formPoolSpecType === "规格化"}
-                            onChange={() => setFormPoolSpecType("规格化")}
-                            className="accent-[#fa541c]"
-                          />
-                          <span>规格化 (底层同步物理规格绑定)</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Specs Details List Editor (Visible if specType === "规格化") */}
-                    {formPoolSpecType === "规格化" && (
-                      <div className="space-y-3 pt-3 border-t border-neutral-100 animate-slide-up">
-                        <div className="flex justify-between items-center">
-                          <span className="font-bold text-neutral-700 block text-xs">规格细节列表 (CPU / 内存 / 固态盘 / 加速卡)</span>
-                          
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (formPoolPlatforms.length === 0) {
-                                triggerToast("⚠️ 请先勾选要同步的关联云平台！");
-                                return;
-                              }
-                              triggerToast("🔄 正在与底层云服务API联络，加载官方默认规格表...");
-                              setTimeout(() => {
-                                const retrieved = [
-                                  { id: `spec-auto-1`, cpu: 2, memory: 4, storage: 40 },
-                                  { id: `spec-auto-2`, cpu: 4, memory: 8, storage: 80 },
-                                  { id: `spec-auto-3`, cpu: 8, memory: 16, storage: 160 }
-                                ];
-                                setFormPoolSpecs([...formPoolSpecs, ...retrieved]);
-                                triggerToast("✅ 底层硬件标准规格已被拉取并自动录入！");
-                              }, 600);
-                            }}
-                            className="text-[#fa541c] hover:underline font-bold text-[11px] cursor-pointer flex items-center gap-1 border border-[#ffbb96]/45 bg-[#fff2e8]/45 hover:bg-[#fff2e8] px-2.5 py-1 rounded"
-                          >
-                            <RefreshCw className="w-3 h-3" />
-                            <span>一键同步底层标准规格</span>
-                          </button>
-                        </div>
-
-                        {/* Synced Spec Lines list */}
-                        <div className="space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar border border-neutral-200 rounded-lg p-2.5 bg-neutral-50/50">
-                          {formPoolSpecs.length === 0 ? (
-                            <div className="text-center text-neutral-400 py-6 italic select-none text-xs">
-                              暂无规格参数。请点击一键同步，或在下方手动录入配置。
-                            </div>
-                          ) : (
-                            formPoolSpecs.map((spec, index) => (
-                              <div key={spec.id} className="flex justify-between items-center bg-white border border-neutral-100 p-2 rounded shadow-3xs font-mono text-[11px]">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold text-[#fa541c]"># {index + 1}</span>
-                                  <span className="font-semibold text-neutral-title">
-                                    {spec.cpu}核(CPU) / {spec.memory}G(内存) / {spec.storage}G(SSD)
-                                    {spec.gpu ? ` [GPU: ${spec.gpu}]` : ""}
-                                  </span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveSpecFromForm(spec.id)}
-                                  className="text-neutral-400 hover:text-red-500 cursor-pointer transition-colors"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            ))
-                          )}
-                        </div>
-
-                        {/* Specs Adding Form Row */}
-                        <div className="grid grid-cols-4 gap-2 items-end pt-2 border-t border-neutral-100">
-                          <div>
-                            <label className="text-[10px] text-neutral-500 block mb-1">CPU (核)</label>
-                            <input
-                              type="number"
-                              min={1}
-                              value={newSpecCpu}
-                              onChange={(e) => setNewSpecCpu(parseInt(e.target.value) || 2)}
-                              className="w-full border border-neutral-200 rounded px-2 py-1 focus:outline-none font-mono text-xs"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[10px] text-neutral-500 block mb-1">内存 (GB)</label>
-                            <input
-                              type="number"
-                              min={1}
-                              value={newSpecMemory}
-                              onChange={(e) => setNewSpecMemory(parseInt(e.target.value) || 4)}
-                              className="w-full border border-neutral-200 rounded px-2 py-1 focus:outline-none font-mono text-xs"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[10px] text-neutral-500 block mb-1">固态盘 (GB)</label>
-                            <input
-                              type="number"
-                              min={10}
-                              value={newSpecStorage}
-                              onChange={(e) => setNewSpecStorage(parseInt(e.target.value) || 50)}
-                              className="w-full border border-neutral-200 rounded px-2 py-1 focus:outline-none font-mono text-xs"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[10px] text-neutral-500 block mb-1">GPU 型号 (选填)</label>
-                            <input
-                              type="text"
-                              placeholder="如: Nvidia T4"
-                              value={newSpecGpu}
-                              onChange={(e) => setNewSpecGpu(e.target.value)}
-                              className="w-full border border-neutral-200 rounded px-2 py-1 focus:outline-none placeholder-neutral-300 text-xs"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end pt-1">
-                          <button
-                            type="button"
-                            onClick={handleAddSpecToForm}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-3 py-1 rounded transition-colors cursor-pointer flex items-center gap-1 font-sans shadow-3xs text-xs"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>添加规格行</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Status */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">状态</label>
-                      <div className="flex items-center gap-4 py-1 select-none font-semibold text-neutral-600">
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="status-pool"
-                            value="已启用"
-                            checked={formPoolStatus === "已启用"}
-                            onChange={() => setFormPoolStatus("已启用")}
-                            className="accent-[#fa541c]"
-                          />
-                          <span>已启用</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="status-pool"
-                            value="未启用"
-                            checked={formPoolStatus === "未启用"}
-                            onChange={() => setFormPoolStatus("未启用")}
-                            className="accent-[#fa541c]"
-                          />
-                          <span>未启用</span>
-                        </label>
-                      </div>
+                      <label className="font-bold text-neutral-700 block text-xs">关联云服务插件</label>
+                      <select
+                        value={formPoolPlugin}
+                        onChange={(e) => setFormPoolPlugin(e.target.value)}
+                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                      >
+                        <option value="容器">容器</option>
+                        <option value="公有云">公有云</option>
+                        <option value="私有云">私有云</option>
+                        <option value="存储">存储</option>
+                      </select>
                     </div>
 
                   </div>
@@ -2440,6 +1800,95 @@ export default function AdminSystemPage() {
                     <button
                       type="button"
                       onClick={() => setShowPoolModal(false)}
+                      className="bg-white hover:bg-neutral-100 text-neutral-title font-bold px-4 py-2 border border-neutral-border rounded-lg cursor-pointer transition-colors"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm"
+                    >
+                      确定
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            )}
+
+            {/* --- AK/SK Credentials Modal --- */}
+            {showAkSkModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs p-4 animate-fade-in">
+                <form onSubmit={handleSaveAkSk} className="w-full max-w-[440px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
+                  
+                  {/* Header */}
+                  <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-border flex items-center justify-between shrink-0">
+                    <span className="font-black text-neutral-title text-sm flex items-center gap-1.5">
+                      <Key className="w-4.5 h-4.5 text-[#fa541c]" />
+                      <span>配置 AK/SK 凭证</span>
+                    </span>
+                    <button 
+                      type="button"
+                      onClick={() => setShowAkSkModal(false)}
+                      className="text-neutral-400 hover:text-neutral-700 cursor-pointer bg-transparent border-0"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Body inputs */}
+                  <div className="p-6 space-y-4 text-left font-sans text-neutral-700">
+                    
+                    <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200 text-neutral-500 font-sans leading-normal select-none">
+                      ⚠️ 凭证用于资源池 API 数据对接及鉴权通信，请妥善保管好您的 Secret Key。
+                    </div>
+
+                    {/* Access Key */}
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-neutral-700 block text-xs">Access Key (AK)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="请输入 Access Key"
+                        value={formPoolAk}
+                        onChange={(e) => setFormPoolAk(e.target.value)}
+                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                      />
+                    </div>
+
+                    {/* Secret Key */}
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-neutral-700 block text-xs">Secret Key (SK)</label>
+                      <div className="relative">
+                        <input
+                          type={showSkPassword ? "text" : "password"}
+                          required
+                          placeholder="请输入 Secret Key"
+                          value={formPoolSk}
+                          onChange={(e) => setFormPoolSk(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg pl-3 pr-10 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSkPassword(!showSkPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 bg-transparent border-0 cursor-pointer flex items-center p-0"
+                        >
+                          {showSkPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-border flex items-center justify-end gap-3 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setShowAkSkModal(false)}
                       className="bg-white hover:bg-neutral-100 text-neutral-title font-bold px-4 py-2 border border-neutral-border rounded-lg cursor-pointer transition-colors"
                     >
                       取消
