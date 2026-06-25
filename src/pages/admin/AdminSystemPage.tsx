@@ -4,9 +4,10 @@ import {
   Plus, Edit, Trash2, Sliders, Play, TrendingUp, BarChart2, Download, 
   Filter, AlertCircle, Check, RefreshCw, X, ChevronRight, Cpu, 
   AlertTriangle, Server, Database, Terminal, ShieldAlert, Copy, RefreshCcw, CheckCircle,
-  ChevronDown, Eye, EyeOff
+  ChevronDown, Eye, EyeOff, Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CustomSelect } from "../teacher/TeacherProjects";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // --- Data Interfaces ---
@@ -34,8 +35,9 @@ interface CloudPlatform {
   platformType: "ctyun" | "proxmox" | "cloudpods" | "kubernetes" | "huawei" | "aliyun" | "tencent" | "ceph" | "nfs" | "minio" | "glusterfs" | "k3s" | "openshift" | "openstack" | "vmware";
   type: string;
   pluginId: string;
-  status: "启用" | "未启用";
+  status: "启用" | "禁用";
   createdAt: string;
+  resourceTypes?: string[];
 }
 
 interface SystemLog {
@@ -57,6 +59,15 @@ interface ResourcePool {
   createdAt: string;
   ak?: string;
   sk?: string;
+  hasContainer?: boolean;
+  hasVm?: boolean;
+  description?: string;
+  containerPlugin?: string;
+  containerUrl?: string;
+  containerJson?: string;
+  vmPlugin?: string;
+  vmUrl?: string;
+  vmJson?: string;
 }
 
 // --- Initial Mock Data ---
@@ -129,21 +140,21 @@ const initialRoles: OperationalRole[] = [
 ];
 
 const initialPlatforms: CloudPlatform[] = [
-  { id: "plat-1", name: "天翼云资源池", platformType: "ctyun", type: "公有云", pluginId: "c4s33451d4plnhp3zidf", status: "未启用", createdAt: "2026-05-26 15:58" },
+  { id: "plat-1", name: "天翼云资源池", platformType: "ctyun", type: "公有云", pluginId: "c4s33451d4plnhp3zidf", status: "禁用", createdAt: "2026-05-26 15:58" },
   { id: "plat-2", name: "pve", platformType: "proxmox", type: "私有云", pluginId: "private", status: "启用", createdAt: "2025-05-08 15:24" },
-  { id: "plat-3", name: "实训云(临时)", platformType: "cloudpods", type: "私有云", pluginId: "private-qsohfH", status: "未启用", createdAt: "2024-12-25 09:28" },
+  { id: "plat-3", name: "实训云(临时)", platformType: "cloudpods", type: "私有云", pluginId: "private-qsohfH", status: "禁用", createdAt: "2024-12-25 09:28" },
   { id: "plat-4", name: "天翼云", platformType: "ctyun", type: "公有云", pluginId: "se9cyxgrzoj27vt1ijzm", status: "启用", createdAt: "2024-11-23 10:35" },
   { id: "plat-5", name: "kubernetes容器平台", platformType: "kubernetes", type: "容器", pluginId: "h2ahwz1awycagfymsp7cc", status: "启用", createdAt: "2024-04-19 17:29" },
   { id: "plat-6", name: "Ideal实训云", platformType: "cloudpods", type: "私有云", pluginId: "private", status: "启用", createdAt: "2024-04-19 17:29" },
   { id: "plat-7", name: "华为云", platformType: "huawei", type: "公有云", pluginId: "faanhu6yfo2ep84v7kxg4", status: "启用", createdAt: "2024-04-19 17:28" },
   { id: "plat-8", name: "Ceph存储平台", platformType: "ceph", type: "存储", pluginId: "ceph-storage-pool", status: "启用", createdAt: "2026-06-01 10:00" },
   { id: "plat-9", name: "阿里云生产平台", platformType: "aliyun", type: "公有云", pluginId: "ali-prod-gw", status: "启用", createdAt: "2026-06-02 11:30" },
-  { id: "plat-10", name: "腾讯云测试平台", platformType: "tencent", type: "公有云", pluginId: "tx-test-gw", status: "未启用", createdAt: "2026-06-03 14:15" },
+  { id: "plat-10", name: "腾讯云测试平台", platformType: "tencent", type: "公有云", pluginId: "tx-test-gw", status: "禁用", createdAt: "2026-06-03 14:15" },
   { id: "plat-11", name: "VMware集群", platformType: "vmware", type: "私有云", pluginId: "vmware-vsphere", status: "启用", createdAt: "2026-06-04 09:00" },
   { id: "plat-12", name: "NFS存储共享", platformType: "nfs", type: "存储", pluginId: "nfs-share", status: "启用", createdAt: "2026-06-05 16:20" },
   { id: "plat-13", name: "MinIO对象存储", platformType: "minio", type: "存储", pluginId: "minio-oss", status: "启用", createdAt: "2026-06-06 10:45" },
   { id: "plat-14", name: "天翼云专线通道", platformType: "ctyun", type: "公有云", pluginId: "ctyun-direct-line", status: "启用", createdAt: "2026-06-07 11:00" },
-  { id: "plat-15", name: "PVE测试环境", platformType: "proxmox", type: "私有云", pluginId: "pve-test-cluster", status: "未启用", createdAt: "2026-06-08 15:30" },
+  { id: "plat-15", name: "PVE测试环境", platformType: "proxmox", type: "私有云", pluginId: "pve-test-cluster", status: "禁用", createdAt: "2026-06-08 15:30" },
   { id: "plat-16", name: "Kubernetes边缘节点", platformType: "kubernetes", type: "容器", pluginId: "k8s-edge-nodes", status: "启用", createdAt: "2026-06-09 10:15" },
   { id: "plat-17", name: "华为云计算集群", platformType: "huawei", type: "公有云", pluginId: "huawei-compute-node", status: "启用", createdAt: "2026-06-10 14:45" },
   { id: "plat-18", name: "阿里云数据库平台", platformType: "aliyun", type: "公有云", pluginId: "ali-rds-gw", status: "启用", createdAt: "2026-06-11 09:30" },
@@ -151,7 +162,7 @@ const initialPlatforms: CloudPlatform[] = [
   { id: "plat-20", name: "Ceph数据冷备库", platformType: "ceph", type: "存储", pluginId: "ceph-backup-vault", status: "启用", createdAt: "2026-06-13 11:20" },
   { id: "plat-21", name: "K3s轻量容器", platformType: "k3s", type: "容器", pluginId: "k3s-lightweight", status: "启用", createdAt: "2026-06-14 13:50" },
   { id: "plat-22", name: "GlusterFS共享盘", platformType: "glusterfs", type: "存储", pluginId: "gluster-share", status: "启用", createdAt: "2026-06-15 15:40" },
-  { id: "plat-23", name: "OpenStack老集群", platformType: "openstack", type: "私有云", pluginId: "openstack-legacy", status: "未启用", createdAt: "2026-06-16 08:30" },
+  { id: "plat-23", name: "OpenStack老集群", platformType: "openstack", type: "私有云", pluginId: "openstack-legacy", status: "禁用", createdAt: "2026-06-16 08:30" },
   { id: "plat-24", name: "OpenShift容器开发", platformType: "openshift", type: "容器", pluginId: "openshift-okd", status: "启用", createdAt: "2026-06-17 17:12" },
   { id: "plat-25", name: "VMware开发集群", platformType: "vmware", type: "私有云", pluginId: "vmware-dev-cluster", status: "启用", createdAt: "2026-06-18 10:00" }
 ];
@@ -581,8 +592,17 @@ export default function AdminSystemPage() {
   const [formPlatType, setFormPlatType] = useState("云主机");
   const [formPluginId, setFormPluginId] = useState("");
   const [formStatus, setFormStatus] = useState<CloudPlatform["status"]>("启用");
+  const [formResourceTypes, setFormResourceTypes] = useState<string[]>([]);
   const [platformCurrentPage, setPlatformCurrentPage] = useState(1);
   const [platformPageSize, setPlatformPageSize] = useState(20);
+
+  const getInitialResourceTypes = (type: string): string[] => {
+    if (type === "容器") return ["容器"];
+    if (type === "存储") return ["文件存储", "对象存储"];
+    if (type === "私有云") return ["虚拟机", "容器"];
+    if (type === "公有云") return ["虚拟机", "GPU算力"];
+    return ["虚拟机"];
+  };
 
   const getPlatformTypeFromName = (name: string, type: string) => {
     const lowercase = name.toLowerCase();
@@ -603,6 +623,7 @@ export default function AdminSystemPage() {
     setFormPlatType("云主机");
     setFormPluginId("");
     setFormStatus("启用");
+    setFormResourceTypes(["虚拟机"]);
     setShowPlatformModal(true);
   };
 
@@ -612,13 +633,18 @@ export default function AdminSystemPage() {
     setFormPlatType(p.type);
     setFormPluginId(p.pluginId);
     setFormStatus(p.status);
+    setFormResourceTypes(p.resourceTypes || getInitialResourceTypes(p.type));
     setShowPlatformModal(true);
   };
 
   const handleSavePlatform = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formPlatName.trim() || !formPluginId.trim()) {
+    if (!formPlatName.trim()) {
       triggerToast("⚠️ 请填写完整信息！");
+      return;
+    }
+    if (formResourceTypes.length === 0) {
+      triggerToast("⚠️ 请选择至少一种云服务插件类型！");
       return;
     }
 
@@ -630,7 +656,12 @@ export default function AdminSystemPage() {
     if (editingPlatform) {
       setPlatforms(platforms.map(p => 
         p.id === editingPlatform.id 
-          ? { ...p, name: formPlatName.trim(), platformType: inferredPlatformType, type: formPlatType, pluginId: formPluginId.trim(), status: formStatus } 
+          ? { 
+              ...p, 
+              name: formPlatName.trim(), 
+              platformType: inferredPlatformType, 
+              resourceTypes: formResourceTypes 
+            } 
           : p
       ));
       triggerToast(`💾 成功保存云服务插件「${formPlatName}」配置！`);
@@ -639,10 +670,11 @@ export default function AdminSystemPage() {
         id: `plat-${Date.now()}`,
         name: formPlatName.trim(),
         platformType: inferredPlatformType,
-        type: formPlatType,
-        pluginId: formPluginId.trim(),
-        status: formStatus,
-        createdAt: formatTime
+        type: formResourceTypes[0] || "虚拟机",
+        pluginId: `plugin-${Date.now()}`,
+        status: "启用",
+        createdAt: formatTime,
+        resourceTypes: formResourceTypes
       };
       setPlatforms([...platforms, newPlatform]);
       triggerToast(`🎉 成功新建云服务插件：「${newPlatform.name}」`);
@@ -663,11 +695,19 @@ export default function AdminSystemPage() {
   };
 
   const handleTogglePlatformStatus = (id: string, name: string, currentStatus: CloudPlatform["status"]) => {
-    const nextStatus: CloudPlatform["status"] = currentStatus === "启用" ? "未启用" : "启用";
-    setPlatforms(platforms.map(p => 
-      p.id === id ? { ...p, status: nextStatus } : p
-    ));
-    triggerToast(nextStatus === "启用" ? `⚡ 已启用云服务插件「${name}」` : `🔌 已禁用云服务插件「${name}」`);
+    const nextStatus: CloudPlatform["status"] = currentStatus === "启用" ? "禁用" : "启用";
+    const actionText = nextStatus === "启用" ? "启用" : "禁用";
+    setDeleteConfirm({
+      show: true,
+      title: `确认${actionText}云服务插件`,
+      message: `确定要${actionText}该云服务插件吗？「${name}」`,
+      onConfirm: () => {
+        setPlatforms(platforms.map(p => 
+          p.id === id ? { ...p, status: nextStatus } : p
+        ));
+        triggerToast(nextStatus === "启用" ? `⚡ 已启用云服务插件「${name}」` : `🔌 已禁用云服务插件「${name}」`);
+      }
+    });
   };
 
   // ==================== TAB 3.5. 资源池管理 ====================
@@ -681,6 +721,17 @@ export default function AdminSystemPage() {
   // Form Fields
   const [formPoolName, setFormPoolName] = useState("");
   const [formPoolPlugin, setFormPoolPlugin] = useState("容器");
+  const [formPoolHasContainer, setFormPoolHasContainer] = useState(true);
+  const [formPoolHasVm, setFormPoolHasVm] = useState(false);
+  const [formPoolDesc, setFormPoolDesc] = useState("");
+
+  const [formPoolContainerPlugin, setFormPoolContainerPlugin] = useState("");
+  const [formPoolContainerUrl, setFormPoolContainerUrl] = useState("");
+  const [formPoolContainerJson, setFormPoolContainerJson] = useState("{}");
+
+  const [formPoolVmPlugin, setFormPoolVmPlugin] = useState("");
+  const [formPoolVmUrl, setFormPoolVmUrl] = useState("");
+  const [formPoolVmJson, setFormPoolVmJson] = useState("{}");
 
   // AK/SK Credential Modal States
   const [showAkSkModal, setShowAkSkModal] = useState(false);
@@ -693,6 +744,15 @@ export default function AdminSystemPage() {
     setEditingPool(null);
     setFormPoolName("");
     setFormPoolPlugin("容器");
+    setFormPoolHasContainer(true);
+    setFormPoolHasVm(false);
+    setFormPoolDesc("");
+    setFormPoolContainerPlugin("");
+    setFormPoolContainerUrl("");
+    setFormPoolContainerJson("{}");
+    setFormPoolVmPlugin("");
+    setFormPoolVmUrl("");
+    setFormPoolVmJson("{}");
     setShowPoolModal(true);
   };
 
@@ -700,6 +760,15 @@ export default function AdminSystemPage() {
     setEditingPool(pool);
     setFormPoolName(pool.name);
     setFormPoolPlugin(pool.associatedPlugin);
+    setFormPoolHasContainer(pool.hasContainer !== false);
+    setFormPoolHasVm(!!pool.hasVm);
+    setFormPoolDesc(pool.description || "");
+    setFormPoolContainerPlugin(pool.containerPlugin || "");
+    setFormPoolContainerUrl(pool.containerUrl || "");
+    setFormPoolContainerJson(pool.containerJson || "{}");
+    setFormPoolVmPlugin(pool.vmPlugin || "");
+    setFormPoolVmUrl(pool.vmUrl || "");
+    setFormPoolVmJson(pool.vmJson || "{}");
     setShowPoolModal(true);
   };
 
@@ -709,9 +778,42 @@ export default function AdminSystemPage() {
       triggerToast("⚠️ 请填写资源池名称！");
       return;
     }
+    if (!formPoolHasContainer && !formPoolHasVm) {
+      triggerToast("⚠️ 请至少选择一种能力（容器或虚机）！");
+      return;
+    }
+    if (formPoolHasContainer) {
+      if (!formPoolContainerPlugin) {
+        triggerToast("⚠️ 请选择已启用的容器能力插件！");
+        return;
+      }
+      if (!formPoolContainerUrl.trim()) {
+        triggerToast("⚠️ 请填写容器能力插件服务地址！");
+        return;
+      }
+    }
+    if (formPoolHasVm) {
+      if (!formPoolVmPlugin) {
+        triggerToast("⚠️ 请选择已启用的虚机能力插件！");
+        return;
+      }
+      if (!formPoolVmUrl.trim()) {
+        triggerToast("⚠️ 请填写虚机能力插件服务地址！");
+        return;
+      }
+    }
 
     const now = new Date();
     const formatTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    let associatedText = "";
+    if (formPoolHasContainer && formPoolHasVm) {
+      associatedText = "容器, 私有云";
+    } else if (formPoolHasContainer) {
+      associatedText = "容器";
+    } else {
+      associatedText = "私有云";
+    }
 
     if (editingPool) {
       setPools(pools.map(p => 
@@ -719,7 +821,16 @@ export default function AdminSystemPage() {
           ? { 
               ...p, 
               name: formPoolName.trim(), 
-              associatedPlugin: formPoolPlugin 
+              associatedPlugin: associatedText,
+              hasContainer: formPoolHasContainer,
+              hasVm: formPoolHasVm,
+              description: formPoolDesc.trim(),
+              containerPlugin: formPoolContainerPlugin,
+              containerUrl: formPoolContainerUrl.trim(),
+              containerJson: formPoolContainerJson.trim(),
+              vmPlugin: formPoolVmPlugin,
+              vmUrl: formPoolVmUrl.trim(),
+              vmJson: formPoolVmJson.trim()
             } 
           : p
       ));
@@ -728,10 +839,19 @@ export default function AdminSystemPage() {
       const newPool: ResourcePool = {
         id: `pool-${Date.now()}`,
         name: formPoolName.trim(),
-        associatedPlugin: formPoolPlugin,
+        associatedPlugin: associatedText,
         createdAt: formatTime,
         ak: "",
-        sk: ""
+        sk: "",
+        hasContainer: formPoolHasContainer,
+        hasVm: formPoolHasVm,
+        description: formPoolDesc.trim(),
+        containerPlugin: formPoolContainerPlugin,
+        containerUrl: formPoolContainerUrl.trim(),
+        containerJson: formPoolContainerJson.trim(),
+        vmPlugin: formPoolVmPlugin,
+        vmUrl: formPoolVmUrl.trim(),
+        vmJson: formPoolVmJson.trim()
       };
       setPools([...pools, newPool]);
       triggerToast(`🎉 成功新建资源池：「${newPool.name}」`);
@@ -1438,12 +1558,18 @@ export default function AdminSystemPage() {
 
                       return paginatedPlatforms.map((plat, platIndex) => (
                         <tr key={plat.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", platIndex === paginatedPlatforms.length - 1 && "border-b-0")}>
-                          <td className="pl-6 pr-3 py-3 text-left">
-                            <div className="inline-block text-left">
-                              {renderPlatformLogo(plat.platformType)}
+                          <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800">
+                            {plat.name}
+                          </td>
+                          <td className="px-3 py-3 text-left">
+                            <div className="flex flex-wrap gap-1.5">
+                              {(plat.resourceTypes || getInitialResourceTypes(plat.type)).map((rType, rIdx) => (
+                                <span key={rIdx} className="px-2 py-0.5 rounded text-[11px] bg-neutral-100 border border-neutral-200 text-neutral-600 font-semibold inline-block">
+                                  {rType}
+                                </span>
+                              ))}
                             </div>
                           </td>
-                          <td className="px-3 py-3 text-left text-neutral-600">{plat.type}</td>
                           <td className="px-3 py-3 text-left text-neutral-500 font-mono">{plat.pluginId}</td>
                           <td className="px-3 py-3 text-left">
                             <span className={cn(
@@ -1591,7 +1717,7 @@ export default function AdminSystemPage() {
                     {/* Name */}
                     <div className="grid grid-cols-[120px_1fr] items-center gap-4">
                       <label className="text-[13px] font-bold text-[#262626] text-right">
-                        云服务插件 <span className="text-[#fa541c]">*</span>
+                        云服务插件名称 <span className="text-[#fa541c]">*</span>
                       </label>
                       <input
                         type="text"
@@ -1604,67 +1730,43 @@ export default function AdminSystemPage() {
                       />
                     </div>
 
-                    {/* Type */}
-                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                    {/* Cloud Service Plugin Types */}
+                    <div className="grid grid-cols-[120px_1fr] items-start gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right mt-1.5">
                         云服务插件类型 <span className="text-[#fa541c]">*</span>
                       </label>
-                      <select
-                        value={formPlatType}
-                        onChange={(e) => setFormPlatType(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] bg-white transition-all text-[#262626]"
-                      >
-                        <option value="容器">容器</option>
-                        <option value="云主机">云主机</option>
-                        <option value="公有云">公有云</option>
-                        <option value="私有云">私有云</option>
-                        <option value="存储">存储</option>
-                      </select>
-                    </div>
-
-                    {/* Plugin ID */}
-                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-                      <label className="text-[13px] font-bold text-[#262626] text-right">
-                        插件ID <span className="text-[#fa541c]">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="请输入插件ID"
-                        value={formPluginId}
-                        onChange={(e) => setFormPluginId(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
-                      />
-                    </div>
-
-                    {/* Status */}
-                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-                      <label className="text-[13px] font-bold text-[#262626] text-right">
-                        状态 <span className="text-[#fa541c]">*</span>
-                      </label>
-                      <div className="flex items-center gap-6 py-1 select-none text-[#262626]">
-                        <label className="flex items-center gap-2 cursor-pointer font-medium">
-                          <input
-                            type="radio"
-                            name="status-platform"
-                            value="启用"
-                            checked={formStatus === "启用"}
-                            onChange={() => setFormStatus("启用")}
-                            className="accent-[#fa541c] w-4 h-4 cursor-pointer"
-                          />
-                          <span>启用</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer font-medium">
-                          <input
-                            type="radio"
-                            name="status-platform"
-                            value="未启用"
-                            checked={formStatus === "未启用"}
-                            onChange={() => setFormStatus("未启用")}
-                            className="accent-[#fa541c] w-4 h-4 cursor-pointer"
-                          />
-                          <span>未启用</span>
-                        </label>
+                      <div className="flex items-center gap-6 py-1">
+                        {[
+                          { key: "container", label: "容器" },
+                          { key: "vm", label: "虚拟机" },
+                        ].map((item) => {
+                          const isChecked = formResourceTypes.includes(item.label);
+                          return (
+                            <label
+                              key={item.key}
+                              className={cn(
+                                "flex items-center gap-2 py-1 text-xs cursor-pointer select-none transition-colors",
+                                isChecked 
+                                  ? "text-neutral-800 font-bold" 
+                                  : "text-neutral-600 font-medium hover:text-[#fa541c]"
+                              )}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  if (isChecked) {
+                                    setFormResourceTypes(formResourceTypes.filter((t) => t !== item.label));
+                                  } else {
+                                    setFormResourceTypes([...formResourceTypes, item.label]);
+                                  }
+                                }}
+                                className="accent-[#fa541c] cursor-pointer w-4 h-4"
+                              />
+                              <span>{item.label}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -1865,7 +1967,7 @@ export default function AdminSystemPage() {
               >
                 <form 
                   onSubmit={handleSavePool} 
-                  className="bg-white w-full max-w-[620px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+                  className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
                   onClick={(e) => e.stopPropagation()}
                 >
                   
@@ -1888,36 +1990,217 @@ export default function AdminSystemPage() {
                   <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
                     
                     {/* Pool Name */}
-                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
                       <label className="text-[13px] font-bold text-[#262626] text-right">
                         资源池名称 <span className="text-[#fa541c]">*</span>
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="请输入资源池名称"
+                        placeholder="华东容器资源池"
                         value={formPoolName}
                         onChange={(e) => setFormPoolName(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] bg-white"
                         autoFocus={!editingPool}
                       />
                     </div>
 
-                    {/* Associated Cloud Plugin */}
-                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-                      <label className="text-[13px] font-bold text-[#262626] text-right">
-                        关联云服务插件 <span className="text-[#fa541c]">*</span>
+                    {/* Capabilities Selection */}
+                    <div className="grid grid-cols-[100px_1fr] items-start gap-4 animate-fade-in">
+                      <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                        能力选择 <span className="text-[#fa541c]">*</span>
                       </label>
-                      <select
-                        value={formPoolPlugin}
-                        onChange={(e) => setFormPoolPlugin(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] bg-white transition-all text-[#262626]"
-                      >
-                        <option value="容器">容器</option>
-                        <option value="公有云">公有云</option>
-                        <option value="私有云">私有云</option>
-                        <option value="存储">存储</option>
-                      </select>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Container Capability */}
+                        <label
+                          className={cn(
+                            "flex items-start gap-3 p-4 rounded-[8px] border text-left cursor-pointer transition-all select-none bg-[#f8fafc]/30 hover:bg-[#f8fafc]/80",
+                            formPoolHasContainer 
+                              ? "border-[#fa541c] bg-[#fff2e8]/10 shadow-sm shadow-orange-500/5" 
+                              : "border-neutral-200 hover:border-neutral-300"
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formPoolHasContainer}
+                            onChange={(e) => setFormPoolHasContainer(e.target.checked)}
+                            className="accent-[#fa541c] w-4.5 h-4.5 cursor-pointer mt-1"
+                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className={cn("text-[13px] font-bold text-[#262626]", formPoolHasContainer && "text-[#fa541c]")}>
+                              容器能力
+                            </span>
+                            <span className="text-[11px] text-neutral-400 font-medium">
+                              允许创建容器运行环境
+                            </span>
+                          </div>
+                        </label>
+
+                        {/* VM Capability */}
+                        <label
+                          className={cn(
+                            "flex items-start gap-3 p-4 rounded-[8px] border text-left cursor-pointer transition-all select-none bg-[#f8fafc]/30 hover:bg-[#f8fafc]/80",
+                            formPoolHasVm 
+                              ? "border-[#fa541c] bg-[#fff2e8]/10 shadow-sm shadow-orange-500/5" 
+                              : "border-neutral-200 hover:border-neutral-300"
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formPoolHasVm}
+                            onChange={(e) => setFormPoolHasVm(e.target.checked)}
+                            className="accent-[#fa541c] w-4.5 h-4.5 cursor-pointer mt-1"
+                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className={cn("text-[13px] font-bold text-[#262626]", formPoolHasVm && "text-[#fa541c]")}>
+                              虚机能力
+                            </span>
+                            <span className="text-[11px] text-neutral-400 font-medium">
+                              允许创建虚机运行环境
+                            </span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Container Capability Config Panel (Fig 1) */}
+                    {formPoolHasContainer && (
+                      <div className="grid grid-cols-[100px_1fr] items-start gap-4 animate-fade-in text-left">
+                        <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                          容器配置
+                        </label>
+                        <div className="border border-neutral-200 rounded-[8px] p-5 bg-[#f8fafc]/30 hover:bg-[#f8fafc]/50 hover:border-neutral-300 transition-all space-y-4 text-left w-full">
+                          <div className="flex flex-col gap-0.5 pb-2.5 border-b border-neutral-100">
+                            <span className="text-[13px] font-bold text-[#262626]">
+                              容器配置详情
+                            </span>
+                            <span className="text-[11px] text-neutral-400 font-medium leading-relaxed">
+                              容器运行环境将通过该插件和连接配置访问底层资源。
+                            </span>
+                          </div>
+
+                          {/* Plugin */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[12px] font-bold text-neutral-700">
+                              插件 <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <CustomSelect
+                              value={formPoolContainerPlugin}
+                              onChange={(val) => setFormPoolContainerPlugin(val)}
+                              placeholder="选择已启用插件"
+                              options={platforms.filter(p => p.status === "启用").map(p => ({
+                                value: p.name,
+                                label: p.name
+                              }))}
+                            />
+                          </div>
+
+                          {/* URL */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[12px] font-bold text-neutral-700">
+                              插件服务地址 <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="https://plugin.example.com"
+                              value={formPoolContainerUrl}
+                              onChange={(e) => setFormPoolContainerUrl(e.target.value)}
+                              className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] bg-white"
+                            />
+                          </div>
+
+                          {/* JSON Textarea */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[12px] font-bold text-neutral-700">
+                              连接配置 JSON <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <textarea
+                              rows={3}
+                              placeholder="{}"
+                              value={formPoolContainerJson}
+                              onChange={(e) => setFormPoolContainerJson(e.target.value)}
+                              className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] font-mono bg-white resize-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* VM Capability Config Panel (Fig 2) */}
+                    {formPoolHasVm && (
+                      <div className="grid grid-cols-[100px_1fr] items-start gap-4 animate-fade-in text-left">
+                        <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                          虚机配置
+                        </label>
+                        <div className="border border-neutral-200 rounded-[8px] p-5 bg-[#f8fafc]/30 hover:bg-[#f8fafc]/50 hover:border-neutral-300 transition-all space-y-4 text-left w-full">
+                          <div className="flex flex-col gap-0.5 pb-2.5 border-b border-neutral-100">
+                            <span className="text-[13px] font-bold text-[#262626]">
+                              虚机配置详情
+                            </span>
+                            <span className="text-[11px] text-neutral-400 font-medium leading-relaxed">
+                              虚机运行环境将通过该插件和连接配置访问底层资源。
+                            </span>
+                          </div>
+
+                          {/* Plugin */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[12px] font-bold text-neutral-700">
+                              插件 <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <CustomSelect
+                              value={formPoolVmPlugin}
+                              onChange={(val) => setFormPoolVmPlugin(val)}
+                              placeholder="选择已启用插件"
+                              options={platforms.filter(p => p.status === "启用").map(p => ({
+                                value: p.name,
+                                label: p.name
+                              }))}
+                            />
+                          </div>
+
+                          {/* URL */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[12px] font-bold text-neutral-700">
+                              插件服务地址 <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="https://plugin.example.com"
+                              value={formPoolVmUrl}
+                              onChange={(e) => setFormPoolVmUrl(e.target.value)}
+                              className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] bg-white"
+                            />
+                          </div>
+
+                          {/* JSON Textarea */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[12px] font-bold text-neutral-700">
+                              连接配置 JSON <span className="text-[#fa541c]">*</span>
+                            </label>
+                            <textarea
+                              rows={3}
+                              placeholder="{}"
+                              value={formPoolVmJson}
+                              onChange={(e) => setFormPoolVmJson(e.target.value)}
+                              className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] font-mono bg-white resize-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pool Description */}
+                    <div className="grid grid-cols-[100px_1fr] items-start gap-4 animate-fade-in">
+                      <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                        资源池描述
+                      </label>
+                      <textarea
+                        rows={4}
+                        placeholder="填写区域、供应商或使用范围说明"
+                        value={formPoolDesc}
+                        onChange={(e) => setFormPoolDesc(e.target.value)}
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] bg-white resize-none"
+                      />
                     </div>
 
                   </div>
@@ -1944,61 +2227,79 @@ export default function AdminSystemPage() {
             )}
 
             {/* --- AK/SK Credentials Modal --- */}
-            {showAkSkModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs p-4 animate-fade-in">
-                <form onSubmit={handleSaveAkSk} className="w-full max-w-[440px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
-                  
+            {showAkSkModal && selectedPoolForAkSk && (
+              <div 
+                className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+                onClick={() => setShowAkSkModal(false)}
+              >
+                <form 
+                  onSubmit={handleSaveAkSk} 
+                  className="bg-white w-full max-w-[560px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {/* Header */}
-                  <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-border flex items-center justify-between shrink-0">
-                    <span className="font-black text-neutral-title text-sm flex items-center gap-1.5">
-                      <Key className="w-4.5 h-4.5 text-[#fa541c]" />
+                  <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                    <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                      <Key className="w-5 h-5 text-[#fa541c]" />
                       <span>配置 AK/SK 凭证</span>
-                    </span>
+                    </h2>
                     <button 
                       type="button"
                       onClick={() => setShowAkSkModal(false)}
-                      className="text-neutral-400 hover:text-neutral-700 cursor-pointer bg-transparent border-0"
+                      className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   {/* Body inputs */}
-                  <div className="p-6 space-y-4 text-left font-sans text-neutral-700">
+                  <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
                     
-                    <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200 text-neutral-500 font-sans leading-normal select-none">
-                      ⚠️ 凭证用于资源池 API 数据对接及鉴权通信，请妥善保管好您的 Secret Key。
+                    {/* Security Tip Box */}
+                    <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d] select-none leading-relaxed animate-fade-in">
+                      <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                      <div>
+                        <p className="font-bold mb-1 text-[13px] text-[#fa541c]">凭证安全提示</p>
+                        <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                          当前资源池：<strong>{selectedPoolForAkSk.name}</strong>。
+                          此凭证将用于云平台底层 API 对接及算力规格数据的读取/拉取鉴权。为了系统安全性，请妥善保管好您的 Secret Key。
+                        </p>
+                      </div>
                     </div>
 
                     {/* Access Key */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">Access Key (AK)</label>
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        Access Key <span className="text-[#fa541c]">*</span>
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="请输入 Access Key"
+                        placeholder="请输入 Access Key (AK)"
                         value={formPoolAk}
                         onChange={(e) => setFormPoolAk(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] bg-white font-medium"
                       />
                     </div>
 
                     {/* Secret Key */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">Secret Key (SK)</label>
-                      <div className="relative">
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        Secret Key <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
                         <input
                           type={showSkPassword ? "text" : "password"}
                           required
-                          placeholder="请输入 Secret Key"
+                          placeholder="请输入 Secret Key (SK)"
                           value={formPoolSk}
                           onChange={(e) => setFormPoolSk(e.target.value)}
-                          className="w-full border border-neutral-200 rounded-lg pl-3 pr-10 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                          className="w-full border border-neutral-200 rounded-[4px] pl-3.5 pr-10 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 hover:border-neutral-300 transition-all text-[#262626] bg-white font-medium"
                         />
                         <button
                           type="button"
                           onClick={() => setShowSkPassword(!showSkPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 bg-transparent border-0 cursor-pointer flex items-center p-0"
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 bg-transparent border-0 cursor-pointer flex items-center p-0"
                         >
                           {showSkPassword ? (
                             <EyeOff className="w-4 h-4" />
@@ -2011,23 +2312,22 @@ export default function AdminSystemPage() {
 
                   </div>
 
-                  {/* Actions */}
-                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-border flex items-center justify-end gap-3 shrink-0">
+                  {/* Actions / Footer */}
+                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
                     <button
                       type="button"
                       onClick={() => setShowAkSkModal(false)}
-                      className="bg-white hover:bg-neutral-100 text-neutral-title font-bold px-4 py-2 border border-neutral-border rounded-lg cursor-pointer transition-colors"
+                      className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                     >
                       取消
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm"
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                     >
-                      确定
+                      确定保存
                     </button>
                   </div>
-
                 </form>
               </div>
             )}

@@ -15,7 +15,11 @@ import {
   Settings, 
   ClipboardList,
   Check,
-  ArrowLeft
+  ArrowLeft,
+  Layers,
+  Info,
+  Loader2,
+  Edit
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -41,6 +45,7 @@ export default function TeacherPapers() {
   const [paperType, setPaperType] = useState('作业');
   const [paperScope, setPaperScope] = useState('私有');
   const [paperStatus, setPaperStatus] = useState('启用');
+  const [paperSelectionMethod, setPaperSelectionMethod] = useState('随机抽题');
 
   // Question Config selections and scores
   const [mcCount, setMcCount] = useState(0);
@@ -63,6 +68,16 @@ export default function TeacherPapers() {
   // Additional credit
   const [useAdditionalCredit, setUseAdditionalCredit] = useState(false);
   const [additionalMaxScore, setAdditionalMaxScore] = useState(0);
+
+  // Search & dynamic interactions
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
+  const [isApplyPublicModalOpen, setIsApplyPublicModalOpen] = useState(false);
+  const [paperToApplyPublic, setPaperToApplyPublic] = useState<any | null>(null);
+  const [applyPublicRange, setApplyPublicRange] = useState<'租户' | '平台'>('租户');
+  const [applyPublicReason, setApplyPublicReason] = useState('');
+  const [isApplyingPublic, setIsApplyingPublic] = useState(false);
+  const [editingPaper, setEditingPaper] = useState<any | null>(null);
 
   const availableQuestions = [
     { 
@@ -168,27 +183,100 @@ export default function TeacherPapers() {
   const [papersList, setPapersList] = useState([
     {
       id: 1,
-      name: 'AI 通识第一课测验',
-      description: '用于「Mo 体验课程」的“AI 通识第一课”章节测验试卷',
-      questionCount: 5,
-      types: '单选题',
+      name: '人工智能通识E-大模型技术进阶',
+      description: '用于「人工智能通识」课程的“大模型技术进阶”章节测验试卷',
+      questionCount: 10,
+      types: '单选题, 多选题',
       type: '作业',
+      selectionMethod: '随机抽题',
       status: '启用',
       creator: '孙昕',
-      updateTime: '2026/02/11'
+      updateTime: '2026/05/15 14:45',
+      scope: '私有',
+      auditStatus: '未审核',
+      mcCount: 5, mcScore: 10, msCount: 5, msScore: 10
     },
     {
       id: 2,
-      name: '机器学习基础期中测验',
-      description: '检验学生对线性回归 and 逻辑回归 of 掌握',
+      name: '人工智能通识E-AI伦理与治理',
+      description: '探讨AI伦理与道德规范，包含数据隐私与算法偏见等重点内容',
       questionCount: 20,
+      types: '单选题, 多选题',
+      type: '考试',
+      selectionMethod: '手动抽题',
+      status: '停用',
+      creator: '张老师',
+      updateTime: '2026/05/15 14:45',
+      scope: '私有',
+      auditStatus: '未审核',
+      mcCount: 10, mcScore: 5, msCount: 10, msScore: 5
+    },
+    {
+      id: 3,
+      name: '人工智能通识E-大模型开发平台初识',
+      description: '学习提示词工程与API接入开发的基础考测试卷',
+      questionCount: 15,
+      types: '单选题',
+      type: '作业',
+      selectionMethod: '随机抽题',
+      status: '启用',
+      creator: '孙昕',
+      updateTime: '2026/05/15 17:02',
+      scope: '租户',
+      auditStatus: '已通过',
+      mcCount: 15, mcScore: 6
+    },
+    {
+      id: 4,
+      name: '人工智能通识E-大语言模型专题',
+      description: '大语言模型理论基础、架构与行业落地案例专题考核',
+      questionCount: 25,
+      types: '单选题, 多选题, 判断题',
+      type: '考试',
+      selectionMethod: '千人千卷',
+      status: '停用',
+      creator: '李老师',
+      updateTime: '2026/05/16 11:20',
+      scope: '平台',
+      auditStatus: '已通过',
+      mcCount: 10, mcScore: 4, msCount: 10, msScore: 4, tfCount: 5, tfScore: 4
+    },
+    {
+      id: 5,
+      name: '人工智能通识E-深度学习入门',
+      description: '机器学习向深度学习演进的过渡知识测验',
+      questionCount: 18,
+      types: '单选题, 判断题',
+      type: '作业',
+      selectionMethod: '随机抽题',
+      status: '启用',
+      creator: '孙昕',
+      updateTime: '2026/05/16 14:30',
+      scope: '租户',
+      auditStatus: '已通过',
+      mcCount: 10, mcScore: 5, tfCount: 8, tfScore: 5
+    },
+    {
+      id: 6,
+      name: '人工智能通识E-神经网络基础',
+      description: '人工神经网络前向传播与反向传播算法核心推导测试',
+      questionCount: 30,
       types: '单选题, 简答题',
       type: '考试',
-      status: '启用',
-      creator: '张老师',
-      updateTime: '2026/02/12'
+      selectionMethod: '手动抽题',
+      status: '停用',
+      creator: '孙昕',
+      updateTime: '2026/05/17 09:15',
+      scope: '平台',
+      auditStatus: '已通过',
+      mcCount: 20, mcScore: 3, saCount: 10, saScore: 4
     }
   ]);
+
+  const filteredPapers = papersList.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.creator && p.creator.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const totalObjCount = mcCount + msCount + tfCount + fbCount + saCount + thCount + pgCount;
   const totalObjScore = (mcCount * mcScore) + (msCount * msScore) + (tfCount * tfScore) + (fbCount * fbScore) + (saCount * saScore) + (thCount * thScore) + (pgCount * pgScore);
@@ -205,7 +293,7 @@ export default function TeacherPapers() {
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedPapers(papersList.map(p => p.id));
+      setSelectedPapers(filteredPapers.map(p => p.id));
     } else {
       setSelectedPapers([]);
     }
@@ -219,33 +307,101 @@ export default function TeacherPapers() {
     }
   };
 
-  const handleSavePaper = () => {
-    if (!paperName.trim()) {
-      alert('请输入试卷名称！');
+  const togglePaperStatus = (id: number) => {
+    setPapersList(prev => prev.map(p => {
+      if (p.id === id) {
+        return {
+          ...p,
+          status: p.status === '启用' ? '停用' : '启用'
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleOpenApplyPublic = (p: any) => {
+    setPaperToApplyPublic(p);
+    setApplyPublicRange('租户');
+    setApplyPublicReason('');
+    setIsApplyPublicModalOpen(true);
+  };
+
+  const handleSubmitApplyPublic = () => {
+    if (!applyPublicReason.trim()) {
+      alert('请填写申请说明！');
       return;
     }
+    setIsApplyingPublic(true);
+    setTimeout(() => {
+      setIsApplyingPublic(false);
+      setIsApplyPublicModalOpen(false);
+      setPapersList(prev => prev.map(item => {
+        if (item.id === paperToApplyPublic.id) {
+          return {
+            ...item,
+            scope: applyPublicRange,
+            auditStatus: '未审核'
+          };
+        }
+        return item;
+      }));
+      alert('已成功提交公开申请！');
+    }, 1000);
+  };
 
+  const handleCopyPaper = (p: any) => {
     const newPaper = {
+      ...p,
       id: Date.now(),
-      name: paperName,
-      description: paperDescription || '暂无试卷说明描述',
-      questionCount: totalCount || 10,
-      types: totalObjCount > 0 ? '单选题, 多选题' : '实训题',
-      type: paperType,
-      status: paperStatus,
+      name: `${p.name} - 副本`,
+      updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
       creator: '孙昕',
-      updateTime: new Date().toLocaleDateString('zh-CN').replace(/-/g, '/')
+      scope: '私有',
+      auditStatus: '未审核'
     };
-
     setPapersList([newPaper, ...papersList]);
-    setIsCreateOpen(false);
+    alert(`已成功复制试卷 "${p.name}"！`);
+  };
 
-    // Reset Form
+  const handleEditPaper = (p: any) => {
+    setEditingPaper(p);
+    setPaperName(p.name);
+    setPaperDescription(p.description || '');
+    setPaperType(p.type);
+    setPaperScope(p.scope || '私有');
+    setPaperStatus(p.status);
+    setPaperSelectionMethod(p.selectionMethod || '随机抽题');
+    
+    // Set counts if available
+    setMcCount(p.mcCount || 0);
+    setMcScore(p.mcScore || 0);
+    setMsCount(p.msCount || 0);
+    setMsScore(p.msScore || 0);
+    setTfCount(p.tfCount || 0);
+    setTfScore(p.tfScore || 0);
+    setFbCount(p.fbCount || 0);
+    setFbScore(p.fbScore || 0);
+    setSaCount(p.saCount || 0);
+    setSaScore(p.saScore || 0);
+    setThCount(p.thCount || 0);
+    setThScore(p.thScore || 0);
+    setPgCount(p.pgCount || 0);
+    setPgScore(p.pgScore || 0);
+    setSxCount(p.sxCount || 0);
+    setSxScore(p.sxScore || 0);
+    
+    setIsCreateOpen(true);
+  };
+
+  const handleCloseCreateDrawer = () => {
+    setIsCreateOpen(false);
+    setEditingPaper(null);
     setPaperName('');
     setPaperDescription('');
     setPaperType('作业');
     setPaperScope('私有');
     setPaperStatus('启用');
+    setPaperSelectionMethod('随机抽题');
     setMcCount(0); setMcScore(0);
     setMsCount(0); setMsScore(0);
     setTfCount(0); setTfScore(0);
@@ -259,6 +415,53 @@ export default function TeacherPapers() {
     setConfirmedQuestions([]);
     setSelectedConfigQuestions([]);
     setIsObjConfigured(false);
+  };
+
+  const handleSavePaper = () => {
+    if (!paperName.trim()) {
+      alert('请输入试卷名称！');
+      return;
+    }
+
+    if (editingPaper) {
+      setPapersList(prev => prev.map(p => {
+        if (p.id === editingPaper.id) {
+          return {
+            ...p,
+            name: paperName,
+            description: paperDescription || '暂无试卷说明描述',
+            questionCount: totalCount || 10,
+            types: totalObjCount > 0 ? '单选题, 多选题' : '实训题',
+            type: paperType,
+            selectionMethod: paperSelectionMethod,
+            status: paperStatus,
+            scope: paperScope,
+            updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
+            mcCount, mcScore, msCount, msScore, tfCount, tfScore, fbCount, fbScore, saCount, saScore, thCount, thScore, pgCount, pgScore, sxCount, sxScore
+          };
+        }
+        return p;
+      }));
+    } else {
+      const newPaper = {
+        id: Date.now(),
+        name: paperName,
+        description: paperDescription || '暂无试卷说明描述',
+        questionCount: totalCount || 10,
+        types: totalObjCount > 0 ? '单选题, 多选题' : '实训题',
+        type: paperType,
+        selectionMethod: paperSelectionMethod,
+        status: paperStatus,
+        creator: '孙昕',
+        updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
+        scope: paperScope,
+        auditStatus: '未审核',
+        mcCount, mcScore, msCount, msScore, tfCount, tfScore, fbCount, fbScore, saCount, saScore, thCount, thScore, pgCount, pgScore, sxCount, sxScore
+      };
+      setPapersList([newPaper, ...papersList]);
+    }
+    
+    handleCloseCreateDrawer();
   };
 
   const handleConfirmSelections = () => {
@@ -334,6 +537,14 @@ export default function TeacherPapers() {
     setPgCount(counts['编程题']);
   };
 
+  const handleBatchDelete = () => {
+    if (selectedPapers.length === 0) return;
+    if (confirm(`确定要删除选中的 ${selectedPapers.length} 套试卷吗？`)) {
+      setPapersList(prev => prev.filter(p => !selectedPapers.includes(p.id)));
+      setSelectedPapers([]);
+    }
+  };
+
   const FilterIcon = () => (
     <svg viewBox="0 0 24 24" className="w-3 h-3 text-neutral-400 cursor-pointer hover:text-[#fa541c] transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5">
       <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -355,80 +566,86 @@ export default function TeacherPapers() {
 
       {view === 'list' ? (
         <>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4 text-left">
             <div className="flex items-end gap-4">
               <h1 className="text-xl font-bold text-neutral-900">试卷管理</h1>
               <p className="text-sm text-neutral-500 mb-0.5">新建试卷前请先创建可用试题，试卷“启用”后即可用于课程作业或章节测验</p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {selectedPapers.length > 0 && (
-                <Button variant="outline" className="flex items-center gap-1.5 h-9 rounded border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors shadow-sm">
-                  批量删除 ({selectedPapers.length})
-                </Button>
-              )}
-              <Button onClick={() => setIsCreateOpen(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded cursor-pointer border-0 font-bold px-4">
-                <Plus className="w-4 h-4" /> 新建试卷
-              </Button>
-            </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-white rounded overflow-hidden">
+          {/* Table and Toolbar unified module */}
+          <div className="bg-white rounded-[8px] border border-neutral-border overflow-hidden">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50">
+              <div className="flex items-center gap-3">
+                <div className="relative w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="请输入要搜索的内容"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 w-full bg-white border border-neutral-border rounded-full text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
+                <Button onClick={() => setIsCreateOpen(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 px-4 rounded-[4px] text-xs font-semibold cursor-pointer border-0">
+                  <Plus className="w-3.5 h-3.5" /> 新建试卷
+                </Button>
+                {selectedPapers.length > 0 && (
+                  <Button onClick={handleBatchDelete} variant="outline" className="flex items-center h-9 px-4 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors shadow-sm rounded-[4px] text-xs font-medium cursor-pointer bg-white">
+                    批量删除 ({selectedPapers.length})
+                  </Button>
+                )}
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                    <th className="p-4 font-medium w-12 text-center">
+                  <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600">
+                    <th className="pl-6 pr-3 py-3.5 font-medium w-12 text-left">
                       <button 
                         type="button"
-                        onClick={() => toggleSelectAll(selectedPapers.length !== papersList.length || papersList.length === 0)}
+                        onClick={() => toggleSelectAll(selectedPapers.length !== filteredPapers.length || filteredPapers.length === 0)}
                         className={cn(
-                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                          selectedPapers.length === papersList.length && papersList.length > 0
+                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
+                          selectedPapers.length === filteredPapers.length && filteredPapers.length > 0
                             ? "bg-[#fa541c] border-[#fa541c] text-white"
                             : "border-neutral-300 hover:border-[#fa541c] bg-white"
                         )}
                       >
-                        {selectedPapers.length === papersList.length && papersList.length > 0 && <span className="text-[10px] font-bold">✓</span>}
+                        {selectedPapers.length === filteredPapers.length && filteredPapers.length > 0 && <span className="text-[10px] font-bold">✓</span>}
                       </button>
                     </th>
-                    <th className="p-4 font-medium w-10 text-center"></th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">试卷名称 <Search className="w-3.5 h-3.5 text-neutral-400 cursor-pointer" /></div>
-                    </th>
-                    <th className="p-4 font-medium">试卷说明</th>
-                    <th className="p-4 font-medium">题目数量</th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">包含题型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">试卷类型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">状态 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">创建人 <Search className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center gap-1.5">更新时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
-                    </th>
-                    <th className="p-4 font-medium">操作</th>
+                    <th className="px-3 py-3.5 font-medium text-center w-10"></th>
+                    <th className="px-3 py-3.5 font-medium text-left">试卷名称</th>
+                    <th className="px-3 py-3.5 font-medium text-left">题目数量</th>
+                    <th className="px-3 py-3.5 font-medium text-left">包含题型</th>
+                    <th className="px-3 py-3.5 font-medium text-left">试卷类型</th>
+                    <th className="px-3 py-3.5 font-medium text-left">抽题方式</th>
+                    <th className="px-3 py-3.5 font-medium text-left">状态</th>
+                    <th className="px-3 py-3.5 font-medium text-left">创建人</th>
+                    <th className="px-3 py-3.5 font-medium text-left">更新时间</th>
+                    <th className="px-3 py-3.5 font-medium text-left">试题范围</th>
+                    <th className="px-3 py-3.5 font-medium text-left">审核状态</th>
+                    <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {papersList.map(p => (
+                  {filteredPapers.map((p, idx) => (
                     <React.Fragment key={p.id}>
                       <tr className={cn(
-                        "border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors text-[13px] group",
-                        expandedRow === p.id ? "bg-neutral-50/30" : ""
+                        "border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]",
+                        expandedRow === p.id && "bg-neutral-50/30",
+                        idx === filteredPapers.length - 1 && expandedRow !== p.id && "border-b-0"
                       )}>
-                        <td className="p-4 text-center">
+                        <td className="pl-6 pr-3 py-3 text-left">
                           <button 
                             type="button"
                             onClick={() => toggleSelect(p.id)}
                             className={cn(
-                              "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                              "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
                               selectedPapers.includes(p.id)
                                 ? "bg-[#fa541c] border-[#fa541c] text-white"
                                 : "border-neutral-300 hover:border-[#fa541c] bg-white"
@@ -437,7 +654,7 @@ export default function TeacherPapers() {
                             {selectedPapers.includes(p.id) && <span className="text-[10px] font-bold">✓</span>}
                           </button>
                         </td>
-                        <td className="p-4 text-center">
+                        <td className="px-3 py-3 text-center">
                           <button 
                             onClick={() => toggleRow(p.id)}
                             className="text-neutral-400 hover:text-[#fa541c] transition-colors p-1 cursor-pointer"
@@ -445,39 +662,148 @@ export default function TeacherPapers() {
                             <ChevronRight className={cn("w-4 h-4 transition-transform duration-200", expandedRow === p.id && "transform rotate-90 text-[#fa541c]")} />
                           </button>
                         </td>
-                        <td className="p-4">
-                          <div className="text-neutral-800 max-w-[220px] truncate font-medium" title={p.name}>{p.name}</div>
+                        <td className="px-3 py-3">
+                          <div className="text-neutral-800 max-w-[180px] truncate font-medium" title={p.name}>{p.name}</div>
                         </td>
-                        <td className="p-4 text-neutral-500 max-w-[200px] truncate" title={p.description}>{p.description}</td>
-                        <td className="p-4 text-neutral-600">{p.questionCount}</td>
-                        <td className="p-4 text-neutral-600">{p.types}</td>
-                        <td className="p-4 text-neutral-800">{p.type}</td>
-                        <td className="p-4">
+                        <td className="px-3 py-3 text-neutral-600">{p.questionCount}</td>
+                        <td className="px-3 py-3 text-neutral-600">
+                          <div className="max-w-[100px] truncate" title={p.types}>{p.types}</div>
+                        </td>
+                        <td className="px-3 py-3 text-neutral-800">{p.type}</td>
+                        <td className="px-3 py-3 text-neutral-600">{p.selectionMethod}</td>
+                        <td className="px-3 py-3">
                           <span className={cn(
-                            "px-2 py-0.5 text-[12px] rounded border", 
+                            "px-2 py-0.5 text-[12px] rounded-[4px] border", 
                             p.status === '启用' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200"
                           )}>
                             {p.status}
                           </span>
                         </td>
-                        <td className="p-4 text-neutral-600">{p.creator}</td>
-                        <td className="p-4 text-neutral-500">{p.updateTime}</td>
-                        <td className="p-4">
+                        <td className="px-3 py-3 text-neutral-600">{p.creator}</td>
+                        <td className="px-3 py-3 text-neutral-500 text-[12px]">{p.updateTime}</td>
+                        <td className="px-3 py-3">
+                          {p.scope === '私有' && (
+                            <span className="px-2 py-0.5 bg-neutral-50 border border-neutral-200 rounded-[4px] text-[12px] text-neutral-600">私有</span>
+                          )}
+                          {p.scope === '租户' && (
+                            <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded-[4px] text-[12px] text-blue-600">租户</span>
+                          )}
+                          {p.scope === '平台' && (
+                            <span className="px-2 py-0.5 bg-[#fff2e8] border border-[#ffbb96] rounded-[4px] text-[12px] text-[#fa541c]">平台</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 font-medium text-left">
+                          {p.auditStatus === '已通过' ? (
+                            <span className="text-green-600">已通过</span>
+                          ) : p.auditStatus === '未审核' ? (
+                            <span className="text-amber-500">未审核</span>
+                          ) : (
+                            <span className="text-neutral-500">{p.auditStatus}</span>
+                          )}
+                        </td>
+                        <td className="pl-3 pr-6 py-3 text-left">
                           <div className="flex items-center gap-2.5">
-                            <button onClick={() => setViewingPaper(p)} className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors cursor-pointer bg-transparent border-0 p-0">查看</button>
-                            <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors bg-transparent border-0 p-0">编辑</button>
-                            <button className="text-[#fa541c] hover:text-[#e84a15] font-bold transition-colors bg-transparent border-0 p-0">复制</button>
-                            <button onClick={() => setPapersList(papersList.filter(item => item.id !== p.id))} className="text-neutral-400 hover:text-neutral-600 font-bold transition-colors cursor-pointer bg-transparent border-0 p-0">删除</button>
+                            {(() => {
+                              const rowActions = [
+                                { label: '详情', onClick: () => setViewingPaper(p), isDanger: false },
+                                { label: '编辑', onClick: () => handleEditPaper(p), isDanger: false },
+                              ];
+                              
+                              if (p.status === '启用' && p.scope === '私有') {
+                                rowActions.push({ label: '公开', onClick: () => handleOpenApplyPublic(p), isDanger: false });
+                              }
+                              
+                              rowActions.push({ 
+                                label: p.status === '启用' ? '停用' : '启用', 
+                                onClick: () => togglePaperStatus(p.id), 
+                                isDanger: false 
+                              });
+                              
+                              rowActions.push({ 
+                                label: '复制', 
+                                onClick: () => handleCopyPaper(p), 
+                                isDanger: false 
+                              });
+                              
+                              rowActions.push({ 
+                                label: '删除', 
+                                onClick: () => setPapersList(papersList.filter(item => item.id !== p.id)), 
+                                isDanger: true 
+                              });
+
+                              const visibleActions = rowActions.slice(0, 2);
+                              const dropdownActions = rowActions.slice(2);
+
+                              return (
+                                <>
+                                  {visibleActions.map((act) => (
+                                    <button
+                                      key={act.label}
+                                      type="button"
+                                      onClick={act.onClick}
+                                      className={cn(
+                                        "text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold whitespace-nowrap",
+                                        act.isDanger && "text-red-500 hover:text-red-700"
+                                      )}
+                                    >
+                                      {act.label}
+                                    </button>
+                                  ))}
+
+                                  {dropdownActions.length > 0 && (
+                                    <div className="relative inline-block text-left">
+                                      <button 
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveDropdownId(activeDropdownId === p.id ? null : p.id);
+                                        }}
+                                        className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 flex items-center gap-0.5 text-xs font-semibold whitespace-nowrap"
+                                      >
+                                        <span>更多</span>
+                                        <ChevronDown className={cn("w-3 h-3 transition-transform duration-200 text-neutral-400", activeDropdownId === p.id && "rotate-180")} />
+                                      </button>
+                                      
+                                      {activeDropdownId === p.id && (
+                                        <div 
+                                          className="absolute right-0 mt-1.5 w-20 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[60] overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {dropdownActions.map((act) => (
+                                            <button 
+                                              key={act.label}
+                                              type="button"
+                                              onClick={() => {
+                                                act.onClick();
+                                                setActiveDropdownId(null);
+                                              }}
+                                              className={cn(
+                                                "w-full text-left px-3 py-1.5 text-xs transition-colors bg-transparent border-0 cursor-pointer block font-medium",
+                                                act.isDanger 
+                                                  ? "text-red-500 hover:bg-red-50" 
+                                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-[#fa541c]"
+                                              )}
+                                            >
+                                              {act.label}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>
                       
-                      {/* Expanded Row Content: 客观题部分左右两边留白大小完全一致 (px-8) 且右侧内容填充满 (w-full) */}
+                      {/* Expanded Row Content */}
                       {expandedRow === p.id && (
                         <tr className="bg-neutral-50/30 border-b border-neutral-100">
-                          <td colSpan={11} className="p-0 whitespace-normal">
+                          <td colSpan={13} className="p-0 whitespace-normal">
                             <div className="py-6 px-8 animate-in fade-in duration-200 w-full">
-                              <div className="bg-white border border-neutral-100 rounded-xl p-6 shadow-sm w-full">
+                              <div className="bg-white border border-neutral-100 rounded-[8px] p-6 shadow-sm w-full text-left">
                                 <div className="flex items-center gap-2 mb-5 pb-4 border-b border-neutral-100/80">
                                   <div className="w-8 h-8 rounded-lg bg-[#fff2e8] flex items-center justify-center">
                                     <FileText className="w-4.5 h-4.5 text-[#fa541c]" />
@@ -485,7 +811,7 @@ export default function TeacherPapers() {
                                   <h3 className="text-[15px] font-bold text-neutral-800">客观题配置信息</h3>
                                 </div>
                                 
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
                                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 md:divide-x divide-neutral-100">
                                     {/* Left Column */}
                                     <div className="space-y-2">
@@ -520,7 +846,7 @@ export default function TeacherPapers() {
                                         setViewingPaper(p);
                                         setView('preview');
                                       }} 
-                                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg shadow-sm shadow-[#fa541c]/25 h-10 font-bold px-6 transition-all cursor-pointer border-0"
+                                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-[#fa541c]/25 h-10 font-bold px-6 transition-all cursor-pointer border-0"
                                     >
                                       预览客观题
                                     </Button>
@@ -538,14 +864,14 @@ export default function TeacherPapers() {
             </div>
             
             {/* Pagination */}
-            <div className="flex items-center justify-end p-4 gap-4 mt-2">
-              <span className="text-[13px] text-neutral-500">共 {papersList.length} 条</span>
+            <div className="flex items-center justify-end px-6 py-4 gap-4 border-t border-neutral-border/30">
+              <span className="text-[13px] text-neutral-500">共 {filteredPapers.length} 条</span>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white" disabled>&lt;</Button>
                 <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white">&gt;</Button>
               </div>
-              <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600">
+              <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white">
                 <option>10 条/页</option>
                 <option>20 条/页</option>
                 <option>50 条/页</option>
@@ -635,7 +961,14 @@ export default function TeacherPapers() {
                   const paperNameText = viewingPaper?.name || '';
                   const questions: any[] = [];
                   
-                  if (paperNameText.includes('AI 通识') || paperNameText.includes('生成式AI') || paperNameText.includes('大模型')) {
+                  if (
+                    paperNameText.includes('AI 通识') || 
+                    paperNameText.includes('人工智能通识') || 
+                    paperNameText.includes('生成式AI') || 
+                    paperNameText.includes('大模型') || 
+                    paperNameText.includes('伦理') ||
+                    paperNameText.includes('语言模型')
+                  ) {
                     questions.push(
                       {
                         id: 1,
@@ -908,53 +1241,55 @@ export default function TeacherPapers() {
           </div>
         </div>
       )}
-
-      {/* 新建试卷 Drawer (右侧弹出层，参考图2，主题色为橙色) */}
+          {/* 新建/编辑试卷 Drawer */}
       {isCreateOpen && (
         <div 
           className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
-          onClick={() => setIsCreateOpen(false)}
+          onClick={handleCloseCreateDrawer}
         >
           <div 
             className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
-              <h2 className="text-[15px] font-bold text-neutral-850">新建试卷</h2>
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0 text-left">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                {editingPaper ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />}
+                {editingPaper ? '编辑试卷' : '新建试卷'}
+              </h2>
               <button 
-                onClick={() => setIsCreateOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                onClick={handleCloseCreateDrawer}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Drawer Content - Scrollable Form */}
-            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white">
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
               {/* 试卷名称 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c] font-bold text-sm">*</span> 试卷名称：
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
+                  <span className="text-[#fa541c] mr-1">*</span>试卷名称：
                 </label>
                 <input
                   type="text"
                   value={paperName}
                   onChange={(e) => setPaperName(e.target.value)}
                   placeholder="请输入试卷名称"
-                  className="w-full border border-neutral-200 rounded-lg px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800"
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
                 />
               </div>
 
               {/* 试卷说明 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800">试卷说明：</label>
-                <div className="relative">
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2 pt-2">试卷说明：</label>
+                <div className="relative w-full">
                   <textarea
                     value={paperDescription}
                     onChange={(e) => setPaperDescription(e.target.value.slice(0, 250))}
                     placeholder="请输入试卷说明"
-                    className="w-full min-h-[90px] border border-neutral-200 rounded-lg p-3 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 resize-y"
+                    className="w-full min-h-[90px] border border-neutral-200 rounded-[4px] p-3 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 resize-y bg-white"
                   />
                   <div className="text-[10px] text-neutral-400 font-mono text-right mt-1">
                     {paperDescription.length}/250
@@ -962,15 +1297,14 @@ export default function TeacherPapers() {
                 </div>
               </div>
 
-              {/* 试卷类型 (改为“作业”与“考试”) */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c] font-bold text-sm">*</span> 试卷类型：
+              {/* 试卷类型 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
+                  <span className="text-[#fa541c] mr-1">*</span>试卷类型：
                 </label>
-                <div className="flex gap-6 items-center pt-1.5">
+                <div className="flex gap-6 items-center">
                   {['作业', '考试'].map((t) => (
                     <label key={t} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
-                      {/* Customized Custom Radio indicator for premium feeling */}
                       <span className="relative flex items-center justify-center">
                         <input
                           type="radio"
@@ -1000,235 +1334,268 @@ export default function TeacherPapers() {
                 </div>
               </div>
 
-              {/* 试题配置数据统计 */}
-              <div className="space-y-2 pt-1">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c] font-bold text-sm">*</span> 试题配置：
+              {/* 抽题方式 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
+                  <span className="text-[#fa541c] mr-1">*</span>抽题方式：
                 </label>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-xl p-3 text-center transition-all hover:shadow-sm">
-                    <p className="text-[10px] text-neutral-500 font-bold">选题数/总分数</p>
-                    <p className="text-sm font-black text-[#fa541c] mt-1">{totalCount} / {totalScore}</p>
-                  </div>
-                  <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-xl p-3 text-center transition-all hover:shadow-sm">
-                    <p className="text-[10px] text-neutral-500 font-bold">客观题数/分数</p>
-                    <p className="text-sm font-black text-[#fa541c] mt-1">{totalObjCount} / {totalObjScore}</p>
-                  </div>
-                  <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-xl p-3 text-center transition-all hover:shadow-sm">
-                    <p className="text-[10px] text-neutral-500 font-bold">实训题数/分数</p>
-                    <p className="text-sm font-black text-[#fa541c] mt-1">{totalPracCount} / {totalPracScore}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 客观题配置 (图2) */}
-              <div className="border border-neutral-200/90 rounded-xl p-4 bg-white space-y-4 shadow-sm">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                  <span className="text-[13px] font-bold text-neutral-850">客观题配置：</span>
-                  <Button 
-                    onClick={() => {
-                      setIsConfigModalOpen(true);
-                    }} 
-                    className={cn(
-                      "h-7 text-[11px] cursor-pointer rounded-lg px-3.5 font-bold shadow-sm transition-all flex items-center justify-center",
-                      isObjConfigured
-                        ? "bg-[#fa541c] hover:bg-[#e84a15] text-white border-0 shadow-[#fa541c]/15"
-                        : "border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8]"
-                    )}
-                  >
-                    配置
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-6">
-                  {['随机选题', '固定选题'].map((sel) => (
-                    <label key={sel} className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 select-none group">
+                <div className="flex gap-6 items-center">
+                  {['随机抽题', '手动抽题', '千人千卷'].map((m) => (
+                    <label key={m} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
                       <span className="relative flex items-center justify-center">
-                        <input 
-                          type="radio" 
-                          name="objSelection" 
-                          defaultChecked={sel === '固定选题'} 
+                        <input
+                          type="radio"
+                          name="paperSelectionMethod"
+                          value={m}
+                          checked={paperSelectionMethod === m}
+                          onChange={() => setPaperSelectionMethod(m)}
                           className="sr-only"
                         />
                         <span className={cn(
                           "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                          sel === '固定选题' 
+                          paperSelectionMethod === m 
                             ? "border-[#fa541c] bg-white" 
                             : "border-neutral-300 group-hover:border-[#fa541c]"
                         )}>
-                          {sel === '固定选题' && (
+                          {paperSelectionMethod === m && (
                             <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
                           )}
                         </span>
                       </span>
-                      <span className="font-semibold text-xs text-neutral-600 group-hover:text-[#fa541c] transition-colors">{sel}</span>
+                      <span className={cn(
+                        "group-hover:text-[#fa541c] transition-colors font-medium text-xs",
+                        paperSelectionMethod === m ? "text-[#fa541c]" : "text-neutral-600"
+                      )}>{m}</span>
                     </label>
-                  ))}
-                </div>
-
-                {/* Table for Config Objective list */}
-                <div className="border border-neutral-200/80 rounded-xl overflow-hidden shadow-sm">
-                  <table className="w-full text-left border-collapse text-[11px]">
-                    <thead>
-                      <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
-                        <th className="p-2.5 font-bold">试题名称</th>
-                        <th className="p-2.5 font-bold">所属题库名称</th>
-                        <th className="p-2.5 font-bold">题型</th>
-                        <th className="p-2.5 font-bold w-12 text-center">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {confirmedQuestions.length > 0 ? (
-                        confirmedQuestions.map((q: any) => (
-                          <tr key={q.id} className="border-b border-neutral-100 text-neutral-800 bg-white hover:bg-neutral-50/30 transition-colors">
-                            <td className="p-2.5 font-medium max-w-[200px] truncate" title={q.name}>{q.name}</td>
-                            <td className="p-2.5 text-neutral-500 max-w-[150px] truncate" title={q.bank}>{q.bank}</td>
-                            <td className="p-2.5 text-neutral-600">{q.type}</td>
-                            <td className="p-2.5 text-center">
-                              <button 
-                                onClick={() => handleRemoveConfirmedQuestion(q.id)}
-                                className="text-red-500 hover:text-red-700 font-bold bg-transparent border-0 cursor-pointer p-0"
-                              >
-                                移除
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr className="border-b border-neutral-100/50 text-neutral-400">
-                          <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
-                            <div className="flex flex-col items-center justify-center gap-2">
-                              {/* Empty icon */}
-                              <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
-                                <FileQuestion className="w-5 h-5 text-neutral-300" />
-                              </div>
-                              <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Aligned 2-column Grid list for question types to prevent clutter */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-neutral-100/80 bg-neutral-50/15 p-2 rounded-xl border border-neutral-100">
-                  {[
-                    { label: '单选题', count: mcCount, setCount: setMcCount, score: mcScore, setScore: setMcScore },
-                    { label: '多选题', count: msCount, setCount: setMsCount, score: msScore, setScore: setMsScore },
-                    { label: '判断题', count: tfCount, setCount: setTfCount, score: tfScore, setScore: setTfScore },
-                    { label: '填空题', count: fbCount, setCount: setFbCount, score: fbScore, setScore: setFbScore },
-                    { label: '简答题', count: saCount, setCount: setSaCount, score: saScore, setScore: setSaScore },
-                    { label: '思考题', count: thCount, setCount: setThCount, score: thScore, setScore: setThScore },
-                    { label: '编程题', count: pgCount, setCount: setPgCount, score: pgScore, setScore: setPgScore },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white rounded-lg hover:bg-neutral-50/40 transition-colors border border-neutral-200/60 shadow-sm">
-                      <div className="flex items-center gap-1.5 w-14 flex-shrink-0">
-                        <span className="font-bold text-neutral-700">{item.label}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-neutral-450 font-semibold text-[10px]">选</span>
-                        <input 
-                          type="number" 
-                          min={0}
-                          value={item.count || ''} 
-                          onChange={(e) => item.setCount(Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-11 h-6 border border-neutral-200 rounded text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
-                        />
-                        <span className="text-neutral-500 text-[10px]">题</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-neutral-450 font-semibold text-[10px]">每</span>
-                        <input 
-                          type="number" 
-                          min={0}
-                          value={item.score || ''} 
-                          onChange={(e) => item.setScore(Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-11 h-6 border border-neutral-200 rounded text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
-                        />
-                        <span className="text-neutral-500 text-[10px]">分</span>
-                      </div>
-                      
-                      <div className="text-right w-16 flex-shrink-0 text-[11px]">
-                        <span className="text-neutral-400">总 </span>
-                        <span className="font-bold text-[#fa541c]">{item.count * item.score}</span>
-                        <span className="text-neutral-400 text-[9px]">分</span>
-                      </div>
-                    </div>
                   ))}
                 </div>
               </div>
 
-              {/* 实训题配置 */}
-              <div className="border border-neutral-200/90 rounded-xl p-4 bg-white space-y-4 shadow-sm">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                  <span className="text-[13px] font-bold text-neutral-850">实训题配置：</span>
-                  <Button variant="outline" className="h-7 text-[11px] border border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-transparent cursor-pointer rounded-lg px-3.5 font-bold shadow-sm transition-all">
-                    配置
-                  </Button>
-                </div>
+              {/* 试题配置 */}
+              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2 pt-1">
+                  <span className="text-[#fa541c] mr-1">*</span>试题配置：
+                </label>
+                <div className="space-y-4 w-full">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
+                      <p className="text-[10px] text-neutral-500 font-bold">选题数/总分数</p>
+                      <p className="text-sm font-black text-[#fa541c] mt-1">{totalCount} / {totalScore}</p>
+                    </div>
+                    <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
+                      <p className="text-[10px] text-neutral-500 font-bold">客观题数/分数</p>
+                      <p className="text-sm font-black text-[#fa541c] mt-1">{totalObjCount} / {totalObjScore}</p>
+                    </div>
+                    <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
+                      <p className="text-[10px] text-neutral-500 font-bold">实训题数/分数</p>
+                      <p className="text-sm font-black text-[#fa541c] mt-1">{totalPracCount} / {totalPracScore}</p>
+                    </div>
+                  </div>
 
-                <div className="border border-neutral-200/80 rounded-xl overflow-hidden shadow-sm">
-                  <table className="w-full text-left border-collapse text-[11px]">
-                    <thead>
-                      <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
-                        <th className="p-2.5 font-bold">试题名称</th>
-                        <th className="p-2.5 font-bold">所属题库名称</th>
-                        <th className="p-2.5 font-bold">题型</th>
-                        <th className="p-2.5 font-bold w-12 text-center">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-neutral-100/50 text-neutral-400">
-                        <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
-                          <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
-                              <FileQuestion className="w-5 h-5 text-neutral-300" />
-                            </div>
-                            <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
+                  {/* 客观题配置 */}
+                  <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
+                    <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                      <span className="text-[13px] font-bold text-neutral-850">客观题配置：</span>
+                      <Button 
+                        onClick={() => setIsConfigModalOpen(true)} 
+                        className={cn(
+                          "h-7 text-[11px] cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all flex items-center justify-center border-0",
+                          isObjConfigured
+                            ? "bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-[#fa541c]/15"
+                            : "border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8]"
+                        )}
+                      >
+                        配置
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      {['随机选题', '固定选题'].map((sel) => (
+                        <label key={sel} className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 select-none group">
+                          <span className="relative flex items-center justify-center">
+                            <input 
+                              type="radio" 
+                              name="objSelection" 
+                              defaultChecked={sel === '固定选题'} 
+                              className="sr-only"
+                            />
+                            <span className={cn(
+                              "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                              sel === '固定选题' 
+                                ? "border-[#fa541c] bg-white" 
+                                : "border-neutral-300 group-hover:border-[#fa541c]"
+                            )}>
+                              {sel === '固定选题' && (
+                                <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
+                              )}
+                            </span>
+                          </span>
+                          <span className="font-semibold text-xs text-neutral-600 group-hover:text-[#fa541c] transition-colors">{sel}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Table for Config Objective list */}
+                    <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
+                      <table className="w-full text-left border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
+                            <th className="p-2.5 font-bold">试题名称</th>
+                            <th className="p-2.5 font-bold">所属题库名称</th>
+                            <th className="p-2.5 font-bold">题型</th>
+                            <th className="p-2.5 font-bold w-12 text-center">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {confirmedQuestions.length > 0 ? (
+                            confirmedQuestions.map((q: any) => (
+                              <tr key={q.id} className="border-b border-neutral-100 text-neutral-800 bg-white hover:bg-neutral-50/30 transition-colors">
+                                <td className="p-2.5 font-medium max-w-[200px] truncate" title={q.name}>{q.name}</td>
+                                <td className="p-2.5 text-neutral-500 max-w-[150px] truncate" title={q.bank}>{q.bank}</td>
+                                <td className="p-2.5 text-neutral-600">{q.type}</td>
+                                <td className="p-2.5 text-center">
+                                  <button 
+                                    onClick={() => handleRemoveConfirmedQuestion(q.id)}
+                                    className="text-red-500 hover:text-red-700 font-bold bg-transparent border-0 cursor-pointer p-0"
+                                  >
+                                    移除
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr className="border-b border-neutral-100/50 text-neutral-400">
+                              <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                  <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
+                                    <FileQuestion className="w-5 h-5 text-neutral-300" />
+                                  </div>
+                                  <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Aligned 2-column Grid list for question types */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-neutral-100/80 bg-neutral-50/15 p-2 rounded-[8px] border border-neutral-100">
+                      {[
+                        { label: '单选题', count: mcCount, setCount: setMcCount, score: mcScore, setScore: setMcScore },
+                        { label: '多选题', count: msCount, setCount: setMsCount, score: msScore, setScore: setMsScore },
+                        { label: '判断题', count: tfCount, setCount: setTfCount, score: tfScore, setScore: setTfScore },
+                        { label: '填空题', count: fbCount, setCount: setFbCount, score: fbScore, setScore: setFbScore },
+                        { label: '简答题', count: saCount, setCount: setSaCount, score: saScore, setScore: setSaScore },
+                        { label: '思考题', count: thCount, setCount: setThCount, score: thScore, setScore: setThScore },
+                        { label: '编程题', count: pgCount, setCount: setPgCount, score: pgScore, setScore: setPgScore },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white rounded-[4px] hover:bg-neutral-50/40 transition-colors border border-neutral-200/60 shadow-sm">
+                          <div className="flex items-center gap-1.5 w-14 flex-shrink-0">
+                            <span className="font-bold text-neutral-700">{item.label}</span>
                           </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                          
+                          <div className="flex items-center gap-1">
+                            <span className="text-neutral-455 font-semibold text-[10px]">选</span>
+                            <input 
+                              type="number" 
+                              min={0}
+                              value={item.count || ''} 
+                              onChange={(e) => item.setCount(Math.max(0, parseInt(e.target.value) || 0))}
+                              className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
+                            />
+                            <span className="text-neutral-555 text-[10px]">题</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-1">
+                            <span className="text-neutral-455 font-semibold text-[10px]">每</span>
+                            <input 
+                              type="number" 
+                              min={0}
+                              value={item.score || ''} 
+                              onChange={(e) => item.setScore(Math.max(0, parseInt(e.target.value) || 0))}
+                              className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
+                            />
+                            <span className="text-neutral-555 text-[10px]">分</span>
+                          </div>
+                          
+                          <div className="text-right w-16 flex-shrink-0 text-[11px]">
+                            <span className="text-neutral-400">总 </span>
+                            <span className="font-bold text-[#fa541c]">{item.count * item.score}</span>
+                            <span className="text-neutral-400 text-[9px]">分</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                <div className="flex items-center gap-2.5 text-xs pt-1.5">
-                  <span className="font-bold text-neutral-700">实训题 选取：</span>
-                  <input 
-                    type="number" 
-                    min={0}
-                    value={sxCount || ''} 
-                    onChange={(e) => setSxCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-12 h-6.5 border border-neutral-200 rounded text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
-                  />
-                  <span className="text-neutral-555">题，每题</span>
-                  <input 
-                    type="number" 
-                    min={0}
-                    value={sxScore || ''} 
-                    onChange={(e) => setSxScore(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-12 h-6.5 border border-neutral-200 rounded text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
-                  />
-                  <span className="text-neutral-500">分，总 <span className="font-bold text-[#fa541c]">{sxCount * sxScore}</span> 分</span>
+                  {/* 实训题配置 */}
+                  <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
+                    <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                      <span className="text-[13px] font-bold text-neutral-850">实训题配置：</span>
+                      <Button variant="outline" className="h-7 text-[11px] border border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-transparent cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all">
+                        配置
+                      </Button>
+                    </div>
+
+                    <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
+                      <table className="w-full text-left border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
+                            <th className="p-2.5 font-bold">试题名称</th>
+                            <th className="p-2.5 font-bold">所属题库名称</th>
+                            <th className="p-2.5 font-bold">题型</th>
+                            <th className="p-2.5 font-bold w-12 text-center">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-neutral-100/50 text-neutral-400">
+                            <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
+                              <div className="flex flex-col items-center justify-center gap-2">
+                                <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
+                                  <FileQuestion className="w-5 h-5 text-neutral-300" />
+                                </div>
+                                <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 text-xs pt-1.5">
+                      <span className="font-bold text-neutral-700">实训题 选取：</span>
+                      <input 
+                        type="number" 
+                        min={0}
+                        value={sxCount || ''} 
+                        onChange={(e) => setSxCount(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
+                      />
+                      <span className="text-neutral-555">题，每题</span>
+                      <input 
+                        type="number" 
+                        min={0}
+                        value={sxScore || ''} 
+                        onChange={(e) => setSxScore(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
+                      />
+                      <span className="text-neutral-500">分，总 <span className="font-bold text-[#fa541c]">{sxCount * sxScore}</span> 分</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* 附加分 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
-                  附加分：
-                  <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
-                </label>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-neutral-800 text-right pr-2">附加分：</label>
                 <div className="flex items-center gap-3 text-xs text-neutral-700">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input 
                       type="checkbox"
                       checked={useAdditionalCredit}
                       onChange={(e) => setUseAdditionalCredit(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
+                      className="w-4 h-4 rounded-[4px] text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
                     />
                     <span className="font-medium">使用附加分，最高附加</span>
                   </label>
@@ -1238,19 +1605,19 @@ export default function TeacherPapers() {
                     disabled={!useAdditionalCredit}
                     value={additionalMaxScore || ''}
                     onChange={(e) => setAdditionalMaxScore(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-12 h-6 border border-neutral-200 rounded text-center py-0.5 bg-white disabled:bg-neutral-100 text-neutral-800 focus:outline-none focus:border-[#fa541c] font-bold"
+                    className="w-12 h-6 border border-neutral-200 rounded-[4px] text-center py-0.5 bg-white disabled:bg-neutral-100 text-neutral-800 focus:outline-none focus:border-[#fa541c] font-bold"
                   />
                   <span className="text-neutral-500 font-medium">分</span>
                 </div>
               </div>
 
               {/* 权限配置 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c] font-bold text-sm">*</span> 权限：
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
+                  <span className="text-[#fa541c] mr-1">*</span>权限：
                 </label>
                 <div className="flex gap-6 items-center pt-1.5">
-                  {['私有', '公开'].map((s) => (
+                  {['私有', '租户', '平台'].map((s) => (
                     <label key={s} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
                       <span className="relative flex items-center justify-center">
                         <input
@@ -1282,9 +1649,9 @@ export default function TeacherPapers() {
               </div>
 
               {/* 状态配置 */}
-              <div className="space-y-2">
-                <label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1">
-                  <span className="text-[#fa541c] font-bold text-sm">*</span> 状态：
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
+                  <span className="text-[#fa541c] mr-1">*</span>状态：
                 </label>
                 <div className="flex gap-6 items-center pt-1.5">
                   {['启用', '停用'].map((st) => (
@@ -1320,17 +1687,17 @@ export default function TeacherPapers() {
             </div>
 
             {/* Drawer Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50">
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
               <Button 
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreateDrawer}
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer bg-white"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
               >
                 取消
               </Button>
               <Button 
                 onClick={handleSavePaper}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
               >
                 确 定
               </Button>
@@ -1339,7 +1706,7 @@ export default function TeacherPapers() {
         </div>
       )}
 
-      {/* 查看试卷 Drawer (从右侧弹出查看试卷界面) */}
+      {/* 查看试卷 Drawer */}
       {viewingPaper && view !== 'preview' && (
         <div 
           className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
@@ -1350,23 +1717,23 @@ export default function TeacherPapers() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 text-left shrink-0">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] border border-[#ffbb96] rounded text-[11px] font-bold">
+                <span className="px-2 py-0.5 bg-[#fff2e8] text-[#fa541c] border border-[#ffbb96] rounded-[4px] text-[11px] font-bold">
                   {viewingPaper.type}
                 </span>
                 <h2 className="text-[15px] font-bold text-neutral-800">查看试卷详情</h2>
               </div>
               <button 
                 onClick={() => setViewingPaper(null)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Drawer Content - Scrollable View */}
-            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white">
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
               {/* Paper Name */}
               <div className="space-y-2">
                 <label className="text-[13px] font-bold text-neutral-400">试卷名称：</label>
@@ -1406,7 +1773,7 @@ export default function TeacherPapers() {
                   <span>客观题配置详情</span>
                 </h4>
                 <div className="space-y-3.5 text-xs text-neutral-600 leading-relaxed bg-white p-4 rounded-xl border border-neutral-100 shadow-sm">
-                  <p className="font-semibold text-neutral-800">1. 客观题配置：固定选题</p>
+                  <p className="font-semibold text-neutral-800">1. 客观题配置：{viewingPaper.selectionMethod || '固定选题'}</p>
                   <p>2. 客观题题量：<span className="font-bold text-[#fa541c]">{viewingPaper.questionCount}</span> 道，满分 <span className="font-bold text-[#fa541c]">100</span> 分</p>
                   <p>3. 答题限制时间：<span className="font-bold text-neutral-800">120</span> 分钟</p>
                   <p className="text-[11px] text-neutral-400 font-semibold">（客观题提交即评分，不支持二次更改或暂停时间）</p>
@@ -1421,10 +1788,10 @@ export default function TeacherPapers() {
             </div>
 
             {/* Drawer Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-neutral-50/50">
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-neutral-50/50 shrink-0">
               <Button 
                 onClick={() => setViewingPaper(null)}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-lg shadow-sm border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm border-0 cursor-pointer"
               >
                 关闭
               </Button>
@@ -1444,23 +1811,23 @@ export default function TeacherPapers() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 text-left shrink-0">
               <h3 className="text-sm font-bold text-neutral-855">配置试题</h3>
               <button 
                 onClick={() => setIsConfigModalOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="px-6 py-4 overflow-y-auto space-y-3.5 flex-1 custom-scrollbar bg-white">
+            <div className="px-6 py-4 overflow-y-auto space-y-3.5 flex-1 custom-scrollbar bg-white text-left">
               {/* Action Bar */}
               <div className="flex justify-end items-center">
                 <Button 
                   onClick={() => navigate('/teacher/questions', { state: { openCreateQuestion: true } })}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1 shadow-sm h-8 rounded-lg border-0 px-3.5 text-xs font-bold transition-all cursor-pointer"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1 shadow-sm h-8 rounded-[4px] border-0 px-3.5 text-xs font-bold transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> 新建试题
                 </Button>
@@ -1587,7 +1954,7 @@ export default function TeacherPapers() {
                               <td className="py-2.5 px-4 text-neutral-400 font-mono">{q.time}</td>
                             </tr>
                             
-                            {/* Expanded Configuration Detail Card (图3 - no shadow) */}
+                            {/* Expanded Configuration Detail Card */}
                             {isExpanded && (
                               <tr className="bg-neutral-50/15 border-b border-neutral-150">
                                 <td colSpan={11} className="p-0 whitespace-normal">
@@ -1616,9 +1983,9 @@ export default function TeacherPapers() {
                 <div className="flex items-center justify-end py-2.5 px-4 gap-4 bg-white border-t border-neutral-150">
                   <span className="text-[13px] text-neutral-500">共 {availableQuestions.length} 条</span>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+                    <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white" disabled>&lt;</Button>
                     <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-                    <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm">&gt;</Button>
+                    <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white">&gt;</Button>
                   </div>
                   <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 font-medium bg-white">
                     <option>10 条/页</option>
@@ -1630,19 +1997,140 @@ export default function TeacherPapers() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50">
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
               <Button 
                 onClick={() => setIsConfigModalOpen(false)}
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer bg-white"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
               >
                 取消
               </Button>
               <Button 
                 onClick={handleConfirmSelections}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
               >
                 确定选择
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 申请公开试卷 Drawer/Modal */}
+      {isApplyPublicModalOpen && paperToApplyPublic && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => !isApplyingPublic && setIsApplyPublicModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-[#f0f0f0] animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0 text-left">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                申请公开试卷
+              </h2>
+              <button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+                disabled={isApplyingPublic}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px] text-left">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后可用于租户/平台组卷或班级分发</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    提交申请后，超管将从 <strong>试卷完整性、题目结构、分值合理性、参考价值</strong> 四个维度进行审核。审核通过后将进入公共试卷库。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">试卷名称</label>
+                  <input 
+                    type="text" 
+                    value={paperToApplyPublic.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                    公开范围 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有教师可见并引用' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户教师可见并引用' }
+                    ].map(opt => (
+                      <div 
+                        key={opt.key}
+                        onClick={() => setApplyPublicRange(opt.key as any)}
+                        className={cn(
+                          "border p-4 rounded cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyPublicRange === opt.key 
+                            ? "border-[#fa541c] bg-[#fff5f0]/30"
+                            : "border-neutral-200 bg-white hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className={cn("font-bold text-[13px]", applyPublicRange === opt.key ? "text-[#fa541c]" : "text-[#262626]")}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 leading-normal">{opt.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    申请说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={applyPublicReason}
+                    onChange={(e) => setApplyPublicReason(e.target.value)}
+                    placeholder="请描述该试卷的申请公开原因及相关说明..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                disabled={isApplyingPublic}
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleSubmitApplyPublic} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold flex items-center"
+                disabled={isApplyingPublic}
+              >
+                {isApplyingPublic ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                    提交中...
+                  </>
+                ) : (
+                  '提交审核申请'
+                )}
               </Button>
             </div>
           </div>
@@ -1651,3 +2139,4 @@ export default function TeacherPapers() {
     </div>
   );
 }
+
