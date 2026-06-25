@@ -947,69 +947,81 @@ export default function AdminSystemPage() {
 
             {/* --- Tag Modal --- */}
             {showTagModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs p-4 animate-fade-in">
-                <form onSubmit={handleSaveTag} className="w-full max-w-[440px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
+              <div 
+                className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+                onClick={() => setShowTagModal(false)}
+              >
+                <form 
+                  onSubmit={handleSaveTag} 
+                  className="bg-white w-full max-w-[620px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   
                   {/* Header */}
-                  <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-border flex items-center justify-between shrink-0">
-                    <span className="font-black text-neutral-title text-sm flex items-center gap-1.5">
-                      <List className="w-4.5 h-4.5 text-[#fa541c]" />
+                  <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                    <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                      {editingTag ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />} 
                       <span>{editingTag ? "编辑标签" : "新建标签"}</span>
-                    </span>
+                    </h2>
                     <button 
                       type="button"
                       onClick={() => setShowTagModal(false)}
-                      className="text-neutral-400 hover:text-neutral-700 cursor-pointer bg-transparent border-0"
+                      className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   {/* Body inputs */}
-                  <div className="p-6 space-y-4 text-left font-sans text-neutral-700">
+                  <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
                     
                     {/* Tag Name */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">标签名称</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        标签名称 <span className="text-[#fa541c]">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="请输入标签名称"
                         value={formTagName}
                         onChange={(e) => setFormTagName(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
+                        autoFocus={!editingTag}
                       />
                     </div>
 
                     {/* Tag Group */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">标签组</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        标签组 <span className="text-[#fa541c]">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="请输入标签组"
                         value={formTagGroup}
                         onChange={(e) => setFormTagGroup(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
                       />
                     </div>
 
                   </div>
 
                   {/* Actions */}
-                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-border flex items-center justify-end gap-3 shrink-0">
+                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
                     <button
                       type="button"
                       onClick={() => setShowTagModal(false)}
-                      className="bg-white hover:bg-neutral-100 text-neutral-title font-bold px-4 py-2 border border-neutral-border rounded-lg cursor-pointer transition-colors"
+                      className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                     >
                       取消
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm"
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                     >
-                      确定
+                      确认
                     </button>
                   </div>
 
@@ -1464,47 +1476,59 @@ export default function AdminSystemPage() {
 
             {/* --- Cloud Platform Modal --- */}
             {showPlatformModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs p-4 animate-fade-in">
-                <form onSubmit={handleSavePlatform} className="w-full max-w-[440px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
+              <div 
+                className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+                onClick={() => setShowPlatformModal(false)}
+              >
+                <form 
+                  onSubmit={handleSavePlatform} 
+                  className="bg-white w-full max-w-[620px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   
                   {/* Header */}
-                  <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-border flex items-center justify-between shrink-0">
-                    <span className="font-black text-neutral-title text-sm flex items-center gap-1.5">
-                      <Cloud className="w-4.5 h-4.5 text-[#fa541c]" />
+                  <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                    <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                      {editingPlatform ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />} 
                       <span>{editingPlatform ? "编辑云服务插件" : "新建云服务插件"}</span>
-                    </span>
+                    </h2>
                     <button 
                       type="button"
                       onClick={() => setShowPlatformModal(false)}
-                      className="text-neutral-400 hover:text-neutral-700 cursor-pointer bg-transparent border-0"
+                      className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   {/* Body inputs */}
-                  <div className="p-6 space-y-4 text-left font-sans text-neutral-700">
+                  <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
                     
                     {/* Name */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">云服务插件</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        云服务插件 <span className="text-[#fa541c]">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="请输入云服务插件名称"
                         value={formPlatName}
                         onChange={(e) => setFormPlatName(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
+                        autoFocus={!editingPlatform}
                       />
                     </div>
 
                     {/* Type */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">云服务插件类型</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        云服务插件类型 <span className="text-[#fa541c]">*</span>
+                      </label>
                       <select
                         value={formPlatType}
                         onChange={(e) => setFormPlatType(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] bg-white transition-all text-[#262626]"
                       >
                         <option value="容器">容器</option>
                         <option value="云主机">云主机</option>
@@ -1515,41 +1539,45 @@ export default function AdminSystemPage() {
                     </div>
 
                     {/* Plugin ID */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">插件ID</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        插件ID <span className="text-[#fa541c]">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="请输入插件ID"
                         value={formPluginId}
                         onChange={(e) => setFormPluginId(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
                       />
                     </div>
 
                     {/* Status */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">状态</label>
-                      <div className="flex items-center gap-4 py-1 select-none font-semibold text-neutral-600">
-                        <label className="flex items-center gap-1.5 cursor-pointer">
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        状态 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="flex items-center gap-6 py-1 select-none text-[#262626]">
+                        <label className="flex items-center gap-2 cursor-pointer font-medium">
                           <input
                             type="radio"
                             name="status-platform"
                             value="启用"
                             checked={formStatus === "启用"}
                             onChange={() => setFormStatus("启用")}
-                            className="accent-[#fa541c]"
+                            className="accent-[#fa541c] w-4 h-4 cursor-pointer"
                           />
                           <span>启用</span>
                         </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer font-medium">
                           <input
                             type="radio"
                             name="status-platform"
                             value="未启用"
                             checked={formStatus === "未启用"}
                             onChange={() => setFormStatus("未启用")}
-                            className="accent-[#fa541c]"
+                            className="accent-[#fa541c] w-4 h-4 cursor-pointer"
                           />
                           <span>未启用</span>
                         </label>
@@ -1559,19 +1587,19 @@ export default function AdminSystemPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-border flex items-center justify-end gap-3 shrink-0">
+                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
                     <button
                       type="button"
                       onClick={() => setShowPlatformModal(false)}
-                      className="bg-white hover:bg-neutral-100 text-neutral-title font-bold px-4 py-2 border border-neutral-border rounded-lg cursor-pointer transition-colors"
+                      className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                     >
                       取消
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm"
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                     >
-                      确定
+                      确认
                     </button>
                   </div>
 
@@ -1747,47 +1775,59 @@ export default function AdminSystemPage() {
 
             {/* --- Resource Pool Form Dialog Modal --- */}
             {showPoolModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs p-4 animate-fade-in">
-                <form onSubmit={handleSavePool} className="w-full max-w-[440px] bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-up flex flex-col text-xs border border-neutral-150">
+              <div 
+                className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+                onClick={() => setShowPoolModal(false)}
+              >
+                <form 
+                  onSubmit={handleSavePool} 
+                  className="bg-white w-full max-w-[620px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   
                   {/* Header */}
-                  <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-border flex items-center justify-between shrink-0">
-                    <span className="font-black text-neutral-title text-sm flex items-center gap-1.5">
-                      <Server className="w-4.5 h-4.5 text-[#fa541c]" />
+                  <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                    <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                      {editingPool ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />} 
                       <span>{editingPool ? "编辑算力资源池" : "新建算力资源池"}</span>
-                    </span>
+                    </h2>
                     <button 
                       type="button"
                       onClick={() => setShowPoolModal(false)}
-                      className="text-neutral-400 hover:text-neutral-700 cursor-pointer bg-transparent border-0"
+                      className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   {/* Body inputs */}
-                  <div className="p-6 space-y-4 text-left font-sans text-neutral-700">
+                  <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
                     
                     {/* Pool Name */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">资源池名称</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        资源池名称 <span className="text-[#fa541c]">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="请输入资源池名称"
                         value={formPoolName}
                         onChange={(e) => setFormPoolName(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626]"
+                        autoFocus={!editingPool}
                       />
                     </div>
 
                     {/* Associated Cloud Plugin */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-neutral-700 block text-xs">关联云服务插件</label>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        关联云服务插件 <span className="text-[#fa541c]">*</span>
+                      </label>
                       <select
                         value={formPoolPlugin}
                         onChange={(e) => setFormPoolPlugin(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-title bg-white focus:outline-none focus:border-[#fa541c]"
+                        className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] bg-white transition-all text-[#262626]"
                       >
                         <option value="容器">容器</option>
                         <option value="公有云">公有云</option>
@@ -1799,19 +1839,19 @@ export default function AdminSystemPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-border flex items-center justify-end gap-3 shrink-0">
+                  <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
                     <button
                       type="button"
                       onClick={() => setShowPoolModal(false)}
-                      className="bg-white hover:bg-neutral-100 text-neutral-title font-bold px-4 py-2 border border-neutral-border rounded-lg cursor-pointer transition-colors"
+                      className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
                     >
                       取消
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold px-5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm"
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
                     >
-                      确定
+                      确认
                     </button>
                   </div>
 
