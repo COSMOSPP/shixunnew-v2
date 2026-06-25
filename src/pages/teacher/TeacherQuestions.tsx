@@ -443,6 +443,20 @@ export default function TeacherQuestions() {
   }, []);
 
   React.useEffect(() => {
+    function handleShixunResourcePoolClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedSingle = shixunResourcePoolDropdownRef.current && shixunResourcePoolDropdownRef.current.contains(target);
+      if (!clickedSingle) {
+        setIsShixunResourcePoolDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleShixunResourcePoolClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleShixunResourcePoolClickOutside);
+    };
+  }, []);
+
+  React.useEffect(() => {
     function handleMoreActionsClickOutside(event: MouseEvent) {
       if (moreActionsRef.current && !moreActionsRef.current.contains(event.target as Node)) {
         setIsMoreActionsOpen(false);
@@ -744,6 +758,8 @@ export default function TeacherQuestions() {
   const singleQuestionBankDropdownRef = React.useRef<HTMLDivElement>(null);
   const [isQuestionDifficultyDropdownOpen, setIsQuestionDifficultyDropdownOpen] = useState(false);
   const singleQuestionDifficultyDropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isShixunResourcePoolDropdownOpen, setIsShixunResourcePoolDropdownOpen] = useState(false);
+  const shixunResourcePoolDropdownRef = React.useRef<HTMLDivElement>(null);
   const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false);
   const moreActionsRef = React.useRef<HTMLDivElement>(null);
 
@@ -2520,19 +2536,52 @@ export default function TeacherQuestions() {
                         <label className="text-[13px] font-bold text-[#262626] text-right">
                           选择资源池 <span className="text-[#fa541c]">*</span>
                         </label>
-                        <div className="relative w-full">
-                          <select
-                            value={shixunResourcePool}
-                            onChange={(e) => setShixunResourcePool(e.target.value)}
-                            className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-[#262626] transition-all cursor-pointer"
+                        <div ref={shixunResourcePoolDropdownRef} className="relative w-full text-xs">
+                          <div
+                            onClick={() => setIsShixunResourcePoolDropdownOpen(!isShixunResourcePoolDropdownOpen)}
+                            className={cn(
+                              "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                              isShixunResourcePoolDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                            )}
                           >
-                            <option value="天翼云资源池1">天翼云资源池1</option>
-                            <option value="k8s容器集群">k8s容器集群</option>
-                            <option value="Proxmox私有云资源池">Proxmox私有云资源池</option>
-                            <option value="Cloudpods虚拟化资源池">Cloudpods虚拟化资源池</option>
-                            <option value="Ceph存储资源池">Ceph存储资源池</option>
-                          </select>
-                          <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <span className={cn(shixunResourcePool ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                              {shixunResourcePool || "请选择资源池"}
+                            </span>
+                            <ChevronDown 
+                              className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isShixunResourcePoolDropdownOpen && "rotate-180")} 
+                            />
+                          </div>
+
+                          {/* Dropdown Menu */}
+                          {isShixunResourcePoolDropdownOpen && (
+                            <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                              <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                {['天翼云资源池1', 'k8s容器集群', 'Proxmox私有云资源池', 'Cloudpods虚拟化资源池', 'Ceph存储资源池'].map(pool => {
+                                  const isSelected = shixunResourcePool === pool;
+                                  return (
+                                    <div
+                                      key={pool}
+                                      onClick={() => {
+                                        setShixunResourcePool(pool);
+                                        setIsShixunResourcePoolDropdownOpen(false);
+                                      }}
+                                      className={cn(
+                                        "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                        isSelected 
+                                          ? "bg-orange-50 text-[#fa541c] font-bold"
+                                          : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                                      )}
+                                    >
+                                      <span>{pool}</span>
+                                      {isSelected && (
+                                        <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
