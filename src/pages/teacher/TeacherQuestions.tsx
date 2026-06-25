@@ -633,6 +633,7 @@ export default function TeacherQuestions() {
   const [shixunDatasets, setShixunDatasets] = useState<string[]>([]);
   const [isDatasetDropdownOpen, setIsDatasetDropdownOpen] = useState(false);
   const [shixunOfflineFile, setShixunOfflineFile] = useState<string>('');
+  const [shixunResourcePool, setShixunResourcePool] = useState('天翼云资源池1');
 
   // Project Environment configuration states for shixun
   const [shixunEnvType, setShixunEnvType] = useState<'容器' | '云主机'>('容器');
@@ -923,6 +924,7 @@ export default function TeacherQuestions() {
     ]);
     setShixunDescription(`### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述`);
     setShixunAnswerType('线上环境答题');
+    setShixunResourcePool('天翼云资源池1');
     setShixunDatasets([]);
     setIsDatasetDropdownOpen(false);
     setShixunOfflineFile('');
@@ -1026,6 +1028,12 @@ export default function TeacherQuestions() {
         { id: '1', blankId: '1', keywords: '', ratio: 100 },
         { id: '2', blankId: '2', keywords: '', ratio: 100 }
       ]);
+    }
+    if (q.type === '实训题') {
+      setShixunDescription(q.shixunDescription || '### 任务名称\n内容描述\n### 任务描述\n内容描述\n### 任务要求\n内容描述\n### 评分方式\n内容描述');
+      setShixunAnswerType(q.shixunAnswerType || '线上环境答题');
+      setShixunResourcePool(q.shixunResourcePool || '天翼云资源池1');
+      setShixunEnvType(q.shixunEnvType || '容器');
     }
     if (q.type === '简答题') {
       setCorrectAnswerText(q.correctAnswer || '');
@@ -1201,6 +1209,10 @@ export default function TeacherQuestions() {
             blanks: newQuestionType === '填空题' ? blanks : undefined,
             scoreItems: newQuestionType === '填空题' ? scoreItems : undefined,
             correctAnswer: newQuestionType === '简答题' ? correctAnswerText : undefined,
+            shixunDescription: newQuestionType === '实训题' ? shixunDescription : undefined,
+            shixunAnswerType: newQuestionType === '实训题' ? shixunAnswerType : undefined,
+            shixunResourcePool: newQuestionType === '实训题' ? shixunResourcePool : undefined,
+            shixunEnvType: newQuestionType === '实训题' ? shixunEnvType : undefined,
           };
         }
         return q;
@@ -1223,6 +1235,10 @@ export default function TeacherQuestions() {
         blanks: newQuestionType === '填空题' ? blanks : undefined,
         scoreItems: newQuestionType === '填空题' ? scoreItems : undefined,
         correctAnswer: newQuestionType === '简答题' ? correctAnswerText : undefined,
+        shixunDescription: newQuestionType === '实训题' ? shixunDescription : undefined,
+        shixunAnswerType: newQuestionType === '实训题' ? shixunAnswerType : undefined,
+        shixunResourcePool: newQuestionType === '实训题' ? shixunResourcePool : undefined,
+        shixunEnvType: newQuestionType === '实训题' ? shixunEnvType : undefined,
       };
       setQuestionsList([newQuestion, ...questionsList]);
     }
@@ -2499,6 +2515,27 @@ export default function TeacherQuestions() {
 
                   {shixunAnswerType === '线上环境答题' && (
                     <>
+                      {/* 选择资源池 */}
+                      <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
+                        <label className="text-[13px] font-bold text-[#262626] text-right">
+                          选择资源池 <span className="text-[#fa541c]">*</span>
+                        </label>
+                        <div className="relative w-full">
+                          <select
+                            value={shixunResourcePool}
+                            onChange={(e) => setShixunResourcePool(e.target.value)}
+                            className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs appearance-none focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-[#262626] transition-all cursor-pointer"
+                          >
+                            <option value="天翼云资源池1">天翼云资源池1</option>
+                            <option value="k8s容器集群">k8s容器集群</option>
+                            <option value="Proxmox私有云资源池">Proxmox私有云资源池</option>
+                            <option value="Cloudpods虚拟化资源池">Cloudpods虚拟化资源池</option>
+                            <option value="Ceph存储资源池">Ceph存储资源池</option>
+                          </select>
+                          <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+
                       {/* 2. 选择环境类型 */}
                       <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
                         <label className="text-[13px] font-bold text-[#262626] text-right">
