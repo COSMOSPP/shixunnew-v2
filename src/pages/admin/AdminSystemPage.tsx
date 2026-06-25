@@ -792,8 +792,9 @@ export default function AdminSystemPage() {
           <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Top Title Section */}
-            <div className="flex justify-between items-center shrink-0">
-              <h1 className="text-xl font-bold text-neutral-900">标签管理</h1>
+            <div className="flex flex-col gap-1 shrink-0">
+              <h1 className="text-xl font-bold text-neutral-900 leading-tight">标签管理</h1>
+              <p className="text-xs text-neutral-500 font-medium">配置平台各类物理与逻辑资产的分类标签，便于精细化隔离与算力调度</p>
             </div>
 
             {/* Table Card */}
@@ -1275,8 +1276,9 @@ export default function AdminSystemPage() {
           <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Top Title Section */}
-            <div className="flex justify-between items-center shrink-0">
-              <h1 className="text-xl font-bold text-neutral-900">云服务插件</h1>
+            <div className="flex flex-col gap-1 shrink-0">
+              <h1 className="text-xl font-bold text-neutral-900 leading-tight">云服务插件</h1>
+              <p className="text-xs text-neutral-500 font-medium">对接异构计算平台接口，实现对物理节点、虚拟机及容器引擎的动态扩展</p>
             </div>
 
             {/* Table Card */}
@@ -1584,8 +1586,9 @@ export default function AdminSystemPage() {
           <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Top Title Section */}
-            <div className="flex justify-between items-center shrink-0">
-              <h1 className="text-xl font-bold text-neutral-900">资源池管理</h1>
+            <div className="flex flex-col gap-1 shrink-0">
+              <h1 className="text-xl font-bold text-neutral-900 leading-tight">资源池管理</h1>
+              <p className="text-xs text-neutral-500 font-medium">统一纳管底层算力资源池与插件凭证，支持规格同步、状态监控及鉴权认证</p>
             </div>
 
             {/* Table Card */}
