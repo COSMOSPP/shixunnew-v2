@@ -776,7 +776,7 @@ export default function AdminSystemPage() {
       </div>
 
       {/* Right Content Workspace */}
-      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-8 flex flex-col min-h-0 custom-scrollbar relative">
+      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-6 flex flex-col min-h-0 custom-scrollbar relative">
         
         {/* Toast Notifier */}
         {toastMessage && (
@@ -789,7 +789,7 @@ export default function AdminSystemPage() {
         {/* ==================== 1. 标签体系管理 ==================== */}
         {/* ==================== 1. 标签管理 ==================== */}
         {activeTab === "tags" && (
-          <div className="space-y-6 flex flex-col flex-1 min-h-0 animate-slide-up">
+          <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Top Title Section */}
             <div className="flex justify-between items-center shrink-0">
@@ -1020,7 +1020,7 @@ export default function AdminSystemPage() {
 
         {/* ==================== 2. 运营人员角色配置 ==================== */}
         {activeTab === "roles" && (
-          <div className="space-y-6 flex flex-col flex-1 min-h-0 animate-slide-up">
+          <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             <div>
               <h1 className="text-lg font-black text-neutral-title flex items-center gap-2">
                 <Key className="w-5.5 h-5.5 text-[#fa541c]" />
@@ -1272,7 +1272,7 @@ export default function AdminSystemPage() {
 
         {/* ==================== 3. 管理端云平台管理 ==================== */}
         {activeTab === "plugins" && (
-          <div className="space-y-6 flex flex-col flex-1 min-h-0 animate-slide-up">
+          <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Top Title Section */}
             <div className="flex justify-between items-center shrink-0">
@@ -1581,7 +1581,7 @@ export default function AdminSystemPage() {
 
         {/* ==================== 3.5. 管理端资源池配置 ==================== */}
         {activeTab === "pools" && (
-          <div className="space-y-6 flex flex-col flex-1 min-h-0 animate-slide-up">
+          <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Top Title Section */}
             <div className="flex justify-between items-center shrink-0">
@@ -1908,7 +1908,7 @@ export default function AdminSystemPage() {
         )}
         {/* ==================== 4. 管理端平台级监控管理 ==================== */}
         {activeTab === "monitor" && (
-          <div className="space-y-6 flex flex-col flex-1 min-h-0 animate-slide-up">
+          <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Header + alarm thresholds config input */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 shrink-0 border-b border-neutral-200 pb-4">
@@ -2147,7 +2147,7 @@ export default function AdminSystemPage() {
 
         {/* ==================== 5. 系统操作日志 ==================== */}
         {activeTab === "logs" && (
-          <div className="space-y-6 flex flex-col flex-1 min-h-0 animate-slide-up">
+          <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up">
             
             {/* Header */}
             <div className="flex justify-between items-start shrink-0">
