@@ -1050,10 +1050,10 @@ export default function AdminSystemPage() {
         {/* Tab Selections */}
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto custom-scrollbar">
           {[
-            { id: "tags", title: "标签体系管理", icon: List },
+            { id: "tags", title: "标签管理", icon: List },
             { id: "roles", title: "运营角色权限", icon: Key },
-            { id: "plugins", title: "云平台", icon: Cloud },
-            { id: "pools", title: "资源池配置", icon: Server },
+            { id: "plugins", title: "云服务插件", icon: Cloud },
+            { id: "pools", title: "资源池管理", icon: Server },
             { id: "monitor", title: "平台级监控", icon: Activity, badge: activeAlerts.length },
             { id: "logs", title: "审计操作日志", icon: FileText }
           ].map((tab) => {

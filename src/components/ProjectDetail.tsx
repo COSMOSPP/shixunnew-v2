@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, FileText, Code, CheckSquare, List, Activity, Settings, Eye, Play, Users, Download, ChevronDown, Copy, Folder, Info, Clock } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ChevronRight, Star, Share2, Bookmark, PlayCircle, Lock, MessageSquare, ThumbsUp, ChevronLeft, CheckCircle2, FileText, Code, CheckSquare, List, Activity, Settings, Eye, Play, Users, Download, ChevronDown, Copy, Folder, Info, Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +26,39 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
   const [isFavorited, setIsFavorited] = useState(false);
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('v0.1.1');
+
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const downloadTimerRef = useRef<any>(null);
+
+  const handleDownloadSource = () => {
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    
+    if (downloadTimerRef.current) clearInterval(downloadTimerRef.current);
+    
+    downloadTimerRef.current = setInterval(() => {
+      setDownloadProgress((prev) => {
+        if (prev >= 100) {
+          if (downloadTimerRef.current) clearInterval(downloadTimerRef.current);
+          setTimeout(() => {
+            setIsDownloading(false);
+          }, 400);
+          return 100;
+        }
+        const next = prev + Math.floor(Math.random() * 11) + 8;
+        return next > 100 ? 100 : next;
+      });
+    }, 150);
+  };
+
+  const cancelDownload = () => {
+    if (downloadTimerRef.current) {
+      clearInterval(downloadTimerRef.current);
+    }
+    setIsDownloading(false);
+    setDownloadProgress(0);
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f5f5f5] flex flex-col font-sans -mx-6 -mt-6 -mb-6">
@@ -115,13 +148,6 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                   </div>
                 </div>
 
-                <Button 
-                  onClick={onStart}
-                  className="bg-gradient-to-r from-[#fa541c] to-[#ff8c3a] hover:from-[#e84a15] hover:to-[#ff7a22] text-white shadow-lg shadow-[#fa541c]/30 border-0 flex items-center gap-2 rounded-[10px] px-8 h-11 transition-all hover:-translate-y-0.5"
-                >
-                  <Play className="w-4 h-4 fill-white" />
-                  <span className="font-bold text-[15px] tracking-wide">启动项目</span>
-                </Button>
               </div>
             </div>
           </div>
@@ -136,53 +162,65 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
           <div className="bg-white rounded-[12px] shadow-sm p-1 flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               {[
-                { id: 'intro', label: '项目介绍', icon: Info },
-                { id: 'source', label: '源码', icon: Code },
+                { id: 'intro', label: '项目介绍' },
+                { id: 'source', label: '源码' },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "px-6 py-3 rounded-[8px] text-[15px] font-medium transition-all flex items-center gap-2",
+                    "px-6 py-3 rounded-[8px] text-[15px] font-medium transition-all flex items-center",
                     activeTab === tab.id ? "text-[#fa541c] bg-[#fff2e8]" : "text-neutral-body hover:text-neutral-title hover:bg-neutral-bg"
                   )}
                 >
-                  <tab.icon className="w-4 h-4" />
                   {tab.label}
                 </button>
               ))}
             </div>
-            <div className="relative">
-              <div 
-                onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
-                className="flex items-center gap-1 text-neutral-500 cursor-pointer hover:text-neutral-900 transition-colors pr-4 select-none"
-              >
-                <span className="text-[14px] text-neutral-400">版本：</span>
-                <span className="text-[14px] text-neutral-500 mr-1">{selectedVersion}</span>
-                <ChevronDown className={cn("w-4 h-4 text-neutral-400 transition-transform duration-200", isVersionDropdownOpen ? "rotate-180" : "")} />
-              </div>
-              {isVersionDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setIsVersionDropdownOpen(false)}></div>
-                  <div className="absolute right-4 top-8 bg-white border border-neutral-100 rounded-lg shadow-lg py-1.5 min-w-[100px] z-40 animate-in fade-in slide-in-from-top-1 duration-150">
-                    {['v0.1.1', 'v0.1.0', 'v0.0.9'].map((ver) => (
-                      <button
-                        key={ver}
-                        onClick={() => {
-                          setSelectedVersion(ver);
-                          setIsVersionDropdownOpen(false);
-                        }}
-                        className={cn(
-                          "w-full text-left px-4 py-2 text-[13px] hover:bg-neutral-50 transition-colors",
-                          selectedVersion === ver ? "text-[#fa541c] font-bold" : "text-neutral-700"
-                        )}
-                      >
-                        {ver}
-                      </button>
-                    ))}
-                  </div>
-                </>
+            <div className="flex items-center gap-4">
+              {activeTab === 'source' && (
+                <button 
+                  onClick={handleDownloadSource}
+                  className="flex items-center gap-1.5 px-3 py-1 border border-neutral-200 rounded-[4px] hover:text-[#fa541c] hover:border-[#fa541c]/30 text-neutral-500 bg-white hover:bg-[#fff2e8] transition-colors text-[13px] font-semibold cursor-pointer h-7"
+                  title="下载源码"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>下载源码</span>
+                </button>
               )}
+
+              <div className="relative">
+                <div 
+                  onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
+                  className="flex items-center gap-1 text-neutral-500 cursor-pointer hover:text-neutral-900 transition-colors pr-4 select-none"
+                >
+                  <span className="text-[14px] text-neutral-400">版本：</span>
+                  <span className="text-[14px] text-neutral-500 mr-1">{selectedVersion}</span>
+                  <ChevronDown className={cn("w-4 h-4 text-neutral-400 transition-transform duration-200", isVersionDropdownOpen ? "rotate-180" : "")} />
+                </div>
+                {isVersionDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setIsVersionDropdownOpen(false)}></div>
+                    <div className="absolute right-4 top-8 bg-white border border-neutral-100 rounded-lg shadow-lg py-1.5 min-w-[100px] z-40 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {['v0.1.1', 'v0.1.0', 'v0.0.9'].map((ver) => (
+                        <button
+                          key={ver}
+                          onClick={() => {
+                            setSelectedVersion(ver);
+                            setIsVersionDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-[13px] hover:bg-neutral-50 transition-colors",
+                            selectedVersion === ver ? "text-[#fa541c] font-bold" : "text-neutral-700"
+                          )}
+                        >
+                          {ver}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           {/* Intro Section */}
@@ -356,24 +394,67 @@ export default function ProjectDetail({ project, onBack, onStart }: ProjectDetai
                 <Clock className="w-4 h-4 mr-1.5" /> 2022/12/01
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => alert("项目已成功 Fork 到您的工作区！")}
-                className="flex-1 h-12 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[6px] font-bold text-[18px] transition-colors shadow-sm"
-              >
-                Fork
-              </button>
-              <button 
-                onClick={() => alert("正在下载项目源码...")}
-                className="w-12 h-12 border border-neutral-200 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-[#fa541c] hover:border-[#fa541c]/30 bg-white hover:bg-[#fff2e8] transition-colors shadow-sm"
-                title="下载源码"
-              >
-                <Download className="w-5 h-5" />
-              </button>
-            </div>
+            <Button 
+              onClick={onStart}
+              className="w-full h-12 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[6px] font-bold text-[18px] transition-colors shadow-sm flex items-center justify-center gap-2 border-0 cursor-pointer"
+            >
+              <Play className="w-5 h-5 fill-white" />
+              <span>启动项目</span>
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Downloading Progress Modal */}
+      {isDownloading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
+                正在下载源码
+              </h2>
+              <button 
+                onClick={cancelDownload} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex items-start gap-3 bg-white">
+              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5 animate-pulse">!</div>
+              <div className="flex-1 text-[14px] text-neutral-750 leading-normal">
+                <div>正在为您打包并下载项目源码，请勿关闭页面...</div>
+                
+                {/* Progress Bar */}
+                <div className="mt-4 w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
+                  <div 
+                    className="bg-[#fa541c] h-full transition-all duration-150 ease-out" 
+                    style={{ width: `${downloadProgress}%` }}
+                  ></div>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-neutral-400">
+                  <span>下载进度</span>
+                  <span className="text-[#fa541c] font-bold">{downloadProgress}%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={cancelDownload} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
