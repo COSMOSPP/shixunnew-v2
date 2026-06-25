@@ -812,14 +812,14 @@ export default function AdminSystemPage() {
                       setSearchTagName(e.target.value);
                       setTagCurrentPage(1);
                     }}
-                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
+                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
                   />
                 </div>
                 <button
                   onClick={handleOpenCreateTag}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-semibold px-4.5 py-1.5 rounded-[4px] transition-colors cursor-pointer border-0 shadow-sm flex items-center h-8"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm font-bold h-9 px-5 text-[13px] border-0 cursor-pointer transition-colors flex items-center justify-center"
                 >
-                  新建
+                  <Plus className="w-4 h-4 mr-1.5" /> 新建标签
                 </button>
               </div>
 
@@ -1308,14 +1308,14 @@ export default function AdminSystemPage() {
                       setSearchPlatformName(e.target.value);
                       setPlatformCurrentPage(1);
                     }}
-                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
+                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
                   />
                 </div>
                 <button
                   onClick={handleOpenCreatePlatform}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-semibold px-4.5 py-1.5 rounded-[4px] transition-colors cursor-pointer border-0 shadow-sm flex items-center h-8"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm font-bold h-9 px-5 text-[13px] border-0 cursor-pointer transition-colors flex items-center justify-center"
                 >
-                  新建
+                  <Plus className="w-4 h-4 mr-1.5" /> 新建云服务插件
                 </button>
               </div>
 
@@ -1634,14 +1634,14 @@ export default function AdminSystemPage() {
                       setSearchPoolName(e.target.value);
                       setPoolCurrentPage(1);
                     }}
-                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
+                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
                   />
                 </div>
                 <button
                   onClick={handleOpenCreatePool}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-semibold px-4.5 py-1.5 rounded-[4px] transition-colors cursor-pointer border-0 shadow-sm flex items-center h-8"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm font-bold h-9 px-5 text-[13px] border-0 cursor-pointer transition-colors flex items-center justify-center"
                 >
-                  新建
+                  <Plus className="w-4 h-4 mr-1.5" /> 新建资源池
                 </button>
               </div>
 
