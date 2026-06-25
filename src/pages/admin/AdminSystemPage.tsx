@@ -66,7 +66,27 @@ const initialTags: PlatformTag[] = [
   { id: "tag-2", name: "公有云", tagGroup: "111", createdAt: "2026-06-17 01:31:34" },
   { id: "tag-3", name: "IT", tagGroup: "IT", createdAt: "2026-06-17 01:31:19" },
   { id: "tag-4", name: "人工智能", tagGroup: "aaa", createdAt: "2026-06-16 07:55:13" },
-  { id: "tag-5", name: "AI", tagGroup: "test", createdAt: "2026-06-16 07:03:52" }
+  { id: "tag-5", name: "AI", tagGroup: "test", createdAt: "2026-06-16 07:03:52" },
+  { id: "tag-6", name: "大数据", tagGroup: "分析", createdAt: "2026-06-15 10:24:15" },
+  { id: "tag-7", name: "深度学习", tagGroup: "AI", createdAt: "2026-06-15 09:15:30" },
+  { id: "tag-8", name: "容器云", tagGroup: "基础设施", createdAt: "2026-06-14 16:40:22" },
+  { id: "tag-9", name: "微服务", tagGroup: "架构", createdAt: "2026-06-14 14:20:10" },
+  { id: "tag-10", name: "云原生", tagGroup: "基础设施", createdAt: "2026-06-13 11:05:45" },
+  { id: "tag-11", name: "DevOps", tagGroup: "研发", createdAt: "2026-06-12 15:30:00" },
+  { id: "tag-12", name: "安全防护", tagGroup: "安全", createdAt: "2026-06-11 08:45:12" },
+  { id: "tag-13", name: "机器学习", tagGroup: "AI", createdAt: "2026-06-10 17:33:21" },
+  { id: "tag-14", name: "强化学习", tagGroup: "AI", createdAt: "2026-06-09 13:12:05" },
+  { id: "tag-15", name: "NLP", tagGroup: "AI", createdAt: "2026-06-08 11:22:43" },
+  { id: "tag-16", name: "计算机视觉", tagGroup: "AI", createdAt: "2026-06-07 10:14:55" },
+  { id: "tag-17", name: "语音识别", tagGroup: "AI", createdAt: "2026-06-06 09:05:11" },
+  { id: "tag-18", name: "大语言模型", tagGroup: "AI", createdAt: "2026-06-05 08:00:00" },
+  { id: "tag-19", name: "知识图谱", tagGroup: "AI", createdAt: "2026-06-04 16:30:15" },
+  { id: "tag-20", name: "智能推荐", tagGroup: "AI", createdAt: "2026-06-03 14:20:10" },
+  { id: "tag-21", name: "自动化测试", tagGroup: "研发", createdAt: "2026-06-02 11:15:30" },
+  { id: "tag-22", name: "持续集成", tagGroup: "研发", createdAt: "2026-06-01 10:05:45" },
+  { id: "tag-23", name: "日志分析", tagGroup: "运维", createdAt: "2026-05-31 09:12:00" },
+  { id: "tag-24", name: "性能监控", tagGroup: "运维", createdAt: "2026-05-30 08:45:15" },
+  { id: "tag-25", name: "容灾备份", tagGroup: "运维", createdAt: "2026-05-29 07:30:00" }
 ];
 
 const initialRoles: OperationalRole[] = [
@@ -116,7 +136,24 @@ const initialPlatforms: CloudPlatform[] = [
   { id: "plat-5", name: "kubernetes容器平台", platformType: "kubernetes", type: "容器", pluginId: "h2ahwz1awycagfymsp7cc", status: "启用", createdAt: "2024-04-19 17:29" },
   { id: "plat-6", name: "Ideal实训云", platformType: "cloudpods", type: "私有云", pluginId: "private", status: "启用", createdAt: "2024-04-19 17:29" },
   { id: "plat-7", name: "华为云", platformType: "huawei", type: "公有云", pluginId: "faanhu6yfo2ep84v7kxg4", status: "启用", createdAt: "2024-04-19 17:28" },
-  { id: "plat-8", name: "Ceph存储平台", platformType: "ceph", type: "存储", pluginId: "ceph-storage-pool", status: "启用", createdAt: "2026-06-01 10:00" }
+  { id: "plat-8", name: "Ceph存储平台", platformType: "ceph", type: "存储", pluginId: "ceph-storage-pool", status: "启用", createdAt: "2026-06-01 10:00" },
+  { id: "plat-9", name: "阿里云生产平台", platformType: "aliyun", type: "公有云", pluginId: "ali-prod-gw", status: "启用", createdAt: "2026-06-02 11:30" },
+  { id: "plat-10", name: "腾讯云测试平台", platformType: "tencent", type: "公有云", pluginId: "tx-test-gw", status: "未启用", createdAt: "2026-06-03 14:15" },
+  { id: "plat-11", name: "VMware集群", platformType: "vmware", type: "私有云", pluginId: "vmware-vsphere", status: "启用", createdAt: "2026-06-04 09:00" },
+  { id: "plat-12", name: "NFS存储共享", platformType: "nfs", type: "存储", pluginId: "nfs-share", status: "启用", createdAt: "2026-06-05 16:20" },
+  { id: "plat-13", name: "MinIO对象存储", platformType: "minio", type: "存储", pluginId: "minio-oss", status: "启用", createdAt: "2026-06-06 10:45" },
+  { id: "plat-14", name: "天翼云专线通道", platformType: "ctyun", type: "公有云", pluginId: "ctyun-direct-line", status: "启用", createdAt: "2026-06-07 11:00" },
+  { id: "plat-15", name: "PVE测试环境", platformType: "proxmox", type: "私有云", pluginId: "pve-test-cluster", status: "未启用", createdAt: "2026-06-08 15:30" },
+  { id: "plat-16", name: "Kubernetes边缘节点", platformType: "kubernetes", type: "容器", pluginId: "k8s-edge-nodes", status: "启用", createdAt: "2026-06-09 10:15" },
+  { id: "plat-17", name: "华为云计算集群", platformType: "huawei", type: "公有云", pluginId: "huawei-compute-node", status: "启用", createdAt: "2026-06-10 14:45" },
+  { id: "plat-18", name: "阿里云数据库平台", platformType: "aliyun", type: "公有云", pluginId: "ali-rds-gw", status: "启用", createdAt: "2026-06-11 09:30" },
+  { id: "plat-19", name: "腾讯云COS存储", platformType: "tencent", type: "存储", pluginId: "tx-cos-plugin", status: "启用", createdAt: "2026-06-12 16:10" },
+  { id: "plat-20", name: "Ceph数据冷备库", platformType: "ceph", type: "存储", pluginId: "ceph-backup-vault", status: "启用", createdAt: "2026-06-13 11:20" },
+  { id: "plat-21", name: "K3s轻量容器", platformType: "k3s", type: "容器", pluginId: "k3s-lightweight", status: "启用", createdAt: "2026-06-14 13:50" },
+  { id: "plat-22", name: "GlusterFS共享盘", platformType: "glusterfs", type: "存储", pluginId: "gluster-share", status: "启用", createdAt: "2026-06-15 15:40" },
+  { id: "plat-23", name: "OpenStack老集群", platformType: "openstack", type: "私有云", pluginId: "openstack-legacy", status: "未启用", createdAt: "2026-06-16 08:30" },
+  { id: "plat-24", name: "OpenShift容器开发", platformType: "openshift", type: "容器", pluginId: "openshift-okd", status: "启用", createdAt: "2026-06-17 17:12" },
+  { id: "plat-25", name: "VMware开发集群", platformType: "vmware", type: "私有云", pluginId: "vmware-dev-cluster", status: "启用", createdAt: "2026-06-18 10:00" }
 ];
 
 const initialLogs: SystemLog[] = [
@@ -132,7 +169,27 @@ const initialPools: ResourcePool[] = [
   { id: "pool-2", name: "天翼云", associatedPlugin: "公有云", createdAt: "2025-05-08 15:24", ak: "ak-ctyun-example", sk: "sk-ctyun-example" },
   { id: "pool-3", name: "idealpods", associatedPlugin: "私有云", createdAt: "2024-12-25 09:28", ak: "ak-pods-example", sk: "sk-pods-example" },
   { id: "pool-4", name: "pve", associatedPlugin: "私有云", createdAt: "2024-11-23 10:35", ak: "ak-pve-example", sk: "sk-pve-example" },
-  { id: "pool-5", name: "ceph", associatedPlugin: "存储", createdAt: "2024-04-19 17:29", ak: "ak-ceph-example", sk: "sk-ceph-example" }
+  { id: "pool-5", name: "ceph", associatedPlugin: "存储", createdAt: "2024-04-19 17:29", ak: "ak-ceph-example", sk: "sk-ceph-example" },
+  { id: "pool-6", name: "阿里云ECS资源池", associatedPlugin: "公有云", createdAt: "2026-06-02 11:30", ak: "ak-ali-example", sk: "sk-ali-example" },
+  { id: "pool-7", name: "腾讯云CVM资源池", associatedPlugin: "公有云", createdAt: "2026-06-03 14:15", ak: "ak-tx-example", sk: "sk-tx-example" },
+  { id: "pool-8", name: "VMware虚拟化集群", associatedPlugin: "私有云", createdAt: "2026-06-04 09:00", ak: "ak-vmware-example", sk: "sk-vmware-example" },
+  { id: "pool-9", name: "NFS分布式存储池", associatedPlugin: "存储", createdAt: "2026-06-05 16:20", ak: "ak-nfs-example", sk: "sk-nfs-example" },
+  { id: "pool-10", name: "MinIO对象存储池", associatedPlugin: "存储", createdAt: "2026-06-06 10:45", ak: "ak-minio-example", sk: "sk-minio-example" },
+  { id: "pool-11", name: "华为云弹性计算池", associatedPlugin: "公有云", createdAt: "2026-06-07 13:50", ak: "ak-hw-example", sk: "sk-hw-example" },
+  { id: "pool-12", name: "GlusterFS存储集群", associatedPlugin: "存储", createdAt: "2026-06-08 17:10", ak: "ak-gluster-example", sk: "sk-gluster-example" },
+  { id: "pool-13", name: "天翼云物理专区", associatedPlugin: "公有云", createdAt: "2026-06-09 11:00", ak: "ak-cty-phy", sk: "sk-cty-phy" },
+  { id: "pool-14", name: "PVE开发测试池", associatedPlugin: "私有云", createdAt: "2026-06-10 15:30", ak: "ak-pve-dev", sk: "sk-pve-dev" },
+  { id: "pool-15", name: "IdealPods专属节点", associatedPlugin: "私有云", createdAt: "2026-06-11 09:28", ak: "ak-ideal-pods", sk: "sk-ideal-pods" },
+  { id: "pool-16", name: "K8s边缘计算资源池", associatedPlugin: "容器", createdAt: "2026-06-12 10:15", ak: "ak-k8s-edge", sk: "sk-k8s-edge" },
+  { id: "pool-17", name: "华为云GPU训练池", associatedPlugin: "公有云", createdAt: "2026-06-13 14:45", ak: "ak-hw-gpu", sk: "sk-hw-gpu" },
+  { id: "pool-18", name: "阿里云RDS备用池", associatedPlugin: "公有云", createdAt: "2026-06-14 09:30", ak: "ak-ali-rds", sk: "sk-ali-rds" },
+  { id: "pool-19", name: "腾讯云COS冷备池", associatedPlugin: "存储", createdAt: "2026-06-15 16:10", ak: "ak-tx-cos", sk: "sk-tx-cos" },
+  { id: "pool-20", name: "Ceph灾备存储池", associatedPlugin: "存储", createdAt: "2026-06-16 11:20", ak: "ak-ceph-dr", sk: "sk-ceph-dr" },
+  { id: "pool-21", name: "K3s轻量级容器池", associatedPlugin: "容器", createdAt: "2026-06-17 13:50", ak: "ak-k3s-pool", sk: "sk-k3s-pool" },
+  { id: "pool-22", name: "GlusterFS文件库", associatedPlugin: "存储", createdAt: "2026-06-18 15:40", ak: "ak-gluster-lib", sk: "sk-gluster-lib" },
+  { id: "pool-23", name: "OpenStack虚拟机池", associatedPlugin: "私有云", createdAt: "2026-06-19 08:30", ak: "ak-op-vm", sk: "sk-op-vm" },
+  { id: "pool-24", name: "OpenShift应用池", associatedPlugin: "容器", createdAt: "2026-06-20 17:12", ak: "ak-os-app", sk: "sk-os-app" },
+  { id: "pool-25", name: "VMware测试环境池", associatedPlugin: "私有云", createdAt: "2026-06-21 10:00", ak: "ak-vmware-test", sk: "sk-vmware-test" }
 ];
 
 // 6 months monitor metrics datasets
@@ -338,6 +395,18 @@ export default function AdminSystemPage() {
   // --- Dynamic Toast Notifier ---
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: "",
+    message: "",
+    onConfirm: () => {}
+  });
+
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
@@ -356,7 +425,7 @@ export default function AdminSystemPage() {
   const [formTagName, setFormTagName] = useState("");
   const [formTagGroup, setFormTagGroup] = useState("");
   const [tagCurrentPage, setTagCurrentPage] = useState(1);
-  const [tagPageSize, setTagPageSize] = useState(10);
+  const [tagPageSize, setTagPageSize] = useState(20);
 
   const handleOpenCreateTag = () => {
     setEditingTag(null);
@@ -403,10 +472,15 @@ export default function AdminSystemPage() {
   };
 
   const handleDeleteTag = (id: string, name: string) => {
-    if (confirm(`确定要删除该平台标签吗？「${name}」`)) {
-      setTags(tags.filter(t => t.id !== id));
-      triggerToast(`🗑️ 已彻底删除标签：「${name}」`);
-    }
+    setDeleteConfirm({
+      show: true,
+      title: "确认删除标签",
+      message: `确定要删除该平台标签吗？「${name}」`,
+      onConfirm: () => {
+        setTags(tags.filter(t => t.id !== id));
+        triggerToast(`🗑️ 已彻底删除标签：「${name}」`);
+      }
+    });
   };
 
   // ==================== TAB 2. 角色权限管理 ====================
@@ -508,7 +582,7 @@ export default function AdminSystemPage() {
   const [formPluginId, setFormPluginId] = useState("");
   const [formStatus, setFormStatus] = useState<CloudPlatform["status"]>("启用");
   const [platformCurrentPage, setPlatformCurrentPage] = useState(1);
-  const [platformPageSize, setPlatformPageSize] = useState(10);
+  const [platformPageSize, setPlatformPageSize] = useState(20);
 
   const getPlatformTypeFromName = (name: string, type: string) => {
     const lowercase = name.toLowerCase();
@@ -577,10 +651,15 @@ export default function AdminSystemPage() {
   };
 
   const handleDeletePlatform = (id: string, name: string) => {
-    if (confirm(`确定要删除云服务插件吗？「${name}」`)) {
-      setPlatforms(platforms.filter(p => p.id !== id));
-      triggerToast(`🗑️ 已彻底删除云服务插件：「${name}」`);
-    }
+    setDeleteConfirm({
+      show: true,
+      title: "确认删除云服务插件",
+      message: `确定要删除云服务插件吗？「${name}」`,
+      onConfirm: () => {
+        setPlatforms(platforms.filter(p => p.id !== id));
+        triggerToast(`🗑️ 已彻底删除云服务插件：「${name}」`);
+      }
+    });
   };
 
   const handleTogglePlatformStatus = (id: string, name: string, currentStatus: CloudPlatform["status"]) => {
@@ -594,7 +673,7 @@ export default function AdminSystemPage() {
   // ==================== TAB 3.5. 资源池管理 ====================
   const [searchPoolName, setSearchPoolName] = useState("");
   const [poolCurrentPage, setPoolCurrentPage] = useState(1);
-  const [poolPageSize, setPoolPageSize] = useState(10);
+  const [poolPageSize, setPoolPageSize] = useState(20);
 
   const [showPoolModal, setShowPoolModal] = useState(false);
   const [editingPool, setEditingPool] = useState<ResourcePool | null>(null);
@@ -661,10 +740,15 @@ export default function AdminSystemPage() {
   };
 
   const handleDeletePool = (id: string, name: string) => {
-    if (confirm(`确定要删除资源池吗？「${name}」`)) {
-      setPools(pools.filter(p => p.id !== id));
-      triggerToast(`🗑️ 已彻底删除资源池：「${name}」`);
-    }
+    setDeleteConfirm({
+      show: true,
+      title: "确认删除资源池",
+      message: `确定要删除资源池吗？「${name}」`,
+      onConfirm: () => {
+        setPools(pools.filter(p => p.id !== id));
+        triggerToast(`🗑️ 已彻底删除资源池：「${name}」`);
+      }
+    });
   };
 
   const handleOpenAkSkModal = (pool: ResourcePool) => {
@@ -825,16 +909,16 @@ export default function AdminSystemPage() {
 
               {/* Table Container */}
               <div className="flex-1 overflow-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
-                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none text-center">
-                      <th className="p-4 font-semibold">标签名称</th>
-                      <th className="p-4 font-semibold">标签组</th>
-                      <th className="p-4 font-semibold">创建时间</th>
-                      <th className="p-4 font-semibold">操作</th>
+                    <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 select-none">
+                      <th className="pl-6 pr-3 py-3.5 font-medium text-left">标签名称</th>
+                      <th className="px-3 py-3.5 font-medium text-left">标签组</th>
+                      <th className="px-3 py-3.5 font-medium text-left">创建时间</th>
+                      <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-center">
+                  <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700">
                     {(() => {
                       const filteredTags = tags.filter(t => 
                         t.name.toLowerCase().includes(searchTagName.toLowerCase()) ||
@@ -854,21 +938,21 @@ export default function AdminSystemPage() {
                         );
                       }
 
-                      return paginatedTags.map((tag) => (
-                        <tr key={tag.id} className="hover:bg-neutral-50/30 transition-colors text-[13px] border-b border-neutral-100 last:border-b-0">
-                          <td className="p-4 text-center font-semibold text-neutral-800">{tag.name}</td>
-                          <td className="p-4 text-center text-neutral-600">{tag.tagGroup}</td>
-                          <td className="p-4 text-center text-neutral-500 font-mono">{tag.createdAt}</td>
-                          <td className="p-4 text-center">
+                      return paginatedTags.map((tag, tagIndex) => (
+                        <tr key={tag.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", tagIndex === paginatedTags.length - 1 && "border-b-0")}>
+                          <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800">{tag.name}</td>
+                          <td className="px-3 py-3 text-left text-neutral-600">{tag.tagGroup}</td>
+                          <td className="px-3 py-3 text-left text-neutral-500 font-mono">{tag.createdAt}</td>
+                          <td className="pl-3 pr-6 py-3 text-left">
                             <button
                               onClick={() => handleOpenEditTag(tag)}
-                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold mr-3"
                             >
                               编辑
                             </button>
                             <button
                               onClick={() => handleDeleteTag(tag.id, tag.name)}
-                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold"
                             >
                               删除
                             </button>
@@ -890,7 +974,7 @@ export default function AdminSystemPage() {
                 const totalTagPages = Math.ceil(totalTags / tagPageSize) || 1;
 
                 return (
-                  <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-white shrink-0 select-none">
+                  <div className="flex items-center justify-end p-4 gap-4 bg-white shrink-0 select-none">
                     <span className="text-[13px] text-neutral-500">共 {totalTags} 条</span>
                     <div className="flex items-center gap-1.5">
                       <button 
@@ -1321,18 +1405,18 @@ export default function AdminSystemPage() {
 
               {/* Table Container */}
               <div className="flex-1 overflow-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
-                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none text-center">
-                      <th className="p-4 font-semibold">云服务插件</th>
-                      <th className="p-4 font-semibold">云服务插件类型</th>
-                      <th className="p-4 font-semibold">插件ID</th>
-                      <th className="p-4 font-semibold">状态</th>
-                      <th className="p-4 font-semibold">创建时间</th>
-                      <th className="p-4 font-semibold">操作</th>
+                    <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 select-none">
+                      <th className="pl-6 pr-3 py-3.5 font-medium text-left">云服务插件</th>
+                      <th className="px-3 py-3.5 font-medium text-left">云服务插件类型</th>
+                      <th className="px-3 py-3.5 font-medium text-left">插件ID</th>
+                      <th className="px-3 py-3.5 font-medium text-left">状态</th>
+                      <th className="px-3 py-3.5 font-medium text-left">创建时间</th>
+                      <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-center">
+                  <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700">
                     {(() => {
                       const filteredPlatforms = platforms.filter(plat => 
                         plat.name.toLowerCase().includes(searchPlatformName.toLowerCase())
@@ -1352,16 +1436,16 @@ export default function AdminSystemPage() {
                         );
                       }
 
-                      return paginatedPlatforms.map((plat) => (
-                        <tr key={plat.id} className="hover:bg-neutral-50/30 transition-colors text-[13px] border-b border-neutral-100 last:border-b-0">
-                          <td className="p-4 text-center">
+                      return paginatedPlatforms.map((plat, platIndex) => (
+                        <tr key={plat.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", platIndex === paginatedPlatforms.length - 1 && "border-b-0")}>
+                          <td className="pl-6 pr-3 py-3 text-left">
                             <div className="inline-block text-left">
                               {renderPlatformLogo(plat.platformType)}
                             </div>
                           </td>
-                          <td className="p-4 text-neutral-600">{plat.type}</td>
-                          <td className="p-4 text-neutral-500 font-mono">{plat.pluginId}</td>
-                          <td className="p-4">
+                          <td className="px-3 py-3 text-left text-neutral-600">{plat.type}</td>
+                          <td className="px-3 py-3 text-left text-neutral-500 font-mono">{plat.pluginId}</td>
+                          <td className="px-3 py-3 text-left">
                             <span className={cn(
                               "px-2 py-0.5 rounded text-[12px] border font-medium font-sans inline-block",
                               plat.status === "启用" 
@@ -1371,18 +1455,18 @@ export default function AdminSystemPage() {
                               {plat.status}
                             </span>
                           </td>
-                          <td className="p-4 text-neutral-500 font-mono">{plat.createdAt}</td>
-                          <td className="p-4">
+                          <td className="px-3 py-3 text-left text-neutral-500 font-mono">{plat.createdAt}</td>
+                          <td className="pl-3 pr-6 py-3 text-left">
                             <button
                               onClick={() => handleOpenEditPlatform(plat)}
-                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold mr-3"
                             >
                               编辑
                             </button>
                             {plat.status === "启用" ? (
                               <button
                                 onClick={() => handleTogglePlatformStatus(plat.id, plat.name, plat.status)}
-                                className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold"
                               >
                                 禁用
                               </button>
@@ -1390,13 +1474,13 @@ export default function AdminSystemPage() {
                               <>
                                 <button
                                   onClick={() => handleTogglePlatformStatus(plat.id, plat.name, plat.status)}
-                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                                  className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold mr-3"
                                 >
                                   启用
                                 </button>
                                 <button
                                   onClick={() => handleDeletePlatform(plat.id, plat.name)}
-                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                  className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold"
                                 >
                                   删除
                                 </button>
@@ -1419,7 +1503,7 @@ export default function AdminSystemPage() {
                 const totalPlatformPages = Math.ceil(totalPlatforms / platformPageSize) || 1;
 
                 return (
-                  <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-white shrink-0 select-none">
+                  <div className="flex items-center justify-end p-4 gap-4 bg-white shrink-0 select-none">
                     <span className="text-[13px] text-neutral-500">共 {totalPlatforms} 条</span>
                     <div className="flex items-center gap-1.5">
                       <button 
@@ -1647,16 +1731,16 @@ export default function AdminSystemPage() {
 
               {/* Table Container */}
               <div className="flex-1 overflow-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
-                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none text-center">
-                      <th className="p-4 font-semibold">资源池名称</th>
-                      <th className="p-4 font-semibold">关联云服务插件</th>
-                      <th className="p-4 font-semibold">创建时间</th>
-                      <th className="p-4 font-semibold">操作</th>
+                    <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 select-none">
+                      <th className="pl-6 pr-3 py-3.5 font-medium text-left">资源池名称</th>
+                      <th className="px-3 py-3.5 font-medium text-left">关联云服务插件</th>
+                      <th className="px-3 py-3.5 font-medium text-left">创建时间</th>
+                      <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-center">
+                  <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700">
                     {(() => {
                       const filteredPools = pools.filter(pool => 
                         pool.name.toLowerCase().includes(searchPoolName.toLowerCase()) ||
@@ -1676,27 +1760,27 @@ export default function AdminSystemPage() {
                         );
                       }
 
-                      return paginatedPools.map((pool) => (
-                        <tr key={pool.id} className="hover:bg-neutral-50/30 transition-colors text-[13px] border-b border-neutral-100 last:border-b-0">
-                          <td className="p-4 text-center font-semibold text-neutral-800">{pool.name}</td>
-                          <td className="p-4 text-center text-neutral-600">{pool.associatedPlugin}</td>
-                          <td className="p-4 text-center text-neutral-500 font-mono">{pool.createdAt}</td>
-                          <td className="p-4 text-center select-none">
+                      return paginatedPools.map((pool, poolIndex) => (
+                        <tr key={pool.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", poolIndex === paginatedPools.length - 1 && "border-b-0")}>
+                          <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800">{pool.name}</td>
+                          <td className="px-3 py-3 text-left text-neutral-600">{pool.associatedPlugin}</td>
+                          <td className="px-3 py-3 text-left text-neutral-500 font-mono">{pool.createdAt}</td>
+                          <td className="pl-3 pr-6 py-3 text-left select-none">
                             <button
                               onClick={() => handleOpenEditPool(pool)}
-                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold mr-3"
                             >
                               编辑
                             </button>
                             <button
                               onClick={() => handleDeletePool(pool.id, pool.name)}
-                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] mr-3"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold mr-3"
                             >
                               删除
                             </button>
                             <button
                               onClick={() => handleOpenAkSkModal(pool)}
-                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold"
                             >
                               AK/SK
                             </button>
@@ -1718,7 +1802,7 @@ export default function AdminSystemPage() {
                 const totalPoolPages = Math.ceil(totalPools / poolPageSize) || 1;
 
                 return (
-                  <div className="flex items-center justify-end p-4 gap-4 border-t border-neutral-100 bg-white shrink-0 select-none">
+                  <div className="flex items-center justify-end p-4 gap-4 bg-white shrink-0 select-none">
                     <span className="text-[13px] text-neutral-500">共 {totalPools} 条</span>
                     <div className="flex items-center gap-1.5">
                       <button 
@@ -2418,11 +2502,60 @@ export default function AdminSystemPage() {
                       确认并关闭
                     </button>
                   </div>
-
                 </div>
               </div>
             )}
 
+          </div>
+        )}
+
+        {/* --- Delete Confirmation Modal --- */}
+        {deleteConfirm.show && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626]">
+                  {deleteConfirm.title}
+                </h2>
+                <button 
+                  type="button"
+                  onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))} 
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 flex items-start gap-3 bg-white">
+                <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+                <div className="text-[14px] text-neutral-700 leading-normal font-medium">
+                  {deleteConfirm.message}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <button 
+                  type="button"
+                  onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))} 
+                  className="border border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer hover:bg-neutral-50"
+                >
+                  取消
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    deleteConfirm.onConfirm();
+                    setDeleteConfirm(prev => ({ ...prev, show: false }));
+                  }} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
+                >
+                  确定
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
