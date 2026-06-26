@@ -2196,7 +2196,28 @@ export default function TeacherPapers() {
                   <table className="w-full text-left border-collapse text-[13px] whitespace-nowrap">
                     <thead>
                       <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-bold">
-                        <th className="py-2.5 px-4 pl-6 bg-neutral-50/30">试题名称</th>
+                        <th className="py-2.5 pl-6 pr-4 w-12 text-center bg-neutral-50/30">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (selectedConfigQuestions.length === filteredConfigQuestions.length) {
+                                setSelectedConfigQuestions([]);
+                              } else {
+                                setSelectedConfigQuestions(filteredConfigQuestions.map(q => q.id));
+                              }
+                            }}
+                            className={cn(
+                              "w-3.5 h-3.5 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                              selectedConfigQuestions.length === filteredConfigQuestions.length
+                                ? "bg-[#fa541c] border-[#fa541c] text-white"
+                                : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                            )}
+                          >
+                            {selectedConfigQuestions.length === filteredConfigQuestions.length && <span className="text-[8px] font-bold">✓</span>}
+                          </button>
+                        </th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">试题名称</th>
                         <th className="py-2.5 px-4 bg-neutral-50/30">所属题库</th>
                         <th className="py-2.5 px-4 bg-neutral-50/30">题型</th>
                         <th className="py-2.5 px-4 bg-neutral-50/30">状态</th>
@@ -2226,7 +2247,27 @@ export default function TeacherPapers() {
                               isSelected ? "bg-orange-50/20" : ""
                             )}
                           >
-                            <td className="py-2.5 px-4 pl-6 font-semibold text-neutral-800 max-w-[180px] truncate" title={q.name}>{q.name}</td>
+                            <td className="py-2.5 pl-6 pr-4 text-center w-12" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedConfigQuestions(selectedConfigQuestions.filter(id => id !== q.id));
+                                  } else {
+                                    setSelectedConfigQuestions([...selectedConfigQuestions, q.id]);
+                                  }
+                                }}
+                                className={cn(
+                                  "w-3.5 h-3.5 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                                  isSelected
+                                    ? "bg-[#fa541c] border-[#fa541c] text-white"
+                                    : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                                )}
+                              >
+                                {isSelected && <span className="text-[8px] font-bold">✓</span>}
+                              </button>
+                            </td>
+                            <td className="py-2.5 px-4 font-semibold text-neutral-800 max-w-[180px] truncate" title={q.name}>{q.name}</td>
                             <td className="py-2.5 px-4 text-neutral-500 max-w-[120px] truncate" title={q.bank}>{q.bank}</td>
                             <td className="py-2.5 px-4 text-neutral-600">{q.type}</td>
                             <td className="py-2.5 px-4">
@@ -2523,7 +2564,7 @@ export default function TeacherPapers() {
                   {isModalTagDropdownOpen && (
                     <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[210] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                       <div className="max-h-[160px] overflow-y-auto custom-scrollbar">
-                        {['标签1', '标签2', '标签3', '深度学习', '人工智能', '大语言模型'].map(tagOption => {
+                        {['选择全部', '标签1', '标签2', '标签3', '深度学习', '人工智能', '大语言模型'].map(tagOption => {
                           const isSelected = ruleFormTag === tagOption;
                           return (
                             <div
@@ -2579,7 +2620,7 @@ export default function TeacherPapers() {
                   {isModalDiffDropdownOpen && (
                     <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[210] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                       <div className="max-h-[160px] overflow-y-auto custom-scrollbar">
-                        {['容易', '较易', '中等', '较难', '困难'].map(diffOption => {
+                        {['选择全部', '容易', '较易', '中等', '较难', '困难'].map(diffOption => {
                           const isSelected = ruleFormDifficulty === diffOption;
                           return (
                             <div
