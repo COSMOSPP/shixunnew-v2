@@ -8,7 +8,6 @@ import {
   ChevronUp, 
   FileText, 
   FileQuestion, 
-  ChevronRight, 
   X, 
   ChevronLeft, 
   Calendar, 
@@ -49,7 +48,6 @@ export default function TeacherPapers() {
   const [selectedConfigQuestions, setSelectedConfigQuestions] = useState<number[]>([]);
   const [confirmedQuestions, setConfirmedQuestions] = useState<any[]>([]);
   const [isObjConfigured, setIsObjConfigured] = useState(false);
-  const [expandedConfigRow, setExpandedConfigRow] = useState<number | null>(null);
 
   // New Paper form states
   const [paperName, setPaperName] = useState('');
@@ -61,7 +59,7 @@ export default function TeacherPapers() {
 
   // Random Selection rules states
   const [selectedQuestionBanks, setSelectedQuestionBanks] = useState<string[]>([]);
-  const [typeOrder, setTypeOrder] = useState<string[]>(['单选题', '多选题', '实训题']);
+  const [typeOrder, setTypeOrder] = useState<string[]>([]);
   const [selectedAddType, setSelectedAddType] = useState('单选题');
   const [isAddTypeDropdownOpen, setIsAddTypeDropdownOpen] = useState(false);
   const addTypeDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -80,6 +78,8 @@ export default function TeacherPapers() {
   const [isQuestionBankDropdownOpen, setIsQuestionBankDropdownOpen] = useState(false);
   const [activeRuleTagDropdownId, setActiveRuleTagDropdownId] = useState<string | null>(null);
   const [activeRuleDiffDropdownId, setActiveRuleDiffDropdownId] = useState<string | null>(null);
+
+  const [modalSearchQuery, setModalSearchQuery] = useState('');
 
   const bankDropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -108,14 +108,7 @@ export default function TeacherPapers() {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
-  const [drawRules, setDrawRules] = useState<DrawRule[]>([
-    { id: 'r1', type: '单选题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
-    { id: 'r2', type: '单选题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' },
-    { id: 'r3', type: '多选题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
-    { id: 'r4', type: '多选题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' },
-    { id: 'r5', type: '实训题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
-    { id: 'r6', type: '实训题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' }
-  ]);
+  const [drawRules, setDrawRules] = useState<DrawRule[]>([]);
 
   // Question Config selections and scores
   const [mcCount, setMcCount] = useState(0);
@@ -139,6 +132,19 @@ export default function TeacherPapers() {
   const [useAdditionalCredit, setUseAdditionalCredit] = useState(false);
   const [additionalMaxScore, setAdditionalMaxScore] = useState(0);
 
+  // Manual selection states
+  const [manualTypeScores, setManualTypeScores] = useState<Record<string, string>>({
+    '单选题': '3',
+    '多选题': '3',
+    '判断题': '3',
+    '填空题': '3',
+    '简答题': '10',
+    '思考题': '10',
+    '编程题': '10',
+    '实训题': ''
+  });
+  const [manualTypeOrder, setManualTypeOrder] = useState<string[]>([]);
+
   // Search & dynamic interactions
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
@@ -150,103 +156,77 @@ export default function TeacherPapers() {
   const [editingPaper, setEditingPaper] = useState<any | null>(null);
 
   const availableQuestions = [
-    { 
-      id: 1, 
-      name: '列举AIGC在办公场景下的三种典型应用', 
-      bank: 'Mo 体验课程试题库', 
-      type: '简答题', 
-      difficulty: '容易', 
-      tag: '生成式AI与大模型应用', 
-      grading: '人工评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:55',
-      detailText: '列举AIGC的三种主要应用领域。',
-      analysis: '考察AIGC应用范围'
+    {
+      id: 1,
+      name: '智能体与传统程序最本质的区别是什么？',
+      bank: '人工智能通识D-uni',
+      type: '单选题',
+      status: '停用',
+      source: '人工智能',
+      difficulty: '容易',
+      tag: '智能体',
+      tags: '智能体',
+      grading: '自动评分',
+      creator: 'Momodel',
+      time: '2026/05/15 14:45',
+      updateTime: '2026/05/15 14:45',
+      scope: '私有',
+      detailText: '分析智能体(Agent)的自主性、感知与反应能力，以及其与传统基于固定逻辑的规则引擎程序的核心区别。',
+      analysis: '智能体具有自主决策、动态感知环境并进行反馈调整的特征，而传统程序多为确定性的硬编码分支。'
     },
-    { 
-      id: 2, 
-      name: '你认为人工智能是否会完全取代人类脑力劳动？请简述理由', 
-      bank: 'Mo 体验课程试题库', 
-      type: '思考题', 
-      difficulty: '困难', 
-      tag: '人工智能与大模型', 
-      grading: '人工评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:54',
-      detailText: '人工智能在特定领域能大幅超越人类，但缺乏情感、创造力与通用逻辑能力，请论述其取代极限。',
-      analysis: '论述AI对劳动力市场及创造性工作的影响与局限性'
+    {
+      id: 2,
+      name: '智能体的四个基本组成部分包括哪些？',
+      bank: '人工智能通识D-uni',
+      type: '多选题',
+      status: '启用',
+      source: '人工智能',
+      difficulty: '较易',
+      tag: '智能体',
+      tags: '智能体',
+      grading: '自动评分',
+      creator: 'Momodel',
+      time: '2026/05/15 14:45',
+      updateTime: '2026/05/15 14:45',
+      scope: '租户',
+      detailText: '智能体通常包含环境(Environment)、感知(Sensor)、执行器(Actuator)和决策系统/主体(Agent Core/Brain)。',
+      analysis: '考察智能体架构 model 的核心组成部分及职责划分。'
     },
-    { 
-      id: 3, 
-      name: '机器学习中监督学习与无监督学习的核心区别是（ ）。', 
-      bank: 'Mo 体验课程试题库', 
-      type: '填空题', 
-      difficulty: '中等', 
-      tag: '机器学习基础', 
-      grading: '自动评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:53',
-      detailText: '监督学习依赖带标签的训练数据进行拟合预测，无监督学习对未标记数据寻找内部结构关系。',
-      analysis: '考察监督学习与无监督学习的核心概念区别'
+    {
+      id: 3,
+      name: '大语言模型是__________是构建生成式各种应用的...',
+      bank: '人工智能通识D-uni',
+      type: '填空题',
+      status: '启用',
+      source: '人工出题',
+      difficulty: '中等',
+      tag: '-',
+      tags: '',
+      grading: '自动评分',
+      creator: 'Momodel',
+      time: '2026/05/15 17:02',
+      updateTime: '2026/05/15 17:02',
+      scope: '平台',
+      detailText: '大语言模型(LLM)一般是基于Transformer架构在大规模文本语料库上训练所得的概率语言预测模型。',
+      analysis: '考察生成式AI应用开发中大语言模型的技术基础定位与概念。'
     },
-    { 
-      id: 4, 
-      name: '人工智能发展的三个历史阶段分别是自动控制、知识工程和（ ）。', 
-      bank: 'Mo 体验课程试题库', 
-      type: '填空题', 
-      difficulty: '容易', 
-      tag: '人工智能与大模型', 
-      grading: '自动评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:51',
-      detailText: '三个阶段指自动控制（20世纪50年代）、专家系统与知识工程（70-80年代）、深度学习与连接主义（21世纪至今）。',
-      analysis: '考察人工智能发展简史与重要技术节点'
-    },
-    { 
-      id: 5, 
-      name: '神经网络中的激活函数主要作用是引入非线性因素', 
-      bank: 'Mo 体验课程试题库', 
-      type: '单选题', 
-      difficulty: '较易', 
-      tag: '神经网络与深度学习', 
-      grading: '自动评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:51',
-      detailText: '如果没有激活函数，无论神经网络有多少层，它都只能表示线性映射，限制了其复杂特征学习能力。',
-      analysis: '考察激活函数的作用和神经网络多层表示定理'
-    },
-    { 
-      id: 6, 
-      name: '机器学习基础期末选择题-随机森林的基分类器是（ ）。', 
-      bank: 'Mo 体验课程试题库', 
-      type: '单选题', 
-      difficulty: '中等', 
-      tag: '机器学习基础', 
-      grading: '自动评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:50',
-      detailText: '随机森林(Random Forest)通过集成学习的Bagging方法，将多个决策树(Decision Tree)作为基分类器。',
-      analysis: '考察随机森林(Random Forest)的原理及基分类器构成'
-    },
-    { 
-      id: 7, 
-      name: '机器学习多选题：关于支持向量机(SVM)，以下说法正确的有', 
-      bank: 'Mo 体验课程试题库', 
-      type: '多选题', 
-      difficulty: '较难', 
-      tag: '人工智能与大模型', 
-      grading: '自动评分', 
-      scope: '未公开', 
-      creator: '孙昕', 
-      time: '2026/03/19 15:13:49',
-      detailText: '支持向量机旨在寻找一个超平面，以最大化分类间隔。核函数用于解决非线性可分问题，支持向量是决定超平面的样本。',
-      analysis: '考察SVM的决策边界、最大化间隔、支持向量以及核函数概念'
+    {
+      id: 4,
+      name: '基于大模型的端到端自动驾驶 system 开发',
+      bank: '人工智能通识D-uni',
+      type: '实训题',
+      status: '启用',
+      source: '人工智能',
+      difficulty: '困难',
+      tag: '深度学习, 自动驾驶',
+      tags: '深度学习, 自动驾驶',
+      grading: '自动评分',
+      creator: 'Momodel',
+      time: '2026/05/16 11:20',
+      updateTime: '2026/05/16 11:20',
+      scope: '私有',
+      detailText: '实现一个简单的基于多模态大模型的视觉-控制指令端到端输出实验，包含感知对齐与控制策略生成。',
+      analysis: '端到端自动驾驶系统将传感器感知与动作输出直接通过大型模型进行关联和拟合，通常需要高维表征学习。'
     }
   ];
 
@@ -361,8 +341,15 @@ export default function TeacherPapers() {
   const drawRulesCount = drawRules.reduce((sum, r) => sum + (Number(r.count) || 0), 0);
   const drawRulesScore = drawRules.reduce((sum, r) => sum + ((Number(r.count) || 0) * (Number(r.score) || 0)), 0);
 
-  const displayCount = paperSelectionMethod === '随机抽题' ? drawRulesCount : totalCount;
-  const displayScore = paperSelectionMethod === '随机抽题' ? drawRulesScore : totalScore;
+  // 手动选题计算逻辑
+  const manualCount = confirmedQuestions.length;
+  const manualScore = confirmedQuestions.reduce((sum, q) => {
+    const scoreStr = manualTypeScores[q.type] !== undefined ? manualTypeScores[q.type] : (q.type === '单选题' || q.type === '多选题' ? '3' : '');
+    return sum + (parseFloat(scoreStr) || 0);
+  }, 0);
+
+  const displayCount = paperSelectionMethod === '随机抽题' ? drawRulesCount : manualCount;
+  const displayScore = paperSelectionMethod === '随机抽题' ? drawRulesScore : manualScore;
 
   const getRuleTypeCount = (type: string) => {
     return drawRules.filter(r => r.type === type).reduce((sum, r) => sum + (Number(r.count) || 0), 0);
@@ -416,7 +403,6 @@ export default function TeacherPapers() {
   const handleAddTypeSection = (type: string) => {
     if (!typeOrder.includes(type)) {
       setTypeOrder(prev => [...prev, type]);
-      handleAddRule(type);
     } else {
       alert('该题型已存在，请勿重复添加！');
     }
@@ -529,6 +515,77 @@ export default function TeacherPapers() {
     setSxCount(p.sxCount || 0);
     setSxScore(p.sxScore || 0);
     
+    if ((p.selectionMethod || '随机抽题') === '随机抽题') {
+      setSelectedQuestionBanks(['人工智能通识D-uni']);
+      const types: string[] = [];
+      const rules: DrawRule[] = [];
+      const typeMappings = [
+        { name: '单选题', count: p.mcCount, score: p.mcScore },
+        { name: '多选题', count: p.msCount, score: p.msScore },
+        { name: '判断题', count: p.tfCount, score: p.tfScore },
+        { name: '填空题', count: p.fbCount, score: p.fbScore },
+        { name: '简答题', count: p.saCount, score: p.saScore },
+        { name: '思考题', count: p.thCount, score: p.thScore },
+        { name: '编程题', count: p.pgCount, score: p.pgScore },
+        { name: '实训题', count: p.sxCount, score: p.sxScore },
+      ];
+      typeMappings.forEach(tm => {
+        if (tm.count > 0) {
+          types.push(tm.name);
+          rules.push({
+            id: `r-edit-${tm.name}-${Date.now()}`,
+            type: tm.name,
+            tag: '标签1',
+            difficulty: '容易',
+            count: tm.count.toString(),
+            maxAvailable: tm.count + 2,
+            score: tm.score.toString()
+          });
+        }
+      });
+      setTypeOrder(types);
+      setDrawRules(rules);
+    } else {
+      setSelectedQuestionBanks([]);
+      setTypeOrder([]);
+      setDrawRules([]);
+      
+      // Populate confirmedQuestions and manualQuestionScores for manual selection
+      const mockConfirmed = availableQuestions.filter(q => {
+        if (q.type === '单选题' && p.mcCount > 0) return true;
+        if (q.type === '多选题' && p.msCount > 0) return true;
+        if (q.type === '判断题' && p.tfCount > 0) return true;
+        if (q.type === '填空题' && p.fbCount > 0) return true;
+        if (q.type === '简答题' && p.saCount > 0) return true;
+        if (q.type === '思考题' && p.thCount > 0) return true;
+        if (q.type === '编程题' && p.pgCount > 0) return true;
+        if (q.type === '实训题' && p.sxCount > 0) return true;
+        return false;
+      });
+      setConfirmedQuestions(mockConfirmed);
+      setSelectedConfigQuestions(mockConfirmed.map(q => q.id));
+      setIsObjConfigured(mockConfirmed.length > 0);
+
+      const initialScores: Record<string, string> = {
+        '单选题': (p.mcScore !== undefined ? p.mcScore : 3).toString(),
+        '多选题': (p.msScore !== undefined ? p.msScore : 3).toString(),
+        '判断题': (p.tfScore !== undefined ? p.tfScore : 3).toString(),
+        '填空题': (p.fbScore !== undefined ? p.fbScore : 3).toString(),
+        '简答题': (p.saScore !== undefined ? p.saScore : 10).toString(),
+        '思考题': (p.thScore !== undefined ? p.thScore : 10).toString(),
+        '编程题': (p.pgScore !== undefined ? p.pgScore : 10).toString(),
+        '实训题': (p.sxScore !== undefined ? p.sxScore : '').toString()
+      };
+      const initialTypes: string[] = [];
+      mockConfirmed.forEach(q => {
+        if (!initialTypes.includes(q.type)) {
+          initialTypes.push(q.type);
+        }
+      });
+      setManualTypeScores(initialScores);
+      setManualTypeOrder(initialTypes);
+    }
+    
     setIsCreateOpen(true);
   };
 
@@ -554,6 +611,20 @@ export default function TeacherPapers() {
     setConfirmedQuestions([]);
     setSelectedConfigQuestions([]);
     setIsObjConfigured(false);
+    setSelectedQuestionBanks([]);
+    setTypeOrder([]);
+    setDrawRules([]);
+    setManualTypeScores({
+      '单选题': '3',
+      '多选题': '3',
+      '判断题': '3',
+      '填空题': '3',
+      '简答题': '10',
+      '思考题': '10',
+      '编程题': '10',
+      '实训题': ''
+    });
+    setManualTypeOrder([]);
   };
 
   const handleSavePaper = () => {
@@ -670,6 +741,15 @@ export default function TeacherPapers() {
     if (counts['简答题'] > 0) setSaScore(20);
     if (counts['思考题'] > 0) setThScore(20);
     if (counts['编程题'] > 0) setPgScore(30);
+
+    // Populate manualTypeOrder
+    const newTypes = [...manualTypeOrder];
+    selectedList.forEach(q => {
+      if (!newTypes.includes(q.type)) {
+        newTypes.push(q.type);
+      }
+    });
+    setManualTypeOrder(newTypes);
   };
 
   const handleRemoveConfirmedQuestion = (id: number) => {
@@ -704,6 +784,35 @@ export default function TeacherPapers() {
     setPgCount(counts['编程题']);
   };
 
+  const handleRemoveManualTypeSection = (type: string) => {
+    if (confirm(`确定要移除所有${type}吗？`)) {
+      const updated = confirmedQuestions.filter(q => q.type !== type);
+      setConfirmedQuestions(updated);
+      setIsObjConfigured(updated.length > 0);
+      setSelectedConfigQuestions(updated.map(q => q.id));
+    }
+  };
+
+  const handleMoveManualTypeUp = (type: string) => {
+    const idx = manualTypeOrder.indexOf(type);
+    if (idx > 0) {
+      const newOrder = [...manualTypeOrder];
+      newOrder[idx] = manualTypeOrder[idx - 1];
+      newOrder[idx - 1] = manualTypeOrder[idx];
+      setManualTypeOrder(newOrder);
+    }
+  };
+
+  const handleMoveManualTypeDown = (type: string) => {
+    const idx = manualTypeOrder.indexOf(type);
+    if (idx < manualTypeOrder.length - 1) {
+      const newOrder = [...manualTypeOrder];
+      newOrder[idx] = manualTypeOrder[idx + 1];
+      newOrder[idx + 1] = manualTypeOrder[idx];
+      setManualTypeOrder(newOrder);
+    }
+  };
+
   const handleBatchDelete = () => {
     if (selectedPapers.length === 0) return;
     if (confirm(`确定要删除选中的 ${selectedPapers.length} 套试卷吗？`)) {
@@ -712,10 +821,13 @@ export default function TeacherPapers() {
     }
   };
 
-  const FilterIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-3 h-3 text-neutral-400 cursor-pointer hover:text-[#fa541c] transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-    </svg>
+  const filteredConfigQuestions = availableQuestions.filter(q => 
+    q.name.toLowerCase().includes(modalSearchQuery.toLowerCase()) ||
+    q.bank.toLowerCase().includes(modalSearchQuery.toLowerCase()) ||
+    q.type.toLowerCase().includes(modalSearchQuery.toLowerCase()) ||
+    q.difficulty.toLowerCase().includes(modalSearchQuery.toLowerCase()) ||
+    q.creator.toLowerCase().includes(modalSearchQuery.toLowerCase()) ||
+    q.scope.toLowerCase().includes(modalSearchQuery.toLowerCase())
   );
 
   return (
@@ -756,37 +868,23 @@ export default function TeacherPapers() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
-                <Button onClick={() => setIsCreateOpen(true)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 px-4 rounded-[4px] text-xs font-semibold cursor-pointer border-0">
+                <Button 
+                  onClick={() => {
+                    handleCloseCreateDrawer();
+                    setIsCreateOpen(true);
+                  }} 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 px-4 rounded-[4px] text-xs font-semibold cursor-pointer border-0"
+                >
                   <Plus className="w-3.5 h-3.5" /> 新建试卷
                 </Button>
-                {selectedPapers.length > 0 && (
-                  <Button onClick={handleBatchDelete} variant="outline" className="flex items-center h-9 px-4 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors shadow-sm rounded-[4px] text-xs font-medium cursor-pointer bg-white">
-                    批量删除 ({selectedPapers.length})
-                  </Button>
-                )}
-              </div>
+               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600">
-                    <th className="pl-6 pr-3 py-3.5 font-medium w-12 text-left">
-                      <button 
-                        type="button"
-                        onClick={() => toggleSelectAll(selectedPapers.length !== filteredPapers.length || filteredPapers.length === 0)}
-                        className={cn(
-                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
-                          selectedPapers.length === filteredPapers.length && filteredPapers.length > 0
-                            ? "bg-[#fa541c] border-[#fa541c] text-white"
-                            : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                        )}
-                      >
-                        {selectedPapers.length === filteredPapers.length && filteredPapers.length > 0 && <span className="text-[10px] font-bold">✓</span>}
-                      </button>
-                    </th>
-                    <th className="px-3 py-3.5 font-medium text-center w-10"></th>
-                    <th className="px-3 py-3.5 font-medium text-left">试卷名称</th>
+                    <th className="pl-6 pr-3 py-3.5 font-medium text-left">试卷名称</th>
                     <th className="px-3 py-3.5 font-medium text-left">题目数量</th>
                     <th className="px-3 py-3.5 font-medium text-left">包含题型</th>
                     <th className="px-3 py-3.5 font-medium text-left">试卷类型</th>
@@ -804,32 +902,9 @@ export default function TeacherPapers() {
                     <React.Fragment key={p.id}>
                       <tr className={cn(
                         "border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]",
-                        expandedRow === p.id && "bg-neutral-50/30",
-                        idx === filteredPapers.length - 1 && expandedRow !== p.id && "border-b-0"
+                        idx === filteredPapers.length - 1 && "border-b-0"
                       )}>
-                        <td className="pl-6 pr-3 py-3 text-left">
-                          <button 
-                            type="button"
-                            onClick={() => toggleSelect(p.id)}
-                            className={cn(
-                              "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
-                              selectedPapers.includes(p.id)
-                                ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                            )}
-                          >
-                            {selectedPapers.includes(p.id) && <span className="text-[10px] font-bold">✓</span>}
-                          </button>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <button 
-                            onClick={() => toggleRow(p.id)}
-                            className="text-neutral-400 hover:text-[#fa541c] transition-colors p-1 cursor-pointer"
-                          >
-                            <ChevronRight className={cn("w-4 h-4 transition-transform duration-200", expandedRow === p.id && "transform rotate-90 text-[#fa541c]")} />
-                          </button>
-                        </td>
-                        <td className="px-3 py-3">
+                        <td className="pl-6 pr-3 py-3">
                           <div className="text-neutral-800 max-w-[180px] truncate font-medium" title={p.name}>{p.name}</div>
                         </td>
                         <td className="px-3 py-3 text-neutral-600">{p.questionCount}</td>
@@ -964,66 +1039,6 @@ export default function TeacherPapers() {
                           </div>
                         </td>
                       </tr>
-                      
-                      {/* Expanded Row Content */}
-                      {expandedRow === p.id && (
-                        <tr className="bg-neutral-50/30 border-b border-neutral-100">
-                          <td colSpan={13} className="p-0 whitespace-normal">
-                            <div className="py-6 px-8 animate-in fade-in duration-200 w-full">
-                              <div className="bg-white border border-neutral-100 rounded-[8px] p-6 shadow-sm w-full text-left">
-                                <div className="flex items-center gap-2 mb-5 pb-4 border-b border-neutral-100/80">
-                                  <div className="w-8 h-8 rounded-lg bg-[#fff2e8] flex items-center justify-center">
-                                    <FileText className="w-4.5 h-4.5 text-[#fa541c]" />
-                                  </div>
-                                  <h3 className="text-[15px] font-bold text-neutral-800">客观题配置信息</h3>
-                                </div>
-                                
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
-                                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 md:divide-x divide-neutral-100">
-                                    {/* Left Column */}
-                                    <div className="space-y-2">
-                                      <h4 className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
-                                        题量与分值
-                                      </h4>
-                                      <div className="pl-3.5 space-y-1 text-xs">
-                                        <p className="text-neutral-600 font-medium">题目数量：<span className="font-bold text-[#fa541c] text-sm">{p.questionCount}</span> 道</p>
-                                        <p className="text-neutral-600 font-medium">试卷分值：<span className="font-bold text-[#fa541c] text-sm">100</span> 分</p>
-                                        <p className="text-neutral-400">包含题型：{p.types || '单选题'}</p>
-                                      </div>
-                                    </div>
-
-                                    {/* Right Column */}
-                                    <div className="space-y-2 md:pl-6">
-                                      <h4 className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
-                                        答题要求与限制
-                                      </h4>
-                                      <div className="pl-3.5 space-y-1 text-xs">
-                                        <p className="text-neutral-600 font-medium">答题限时：<span className="font-bold text-neutral-800 text-sm">120</span> 分钟</p>
-                                        <p className="text-neutral-400 leading-relaxed">客观题需一次性连续作答，中途无法暂停，仅限提交一次，请合理分配时间。</p>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Button Column */}
-                                  <div className="flex-shrink-0 md:pl-6 border-t md:border-t-0 md:border-l border-neutral-100/80 pt-4 md:pt-0 flex items-center justify-center">
-                                    <Button 
-                                      onClick={() => {
-                                        setViewingPaper(p);
-                                        setView('preview');
-                                      }} 
-                                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-[#fa541c]/25 h-10 font-bold px-6 transition-all cursor-pointer border-0"
-                                    >
-                                      预览客观题
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
                     </React.Fragment>
                   ))}
                 </tbody>
@@ -1594,76 +1609,79 @@ export default function TeacherPapers() {
                   </div>
 
                   {/* 选择题型 */}
-                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                    <label className="text-[13px] font-bold text-[#262626] text-right">
-                      选择题型
-                    </label>
-                    <div className="flex items-center gap-3 w-full text-left">
-                      {/* Dropdown Menu Select */}
-                      <div ref={addTypeDropdownRef} className="relative w-48 text-xs">
-                        <div
-                          onClick={() => setIsAddTypeDropdownOpen(!isAddTypeDropdownOpen)}
-                          className={cn(
-                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
-                            isAddTypeDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                  {selectedQuestionBanks.length > 0 && (
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        选择题型
+                      </label>
+                      <div className="flex items-center gap-3 w-full text-left">
+                        {/* Dropdown Menu Select */}
+                        <div ref={addTypeDropdownRef} className="relative w-48 text-xs">
+                          <div
+                            onClick={() => setIsAddTypeDropdownOpen(!isAddTypeDropdownOpen)}
+                            className={cn(
+                              "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                              isAddTypeDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                            )}
+                          >
+                            <span className="text-neutral-700 font-medium">
+                              {selectedAddType}
+                            </span>
+                            <ChevronDown 
+                              className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isAddTypeDropdownOpen && "rotate-180")} 
+                            />
+                          </div>
+
+                          {isAddTypeDropdownOpen && (
+                            <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                              <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                {['单选题', '多选题', '判断题', '填空题', '简答题', '实训题'].map(type => {
+                                  const isSelected = selectedAddType === type;
+                                  return (
+                                    <div
+                                      key={type}
+                                      onClick={() => {
+                                        setSelectedAddType(type);
+                                        setIsAddTypeDropdownOpen(false);
+                                      }}
+                                      className={cn(
+                                        "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                        isSelected 
+                                          ? "bg-orange-50 text-[#fa541c] font-bold"
+                                          : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                                      )}
+                                    >
+                                      <span>{type}</span>
+                                      {isSelected && (
+                                        <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           )}
-                        >
-                          <span className="text-neutral-700 font-medium">
-                            {selectedAddType}
-                          </span>
-                          <ChevronDown 
-                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isAddTypeDropdownOpen && "rotate-180")} 
-                          />
                         </div>
 
-                        {isAddTypeDropdownOpen && (
-                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                              {['单选题', '多选题', '判断题', '填空题', '简答题', '实训题'].map(type => {
-                                const isSelected = selectedAddType === type;
-                                return (
-                                  <div
-                                    key={type}
-                                    onClick={() => {
-                                      setSelectedAddType(type);
-                                      setIsAddTypeDropdownOpen(false);
-                                    }}
-                                    className={cn(
-                                      "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
-                                      isSelected 
-                                        ? "bg-orange-50 text-[#fa541c] font-bold"
-                                        : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
-                                    )}
-                                  >
-                                    <span>{type}</span>
-                                    {isSelected && (
-                                      <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
+                        {/* Add Button */}
+                        <Button 
+                          type="button"
+                          onClick={() => {
+                            handleAddTypeSection(selectedAddType);
+                          }}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-4 rounded-[4px] border-0 cursor-pointer shadow-sm text-xs flex items-center gap-1 transition-all"
+                        >
+                          <Plus className="w-3 h-3" />
+                          添加题型
+                        </Button>
                       </div>
-
-                      {/* Add Button */}
-                      <Button 
-                        type="button"
-                        onClick={() => {
-                          handleAddTypeSection(selectedAddType);
-                        }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-4 rounded-[4px] border-0 cursor-pointer shadow-sm text-xs flex items-center gap-1 transition-all"
-                      >
-                        <Plus className="w-3 h-3" />
-                        添加题型
-                      </Button>
                     </div>
-                  </div>
+                  )}
 
                   {/* 抽题规则表 */}
-                  <div className="col-span-2 space-y-6 pt-2 w-full text-left">
-                    <div className="border-t border-neutral-100 pb-2"></div>
+                  {selectedQuestionBanks.length > 0 && typeOrder.length > 0 && (
+                    <div className="col-span-2 space-y-6 pt-2 w-full text-left">
+                      <div className="border-t border-neutral-100 pb-2"></div>
                     
                     {typeOrder.map((type) => {
                       const rulesOfType = drawRules.filter(r => r.type === type);
@@ -1689,9 +1707,9 @@ export default function TeacherPapers() {
                                 type="button" 
                                 variant="outline"
                                 onClick={() => handleDeleteTypeSection(type)}
-                                className="border border-red-200 text-red-650 hover:text-red-700 hover:bg-red-50/70 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
+                                className="border border-neutral-200 text-neutral-600 hover:text-neutral-800 bg-white hover:bg-neutral-50 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
                               >
-                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                <Trash2 className="w-3.5 h-3.5 text-neutral-500" />
                                 删除题型
                               </Button>
                               <Button 
@@ -1805,216 +1823,212 @@ export default function TeacherPapers() {
 
 
                     {/* Bottom Summary */}
-                    <div className="flex items-center justify-between pt-4 border-t border-neutral-100 mt-6 w-full">
-                      <div className="text-[15px] font-bold text-[#fa541c]">
-                        总计：抽取数量 {displayCount} 题，总分 {displayScore.toFixed(1)} 分
+                    <div className="border border-neutral-200/80 rounded-[8px] p-5 mt-6 w-full max-w-[320px] text-left bg-white shadow-sm space-y-4">
+                      {/* Question Types List */}
+                      <div className="space-y-3.5 w-full">
+                        {typeOrder.map(type => {
+                          const typeRules = drawRules.filter(r => r.type === type);
+                          const typeCount = typeRules.reduce((sum, r) => sum + (Number(r.count) || 0), 0);
+                          const typeScore = typeRules.reduce((sum, r) => sum + ((Number(r.count) || 0) * (Number(r.score) || 0)), 0);
+                          return (
+                            <div key={type} className="flex justify-between items-center text-xs font-bold text-neutral-855">
+                              <span>{type}</span>
+                              <span className="text-neutral-500 font-semibold">
+                                共 {typeCount} 题，共 {typeScore.toFixed(1)} 分
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Divider Line */}
+                      <div className="border-t border-neutral-100 w-full"></div>
+
+                      {/* Overall Totals */}
+                      <div className="space-y-1">
+                        <div className="text-[20px] font-black text-[#fa541c] leading-none">
+                          试卷总分{displayScore.toFixed(1)}分
+                        </div>
+                        <div className="text-xs text-neutral-400 font-medium">
+                          共 {displayCount} 道题
+                        </div>
                       </div>
                     </div>
                   </div>
-                </>
+                )}
+              </>
               ) : (
-                <div className="grid grid-cols-[100px_1fr] items-start gap-4 col-span-2 w-full">
-                  <label className="text-[13px] font-bold text-[#262626] text-right pr-2 pt-1 select-none shrink-0 w-[100px]">
-                    <span className="text-[#fa541c] mr-1">*</span>试题配置：
-                  </label>
-                  <div className="space-y-4 w-full">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
-                        <p className="text-[10px] text-neutral-500 font-bold">选题数/总分数</p>
-                        <p className="text-sm font-black text-[#fa541c] mt-1">{totalCount} / {totalScore}</p>
-                      </div>
-                      <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
-                        <p className="text-[10px] text-neutral-500 font-bold">客观题数/分数</p>
-                        <p className="text-sm font-black text-[#fa541c] mt-1">{totalObjCount} / {totalObjScore}</p>
-                      </div>
-                      <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
-                        <p className="text-[10px] text-neutral-500 font-bold">实训题数/分数</p>
-                        <p className="text-sm font-black text-[#fa541c] mt-1">{totalPracCount} / {totalPracScore}</p>
-                      </div>
-                    </div>
-
-                    {/* 客观题配置 */}
-                    <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
-                      <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                        <span className="text-[13px] font-bold text-neutral-850">客观题配置：</span>
-                        <Button 
-                          onClick={() => setIsConfigModalOpen(true)} 
-                          className={cn(
-                            "h-7 text-[11px] cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all flex items-center justify-center border-0",
-                            isObjConfigured
-                              ? "bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-[#fa541c]/15"
-                              : "border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8]"
-                          )}
-                        >
-                          配置
-                        </Button>
-                      </div>
-
-                      <div className="flex gap-6 items-center w-full">
-                        {['随机选题', '固定选题'].map((sel) => (
-                          <label key={sel} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                            <input 
-                              type="radio" 
-                              name="objSelection" 
-                              defaultChecked={sel === '固定选题'} 
-                              className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
-                            />
-                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">{sel}</span>
-                          </label>
-                        ))}
-                      </div>
-
-                      {/* Table for Config Objective list */}
-                      <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
-                        <table className="w-full text-left border-collapse text-[11px]">
-                          <thead>
-                            <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
-                              <th className="p-2.5 font-bold">试题名称</th>
-                              <th className="p-2.5 font-bold">所属题库名称</th>
-                              <th className="p-2.5 font-bold">题型</th>
-                              <th className="p-2.5 font-bold w-12 text-center">操作</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {confirmedQuestions.length > 0 ? (
-                              confirmedQuestions.map((q: any) => (
-                                <tr key={q.id} className="border-b border-neutral-100 text-neutral-800 bg-white hover:bg-neutral-50/30 transition-colors">
-                                  <td className="p-2.5 font-medium max-w-[200px] truncate" title={q.name}>{q.name}</td>
-                                  <td className="p-2.5 text-neutral-500 max-w-[150px] truncate" title={q.bank}>{q.bank}</td>
-                                  <td className="p-2.5 text-neutral-600">{q.type}</td>
-                                  <td className="p-2.5 text-center">
-                                    <button 
-                                      onClick={() => handleRemoveConfirmedQuestion(q.id)}
-                                      className="text-red-500 hover:text-red-700 font-bold bg-transparent border-0 cursor-pointer p-0"
-                                    >
-                                      移除
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr className="border-b border-neutral-100/50 text-neutral-400">
-                                <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
-                                  <div className="flex flex-col items-center justify-center gap-2">
-                                    <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
-                                      <FileQuestion className="w-5 h-5 text-neutral-300" />
-                                    </div>
-                                    <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Aligned 2-column Grid list for question types */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-neutral-100/80 bg-neutral-50/15 p-2 rounded-[8px] border border-neutral-100">
-                        {[
-                          { label: '单选题', count: mcCount, setCount: setMcCount, score: mcScore, setScore: setMcScore },
-                          { label: '多选题', count: msCount, setCount: setMsCount, score: msScore, setScore: setMsScore },
-                          { label: '判断题', count: tfCount, setCount: setTfCount, score: tfScore, setScore: setTfScore },
-                          { label: '填空题', count: fbCount, setCount: setFbCount, score: fbScore, setScore: setFbScore },
-                          { label: '简答题', count: saCount, setCount: setSaCount, score: saScore, setScore: setSaScore },
-                          { label: '思考题', count: thCount, setCount: setThCount, score: thScore, setScore: setThScore },
-                          { label: '编程题', count: pgCount, setCount: setPgCount, score: pgScore, setScore: setPgScore },
-                        ].map((item) => (
-                          <div key={item.label} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white rounded-[4px] hover:bg-neutral-50/40 transition-colors border border-neutral-200/60 shadow-sm">
-                            <div className="flex items-center gap-1.5 w-14 flex-shrink-0">
-                              <span className="font-bold text-neutral-700">{item.label}</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-1">
-                              <span className="text-neutral-455 font-semibold text-[10px]">选</span>
-                              <input 
-                                type="number" 
-                                min={0}
-                                value={item.count || ''} 
-                                onChange={(e) => item.setCount(Math.max(0, parseInt(e.target.value) || 0))}
-                                className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
-                              />
-                              <span className="text-neutral-555 text-[10px]">题</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-1">
-                              <span className="text-neutral-455 font-semibold text-[10px]">每</span>
-                              <input 
-                                type="number" 
-                                min={0}
-                                value={item.score || ''} 
-                                onChange={(e) => item.setScore(Math.max(0, parseInt(e.target.value) || 0))}
-                                className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
-                              />
-                              <span className="text-neutral-555 text-[10px]">分</span>
-                            </div>
-                            
-                            <div className="text-right w-16 flex-shrink-0 text-[11px]">
-                              <span className="text-neutral-400">总 </span>
-                              <span className="font-bold text-[#fa541c]">{item.count * item.score}</span>
-                              <span className="text-neutral-400 text-[9px]">分</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 实训题配置 */}
-                    <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
-                      <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                        <span className="text-[13px] font-bold text-neutral-850">实训题配置：</span>
-                        <Button variant="outline" type="button" className="h-7 text-[11px] border border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-transparent cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all">
-                          配置
-                        </Button>
-                      </div>
-
-                      <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
-                        <table className="w-full text-left border-collapse text-[11px]">
-                          <thead>
-                            <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
-                              <th className="p-2.5 font-bold">试题名称</th>
-                              <th className="p-2.5 font-bold">所属题库名称</th>
-                              <th className="p-2.5 font-bold">题型</th>
-                              <th className="p-2.5 font-bold w-12 text-center">操作</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr className="border-b border-neutral-100/50 text-neutral-400">
-                              <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
-                                <div className="flex flex-col items-center justify-center gap-2">
-                                  <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
-                                    <FileQuestion className="w-5 h-5 text-neutral-300" />
-                                  </div>
-                                  <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="flex items-center gap-2.5 text-xs pt-1.5">
-                        <span className="font-bold text-neutral-700">实训题 选取：</span>
-                        <input 
-                          type="number" 
-                          min={0}
-                          value={sxCount || ''} 
-                          onChange={(e) => setSxCount(Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
-                        />
-                        <span className="text-neutral-555">题，每题</span>
-                        <input 
-                          type="number" 
-                          min={0}
-                          value={sxScore || ''} 
-                          onChange={(e) => setSxScore(Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
-                        />
-                        <span className="text-neutral-500">分，总 <span className="font-bold text-[#fa541c]">{sxCount * sxScore}</span> 分</span>
-                      </div>
+                <>
+                  {/* 试题配置 - 添加试题按钮 row */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      试题配置 <span className="text-[#fa541c]">*</span>
+                    </label>
+                    <div className="flex justify-start w-full">
+                      <Button
+                        type="button"
+                        onClick={() => setIsConfigModalOpen(true)}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 px-4 rounded-[4px] text-xs font-semibold cursor-pointer border-0 transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        添加试题
+                      </Button>
                     </div>
                   </div>
-                </div>
+
+                  {/* 手动选题题型卡片列表 - 放在 root 层级以铺满宽度 */}
+                  {confirmedQuestions.length > 0 && (
+                    <div className="col-span-2 space-y-6 pt-2 w-full text-left">
+                      <div className="border-t border-neutral-100 pb-2"></div>
+                      {manualTypeOrder
+                        .filter(type => confirmedQuestions.some(q => q.type === type))
+                        .map((type) => {
+                          const questionsOfType = confirmedQuestions.filter(q => q.type === type);
+                          return (
+                            <div key={type} className="border border-neutral-200 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
+                              {/* Header with Title and Buttons */}
+                              <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
+                                <span className="text-[14px] font-bold text-neutral-800">{type}</span>
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    type="button" 
+                                    variant="outline"
+                                    onClick={() => handleRemoveManualTypeSection(type)}
+                                    className="border border-neutral-200 text-neutral-600 hover:text-neutral-800 bg-white hover:bg-neutral-50 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 text-neutral-500" />
+                                    删除题型
+                                  </Button>
+                                  <Button 
+                                    type="button" 
+                                    variant="outline"
+                                    onClick={() => handleMoveManualTypeUp(type)}
+                                    className="border border-neutral-200 text-neutral-600 hover:text-neutral-800 bg-white hover:bg-neutral-50 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
+                                  >
+                                    <ChevronUp className="w-3.5 h-3.5 text-neutral-500" />
+                                    上移
+                                  </Button>
+                                  <Button 
+                                    type="button" 
+                                    variant="outline"
+                                    onClick={() => handleMoveManualTypeDown(type)}
+                                    className="border border-neutral-200 text-neutral-600 hover:text-neutral-800 bg-white hover:bg-neutral-50 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
+                                  >
+                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-500" />
+                                    下移
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Table */}
+                              <div className="border border-neutral-200 rounded-[4px] relative">
+                                <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
+                                  <thead>
+                                    <tr className="bg-neutral-50/70 border-b border-neutral-200 text-neutral-600 font-bold select-none">
+                                      <th className="p-3">试题名称</th>
+                                      <th className="p-3 w-48">所属试题库</th>
+                                      <th className="p-3 w-32 text-center">分值</th>
+                                      <th className="p-3 w-24 text-center">操作</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {questionsOfType.map((q) => {
+                                      const score = manualTypeScores[q.type] !== undefined ? manualTypeScores[q.type] : (q.type === '单选题' || q.type === '多选题' ? '3' : '0');
+                                      return (
+                                        <tr key={q.id} className="border-b border-neutral-100 bg-white hover:bg-neutral-50/30 transition-colors text-[12px]">
+                                          {/* 试题名称 */}
+                                          <td className="p-3 text-neutral-700 font-medium max-w-[350px] truncate" title={q.name}>
+                                            {q.name}
+                                          </td>
+                                          {/* 所属试题库 */}
+                                          <td className="p-3 w-48 text-neutral-600 truncate" title={q.bank}>
+                                            {q.bank}
+                                          </td>
+                                          {/* 分值 */}
+                                          <td className="p-3 w-32 text-center text-neutral-700 font-medium">
+                                            {score || '0'}
+                                          </td>
+                                          {/* 操作 - 移除 */}
+                                          <td className="p-3 w-24 text-center">
+                                            <button 
+                                              type="button" 
+                                              onClick={() => handleRemoveConfirmedQuestion(q.id)}
+                                              className="text-[#fa541c] hover:text-[#e84a15] font-bold bg-transparent border-0 cursor-pointer p-0 text-xs transition-colors"
+                                            >
+                                              移除
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                      {/* Bottom Summary for Manual Selection */}
+                      <div className="border border-neutral-200/80 rounded-[8px] p-5 mt-6 w-full max-w-[420px] text-left bg-white shadow-sm space-y-4">
+                        {/* Question Types List */}
+                        <div className="space-y-3.5 w-full">
+                          {manualTypeOrder
+                            .filter(type => confirmedQuestions.some(q => q.type === type))
+                            .map(type => {
+                              const qs = confirmedQuestions.filter(q => q.type === type);
+                              const typeCount = qs.length;
+                              const scoreVal = parseFloat(manualTypeScores[type]) || 0;
+                              const typeScore = typeCount * scoreVal;
+                              return (
+                                <div key={type} className="flex justify-between items-center text-xs font-bold text-neutral-800">
+                                  <span className="w-16 shrink-0">{type}</span>
+                                  <div className="flex items-center justify-end gap-3 text-neutral-500 font-semibold flex-1">
+                                    <span>共 {typeCount} 题，共 {typeScore.toFixed(1)} 分</span>
+                                    <div className="flex items-center gap-1 shrink-0 ml-1">
+                                      <span className="text-[11px] text-neutral-450 font-medium">每题</span>
+                                      <input 
+                                        type="text"
+                                        value={manualTypeScores[type] || ''}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (/^\d*\.?\d*$/.test(val)) {
+                                            setManualTypeScores(prev => ({
+                                              ...prev,
+                                              [type]: val
+                                            }));
+                                          }
+                                        }}
+                                        placeholder="请输入"
+                                        className="border border-neutral-200 rounded-[4px] px-1 py-0.5 text-xs font-normal focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-14 text-center"
+                                      />
+                                      <span className="text-[11px] text-neutral-450 font-medium">分</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+
+                        {/* Divider Line */}
+                        <div className="border-t border-neutral-100 w-full"></div>
+
+                        {/* Overall Totals */}
+                        <div className="space-y-1">
+                          <div className="text-[20px] font-black text-[#fa541c] leading-none">
+                            试卷总分{displayScore.toFixed(1)}分
+                          </div>
+                          <div className="text-xs text-neutral-400 font-medium">
+                            共 {displayCount} 道题
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </>
               )}
+
+
 
 
             </div>
@@ -2157,7 +2171,17 @@ export default function TeacherPapers() {
             {/* Modal Content */}
             <div className="px-6 py-4 overflow-y-auto space-y-3.5 flex-1 custom-scrollbar bg-white text-left">
               {/* Action Bar */}
-              <div className="flex justify-end items-center">
+              <div className="flex justify-between items-center gap-4">
+                <div className="relative w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="请输入要搜索的内容"
+                    value={modalSearchQuery}
+                    onChange={(e) => setModalSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-1.5 w-full bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400"
+                  />
+                </div>
                 <Button 
                   onClick={() => navigate('/teacher/questions', { state: { openCreateQuestion: true } })}
                   className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1 shadow-sm h-8 rounded-[4px] border-0 px-3.5 text-xs font-bold transition-all cursor-pointer"
@@ -2172,140 +2196,74 @@ export default function TeacherPapers() {
                   <table className="w-full text-left border-collapse text-[13px] whitespace-nowrap">
                     <thead>
                       <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-bold">
-                        <th className="py-2.5 px-4 w-10 text-center bg-neutral-50/30"></th>
-                        <th className="py-2.5 px-4 w-12 text-center bg-neutral-50/30">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (selectedConfigQuestions.length === availableQuestions.length) {
-                                setSelectedConfigQuestions([]);
-                              } else {
-                                setSelectedConfigQuestions(availableQuestions.map(q => q.id));
-                              }
-                            }}
-                            className={cn(
-                              "w-3.5 h-3.5 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                              selectedConfigQuestions.length === availableQuestions.length
-                                ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                            )}
-                          >
-                            {selectedConfigQuestions.length === availableQuestions.length && <span className="text-[8px] font-bold">✓</span>}
-                          </button>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">试题名称 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">所属题库 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">题型 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">难度 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">标签 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">评分方式 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">试题范围 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">
-                          <div className="flex items-center gap-1">创建人 <FilterIcon /></div>
-                        </th>
-                        <th className="py-2.5 px-4">更新时间</th>
+                        <th className="py-2.5 px-4 pl-6 bg-neutral-50/30">试题名称</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">所属题库</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">题型</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">状态</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">来源</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">难度</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">标签</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">创建人</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">更新时间</th>
+                        <th className="py-2.5 px-4 bg-neutral-50/30">试题范围</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {availableQuestions.map((q) => {
+                      {filteredConfigQuestions.map((q) => {
                         const isSelected = selectedConfigQuestions.includes(q.id);
-                        const isExpanded = expandedConfigRow === q.id;
                         return (
-                          <React.Fragment key={q.id}>
-                            <tr className={cn(
-                              "border-b border-neutral-100 hover:bg-neutral-50/20 transition-colors text-neutral-700 font-medium bg-white",
-                              isSelected ? "bg-orange-50/10" : ""
-                            )}>
-                              <td className="py-2.5 px-4 text-center">
-                                <button 
-                                  onClick={() => setExpandedConfigRow(isExpanded ? null : q.id)}
-                                  className={cn(
-                                    "w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all p-0",
-                                    isExpanded 
-                                      ? "border-[#fa541c] text-[#fa541c] bg-[#fff2e8]/45 font-black" 
-                                      : "border-neutral-200 bg-white text-neutral-400 hover:border-[#fa541c] hover:text-[#fa541c]"
-                                  )}
-                                >
-                                  {isExpanded ? '−' : '+'}
-                                </button>
-                              </td>
-                              <td className="py-2.5 px-4 text-center">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (isSelected) {
-                                      setSelectedConfigQuestions(selectedConfigQuestions.filter(id => id !== q.id));
-                                    } else {
-                                      setSelectedConfigQuestions([...selectedConfigQuestions, q.id]);
-                                    }
-                                  }}
-                                  className={cn(
-                                    "w-3.5 h-3.5 rounded border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                                    isSelected
-                                      ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                      : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                                  )}
-                                >
-                                  {isSelected && <span className="text-[8px] font-bold">✓</span>}
-                                </button>
-                              </td>
-                              <td className="py-2.5 px-4 font-semibold text-neutral-800 max-w-[180px] truncate" title={q.name}>{q.name}</td>
-                              <td className="py-2.5 px-4 text-neutral-500 max-w-[120px] truncate" title={q.bank}>{q.bank}</td>
-                              <td className="py-2.5 px-4 text-neutral-600">{q.type}</td>
-                              <td className="py-2.5 px-4">
-                                <span className={cn(
-                                  "px-1.5 py-0.5 rounded text-[10px] font-bold border",
-                                  (q.difficulty === '初级' || q.difficulty === '容易' || q.difficulty === '较易') && "bg-green-50 text-green-600 border-green-150",
-                                  (q.difficulty === '中级' || q.difficulty === '中等') && "bg-orange-50 text-[#fa541c] border-orange-150",
-                                  (q.difficulty === '高级' || q.difficulty === '较难' || q.difficulty === '困难') && "bg-red-50 text-red-600 border-red-150"
-                                )}>
-                                  {q.difficulty}
-                                </span>
-                              </td>
-                              <td className="py-2.5 px-4">
-                                <span className="px-1.5 py-0.5 bg-neutral-100 text-neutral-500 rounded text-[10px] font-medium" title={q.tag}>{q.tag}</span>
-                              </td>
-                              <td className="py-2.5 px-4 text-neutral-600">{q.grading}</td>
-                              <td className="py-2.5 px-4">
-                                <span className="px-1.5 py-0.5 bg-blue-50 border border-blue-200 text-blue-500 rounded text-[10px] font-semibold text-center">{q.scope}</span>
-                              </td>
-                              <td className="py-2.5 px-4 text-neutral-600">{q.creator}</td>
-                              <td className="py-2.5 px-4 text-neutral-400 font-mono">{q.time}</td>
-                            </tr>
-                            
-                            {/* Expanded Configuration Detail Card */}
-                            {isExpanded && (
-                              <tr className="bg-neutral-50/15 border-b border-neutral-150">
-                                <td colSpan={11} className="p-0 whitespace-normal">
-                                  <div className="py-3 pl-16 pr-8 animate-in fade-in duration-200">
-                                    <div className="bg-white border border-neutral-100 rounded-xl p-4 space-y-2.5">
-                                      <div>
-                                        <p className="text-xs font-bold text-neutral-800">{q.detailText}</p>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <p className="text-[11px] font-bold text-neutral-700">答案解析：</p>
-                                        <p className="text-[11px] text-neutral-500 font-medium">{q.analysis}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
+                          <tr 
+                            key={q.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedConfigQuestions(selectedConfigQuestions.filter(id => id !== q.id));
+                              } else {
+                                setSelectedConfigQuestions([...selectedConfigQuestions, q.id]);
+                              }
+                            }}
+                            className={cn(
+                              "border-b border-neutral-100 hover:bg-neutral-50/20 transition-colors text-neutral-700 font-medium bg-white cursor-pointer select-none",
+                              isSelected ? "bg-orange-50/20" : ""
                             )}
-                          </React.Fragment>
+                          >
+                            <td className="py-2.5 px-4 pl-6 font-semibold text-neutral-800 max-w-[180px] truncate" title={q.name}>{q.name}</td>
+                            <td className="py-2.5 px-4 text-neutral-500 max-w-[120px] truncate" title={q.bank}>{q.bank}</td>
+                            <td className="py-2.5 px-4 text-neutral-600">{q.type}</td>
+                            <td className="py-2.5 px-4">
+                              <span className={cn(
+                                "px-1.5 py-0.5 rounded text-[10px] border",
+                                q.status === '启用' ? "bg-green-50 text-green-600 border-green-200 font-bold" : "bg-neutral-50 text-neutral-450 border-neutral-200 font-medium"
+                              )}>
+                                {q.status}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-4 text-neutral-650">{q.source}</td>
+                            <td className="py-2.5 px-4">
+                              <span className={cn(
+                                "px-1.5 py-0.5 rounded text-[10px] font-bold border",
+                                (q.difficulty === '容易' || q.difficulty === '较易') && "bg-green-50 text-green-600 border-green-150",
+                                q.difficulty === '中等' && "bg-orange-50 text-[#fa541c] border-orange-150",
+                                (q.difficulty === '困难' || q.difficulty === '较难') && "bg-red-50 text-red-600 border-red-150"
+                              )}>
+                                {q.difficulty}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-4">
+                              <span className="px-1.5 py-0.5 bg-neutral-100 text-neutral-500 rounded text-[10px] font-medium" title={q.tag}>{q.tag || '-'}</span>
+                            </td>
+                            <td className="py-2.5 px-4 text-neutral-600">{q.creator}</td>
+                            <td className="py-2.5 px-4 text-neutral-400 font-mono">{q.time}</td>
+                            <td className="py-2.5 px-4">
+                              <span className={cn(
+                                "px-1.5 py-0.5 rounded text-[10px] font-semibold border",
+                                q.scope === '平台' && "bg-orange-50 text-[#fa541c] border-orange-200",
+                                q.scope === '租户' && "bg-blue-50 text-blue-600 border-blue-200",
+                                q.scope === '私有' && "bg-neutral-50 text-neutral-500 border-neutral-200"
+                              )}>
+                                {q.scope}
+                              </span>
+                            </td>
+                          </tr>
                         );
                       })}
                     </tbody>
@@ -2313,8 +2271,8 @@ export default function TeacherPapers() {
                 </div>
 
                 {/* Table Pagination inside Modal - styled matching Questions page pagination (no shadow) */}
-                <div className="flex items-center justify-end py-2.5 px-4 gap-4 bg-white border-t border-neutral-150">
-                  <span className="text-[13px] text-neutral-500">共 {availableQuestions.length} 条</span>
+                <div className="flex items-center justify-end py-2.5 px-4 gap-4 bg-white">
+                  <span className="text-[13px] text-neutral-500">共 {filteredConfigQuestions.length} 条</span>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-white" disabled>&lt;</Button>
                     <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
@@ -2522,11 +2480,11 @@ export default function TeacherPapers() {
           onClick={() => setAddRuleTypeTarget(null)}
         >
           <div 
-            className="bg-white w-full max-w-[460px] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-neutral-100 animate-in zoom-in-95 duration-200"
+            className="bg-white w-full max-w-[460px] rounded-xl shadow-2xl flex flex-col border border-neutral-100 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 text-left shrink-0">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 text-left shrink-0 rounded-t-xl">
               <h3 className="text-sm font-bold text-neutral-800">添加抽题规则（{addRuleTypeTarget}）</h3>
               <button 
                 onClick={() => setAddRuleTypeTarget(null)}
@@ -2621,7 +2579,7 @@ export default function TeacherPapers() {
                   {isModalDiffDropdownOpen && (
                     <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[210] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                       <div className="max-h-[160px] overflow-y-auto custom-scrollbar">
-                        {['容易', '中等', '困难'].map(diffOption => {
+                        {['容易', '较易', '中等', '较难', '困难'].map(diffOption => {
                           const isSelected = ruleFormDifficulty === diffOption;
                           return (
                             <div
@@ -2652,7 +2610,7 @@ export default function TeacherPapers() {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-[#f9fafb] flex justify-end gap-2.5 shrink-0 rounded-b-xl">
               <Button 
                 onClick={() => setAddRuleTypeTarget(null)}
                 variant="outline" 
