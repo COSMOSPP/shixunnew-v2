@@ -66,6 +66,16 @@ export default function TeacherPapers() {
   const [isAddTypeDropdownOpen, setIsAddTypeDropdownOpen] = useState(false);
   const addTypeDropdownRef = React.useRef<HTMLDivElement>(null);
 
+  // Custom modal states & refs for Delete Type & Add Rule
+  const [deleteTypeTarget, setDeleteTypeTarget] = useState<string | null>(null);
+  const [addRuleTypeTarget, setAddRuleTypeTarget] = useState<string | null>(null);
+  const [ruleFormTag, setRuleFormTag] = useState('标签1');
+  const [ruleFormDifficulty, setRuleFormDifficulty] = useState('容易');
+  const [isModalTagDropdownOpen, setIsModalTagDropdownOpen] = useState(false);
+  const [isModalDiffDropdownOpen, setIsModalDiffDropdownOpen] = useState(false);
+  const modalTagDropdownRef = React.useRef<HTMLDivElement>(null);
+  const modalDiffDropdownRef = React.useRef<HTMLDivElement>(null);
+
   // Custom dropdown states & refs
   const [isQuestionBankDropdownOpen, setIsQuestionBankDropdownOpen] = useState(false);
   const [activeRuleTagDropdownId, setActiveRuleTagDropdownId] = useState<string | null>(null);
@@ -81,6 +91,12 @@ export default function TeacherPapers() {
       }
       if (addTypeDropdownRef.current && !addTypeDropdownRef.current.contains(target)) {
         setIsAddTypeDropdownOpen(false);
+      }
+      if (modalTagDropdownRef.current && !modalTagDropdownRef.current.contains(target)) {
+        setIsModalTagDropdownOpen(false);
+      }
+      if (modalDiffDropdownRef.current && !modalDiffDropdownRef.current.contains(target)) {
+        setIsModalDiffDropdownOpen(false);
       }
       if (target instanceof HTMLElement && !target.closest('.rule-dropdown-container')) {
         setActiveRuleTagDropdownId(null);
@@ -360,12 +376,12 @@ export default function TeacherPapers() {
     setDrawRules(prev => prev.map(r => r.id === id ? { ...r, [key]: value } : r));
   };
 
-  const handleAddRule = (type: string) => {
+  const handleAddRule = (type: string, tag: string = '标签1', difficulty: string = '容易') => {
     const newRule: DrawRule = {
       id: `r-${Date.now()}-${Math.random()}`,
       type,
-      tag: '标签1',
-      difficulty: '容易',
+      tag,
+      difficulty,
       count: '',
       maxAvailable: 3,
       score: ''
@@ -407,10 +423,7 @@ export default function TeacherPapers() {
   };
 
   const handleDeleteTypeSection = (type: string) => {
-    if (confirm(`确定要删除【${type}】及该题型下的所有抽取规则吗？`)) {
-      setTypeOrder(prev => prev.filter(t => t !== type));
-      setDrawRules(prev => prev.filter(r => r.type !== type));
-    }
+    setDeleteTypeTarget(type);
   };
 
   const toggleRow = (id: number) => {
@@ -1662,7 +1675,11 @@ export default function TeacherPapers() {
                             <div className="flex items-center gap-2">
                               <Button 
                                 type="button" 
-                                onClick={() => handleAddRule(type)}
+                                onClick={() => {
+                                  setRuleFormTag('标签1');
+                                  setRuleFormDifficulty('容易');
+                                  setAddRuleTypeTarget(type);
+                                }}
                                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3 rounded-[4px] border-0 cursor-pointer shadow-sm flex items-center gap-1 transition-all"
                               >
                                 <Plus className="w-3 h-3" />
@@ -2447,6 +2464,210 @@ export default function TeacherPapers() {
                 ) : (
                   '提交审核申请'
                 )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 删除题型确认弹窗 */}
+      {deleteTypeTarget && (
+        <div 
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[1.5px] p-4 animate-fade-in"
+          onClick={() => setDeleteTypeTarget(null)}
+        >
+          <div 
+            className="bg-white w-full max-w-[420px] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-neutral-100 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto text-red-500">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-bold text-neutral-800">确认删除题型</h3>
+                <p className="text-xs text-neutral-500 leading-relaxed px-4">
+                  确定要删除【<span className="font-bold text-red-500">{deleteTypeTarget}</span>】及该题型下的所有抽取规则吗？
+                </p>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 shrink-0">
+              <Button 
+                onClick={() => setDeleteTypeTarget(null)}
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-8 px-4 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  setTypeOrder(prev => prev.filter(t => t !== deleteTypeTarget));
+                  setDrawRules(prev => prev.filter(r => r.type !== deleteTypeTarget));
+                  setDeleteTypeTarget(null);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+              >
+                确定删除
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 添加规则弹窗 */}
+      {addRuleTypeTarget && (
+        <div 
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[1.5px] p-4 animate-fade-in"
+          onClick={() => setAddRuleTypeTarget(null)}
+        >
+          <div 
+            className="bg-white w-full max-w-[460px] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-neutral-100 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 text-left shrink-0">
+              <h3 className="text-sm font-bold text-neutral-800">添加抽题规则（{addRuleTypeTarget}）</h3>
+              <button 
+                onClick={() => setAddRuleTypeTarget(null)}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form Content */}
+            <div className="p-6 space-y-5 text-left bg-white flex-1 text-xs">
+              {/* 抽取标签 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4 relative">
+                <label className="text-xs font-bold text-neutral-600 text-right">
+                  抽取标签 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div ref={modalTagDropdownRef} className="relative w-full text-xs">
+                  <div
+                    onClick={() => {
+                      setIsModalTagDropdownOpen(!isModalTagDropdownOpen);
+                      setIsModalDiffDropdownOpen(false);
+                    }}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                      isModalTagDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className="text-neutral-700 font-medium">
+                      {ruleFormTag}
+                    </span>
+                    <ChevronDown 
+                      className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isModalTagDropdownOpen && "rotate-180")} 
+                    />
+                  </div>
+
+                  {isModalTagDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[210] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[160px] overflow-y-auto custom-scrollbar">
+                        {['标签1', '标签2', '标签3', '深度学习', '人工智能', '大语言模型'].map(tagOption => {
+                          const isSelected = ruleFormTag === tagOption;
+                          return (
+                            <div
+                              key={tagOption}
+                              onClick={() => {
+                                setRuleFormTag(tagOption);
+                                setIsModalTagDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{tagOption}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 难易程度 */}
+              <div className="grid grid-cols-[80px_1fr] items-center gap-4 relative">
+                <label className="text-xs font-bold text-neutral-600 text-right">
+                  难易程度 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div ref={modalDiffDropdownRef} className="relative w-full text-xs">
+                  <div
+                    onClick={() => {
+                      setIsModalDiffDropdownOpen(!isModalDiffDropdownOpen);
+                      setIsModalTagDropdownOpen(false);
+                    }}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                      isModalDiffDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className="text-neutral-700 font-medium">
+                      {ruleFormDifficulty}
+                    </span>
+                    <ChevronDown 
+                      className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isModalDiffDropdownOpen && "rotate-180")} 
+                    />
+                  </div>
+
+                  {isModalDiffDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[210] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[160px] overflow-y-auto custom-scrollbar">
+                        {['容易', '中等', '困难'].map(diffOption => {
+                          const isSelected = ruleFormDifficulty === diffOption;
+                          return (
+                            <div
+                              key={diffOption}
+                              onClick={() => {
+                                setRuleFormDifficulty(diffOption);
+                                setIsModalDiffDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{diffOption}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 shrink-0">
+              <Button 
+                onClick={() => setAddRuleTypeTarget(null)}
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-8 px-4 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  handleAddRule(addRuleTypeTarget, ruleFormTag, ruleFormDifficulty);
+                  setAddRuleTypeTarget(null);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-5 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+              >
+                确 定
               </Button>
             </div>
           </div>
