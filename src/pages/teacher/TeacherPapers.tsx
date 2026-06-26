@@ -1572,10 +1572,10 @@ export default function TeacherPapers() {
                     </div>
                   </div>
 
-                  {/* 添加题型 */}
+                  {/* 选择题型 */}
                   <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                     <label className="text-[13px] font-bold text-[#262626] text-right">
-                      添加题型
+                      选择题型
                     </label>
                     <div className="flex items-center gap-3 w-full text-left">
                       {/* Dropdown Menu Select */}
