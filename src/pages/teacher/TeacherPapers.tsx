@@ -20,7 +20,8 @@ import {
   Layers,
   Info,
   Loader2,
-  Edit
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -402,6 +403,13 @@ export default function TeacherPapers() {
       handleAddRule(type);
     } else {
       alert('该题型已存在，请勿重复添加！');
+    }
+  };
+
+  const handleDeleteTypeSection = (type: string) => {
+    if (confirm(`确定要删除【${type}】及该题型下的所有抽取规则吗？`)) {
+      setTypeOrder(prev => prev.filter(t => t !== type));
+      setDrawRules(prev => prev.filter(r => r.type !== type));
     }
   };
 
@@ -1659,6 +1667,15 @@ export default function TeacherPapers() {
                               >
                                 <Plus className="w-3 h-3" />
                                 添加规则
+                              </Button>
+                              <Button 
+                                type="button" 
+                                variant="outline"
+                                onClick={() => handleDeleteTypeSection(type)}
+                                className="border border-red-200 text-red-650 hover:text-red-700 hover:bg-red-50/70 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                删除题型
                               </Button>
                               <Button 
                                 type="button" 
