@@ -24,6 +24,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+interface DrawRule {
+  id: string;
+  type: string;
+  tag: string;
+  difficulty: string;
+  count: number | '';
+  maxAvailable: number;
+  score: number | '';
+}
+
 export default function TeacherPapers() {
   const navigate = useNavigate();
   const [expandedRow, setExpandedRow] = useState<number | null>(1);
@@ -46,6 +56,19 @@ export default function TeacherPapers() {
   const [paperScope, setPaperScope] = useState('私有');
   const [paperStatus, setPaperStatus] = useState('启用');
   const [paperSelectionMethod, setPaperSelectionMethod] = useState('随机抽题');
+
+  // Random Selection rules states
+  const [selectedQuestionBank, setSelectedQuestionBank] = useState('选择题库');
+  const [typeOrder, setTypeOrder] = useState<string[]>(['单选题', '多选题', '实训题']);
+  const [showAddTypeSelect, setShowAddTypeSelect] = useState(false);
+  const [drawRules, setDrawRules] = useState<DrawRule[]>([
+    { id: 'r1', type: '单选题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
+    { id: 'r2', type: '单选题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' },
+    { id: 'r3', type: '多选题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
+    { id: 'r4', type: '多选题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' },
+    { id: 'r5', type: '实训题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
+    { id: 'r6', type: '实训题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' }
+  ]);
 
   // Question Config selections and scores
   const [mcCount, setMcCount] = useState(0);
@@ -233,7 +256,7 @@ export default function TeacherPapers() {
       questionCount: 25,
       types: '单选题, 多选题, 判断题',
       type: '考试',
-      selectionMethod: '千人千卷',
+      selectionMethod: '随机抽题',
       status: '停用',
       creator: '李老师',
       updateTime: '2026/05/16 11:20',
@@ -286,6 +309,70 @@ export default function TeacherPapers() {
 
   const totalCount = totalObjCount + totalPracCount;
   const totalScore = totalObjScore + totalPracScore;
+
+  // 随机抽题计算逻辑
+  const drawRulesCount = drawRules.reduce((sum, r) => sum + (Number(r.count) || 0), 0);
+  const drawRulesScore = drawRules.reduce((sum, r) => sum + ((Number(r.count) || 0) * (Number(r.score) || 0)), 0);
+
+  const displayCount = paperSelectionMethod === '随机抽题' ? drawRulesCount : totalCount;
+  const displayScore = paperSelectionMethod === '随机抽题' ? drawRulesScore : totalScore;
+
+  const getRuleTypeCount = (type: string) => {
+    return drawRules.filter(r => r.type === type).reduce((sum, r) => sum + (Number(r.count) || 0), 0);
+  };
+  const getRuleTypeScore = (type: string) => {
+    const rules = drawRules.filter(r => r.type === type && Number(r.count) > 0);
+    return rules.length > 0 ? Number(rules[0].score) || 0 : 0;
+  };
+
+  const handleUpdateRule = (id: string, key: keyof DrawRule, value: any) => {
+    setDrawRules(prev => prev.map(r => r.id === id ? { ...r, [key]: value } : r));
+  };
+
+  const handleAddRule = (type: string) => {
+    const newRule: DrawRule = {
+      id: `r-${Date.now()}-${Math.random()}`,
+      type,
+      tag: '标签1',
+      difficulty: '容易',
+      count: '',
+      maxAvailable: 3,
+      score: ''
+    };
+    setDrawRules(prev => [...prev, newRule]);
+  };
+
+  const handleRemoveRule = (id: string) => {
+    setDrawRules(prev => prev.filter(r => r.id !== id));
+  };
+
+  const handleMoveTypeUp = (type: string) => {
+    const idx = typeOrder.indexOf(type);
+    if (idx > 0) {
+      const newOrder = [...typeOrder];
+      newOrder[idx] = typeOrder[idx - 1];
+      newOrder[idx - 1] = typeOrder[idx];
+      setTypeOrder(newOrder);
+    }
+  };
+
+  const handleMoveTypeDown = (type: string) => {
+    const idx = typeOrder.indexOf(type);
+    if (idx < typeOrder.length - 1) {
+      const newOrder = [...typeOrder];
+      newOrder[idx] = typeOrder[idx + 1];
+      newOrder[idx + 1] = typeOrder[idx];
+      setTypeOrder(newOrder);
+    }
+  };
+
+  const handleAddTypeSection = (type: string) => {
+    if (!typeOrder.includes(type)) {
+      setTypeOrder(prev => [...prev, type]);
+      handleAddRule(type);
+    }
+    setShowAddTypeSelect(false);
+  };
 
   const toggleRow = (id: number) => {
     setExpandedRow(expandedRow === id ? null : id);
@@ -423,6 +510,34 @@ export default function TeacherPapers() {
       return;
     }
 
+    const finalMcCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('单选题') : mcCount;
+    const finalMcScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('单选题') : mcScore;
+    const finalMsCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('多选题') : msCount;
+    const finalMsScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('多选题') : msScore;
+    const finalTfCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('判断题') : tfCount;
+    const finalTfScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('判断题') : tfScore;
+    const finalFbCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('填空题') : fbCount;
+    const finalFbScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('填空题') : fbScore;
+    const finalSaCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('简答题') : saCount;
+    const finalSaScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('简答题') : saScore;
+    const finalThCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('思考题') : thCount;
+    const finalThScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('思考题') : thScore;
+    const finalPgCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('编程题') : pgCount;
+    const finalPgScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('编程题') : pgScore;
+    const finalSxCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('实训题') : sxCount;
+    const finalSxScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('实训题') : sxScore;
+
+    const activeTypesList = [];
+    if (finalMcCount > 0) activeTypesList.push('单选题');
+    if (finalMsCount > 0) activeTypesList.push('多选题');
+    if (finalTfCount > 0) activeTypesList.push('判断题');
+    if (finalFbCount > 0) activeTypesList.push('填空题');
+    if (finalSaCount > 0) activeTypesList.push('简答题');
+    if (finalThCount > 0) activeTypesList.push('思考题');
+    if (finalPgCount > 0) activeTypesList.push('编程题');
+    if (finalSxCount > 0) activeTypesList.push('实训题');
+    const finalTypesString = activeTypesList.join(', ') || '单选题';
+
     if (editingPaper) {
       setPapersList(prev => prev.map(p => {
         if (p.id === editingPaper.id) {
@@ -430,14 +545,14 @@ export default function TeacherPapers() {
             ...p,
             name: paperName,
             description: paperDescription || '暂无试卷说明描述',
-            questionCount: totalCount || 10,
-            types: totalObjCount > 0 ? '单选题, 多选题' : '实训题',
+            questionCount: displayCount || 10,
+            types: finalTypesString,
             type: paperType,
             selectionMethod: paperSelectionMethod,
             status: paperStatus,
             scope: paperScope,
             updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
-            mcCount, mcScore, msCount, msScore, tfCount, tfScore, fbCount, fbScore, saCount, saScore, thCount, thScore, pgCount, pgScore, sxCount, sxScore
+            mcCount: finalMcCount, mcScore: finalMcScore, msCount: finalMsCount, msScore: finalMsScore, tfCount: finalTfCount, tfScore: finalTfScore, fbCount: finalFbCount, fbScore: finalFbScore, saCount: finalSaCount, saScore: finalSaScore, thCount: finalThCount, thScore: finalThScore, pgCount: finalPgCount, pgScore: finalPgScore, sxCount: finalSxCount, sxScore: finalSxScore
           };
         }
         return p;
@@ -447,8 +562,8 @@ export default function TeacherPapers() {
         id: Date.now(),
         name: paperName,
         description: paperDescription || '暂无试卷说明描述',
-        questionCount: totalCount || 10,
-        types: totalObjCount > 0 ? '单选题, 多选题' : '实训题',
+        questionCount: displayCount || 10,
+        types: finalTypesString,
         type: paperType,
         selectionMethod: paperSelectionMethod,
         status: paperStatus,
@@ -456,7 +571,7 @@ export default function TeacherPapers() {
         updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
         scope: paperScope,
         auditStatus: '未审核',
-        mcCount, mcScore, msCount, msScore, tfCount, tfScore, fbCount, fbScore, saCount, saScore, thCount, thScore, pgCount, pgScore, sxCount, sxScore
+        mcCount: finalMcCount, mcScore: finalMcScore, msCount: finalMsCount, msScore: finalMsScore, tfCount: finalTfCount, tfScore: finalTfScore, fbCount: finalFbCount, fbScore: finalFbScore, saCount: finalSaCount, saScore: finalSaScore, thCount: finalThCount, thScore: finalThScore, pgCount: finalPgCount, pgScore: finalPgScore, sxCount: finalSxCount, sxScore: finalSxScore
       };
       setPapersList([newPaper, ...papersList]);
     }
@@ -1334,13 +1449,13 @@ export default function TeacherPapers() {
                 </div>
               </div>
 
-              {/* 抽题方式 */}
+              {/* 试题配置 */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                 <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                  <span className="text-[#fa541c] mr-1">*</span>抽题方式：
+                  <span className="text-[#fa541c] mr-1">*</span>试题配置：
                 </label>
                 <div className="flex gap-6 items-center">
-                  {['随机抽题', '手动抽题', '千人千卷'].map((m) => (
+                  {['随机抽题', '手动抽题'].map((m) => (
                     <label key={m} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
                       <span className="relative flex items-center justify-center">
                         <input
@@ -1372,98 +1487,392 @@ export default function TeacherPapers() {
               </div>
 
               {/* 试题配置 */}
-              <div className="grid grid-cols-[100px_1fr] items-start gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2 pt-1">
-                  <span className="text-[#fa541c] mr-1">*</span>试题配置：
-                </label>
-                <div className="space-y-4 w-full">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
-                      <p className="text-[10px] text-neutral-500 font-bold">选题数/总分数</p>
-                      <p className="text-sm font-black text-[#fa541c] mt-1">{totalCount} / {totalScore}</p>
-                    </div>
-                    <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
-                      <p className="text-[10px] text-neutral-500 font-bold">客观题数/分数</p>
-                      <p className="text-sm font-black text-[#fa541c] mt-1">{totalObjCount} / {totalObjScore}</p>
-                    </div>
-                    <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
-                      <p className="text-[10px] text-neutral-500 font-bold">实训题数/分数</p>
-                      <p className="text-sm font-black text-[#fa541c] mt-1">{totalPracCount} / {totalPracScore}</p>
-                    </div>
+              {paperSelectionMethod === '随机抽题' ? (
+                <>
+                  {/* 所属试题库 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
+                      <span className="text-[#fa541c] mr-1">*</span>所属试题库：
+                    </label>
+                    <select 
+                      value={selectedQuestionBank}
+                      onChange={(e) => setSelectedQuestionBank(e.target.value)}
+                      className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white"
+                    >
+                      <option value="选择题库">选择题库</option>
+                      <option value="人工智能通识D-uni">人工智能通识D-uni</option>
+                      <option value="深度学习基础题库">深度学习基础题库</option>
+                      <option value="大语言模型进阶题库">大语言模型进阶题库</option>
+                    </select>
                   </div>
 
-                  {/* 客观题配置 */}
-                  <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
-                    <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                      <span className="text-[13px] font-bold text-neutral-850">客观题配置：</span>
+                  {/* 抽题规则表 */}
+                  <div className="col-span-2 space-y-6 pt-2 w-full text-left">
+                    <div className="border-t border-neutral-100 pb-2"></div>
+                    
+                    {typeOrder.map((type) => {
+                      const rulesOfType = drawRules.filter(r => r.type === type);
+                      return (
+                        <div key={type} className="border border-neutral-200 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
+                          {/* Header with Title and Buttons */}
+                          <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
+                            <span className="text-[14px] font-bold text-neutral-800">{type}</span>
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                type="button" 
+                                onClick={() => handleAddRule(type)}
+                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3.5 rounded-[4px] border-0 cursor-pointer shadow-sm"
+                              >
+                                抽题规则
+                              </Button>
+                              <Button 
+                                type="button" 
+                                onClick={() => handleMoveTypeUp(type)}
+                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3.5 rounded-[4px] border-0 cursor-pointer shadow-sm"
+                              >
+                                上移
+                              </Button>
+                              <Button 
+                                type="button" 
+                                onClick={() => handleMoveTypeDown(type)}
+                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3.5 rounded-[4px] border-0 cursor-pointer shadow-sm"
+                              >
+                                下移
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Table */}
+                          <div className="border border-neutral-200 rounded-[4px] overflow-hidden">
+                            <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
+                              <thead>
+                                <tr className="bg-neutral-50/70 border-b border-neutral-200 text-neutral-600 font-bold select-none">
+                                  <th className="p-3">抽取标签</th>
+                                  <th className="p-3">难易程度</th>
+                                  <th className="p-3 w-28 text-center">抽取数量</th>
+                                  <th className="p-3 w-20 text-center">最多可抽</th>
+                                  <th className="p-3 w-28 text-center">分值</th>
+                                  <th className="p-3 w-20 text-center">总分</th>
+                                  <th className="p-3 w-20 text-center">操作</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {rulesOfType.map((rule) => (
+                                  <tr key={rule.id} className="border-b border-neutral-100 bg-white hover:bg-neutral-50/30 transition-colors text-[12px]">
+                                    {/* 抽取标签 */}
+                                    <td className="p-3 w-40">
+                                      <select 
+                                        value={rule.tag}
+                                        onChange={(e) => handleUpdateRule(rule.id, 'tag', e.target.value)}
+                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full"
+                                      >
+                                        <option value="标签1">标签1</option>
+                                        <option value="标签2">标签2</option>
+                                        <option value="深度学习">深度学习</option>
+                                        <option value="大模型">大模型</option>
+                                        <option value="神经网络">神经网络</option>
+                                      </select>
+                                    </td>
+                                    {/* 难易程度 */}
+                                    <td className="p-3 w-32">
+                                      <select 
+                                        value={rule.difficulty}
+                                        onChange={(e) => handleUpdateRule(rule.id, 'difficulty', e.target.value)}
+                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full"
+                                      >
+                                        <option value="容易">容易</option>
+                                        <option value="较易">较易</option>
+                                        <option value="中等">中等</option>
+                                        <option value="较难">较难</option>
+                                        <option value="困难">困难</option>
+                                      </select>
+                                    </td>
+                                    {/* 抽取数量 */}
+                                    <td className="p-3">
+                                      <input 
+                                        type="number"
+                                        min={0}
+                                        value={rule.count === '' ? '' : rule.count}
+                                        onChange={(e) => {
+                                          const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
+                                          handleUpdateRule(rule.id, 'count', val);
+                                        }}
+                                        placeholder="请输入"
+                                        className="border border-neutral-200 rounded-[4px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
+                                      />
+                                    </td>
+                                    {/* 最多可抽 */}
+                                    <td className="p-3 text-center text-neutral-700 font-bold font-mono">
+                                      {rule.maxAvailable}
+                                    </td>
+                                    {/* 分值 */}
+                                    <td className="p-3">
+                                      <input 
+                                        type="number"
+                                        min={0}
+                                        value={rule.score === '' ? '' : rule.score}
+                                        onChange={(e) => {
+                                          const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
+                                          handleUpdateRule(rule.id, 'score', val);
+                                        }}
+                                        placeholder="请输入"
+                                        className="border border-neutral-200 rounded-[4px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
+                                      />
+                                    </td>
+                                    {/* 总分 */}
+                                    <td className="p-3 text-center text-neutral-700 font-bold font-mono">
+                                      {Number(rule.count) && Number(rule.score) ? Number(rule.count) * Number(rule.score) : 0}
+                                    </td>
+                                    {/* 操作 - 移除 */}
+                                    <td className="p-3 text-center">
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleRemoveRule(rule.id)}
+                                        className="text-[#fa541c] hover:text-[#e84a15] font-bold bg-transparent border-0 cursor-pointer p-0 text-xs transition-colors"
+                                      >
+                                        移除
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                                {rulesOfType.length === 0 && (
+                                  <tr>
+                                    <td colSpan={7} className="p-8 text-center text-neutral-400 select-none bg-neutral-50/10 text-xs">
+                                      暂无抽题规则，请点击右上角【抽题规则】添加
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* 添加试题 Button */}
+                    <div className="flex flex-col items-center justify-center pt-2 relative w-full">
                       <Button 
-                        onClick={() => setIsConfigModalOpen(true)} 
-                        className={cn(
-                          "h-7 text-[11px] cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all flex items-center justify-center border-0",
-                          isObjConfigured
-                            ? "bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-[#fa541c]/15"
-                            : "border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8]"
-                        )}
+                        type="button"
+                        onClick={() => setShowAddTypeSelect(!showAddTypeSelect)}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-[4px] border-0 cursor-pointer shadow-md shadow-orange-500/10 text-xs"
                       >
-                        配置
+                        添加试题
                       </Button>
+
+                      {showAddTypeSelect && (
+                        <div className="absolute top-12 z-20 bg-white border border-neutral-200 rounded-lg shadow-xl p-3.5 w-60 animate-in fade-in zoom-in-95 duration-100 text-left">
+                          <p className="text-[11px] font-bold text-neutral-400 mb-2">选择要添加的题型：</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {['判断题', '填空题', '简答题', '思考题', '编程题'].map((type) => {
+                              const isAdded = typeOrder.includes(type);
+                              return (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  disabled={isAdded}
+                                  onClick={() => handleAddTypeSection(type)}
+                                  className={cn(
+                                    "px-2 py-1 text-xs rounded text-center transition-all font-semibold",
+                                    isAdded 
+                                      ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-transparent" 
+                                      : "bg-orange-50 text-[#fa541c] hover:bg-[#fa541c] hover:text-white border border-[#ffbb96]/40 cursor-pointer"
+                                  )}
+                                >
+                                  {type}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-6">
-                      {['随机选题', '固定选题'].map((sel) => (
-                        <label key={sel} className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 select-none group">
-                          <span className="relative flex items-center justify-center">
-                            <input 
-                              type="radio" 
-                              name="objSelection" 
-                              defaultChecked={sel === '固定选题'} 
-                              className="sr-only"
-                            />
-                            <span className={cn(
-                              "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                              sel === '固定选题' 
-                                ? "border-[#fa541c] bg-white" 
-                                : "border-neutral-300 group-hover:border-[#fa541c]"
-                            )}>
-                              {sel === '固定选题' && (
-                                <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
-                              )}
+                    {/* Bottom Summary */}
+                    <div className="flex items-center justify-between pt-4 border-t border-neutral-100 mt-6 w-full">
+                      <div className="text-[15px] font-bold text-[#fa541c]">
+                        总计：抽取数量 {displayCount} 题，总分 {displayScore.toFixed(1)} 分
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4 col-span-2 w-full">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pr-2 pt-1 select-none shrink-0 w-[100px]">
+                    <span className="text-[#fa541c] mr-1">*</span>试题配置：
+                  </label>
+                  <div className="space-y-4 w-full">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
+                        <p className="text-[10px] text-neutral-500 font-bold">选题数/总分数</p>
+                        <p className="text-sm font-black text-[#fa541c] mt-1">{totalCount} / {totalScore}</p>
+                      </div>
+                      <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
+                        <p className="text-[10px] text-neutral-500 font-bold">客观题数/分数</p>
+                        <p className="text-sm font-black text-[#fa541c] mt-1">{totalObjCount} / {totalObjScore}</p>
+                      </div>
+                      <div className="bg-[#fff2e8]/25 border border-[#ffbb96]/35 rounded-[8px] p-3 text-center transition-all hover:shadow-sm">
+                        <p className="text-[10px] text-neutral-500 font-bold">实训题数/分数</p>
+                        <p className="text-sm font-black text-[#fa541c] mt-1">{totalPracCount} / {totalPracScore}</p>
+                      </div>
+                    </div>
+
+                    {/* 客观题配置 */}
+                    <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
+                      <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                        <span className="text-[13px] font-bold text-neutral-850">客观题配置：</span>
+                        <Button 
+                          onClick={() => setIsConfigModalOpen(true)} 
+                          className={cn(
+                            "h-7 text-[11px] cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all flex items-center justify-center border-0",
+                            isObjConfigured
+                              ? "bg-[#fa541c] hover:bg-[#e84a15] text-white shadow-[#fa541c]/15"
+                              : "border border-[#fa541c] text-[#fa541c] bg-transparent hover:bg-[#fff2e8]"
+                          )}
+                        >
+                          配置
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-6">
+                        {['随机选题', '固定选题'].map((sel) => (
+                          <label key={sel} className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 select-none group">
+                            <span className="relative flex items-center justify-center">
+                              <input 
+                                type="radio" 
+                                name="objSelection" 
+                                defaultChecked={sel === '固定选题'} 
+                                className="sr-only"
+                              />
+                              <span className={cn(
+                                "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                                sel === '固定选题' 
+                                  ? "border-[#fa541c] bg-white" 
+                                  : "border-neutral-300 group-hover:border-[#fa541c]"
+                              )}>
+                                {sel === '固定选题' && (
+                                  <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
+                                )}
+                              </span>
                             </span>
-                          </span>
-                          <span className="font-semibold text-xs text-neutral-600 group-hover:text-[#fa541c] transition-colors">{sel}</span>
-                        </label>
-                      ))}
-                    </div>
+                            <span className="font-semibold text-xs text-neutral-600 group-hover:text-[#fa541c] transition-colors">{sel}</span>
+                          </label>
+                        ))}
+                      </div>
 
-                    {/* Table for Config Objective list */}
-                    <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
-                      <table className="w-full text-left border-collapse text-[11px]">
-                        <thead>
-                          <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
-                            <th className="p-2.5 font-bold">试题名称</th>
-                            <th className="p-2.5 font-bold">所属题库名称</th>
-                            <th className="p-2.5 font-bold">题型</th>
-                            <th className="p-2.5 font-bold w-12 text-center">操作</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {confirmedQuestions.length > 0 ? (
-                            confirmedQuestions.map((q: any) => (
-                              <tr key={q.id} className="border-b border-neutral-100 text-neutral-800 bg-white hover:bg-neutral-50/30 transition-colors">
-                                <td className="p-2.5 font-medium max-w-[200px] truncate" title={q.name}>{q.name}</td>
-                                <td className="p-2.5 text-neutral-500 max-w-[150px] truncate" title={q.bank}>{q.bank}</td>
-                                <td className="p-2.5 text-neutral-600">{q.type}</td>
-                                <td className="p-2.5 text-center">
-                                  <button 
-                                    onClick={() => handleRemoveConfirmedQuestion(q.id)}
-                                    className="text-red-500 hover:text-red-700 font-bold bg-transparent border-0 cursor-pointer p-0"
-                                  >
-                                    移除
-                                  </button>
+                      {/* Table for Config Objective list */}
+                      <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
+                        <table className="w-full text-left border-collapse text-[11px]">
+                          <thead>
+                            <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
+                              <th className="p-2.5 font-bold">试题名称</th>
+                              <th className="p-2.5 font-bold">所属题库名称</th>
+                              <th className="p-2.5 font-bold">题型</th>
+                              <th className="p-2.5 font-bold w-12 text-center">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {confirmedQuestions.length > 0 ? (
+                              confirmedQuestions.map((q: any) => (
+                                <tr key={q.id} className="border-b border-neutral-100 text-neutral-800 bg-white hover:bg-neutral-50/30 transition-colors">
+                                  <td className="p-2.5 font-medium max-w-[200px] truncate" title={q.name}>{q.name}</td>
+                                  <td className="p-2.5 text-neutral-500 max-w-[150px] truncate" title={q.bank}>{q.bank}</td>
+                                  <td className="p-2.5 text-neutral-600">{q.type}</td>
+                                  <td className="p-2.5 text-center">
+                                    <button 
+                                      onClick={() => handleRemoveConfirmedQuestion(q.id)}
+                                      className="text-red-500 hover:text-red-700 font-bold bg-transparent border-0 cursor-pointer p-0"
+                                    >
+                                      移除
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr className="border-b border-neutral-100/50 text-neutral-400">
+                                <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
+                                  <div className="flex flex-col items-center justify-center gap-2">
+                                    <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
+                                      <FileQuestion className="w-5 h-5 text-neutral-300" />
+                                    </div>
+                                    <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
+                                  </div>
                                 </td>
                               </tr>
-                            ))
-                          ) : (
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Aligned 2-column Grid list for question types */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-neutral-100/80 bg-neutral-50/15 p-2 rounded-[8px] border border-neutral-100">
+                        {[
+                          { label: '单选题', count: mcCount, setCount: setMcCount, score: mcScore, setScore: setMcScore },
+                          { label: '多选题', count: msCount, setCount: setMsCount, score: msScore, setScore: setMsScore },
+                          { label: '判断题', count: tfCount, setCount: setTfCount, score: tfScore, setScore: setTfScore },
+                          { label: '填空题', count: fbCount, setCount: setFbCount, score: fbScore, setScore: setFbScore },
+                          { label: '简答题', count: saCount, setCount: setSaCount, score: saScore, setScore: setSaScore },
+                          { label: '思考题', count: thCount, setCount: setThCount, score: thScore, setScore: setThScore },
+                          { label: '编程题', count: pgCount, setCount: setPgCount, score: pgScore, setScore: setPgScore },
+                        ].map((item) => (
+                          <div key={item.label} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white rounded-[4px] hover:bg-neutral-50/40 transition-colors border border-neutral-200/60 shadow-sm">
+                            <div className="flex items-center gap-1.5 w-14 flex-shrink-0">
+                              <span className="font-bold text-neutral-700">{item.label}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-1">
+                              <span className="text-neutral-455 font-semibold text-[10px]">选</span>
+                              <input 
+                                type="number" 
+                                min={0}
+                                value={item.count || ''} 
+                                onChange={(e) => item.setCount(Math.max(0, parseInt(e.target.value) || 0))}
+                                className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
+                              />
+                              <span className="text-neutral-555 text-[10px]">题</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-1">
+                              <span className="text-neutral-455 font-semibold text-[10px]">每</span>
+                              <input 
+                                type="number" 
+                                min={0}
+                                value={item.score || ''} 
+                                onChange={(e) => item.setScore(Math.max(0, parseInt(e.target.value) || 0))}
+                                className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
+                              />
+                              <span className="text-neutral-555 text-[10px]">分</span>
+                            </div>
+                            
+                            <div className="text-right w-16 flex-shrink-0 text-[11px]">
+                              <span className="text-neutral-400">总 </span>
+                              <span className="font-bold text-[#fa541c]">{item.count * item.score}</span>
+                              <span className="text-neutral-400 text-[9px]">分</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 实训题配置 */}
+                    <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
+                      <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                        <span className="text-[13px] font-bold text-neutral-850">实训题配置：</span>
+                        <Button variant="outline" type="button" className="h-7 text-[11px] border border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-transparent cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all">
+                          配置
+                        </Button>
+                      </div>
+
+                      <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
+                        <table className="w-full text-left border-collapse text-[11px]">
+                          <thead>
+                            <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
+                              <th className="p-2.5 font-bold">试题名称</th>
+                              <th className="p-2.5 font-bold">所属题库名称</th>
+                              <th className="p-2.5 font-bold">题型</th>
+                              <th className="p-2.5 font-bold w-12 text-center">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
                             <tr className="border-b border-neutral-100/50 text-neutral-400">
                               <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
                                 <div className="flex flex-col items-center justify-center gap-2">
@@ -1474,117 +1883,33 @@ export default function TeacherPapers() {
                                 </div>
                               </td>
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                          </tbody>
+                        </table>
+                      </div>
 
-                    {/* Aligned 2-column Grid list for question types */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-neutral-100/80 bg-neutral-50/15 p-2 rounded-[8px] border border-neutral-100">
-                      {[
-                        { label: '单选题', count: mcCount, setCount: setMcCount, score: mcScore, setScore: setMcScore },
-                        { label: '多选题', count: msCount, setCount: setMsCount, score: msScore, setScore: setMsScore },
-                        { label: '判断题', count: tfCount, setCount: setTfCount, score: tfScore, setScore: setTfScore },
-                        { label: '填空题', count: fbCount, setCount: setFbCount, score: fbScore, setScore: setFbScore },
-                        { label: '简答题', count: saCount, setCount: setSaCount, score: saScore, setScore: setSaScore },
-                        { label: '思考题', count: thCount, setCount: setThCount, score: thScore, setScore: setThScore },
-                        { label: '编程题', count: pgCount, setCount: setPgCount, score: pgScore, setScore: setPgScore },
-                      ].map((item) => (
-                        <div key={item.label} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white rounded-[4px] hover:bg-neutral-50/40 transition-colors border border-neutral-200/60 shadow-sm">
-                          <div className="flex items-center gap-1.5 w-14 flex-shrink-0">
-                            <span className="font-bold text-neutral-700">{item.label}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1">
-                            <span className="text-neutral-455 font-semibold text-[10px]">选</span>
-                            <input 
-                              type="number" 
-                              min={0}
-                              value={item.count || ''} 
-                              onChange={(e) => item.setCount(Math.max(0, parseInt(e.target.value) || 0))}
-                              className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
-                            />
-                            <span className="text-neutral-555 text-[10px]">题</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1">
-                            <span className="text-neutral-455 font-semibold text-[10px]">每</span>
-                            <input 
-                              type="number" 
-                              min={0}
-                              value={item.score || ''} 
-                              onChange={(e) => item.setScore(Math.max(0, parseInt(e.target.value) || 0))}
-                              className="w-11 h-6 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 text-[11px] font-bold focus:outline-none focus:border-[#fa541c]"
-                            />
-                            <span className="text-neutral-555 text-[10px]">分</span>
-                          </div>
-                          
-                          <div className="text-right w-16 flex-shrink-0 text-[11px]">
-                            <span className="text-neutral-400">总 </span>
-                            <span className="font-bold text-[#fa541c]">{item.count * item.score}</span>
-                            <span className="text-neutral-400 text-[9px]">分</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 实训题配置 */}
-                  <div className="border border-neutral-200/90 rounded-[8px] p-4 bg-white space-y-4 shadow-sm w-full">
-                    <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                      <span className="text-[13px] font-bold text-neutral-850">实训题配置：</span>
-                      <Button variant="outline" className="h-7 text-[11px] border border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] bg-transparent cursor-pointer rounded-[4px] px-3.5 font-bold shadow-sm transition-all">
-                        配置
-                      </Button>
-                    </div>
-
-                    <div className="border border-neutral-200/80 rounded-[8px] overflow-hidden shadow-sm">
-                      <table className="w-full text-left border-collapse text-[11px]">
-                        <thead>
-                          <tr className="bg-neutral-50/70 border-b border-neutral-200/80 text-neutral-500">
-                            <th className="p-2.5 font-bold">试题名称</th>
-                            <th className="p-2.5 font-bold">所属题库名称</th>
-                            <th className="p-2.5 font-bold">题型</th>
-                            <th className="p-2.5 font-bold w-12 text-center">操作</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-b border-neutral-100/50 text-neutral-400">
-                            <td colSpan={4} className="p-8 text-center bg-neutral-50/20">
-                              <div className="flex flex-col items-center justify-center gap-2">
-                                <div className="w-10 h-10 rounded-full bg-neutral-50 border border-neutral-100 flex items-center justify-center">
-                                  <FileQuestion className="w-5 h-5 text-neutral-300" />
-                                </div>
-                                <span className="text-[11px] font-semibold text-neutral-400 mt-1">暂无试题</span>
-                              </div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="flex items-center gap-2.5 text-xs pt-1.5">
-                      <span className="font-bold text-neutral-700">实训题 选取：</span>
-                      <input 
-                        type="number" 
-                        min={0}
-                        value={sxCount || ''} 
-                        onChange={(e) => setSxCount(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
-                      />
-                      <span className="text-neutral-555">题，每题</span>
-                      <input 
-                        type="number" 
-                        min={0}
-                        value={sxScore || ''} 
-                        onChange={(e) => setSxScore(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
-                      />
-                      <span className="text-neutral-500">分，总 <span className="font-bold text-[#fa541c]">{sxCount * sxScore}</span> 分</span>
+                      <div className="flex items-center gap-2.5 text-xs pt-1.5">
+                        <span className="font-bold text-neutral-700">实训题 选取：</span>
+                        <input 
+                          type="number" 
+                          min={0}
+                          value={sxCount || ''} 
+                          onChange={(e) => setSxCount(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
+                        />
+                        <span className="text-neutral-555">题，每题</span>
+                        <input 
+                          type="number" 
+                          min={0}
+                          value={sxScore || ''} 
+                          onChange={(e) => setSxScore(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-12 h-6.5 border border-neutral-200 rounded-[4px] text-center bg-white text-neutral-800 font-bold focus:outline-none focus:border-[#fa541c]"
+                        />
+                        <span className="text-neutral-500">分，总 <span className="font-bold text-[#fa541c]">{sxCount * sxScore}</span> 分</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* 附加分 */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
