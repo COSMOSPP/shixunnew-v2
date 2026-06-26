@@ -1494,7 +1494,12 @@ export default function TeacherPapers() {
                         name="paperType"
                         value={t}
                         checked={paperType === t}
-                        onChange={() => setPaperType(t)}
+                        onChange={() => {
+                          setPaperType(t);
+                          if (t === '作业' && paperSelectionMethod === '千人千卷') {
+                            setPaperSelectionMethod('随机抽题');
+                          }
+                        }}
                         className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
                       />
                       <span className="group-hover:text-[#fa541c] transition-colors font-medium">{t}</span>
@@ -1509,19 +1514,21 @@ export default function TeacherPapers() {
                   试题配置 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="flex gap-6 items-center w-full">
-                  {['随机抽题', '手动抽题', '千人千卷'].map((m) => (
-                    <label key={m} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
-                      <input
-                        type="radio"
-                        name="paperSelectionMethod"
-                        value={m}
-                        checked={paperSelectionMethod === m}
-                        onChange={() => setPaperSelectionMethod(m)}
-                        className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
-                      />
-                      <span className="group-hover:text-[#fa541c] transition-colors font-medium">{m}</span>
-                    </label>
-                  ))}
+                  {['随机抽题', '手动抽题', '千人千卷']
+                    .filter((m) => !(paperType === '作业' && m === '千人千卷'))
+                    .map((m) => (
+                      <label key={m} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                        <input
+                          type="radio"
+                          name="paperSelectionMethod"
+                          value={m}
+                          checked={paperSelectionMethod === m}
+                          onChange={() => setPaperSelectionMethod(m)}
+                          className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                        />
+                        <span className="group-hover:text-[#fa541c] transition-colors font-medium">{m}</span>
+                      </label>
+                    ))}
                 </div>
               </div>
 
