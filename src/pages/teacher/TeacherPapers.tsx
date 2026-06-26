@@ -5,6 +5,7 @@ import {
   Search, 
   HelpCircle, 
   ChevronDown, 
+  ChevronUp, 
   FileText, 
   FileQuestion, 
   ChevronRight, 
@@ -58,9 +59,38 @@ export default function TeacherPapers() {
   const [paperSelectionMethod, setPaperSelectionMethod] = useState('随机抽题');
 
   // Random Selection rules states
-  const [selectedQuestionBank, setSelectedQuestionBank] = useState('选择题库');
+  const [selectedQuestionBanks, setSelectedQuestionBanks] = useState<string[]>([]);
   const [typeOrder, setTypeOrder] = useState<string[]>(['单选题', '多选题', '实训题']);
-  const [showAddTypeSelect, setShowAddTypeSelect] = useState(false);
+  const [selectedAddType, setSelectedAddType] = useState('单选题');
+  const [isAddTypeDropdownOpen, setIsAddTypeDropdownOpen] = useState(false);
+  const addTypeDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Custom dropdown states & refs
+  const [isQuestionBankDropdownOpen, setIsQuestionBankDropdownOpen] = useState(false);
+  const [activeRuleTagDropdownId, setActiveRuleTagDropdownId] = useState<string | null>(null);
+  const [activeRuleDiffDropdownId, setActiveRuleDiffDropdownId] = useState<string | null>(null);
+
+  const bankDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+      if (bankDropdownRef.current && !bankDropdownRef.current.contains(target)) {
+        setIsQuestionBankDropdownOpen(false);
+      }
+      if (addTypeDropdownRef.current && !addTypeDropdownRef.current.contains(target)) {
+        setIsAddTypeDropdownOpen(false);
+      }
+      if (target instanceof HTMLElement && !target.closest('.rule-dropdown-container')) {
+        setActiveRuleTagDropdownId(null);
+        setActiveRuleDiffDropdownId(null);
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
   const [drawRules, setDrawRules] = useState<DrawRule[]>([
     { id: 'r1', type: '单选题', tag: '标签1', difficulty: '容易', count: '', maxAvailable: 3, score: '' },
     { id: 'r2', type: '单选题', tag: '标签2', difficulty: '困难', count: '', maxAvailable: 3, score: '' },
@@ -370,8 +400,9 @@ export default function TeacherPapers() {
     if (!typeOrder.includes(type)) {
       setTypeOrder(prev => [...prev, type]);
       handleAddRule(type);
+    } else {
+      alert('该题型已存在，请勿重复添加！');
     }
-    setShowAddTypeSelect(false);
   };
 
   const toggleRow = (id: number) => {
@@ -1363,7 +1394,7 @@ export default function TeacherPapers() {
           onClick={handleCloseCreateDrawer}
         >
           <div 
-            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
@@ -1384,8 +1415,8 @@ export default function TeacherPapers() {
             <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
               {/* 试卷名称 */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                  <span className="text-[#fa541c] mr-1">*</span>试卷名称：
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  试卷名称 <span className="text-[#fa541c]">*</span>
                 </label>
                 <input
                   type="text"
@@ -1398,7 +1429,9 @@ export default function TeacherPapers() {
 
               {/* 试卷说明 */}
               <div className="grid grid-cols-[100px_1fr] items-start gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2 pt-2">试卷说明：</label>
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                  试卷说明
+                </label>
                 <div className="relative w-full">
                   <textarea
                     value={paperDescription}
@@ -1414,36 +1447,21 @@ export default function TeacherPapers() {
 
               {/* 试卷类型 */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                  <span className="text-[#fa541c] mr-1">*</span>试卷类型：
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  试卷类型 <span className="text-[#fa541c]">*</span>
                 </label>
-                <div className="flex gap-6 items-center">
+                <div className="flex gap-6 items-center w-full">
                   {['作业', '考试'].map((t) => (
-                    <label key={t} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
-                      <span className="relative flex items-center justify-center">
-                        <input
-                          type="radio"
-                          name="paperType"
-                          value={t}
-                          checked={paperType === t}
-                          onChange={() => setPaperType(t)}
-                          className="sr-only"
-                        />
-                        <span className={cn(
-                          "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                          paperType === t 
-                            ? "border-[#fa541c] bg-white" 
-                            : "border-neutral-300 group-hover:border-[#fa541c]"
-                        )}>
-                          {paperType === t && (
-                            <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
-                          )}
-                        </span>
-                      </span>
-                      <span className={cn(
-                        "group-hover:text-[#fa541c] transition-colors font-medium text-xs",
-                        paperType === t ? "text-[#fa541c]" : "text-neutral-600"
-                      )}>{t}</span>
+                    <label key={t} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                      <input
+                        type="radio"
+                        name="paperType"
+                        value={t}
+                        checked={paperType === t}
+                        onChange={() => setPaperType(t)}
+                        className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                      />
+                      <span className="group-hover:text-[#fa541c] transition-colors font-medium">{t}</span>
                     </label>
                   ))}
                 </div>
@@ -1451,36 +1469,21 @@ export default function TeacherPapers() {
 
               {/* 试题配置 */}
               <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                  <span className="text-[#fa541c] mr-1">*</span>试题配置：
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  试题配置 <span className="text-[#fa541c]">*</span>
                 </label>
-                <div className="flex gap-6 items-center">
+                <div className="flex gap-6 items-center w-full">
                   {['随机抽题', '手动抽题'].map((m) => (
-                    <label key={m} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
-                      <span className="relative flex items-center justify-center">
-                        <input
-                          type="radio"
-                          name="paperSelectionMethod"
-                          value={m}
-                          checked={paperSelectionMethod === m}
-                          onChange={() => setPaperSelectionMethod(m)}
-                          className="sr-only"
-                        />
-                        <span className={cn(
-                          "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                          paperSelectionMethod === m 
-                            ? "border-[#fa541c] bg-white" 
-                            : "border-neutral-300 group-hover:border-[#fa541c]"
-                        )}>
-                          {paperSelectionMethod === m && (
-                            <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
-                          )}
-                        </span>
-                      </span>
-                      <span className={cn(
-                        "group-hover:text-[#fa541c] transition-colors font-medium text-xs",
-                        paperSelectionMethod === m ? "text-[#fa541c]" : "text-neutral-600"
-                      )}>{m}</span>
+                    <label key={m} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                      <input
+                        type="radio"
+                        name="paperSelectionMethod"
+                        value={m}
+                        checked={paperSelectionMethod === m}
+                        onChange={() => setPaperSelectionMethod(m)}
+                        className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                      />
+                      <span className="group-hover:text-[#fa541c] transition-colors font-medium">{m}</span>
                     </label>
                   ))}
                 </div>
@@ -1491,19 +1494,150 @@ export default function TeacherPapers() {
                 <>
                   {/* 所属试题库 */}
                   <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                    <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                      <span className="text-[#fa541c] mr-1">*</span>所属试题库：
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      所属试题库 <span className="text-[#fa541c]">*</span>
                     </label>
-                    <select 
-                      value={selectedQuestionBank}
-                      onChange={(e) => setSelectedQuestionBank(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white"
-                    >
-                      <option value="选择题库">选择题库</option>
-                      <option value="人工智能通识D-uni">人工智能通识D-uni</option>
-                      <option value="深度学习基础题库">深度学习基础题库</option>
-                      <option value="大语言模型进阶题库">大语言模型进阶题库</option>
-                    </select>
+                    <div ref={bankDropdownRef} className="relative w-full text-xs">
+                      <div
+                        onClick={() => setIsQuestionBankDropdownOpen(!isQuestionBankDropdownOpen)}
+                        className={cn(
+                          "min-h-[36px] w-full border border-neutral-200 rounded px-3.5 py-1.5 flex flex-wrap items-center gap-1.5 transition-all bg-white cursor-pointer select-none",
+                          isQuestionBankDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                        )}
+                      >
+                        {selectedQuestionBanks.length === 0 ? (
+                          <span className="text-neutral-400 select-none">请选择所属题库</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1.5 items-center w-full pr-8">
+                            {selectedQuestionBanks.map(bankName => (
+                              <span
+                                key={bankName}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-orange-50/60 border border-orange-100/70 text-xs text-[#fa541c] font-medium animate-in fade-in zoom-in-95 duration-100"
+                              >
+                                <span>{bankName}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedQuestionBanks(selectedQuestionBanks.filter(b => b !== bankName));
+                                  }}
+                                  className="hover:bg-[#fa541c]/10 rounded p-0.5 transition-colors cursor-pointer text-current flex items-center justify-center border-0 bg-transparent"
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isQuestionBankDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Dropdown Menu */}
+                      {isQuestionBankDropdownOpen && (
+                        <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                          <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                            {['人工智能通识D-uni', '深度学习基础题库', '大语言模型进阶题库'].map(bankName => {
+                              const isSelected = selectedQuestionBanks.includes(bankName);
+                              return (
+                                <div
+                                  key={bankName}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSelectedQuestionBanks(selectedQuestionBanks.filter(b => b !== bankName));
+                                    } else {
+                                      setSelectedQuestionBanks([...selectedQuestionBanks, bankName]);
+                                    }
+                                  }}
+                                  className={cn(
+                                    "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                    isSelected 
+                                      ? "bg-orange-50 text-[#fa541c] font-bold"
+                                      : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                                  )}
+                                >
+                                  <span>{bankName}</span>
+                                  {isSelected && (
+                                    <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 添加题型 */}
+                  <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                    <label className="text-[13px] font-bold text-[#262626] text-right">
+                      添加题型
+                    </label>
+                    <div className="flex items-center gap-3 w-full text-left">
+                      {/* Dropdown Menu Select */}
+                      <div ref={addTypeDropdownRef} className="relative w-48 text-xs">
+                        <div
+                          onClick={() => setIsAddTypeDropdownOpen(!isAddTypeDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            isAddTypeDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className="text-neutral-700 font-medium">
+                            {selectedAddType}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isAddTypeDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {isAddTypeDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {['单选题', '多选题', '判断题', '填空题', '简答题', '实训题'].map(type => {
+                                const isSelected = selectedAddType === type;
+                                return (
+                                  <div
+                                    key={type}
+                                    onClick={() => {
+                                      setSelectedAddType(type);
+                                      setIsAddTypeDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                      isSelected 
+                                        ? "bg-orange-50 text-[#fa541c] font-bold"
+                                        : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                                    )}
+                                  >
+                                    <span>{type}</span>
+                                    {isSelected && (
+                                      <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Add Button */}
+                      <Button 
+                        type="button"
+                        onClick={() => {
+                          handleAddTypeSection(selectedAddType);
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-4 rounded-[4px] border-0 cursor-pointer shadow-sm text-xs flex items-center gap-1 transition-all"
+                      >
+                        <Plus className="w-3 h-3" />
+                        添加题型
+                      </Button>
+                    </div>
                   </div>
 
                   {/* 抽题规则表 */}
@@ -1521,37 +1655,42 @@ export default function TeacherPapers() {
                               <Button 
                                 type="button" 
                                 onClick={() => handleAddRule(type)}
-                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3.5 rounded-[4px] border-0 cursor-pointer shadow-sm"
+                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3 rounded-[4px] border-0 cursor-pointer shadow-sm flex items-center gap-1 transition-all"
                               >
-                                抽题规则
+                                <Plus className="w-3 h-3" />
+                                添加规则
                               </Button>
                               <Button 
                                 type="button" 
+                                variant="outline"
                                 onClick={() => handleMoveTypeUp(type)}
-                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3.5 rounded-[4px] border-0 cursor-pointer shadow-sm"
+                                className="border border-neutral-200 text-neutral-600 hover:text-neutral-800 bg-white hover:bg-neutral-50 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
                               >
+                                <ChevronUp className="w-3.5 h-3.5 text-neutral-500" />
                                 上移
                               </Button>
                               <Button 
                                 type="button" 
+                                variant="outline"
                                 onClick={() => handleMoveTypeDown(type)}
-                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-7 text-[11px] font-bold px-3.5 rounded-[4px] border-0 cursor-pointer shadow-sm"
+                                className="border border-neutral-200 text-neutral-600 hover:text-neutral-800 bg-white hover:bg-neutral-50 h-7 text-[11px] font-medium px-2 rounded-[4px] cursor-pointer transition-all flex items-center gap-1 shadow-sm"
                               >
+                                <ChevronDown className="w-3.5 h-3.5 text-neutral-500" />
                                 下移
                               </Button>
                             </div>
                           </div>
 
                           {/* Table */}
-                          <div className="border border-neutral-200 rounded-[4px] overflow-hidden">
+                          <div className="border border-neutral-200 rounded-[4px] relative">
                             <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
                               <thead>
                                 <tr className="bg-neutral-50/70 border-b border-neutral-200 text-neutral-600 font-bold select-none">
-                                  <th className="p-3">抽取标签</th>
-                                  <th className="p-3">难易程度</th>
-                                  <th className="p-3 w-28 text-center">抽取数量</th>
-                                  <th className="p-3 w-20 text-center">最多可抽</th>
-                                  <th className="p-3 w-28 text-center">分值</th>
+                                  <th className="p-3 w-44">抽取标签</th>
+                                  <th className="p-3 w-28">难易程度</th>
+                                  <th className="p-3 w-24 text-center">抽取数量</th>
+                                  <th className="p-3 w-24 text-center">最多可抽</th>
+                                  <th className="p-3 w-24 text-center">分值</th>
                                   <th className="p-3 w-20 text-center">总分</th>
                                   <th className="p-3 w-20 text-center">操作</th>
                                 </tr>
@@ -1560,35 +1699,15 @@ export default function TeacherPapers() {
                                 {rulesOfType.map((rule) => (
                                   <tr key={rule.id} className="border-b border-neutral-100 bg-white hover:bg-neutral-50/30 transition-colors text-[12px]">
                                     {/* 抽取标签 */}
-                                    <td className="p-3 w-40">
-                                      <select 
-                                        value={rule.tag}
-                                        onChange={(e) => handleUpdateRule(rule.id, 'tag', e.target.value)}
-                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full"
-                                      >
-                                        <option value="标签1">标签1</option>
-                                        <option value="标签2">标签2</option>
-                                        <option value="深度学习">深度学习</option>
-                                        <option value="大模型">大模型</option>
-                                        <option value="神经网络">神经网络</option>
-                                      </select>
+                                    <td className="p-3 w-44 text-neutral-700 font-medium">
+                                      {rule.tag}
                                     </td>
                                     {/* 难易程度 */}
-                                    <td className="p-3 w-32">
-                                      <select 
-                                        value={rule.difficulty}
-                                        onChange={(e) => handleUpdateRule(rule.id, 'difficulty', e.target.value)}
-                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full"
-                                      >
-                                        <option value="容易">容易</option>
-                                        <option value="较易">较易</option>
-                                        <option value="中等">中等</option>
-                                        <option value="较难">较难</option>
-                                        <option value="困难">困难</option>
-                                      </select>
+                                    <td className="p-3 w-28 text-neutral-600">
+                                      {rule.difficulty}
                                     </td>
                                     {/* 抽取数量 */}
-                                    <td className="p-3">
+                                    <td className="p-3 w-24">
                                       <input 
                                         type="number"
                                         min={0}
@@ -1597,16 +1716,16 @@ export default function TeacherPapers() {
                                           const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
                                           handleUpdateRule(rule.id, 'count', val);
                                         }}
-                                        placeholder="请输入"
-                                        className="border border-neutral-200 rounded-[4px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
+                                        placeholder="0"
+                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
                                       />
                                     </td>
                                     {/* 最多可抽 */}
-                                    <td className="p-3 text-center text-neutral-700 font-bold font-mono">
+                                    <td className="p-3 w-24 text-center text-neutral-700 font-bold font-mono">
                                       {rule.maxAvailable}
                                     </td>
                                     {/* 分值 */}
-                                    <td className="p-3">
+                                    <td className="p-3 w-24">
                                       <input 
                                         type="number"
                                         min={0}
@@ -1615,16 +1734,16 @@ export default function TeacherPapers() {
                                           const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
                                           handleUpdateRule(rule.id, 'score', val);
                                         }}
-                                        placeholder="请输入"
+                                        placeholder="0"
                                         className="border border-neutral-200 rounded-[4px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
                                       />
                                     </td>
                                     {/* 总分 */}
-                                    <td className="p-3 text-center text-neutral-700 font-bold font-mono">
+                                    <td className="p-3 w-20 text-center text-neutral-700 font-bold font-mono">
                                       {Number(rule.count) && Number(rule.score) ? Number(rule.count) * Number(rule.score) : 0}
                                     </td>
                                     {/* 操作 - 移除 */}
-                                    <td className="p-3 text-center">
+                                    <td className="p-3 w-20 text-center">
                                       <button 
                                         type="button" 
                                         onClick={() => handleRemoveRule(rule.id)}
@@ -1638,7 +1757,7 @@ export default function TeacherPapers() {
                                 {rulesOfType.length === 0 && (
                                   <tr>
                                     <td colSpan={7} className="p-8 text-center text-neutral-400 select-none bg-neutral-50/10 text-xs">
-                                      暂无抽题规则，请点击右上角【抽题规则】添加
+                                      暂无抽题规则，请点击右上角【添加规则】添加
                                     </td>
                                   </tr>
                                 )}
@@ -1649,43 +1768,7 @@ export default function TeacherPapers() {
                       );
                     })}
 
-                    {/* 添加试题 Button */}
-                    <div className="flex flex-col items-center justify-center pt-2 relative w-full">
-                      <Button 
-                        type="button"
-                        onClick={() => setShowAddTypeSelect(!showAddTypeSelect)}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-[4px] border-0 cursor-pointer shadow-md shadow-orange-500/10 text-xs"
-                      >
-                        添加试题
-                      </Button>
 
-                      {showAddTypeSelect && (
-                        <div className="absolute top-12 z-20 bg-white border border-neutral-200 rounded-lg shadow-xl p-3.5 w-60 animate-in fade-in zoom-in-95 duration-100 text-left">
-                          <p className="text-[11px] font-bold text-neutral-400 mb-2">选择要添加的题型：</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {['判断题', '填空题', '简答题', '思考题', '编程题'].map((type) => {
-                              const isAdded = typeOrder.includes(type);
-                              return (
-                                <button
-                                  key={type}
-                                  type="button"
-                                  disabled={isAdded}
-                                  onClick={() => handleAddTypeSection(type)}
-                                  className={cn(
-                                    "px-2 py-1 text-xs rounded text-center transition-all font-semibold",
-                                    isAdded 
-                                      ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-transparent" 
-                                      : "bg-orange-50 text-[#fa541c] hover:bg-[#fa541c] hover:text-white border border-[#ffbb96]/40 cursor-pointer"
-                                  )}
-                                >
-                                  {type}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
 
                     {/* Bottom Summary */}
                     <div className="flex items-center justify-between pt-4 border-t border-neutral-100 mt-6 w-full">
@@ -1733,28 +1816,16 @@ export default function TeacherPapers() {
                         </Button>
                       </div>
 
-                      <div className="flex items-center gap-6">
+                      <div className="flex gap-6 items-center w-full">
                         {['随机选题', '固定选题'].map((sel) => (
-                          <label key={sel} className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 select-none group">
-                            <span className="relative flex items-center justify-center">
-                              <input 
-                                type="radio" 
-                                name="objSelection" 
-                                defaultChecked={sel === '固定选题'} 
-                                className="sr-only"
-                              />
-                              <span className={cn(
-                                "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                                sel === '固定选题' 
-                                  ? "border-[#fa541c] bg-white" 
-                                  : "border-neutral-300 group-hover:border-[#fa541c]"
-                              )}>
-                                {sel === '固定选题' && (
-                                  <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
-                                )}
-                              </span>
-                            </span>
-                            <span className="font-semibold text-xs text-neutral-600 group-hover:text-[#fa541c] transition-colors">{sel}</span>
+                          <label key={sel} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
+                            <input 
+                              type="radio" 
+                              name="objSelection" 
+                              defaultChecked={sel === '固定选题'} 
+                              className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white"
+                            />
+                            <span className="group-hover:text-[#fa541c] transition-colors font-medium">{sel}</span>
                           </label>
                         ))}
                       </div>
@@ -1911,104 +1982,7 @@ export default function TeacherPapers() {
                 </div>
               )}
 
-              {/* 附加分 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-neutral-800 text-right pr-2">附加分：</label>
-                <div className="flex items-center gap-3 text-xs text-neutral-700">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input 
-                      type="checkbox"
-                      checked={useAdditionalCredit}
-                      onChange={(e) => setUseAdditionalCredit(e.target.checked)}
-                      className="w-4 h-4 rounded-[4px] text-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer"
-                    />
-                    <span className="font-medium">使用附加分，最高附加</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    min={0}
-                    disabled={!useAdditionalCredit}
-                    value={additionalMaxScore || ''}
-                    onChange={(e) => setAdditionalMaxScore(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-12 h-6 border border-neutral-200 rounded-[4px] text-center py-0.5 bg-white disabled:bg-neutral-100 text-neutral-800 focus:outline-none focus:border-[#fa541c] font-bold"
-                  />
-                  <span className="text-neutral-500 font-medium">分</span>
-                </div>
-              </div>
 
-              {/* 权限配置 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                  <span className="text-[#fa541c] mr-1">*</span>权限：
-                </label>
-                <div className="flex gap-6 items-center pt-1.5">
-                  {['私有', '租户', '平台'].map((s) => (
-                    <label key={s} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
-                      <span className="relative flex items-center justify-center">
-                        <input
-                          type="radio"
-                          name="paperScope"
-                          value={s}
-                          checked={paperScope === s}
-                          onChange={() => setPaperScope(s)}
-                          className="sr-only"
-                        />
-                        <span className={cn(
-                          "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                          paperScope === s 
-                            ? "border-[#fa541c] bg-white" 
-                            : "border-neutral-300 group-hover:border-[#fa541c]"
-                        )}>
-                          {paperScope === s && (
-                            <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
-                          )}
-                        </span>
-                      </span>
-                      <span className={cn(
-                        "group-hover:text-[#fa541c] transition-colors font-medium text-xs",
-                        paperScope === s ? "text-[#fa541c]" : "text-neutral-600"
-                      )}>{s}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* 状态配置 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right pr-2">
-                  <span className="text-[#fa541c] mr-1">*</span>状态：
-                </label>
-                <div className="flex gap-6 items-center pt-1.5">
-                  {['启用', '停用'].map((st) => (
-                    <label key={st} className="flex items-center gap-2 cursor-pointer group text-xs text-neutral-700 select-none">
-                      <span className="relative flex items-center justify-center">
-                        <input
-                          type="radio"
-                          name="paperStatus"
-                          value={st}
-                          checked={paperStatus === st}
-                          onChange={() => setPaperStatus(st)}
-                          className="sr-only"
-                        />
-                        <span className={cn(
-                          "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                          paperStatus === st 
-                            ? "border-[#fa541c] bg-white" 
-                            : "border-neutral-300 group-hover:border-[#fa541c]"
-                        )}>
-                          {paperStatus === st && (
-                            <span className="w-2 h-2 rounded-full bg-[#fa541c]" />
-                          )}
-                        </span>
-                      </span>
-                      <span className={cn(
-                        "group-hover:text-[#fa541c] transition-colors font-medium text-xs",
-                        paperStatus === st ? "text-[#fa541c]" : "text-neutral-600"
-                      )}>{st}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Drawer Footer */}
