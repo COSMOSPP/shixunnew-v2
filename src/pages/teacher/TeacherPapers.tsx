@@ -348,8 +348,8 @@ export default function TeacherPapers() {
     return sum + (parseFloat(scoreStr) || 0);
   }, 0);
 
-  const displayCount = paperSelectionMethod === '随机抽题' ? drawRulesCount : manualCount;
-  const displayScore = paperSelectionMethod === '随机抽题' ? drawRulesScore : manualScore;
+  const displayCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? drawRulesCount : manualCount;
+  const displayScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? drawRulesScore : manualScore;
 
   const getRuleTypeCount = (type: string) => {
     return drawRules.filter(r => r.type === type).reduce((sum, r) => sum + (Number(r.count) || 0), 0);
@@ -515,7 +515,7 @@ export default function TeacherPapers() {
     setSxCount(p.sxCount || 0);
     setSxScore(p.sxScore || 0);
     
-    if ((p.selectionMethod || '随机抽题') === '随机抽题') {
+    if ((p.selectionMethod || '随机抽题') === '随机抽题' || p.selectionMethod === '千人千卷') {
       setSelectedQuestionBanks(['人工智能通识D-uni']);
       const types: string[] = [];
       const rules: DrawRule[] = [];
@@ -633,22 +633,22 @@ export default function TeacherPapers() {
       return;
     }
 
-    const finalMcCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('单选题') : mcCount;
-    const finalMcScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('单选题') : mcScore;
-    const finalMsCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('多选题') : msCount;
-    const finalMsScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('多选题') : msScore;
-    const finalTfCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('判断题') : tfCount;
-    const finalTfScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('判断题') : tfScore;
-    const finalFbCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('填空题') : fbCount;
-    const finalFbScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('填空题') : fbScore;
-    const finalSaCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('简答题') : saCount;
-    const finalSaScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('简答题') : saScore;
-    const finalThCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('思考题') : thCount;
-    const finalThScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('思考题') : thScore;
-    const finalPgCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('编程题') : pgCount;
-    const finalPgScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('编程题') : pgScore;
-    const finalSxCount = paperSelectionMethod === '随机抽题' ? getRuleTypeCount('实训题') : sxCount;
-    const finalSxScore = paperSelectionMethod === '随机抽题' ? getRuleTypeScore('实训题') : sxScore;
+    const finalMcCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('单选题') : mcCount;
+    const finalMcScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('单选题') : mcScore;
+    const finalMsCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('多选题') : msCount;
+    const finalMsScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('多选题') : msScore;
+    const finalTfCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('判断题') : tfCount;
+    const finalTfScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('判断题') : tfScore;
+    const finalFbCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('填空题') : fbCount;
+    const finalFbScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('填空题') : fbScore;
+    const finalSaCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('简答题') : saCount;
+    const finalSaScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('简答题') : saScore;
+    const finalThCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('思考题') : thCount;
+    const finalThScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('思考题') : thScore;
+    const finalPgCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('编程题') : pgCount;
+    const finalPgScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('编程题') : pgScore;
+    const finalSxCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeCount('实训题') : sxCount;
+    const finalSxScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? getRuleTypeScore('实训题') : sxScore;
 
     const activeTypesList = [];
     if (finalMcCount > 0) activeTypesList.push('单选题');
@@ -1509,7 +1509,7 @@ export default function TeacherPapers() {
                   试题配置 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="flex gap-6 items-center w-full">
-                  {['随机抽题', '手动抽题'].map((m) => (
+                  {['随机抽题', '手动抽题', '千人千卷'].map((m) => (
                     <label key={m} className="flex items-center gap-2.5 cursor-pointer group text-xs text-neutral-700">
                       <input
                         type="radio"
@@ -1526,7 +1526,7 @@ export default function TeacherPapers() {
               </div>
 
               {/* 试题配置 */}
-              {paperSelectionMethod === '随机抽题' ? (
+              {(paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? (
                 <>
                   {/* 所属试题库 */}
                   <div className="grid grid-cols-[100px_1fr] items-center gap-4">
@@ -1862,7 +1862,7 @@ export default function TeacherPapers() {
                   {/* 试题配置 - 添加试题按钮 row */}
                   <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                     <label className="text-[13px] font-bold text-[#262626] text-right">
-                      试题配置 <span className="text-[#fa541c]">*</span>
+                      配置 <span className="text-[#fa541c]">*</span>
                     </label>
                     <div className="flex justify-start w-full">
                       <Button
