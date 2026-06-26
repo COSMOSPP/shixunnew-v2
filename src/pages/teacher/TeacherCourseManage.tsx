@@ -1406,10 +1406,30 @@ export default function TeacherCourseManage() {
 
       {/* 新建作业 Modal (Figure 1 Design) */}
       {(showCreateTaskModal || showEditTaskModal) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/40 backdrop-blur-sm animation-fade-in pr-0">
-          <div className="bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.1)] w-full max-w-[600px] h-full flex flex-col animation-slide-left">
-            <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-[18px] font-bold text-neutral-900">{editingAssignmentId ? "编辑作业" : "新建作业"}</h2>
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => { 
+            setShowCreateTaskModal(false); 
+            setShowEditTaskModal(false); 
+            setEditingAssignmentId(null);
+            setSelectedPaperName('');
+            setTaskTitle('');
+            setTaskPublishTime('2026-05-21T14:29');
+            setTaskDeadline('');
+            setAssignTarget('all');
+            setSelectedAssignStudentUsernames([]);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0 text-left">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                {editingAssignmentId ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />}
+                {editingAssignmentId ? "编辑作业" : "新建作业"}
+              </h2>
               <button 
                 onClick={() => { 
                   setShowCreateTaskModal(false); 
@@ -1422,44 +1442,54 @@ export default function TeacherCourseManage() {
                   setAssignTarget('all');
                   setSelectedAssignStudentUsernames([]);
                 }} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 p-1.5 rounded-[4px] transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
             
-            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
+            {/* Body */}
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
               {/* 基础信息 */}
-              <div className="space-y-6">
-                <h3 className="text-[15px] font-bold text-neutral-900">基础信息</h3>
+              <div className="space-y-4">
+                <h3 className="text-[13px] font-bold text-[#262626] flex items-center gap-1.5 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
+                  基础信息
+                </h3>
+                
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 作业名称：</label>
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    作业名称 <span className="text-[#fa541c]">*</span>
+                  </label>
                   <input 
                     type="text" 
-                    className="w-full border border-neutral-200 rounded-[4px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]" 
-                    placeholder="请输入" 
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all text-neutral-700" 
+                    placeholder="请输入作业名称" 
                     value={taskTitle}
                     onChange={(e) => setTaskTitle(e.target.value)}
                   />
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 选择试卷：</label>
-                  <div className="text-[14px] flex items-center gap-3">
-                    <span className={selectedPaperName ? "text-neutral-900 font-medium" : "text-neutral-400"}>
-                      {selectedPaperName || "未选择"}
-                    </span>
-                    <span 
-                      onClick={() => setShowSelectPaperModal(true)} 
-                      className="text-[#fa541c] hover:text-[#e84a15] cursor-pointer font-medium"
-                    >
-                      {selectedPaperName ? "重新选择" : "请选择"}
-                    </span>
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    选择试卷 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div
+                    onClick={() => setShowSelectPaperModal(true)}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none hover:border-[#fa541c]",
+                      selectedPaperName ? "text-neutral-700 font-medium animate-fade-in" : "text-neutral-400 text-xs"
+                    )}
+                  >
+                    <span>{selectedPaperName || "请选择试卷"}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 发布时间：</label>
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    发布时间 <span className="text-[#fa541c]">*</span>
+                  </label>
                   <DateTimePicker 
                     value={taskPublishTime}
                     onChange={(val) => setTaskPublishTime(val)}
@@ -1468,7 +1498,9 @@ export default function TeacherCourseManage() {
                 </div>
 
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right"><span className="text-[#fa541c]">*</span> 截止时间：</label>
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    截止时间 <span className="text-[#fa541c]">*</span>
+                  </label>
                   <DateTimePicker 
                     value={taskDeadline}
                     onChange={(val) => setTaskDeadline(val)}
@@ -1478,55 +1510,61 @@ export default function TeacherCourseManage() {
               </div>
 
               {/* 分配人员 */}
-              <div className="space-y-6 pt-6 border-t border-neutral-100">
-                <h3 className="text-[15px] font-bold text-neutral-900">分配人员</h3>
+              <div className="space-y-4 pt-4 border-t border-neutral-100">
+                <h3 className="text-[13px] font-bold text-[#262626] flex items-center gap-1.5 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
+                  分配人员
+                </h3>
+                
                 <div className="grid grid-cols-[100px_1fr] items-start gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right mt-1"><span className="text-[#fa541c]">*</span> 分配至：</label>
-                  <div className="space-y-4 text-[14px] text-neutral-700">
-                    <label className="flex items-center gap-2 cursor-pointer group">
+                  <label className="text-[13px] font-bold text-[#262626] text-right mt-0.5">
+                    分配至 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="flex gap-6 items-center w-full text-xs text-neutral-700">
+                    <label className="flex items-center gap-2.5 cursor-pointer group">
                       <input 
                         type="radio" 
                         name="assign" 
                         value="all"
                         checked={assignTarget === 'all'}
                         onChange={() => setAssignTarget('all')}
-                        className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer accent-[#fa541c]" 
+                        className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white" 
                       />
-                      <span>全部学生</span>
+                      <span className="group-hover:text-[#fa541c] transition-colors font-medium">全部学生</span>
                     </label>
                     <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer group">
+                      <label className="flex items-center gap-2.5 cursor-pointer group">
                         <input 
                           type="radio" 
                           name="assign" 
                           value="partial"
                           checked={assignTarget === 'partial'}
                           onChange={() => setAssignTarget('partial')}
-                          className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer accent-[#fa541c]" 
+                          className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white" 
                         />
-                        <span>部分学生</span>
+                        <span className="group-hover:text-[#fa541c] transition-colors font-medium">部分学生</span>
                       </label>
                       {assignTarget === 'partial' ? (
-                        <>
-                          <span className={selectedAssignStudentUsernames.length > 0 ? "text-neutral-900 font-medium animate-fade-in" : "text-neutral-400"}>
-                            {selectedAssignStudentUsernames.length > 0 ? `已选择 ${selectedAssignStudentUsernames.length} 人` : '未选择'}
+                        <div className="flex items-center gap-2 animate-fade-in">
+                          <span className={cn("text-xs font-semibold px-2 py-0.5 rounded bg-orange-50 border border-orange-100 text-[#fa541c]", selectedAssignStudentUsernames.length > 0 ? "" : "opacity-50")}>
+                            {selectedAssignStudentUsernames.length > 0 ? `已选 ${selectedAssignStudentUsernames.length} 人` : '未选择'}
                           </span>
                           <span 
                             onClick={() => {
                               setTempSelectedStudents(selectedAssignStudentUsernames);
-                              setStudentModalPage(2); // default to page 2 per Figure 2 mockup
+                              setStudentModalPage(2);
                               setShowSelectStudentModal(true);
                             }} 
-                            className="text-[#fa541c] cursor-pointer hover:text-[#e84a15] font-medium"
+                            className="text-[#fa541c] cursor-pointer hover:text-[#e84a15] font-bold text-xs"
                           >
-                            {selectedAssignStudentUsernames.length > 0 ? '修改' : '添加'}
+                            {selectedAssignStudentUsernames.length > 0 ? '[ 修改 ]' : '[ 添加 ]'}
                           </span>
-                        </>
+                        </div>
                       ) : (
-                        <>
-                          <span className="text-neutral-400">未选择</span>
-                          <span className="text-neutral-300 cursor-not-allowed">添加</span>
-                        </>
+                        <div className="flex items-center gap-2 opacity-40 select-none">
+                          <span className="text-xs px-2 py-0.5 rounded bg-neutral-50 border border-neutral-200 text-neutral-400">未选择</span>
+                          <span className="text-neutral-400 text-xs font-medium cursor-not-allowed">[ 添加 ]</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1534,21 +1572,26 @@ export default function TeacherCourseManage() {
               </div>
 
               {/* 通知提醒 */}
-              <div className="space-y-6 pt-6 border-t border-neutral-100">
-                <h3 className="text-[15px] font-bold text-neutral-900">通知提醒</h3>
+              <div className="space-y-4 pt-4 border-t border-neutral-100">
+                <h3 className="text-[13px] font-bold text-[#262626] flex items-center gap-1.5 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
+                  通知提醒
+                </h3>
+                
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[14px] text-neutral-700 text-right">站内通知：</label>
+                  <label className="text-[13px] font-bold text-[#262626] text-right">站内通知</label>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-5 bg-[#fa541c] rounded-full relative cursor-pointer shadow-inner">
-                      <div className="w-4 h-4 bg-white rounded-full absolute top-0.5 right-0.5 shadow-sm"></div>
+                    <div className="w-9 h-5 bg-[#fa541c] rounded-full relative cursor-pointer shadow-inner transition-colors duration-200">
+                      <div className="w-4 h-4 bg-white rounded-full absolute top-0.5 right-0.5 shadow-sm transition-all duration-200"></div>
                     </div>
-                    <span className="text-[14px] text-neutral-600">推送相关学生 and 教师</span>
+                    <span className="text-xs text-neutral-500 font-medium">推送相关学生与教师</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border-t border-neutral-100 bg-white shrink-0 flex justify-end gap-3">
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
               <Button 
                 onClick={() => { 
                   setShowCreateTaskModal(false); 
@@ -1562,7 +1605,7 @@ export default function TeacherCourseManage() {
                   setSelectedAssignStudentUsernames([]);
                 }} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 rounded-[4px]"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded-[4px] cursor-pointer bg-white"
               >
                 取消
               </Button>
