@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Plus, 
   Search, 
@@ -37,6 +37,7 @@ interface DrawRule {
 
 export default function TeacherPapers() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [expandedRow, setExpandedRow] = useState<number | null>(1);
   const [selectedPapers, setSelectedPapers] = useState<number[]>([]);
   const [view, setView] = useState<'list' | 'preview'>('list');
@@ -626,6 +627,15 @@ export default function TeacherPapers() {
     });
     setManualTypeOrder([]);
   };
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      // Clear navigation state to prevent re-opening on back/refresh
+      navigate(location.pathname, { replace: true, state: {} });
+      handleCloseCreateDrawer();
+      setIsCreateOpen(true);
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const handleSavePaper = () => {
     if (!paperName.trim()) {

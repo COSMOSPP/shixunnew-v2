@@ -882,7 +882,6 @@ export default function TeacherCourseManage() {
                                 <tr key={task.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
                                   <td className="p-4 text-neutral-800">
                                     <div className="font-bold">{task.title}</div>
-                                    <div className="text-[11px] text-neutral-400 mt-0.5">满分: 100</div>
                                   </td>
                                   <td className="p-4 text-neutral-600 font-medium">{task.paperName}</td>
                                   <td className="p-4 text-neutral-500">{task.publishTime}</td>
@@ -929,7 +928,7 @@ export default function TeacherCourseManage() {
                                             }
                                           });
                                         }}
-                                        className="text-red-500 hover:text-red-700 font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                                        className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
                                       >
                                         删除
                                       </button>
@@ -1407,7 +1406,7 @@ export default function TeacherCourseManage() {
       {/* 新建作业 Modal (Figure 1 Design) */}
       {(showCreateTaskModal || showEditTaskModal) && (
         <div 
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
           onClick={() => { 
             setShowCreateTaskModal(false); 
             setShowEditTaskModal(false); 
@@ -1421,7 +1420,7 @@ export default function TeacherCourseManage() {
           }}
         >
           <div 
-            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -1449,43 +1448,39 @@ export default function TeacherCourseManage() {
             </div>
             
             {/* Body */}
-            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
-              {/* 基础信息 */}
-              <div className="space-y-4">
-                <h3 className="text-[13px] font-bold text-[#262626] flex items-center gap-1.5 mb-4">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
-                  基础信息
-                </h3>
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white text-left text-[13px]">
+              <div className="space-y-6 py-2">
                 
+                {/* 作业名称 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     作业名称 <span className="text-[#fa541c]">*</span>
                   </label>
                   <input 
                     type="text" 
-                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white transition-all text-neutral-700" 
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626] bg-white" 
                     placeholder="请输入作业名称" 
                     value={taskTitle}
                     onChange={(e) => setTaskTitle(e.target.value)}
                   />
                 </div>
 
+                {/* 选择试卷 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     选择试卷 <span className="text-[#fa541c]">*</span>
                   </label>
-                  <div
-                    onClick={() => setShowSelectPaperModal(true)}
-                    className={cn(
-                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none hover:border-[#fa541c]",
-                      selectedPaperName ? "text-neutral-700 font-medium animate-fade-in" : "text-neutral-400 text-xs"
-                    )}
-                  >
-                    <span>{selectedPaperName || "请选择试卷"}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                  <div className="text-left">
+                    <span
+                      onClick={() => setShowSelectPaperModal(true)}
+                      className="text-[#fa541c] hover:text-[#e84a15] font-bold text-[13px] cursor-pointer hover:underline transition-colors inline-block"
+                    >
+                      {selectedPaperName || "选择试卷"}
+                    </span>
                   </div>
                 </div>
 
+                {/* 发布时间 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     发布时间 <span className="text-[#fa541c]">*</span>
@@ -1494,9 +1489,11 @@ export default function TeacherCourseManage() {
                     value={taskPublishTime}
                     onChange={(val) => setTaskPublishTime(val)}
                     placeholder="请选择发布时间"
+                    className="text-[13px]"
                   />
                 </div>
 
+                {/* 截止时间 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     截止时间 <span className="text-[#fa541c]">*</span>
@@ -1505,48 +1502,42 @@ export default function TeacherCourseManage() {
                     value={taskDeadline}
                     onChange={(val) => setTaskDeadline(val)}
                     placeholder="请选择截止时间"
+                    className="text-[13px]"
                   />
                 </div>
-              </div>
 
-              {/* 分配人员 */}
-              <div className="space-y-4 pt-4 border-t border-neutral-100">
-                <h3 className="text-[13px] font-bold text-[#262626] flex items-center gap-1.5 mb-4">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
-                  分配人员
-                </h3>
-                
+                {/* 分配人员 */}
                 <div className="grid grid-cols-[100px_1fr] items-start gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right mt-0.5">
-                    分配至 <span className="text-[#fa541c]">*</span>
+                    分配人员 <span className="text-[#fa541c]">*</span>
                   </label>
-                  <div className="flex gap-6 items-center w-full text-xs text-neutral-700">
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <div className="flex gap-6 items-center w-full text-[13px] text-neutral-700">
+                    <label className="flex items-center gap-2 select-none cursor-pointer group">
                       <input 
                         type="radio" 
                         name="assign" 
                         value="all"
                         checked={assignTarget === 'all'}
                         onChange={() => setAssignTarget('all')}
-                        className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white" 
+                        className="w-4 h-4 accent-[#fa541c] cursor-pointer" 
                       />
                       <span className="group-hover:text-[#fa541c] transition-colors font-medium">全部学生</span>
                     </label>
                     <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-2.5 cursor-pointer group">
+                      <label className="flex items-center gap-2 select-none cursor-pointer group">
                         <input 
                           type="radio" 
                           name="assign" 
                           value="partial"
                           checked={assignTarget === 'partial'}
                           onChange={() => setAssignTarget('partial')}
-                          className="w-4 h-4 text-[#fa541c] accent-[#fa541c] border-neutral-300 focus:ring-[#fa541c] cursor-pointer bg-white" 
+                          className="w-4 h-4 accent-[#fa541c] cursor-pointer" 
                         />
                         <span className="group-hover:text-[#fa541c] transition-colors font-medium">部分学生</span>
                       </label>
                       {assignTarget === 'partial' ? (
                         <div className="flex items-center gap-2 animate-fade-in">
-                          <span className={cn("text-xs font-semibold px-2 py-0.5 rounded bg-orange-50 border border-orange-100 text-[#fa541c]", selectedAssignStudentUsernames.length > 0 ? "" : "opacity-50")}>
+                          <span className={cn("text-[12px] font-semibold px-2 py-0.5 rounded bg-orange-50 border border-orange-100 text-[#fa541c]", selectedAssignStudentUsernames.length > 0 ? "" : "opacity-50")}>
                             {selectedAssignStudentUsernames.length > 0 ? `已选 ${selectedAssignStudentUsernames.length} 人` : '未选择'}
                           </span>
                           <span 
@@ -1562,22 +1553,15 @@ export default function TeacherCourseManage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 opacity-40 select-none">
-                          <span className="text-xs px-2 py-0.5 rounded bg-neutral-50 border border-neutral-200 text-neutral-400">未选择</span>
+                          <span className="text-[12px] px-2 py-0.5 rounded bg-neutral-50 border border-neutral-200 text-neutral-400">未选择</span>
                           <span className="text-neutral-400 text-xs font-medium cursor-not-allowed">[ 添加 ]</span>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 通知提醒 */}
-              <div className="space-y-4 pt-4 border-t border-neutral-100">
-                <h3 className="text-[13px] font-bold text-[#262626] flex items-center gap-1.5 mb-4">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c]"></span>
-                  通知提醒
-                </h3>
-                
+                {/* 站内通知 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">站内通知</label>
                   <div className="flex items-center gap-3">
@@ -1587,6 +1571,7 @@ export default function TeacherCourseManage() {
                     <span className="text-xs text-neutral-500 font-medium">推送相关学生与教师</span>
                   </div>
                 </div>
+
               </div>
             </div>
 
@@ -1605,7 +1590,7 @@ export default function TeacherCourseManage() {
                   setSelectedAssignStudentUsernames([]);
                 }} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded-[4px] cursor-pointer bg-white"
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
               >
                 取消
               </Button>
@@ -1660,7 +1645,7 @@ export default function TeacherCourseManage() {
                   setAssignTarget('all');
                   setSelectedAssignStudentUsernames([]);
                 }} 
-                className={cn("text-white font-bold h-9 px-6 rounded-[4px]", (selectedPaperName && taskTitle) ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}
+                className={cn("text-white h-9 px-8 rounded-[4px] text-[13px] border-0 cursor-pointer transition-colors font-semibold shadow-sm", (selectedPaperName && taskTitle) ? "bg-[#fa541c] hover:bg-[#e84a15]" : "bg-neutral-200 cursor-not-allowed")}
               >
                 {editingAssignmentId ? "保存作业" : "发布作业"}
               </Button>
@@ -1672,14 +1657,14 @@ export default function TeacherCourseManage() {
       {/* 选择试卷 Modal (Figure 1 Design) */}
       {showSelectPaperModal && (
         <div 
-          className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left"
           onClick={() => {
             setSelectedPaperName(tempSelectedPaper);
             setShowSelectPaperModal(false);
           }}
         >
           <div 
-            className="bg-white w-full max-w-[900px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            className="bg-white w-full max-w-[900px] max-h-[85vh] rounded-xl overflow-hidden flex flex-col shadow-2xl border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -1687,117 +1672,118 @@ export default function TeacherCourseManage() {
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#fa541c]" /> 选择试卷
               </h2>
-              <div className="flex items-center gap-3">
+              <button 
+                onClick={() => {
+                  setSelectedPaperName(tempSelectedPaper);
+                  setShowSelectPaperModal(false);
+                }} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Table Content */}
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white">
+              <div className="mb-4 flex justify-end">
                 <Button 
                   onClick={() => {
-                    const newPaperName = `新建作业试卷-${Math.floor(Math.random() * 100) + 1}`;
-                    setSelectedPaperName(newPaperName);
+                    navigate('/teacher/papers', { state: { openCreate: true } });
                   }}
                   className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] font-bold text-[12px] px-3.5 h-8 transition-colors shrink-0"
                 >
                   新建试卷
                 </Button>
-                <button 
-                  onClick={() => {
-                    setSelectedPaperName(tempSelectedPaper);
-                    setShowSelectPaperModal(false);
-                  }} 
-                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
-            </div>
-
-            {/* Table Content */}
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white">
-              <table className="w-full text-left border-collapse whitespace-nowrap">
-                <thead>
-                  <tr className="border-b border-neutral-150 bg-white text-[13px] text-neutral-600">
-                    <th className="p-4 font-medium w-[50px] text-center"></th>
-                    <th className="p-4 font-medium text-left">试卷名称</th>
-                    <th className="p-4 font-medium text-center w-[100px]">题目数量</th>
-                    <th className="p-4 font-medium text-center w-[120px]">抽题方式</th>
-                    <th className="p-4 font-medium text-left">包含题型</th>
-                    <th className="p-4 font-medium text-center w-[100px]">试卷分数</th>
-                    <th className="p-4 font-medium text-center w-[120px]">创建人</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(MOCK_PAPERS_PAGED[paperModalPage] || []).map((paper, i) => (
-                    <tr 
-                      key={i} 
-                      className={cn(
-                        "border-b border-neutral-100 hover:bg-neutral-50/30 cursor-pointer transition-colors text-[13px] text-neutral-700",
-                        selectedPaperName === paper.name ? "bg-orange-50/10" : ""
-                      )}
-                      onClick={() => setSelectedPaperName(paper.name)}
-                    >
-                      <td className="p-4 text-center">
-                        <input 
-                          type="radio" 
-                          name="paperSelect" 
-                          checked={selectedPaperName === paper.name} 
-                          onChange={() => setSelectedPaperName(paper.name)}
-                          className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer accent-[#fa541c] mx-auto" 
-                        />
-                      </td>
-                      <td className="p-4 text-left font-medium text-neutral-900">{paper.name}</td>
-                      <td className="p-4 text-center">{paper.count}</td>
-                      <td className="p-4 text-center">{paper.method}</td>
-                      <td className="p-4 text-left text-neutral-600 max-w-[280px] truncate" title={paper.types}>{paper.types}</td>
-                      <td className="p-4 text-center font-semibold text-neutral-850">{paper.score}</td>
-                      <td className="p-4 text-center text-neutral-500">{paper.creator}</td>
+              <div className="bg-white rounded overflow-hidden border border-neutral-200">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead>
+                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                      <th className="p-4 font-medium w-[50px] text-center"></th>
+                      <th className="p-4 font-medium text-left">试卷名称</th>
+                      <th className="p-4 font-medium text-center w-[100px]">题目数量</th>
+                      <th className="p-4 font-medium text-center w-[120px]">抽题方式</th>
+                      <th className="p-4 font-medium text-left">包含题型</th>
+                      <th className="p-4 font-medium text-center w-[100px]">试卷分数</th>
+                      <th className="p-4 font-medium text-center w-[120px]">创建人</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {(MOCK_PAPERS_PAGED[paperModalPage] || []).map((paper, i) => (
+                      <tr 
+                        key={i} 
+                        className={cn(
+                          "border-b border-neutral-100 hover:bg-neutral-50/30 cursor-pointer transition-colors text-[13px] text-neutral-700",
+                          selectedPaperName === paper.name ? "bg-orange-50/10" : ""
+                        )}
+                        onClick={() => setSelectedPaperName(paper.name)}
+                      >
+                        <td className="p-4 text-center">
+                          <input 
+                            type="radio" 
+                            name="paperSelect" 
+                            checked={selectedPaperName === paper.name} 
+                            onChange={() => setSelectedPaperName(paper.name)}
+                            className="w-4 h-4 text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 cursor-pointer accent-[#fa541c] mx-auto" 
+                          />
+                        </td>
+                        <td className="p-4 text-left font-medium text-neutral-900">{paper.name}</td>
+                        <td className="p-4 text-center">{paper.count}</td>
+                        <td className="p-4 text-center">{paper.method}</td>
+                        <td className="p-4 text-left text-neutral-600 max-w-[280px] truncate" title={paper.types}>{paper.types}</td>
+                        <td className="p-4 text-center font-semibold text-neutral-850">{paper.score}</td>
+                        <td className="p-4 text-center text-neutral-500">{paper.creator}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Pagination Component */}
-            <div className="flex items-center justify-end px-6 py-4 bg-transparent border-t border-neutral-100 gap-4 mt-2 select-none shrink-0">
-              <span className="text-[13px] text-neutral-500 font-medium">共 20 条</span>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
-                  disabled={paperModalPage === 1}
-                  onClick={() => setPaperModalPage(p => Math.max(1, p - 1))}
-                >
-                  &lt;
-                </Button>
-                {[1, 2, 3, 4, 5].map((pageNum) => (
+              {/* Pagination Component */}
+              <div className="flex items-center justify-end py-4 bg-transparent gap-4 mt-2 select-none">
+                <span className="text-[13px] text-neutral-500 font-medium">共 20 条</span>
+                <div className="flex items-center gap-2">
                   <Button 
-                    key={pageNum}
                     variant="outline" 
                     size="sm" 
-                    className={cn(
-                      "h-7 w-7 p-0 rounded-[4px] font-bold text-[12px]",
-                      paperModalPage === pageNum 
-                        ? "bg-[#fa541c] text-white border-[#fa541c]" 
-                        : "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-200"
-                    )}
-                    onClick={() => setPaperModalPage(pageNum)}
+                    className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
+                    disabled={paperModalPage === 1}
+                    onClick={() => setPaperModalPage(p => Math.max(1, p - 1))}
                   >
-                    {pageNum}
+                    &lt;
                   </Button>
-                ))}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
-                  disabled={paperModalPage === 5}
-                  onClick={() => setPaperModalPage(p => Math.min(5, p + 1))}
-                >
-                  &gt;
-                </Button>
+                  {[1, 2, 3, 4, 5].map((pageNum) => (
+                    <Button 
+                      key={pageNum}
+                      variant="outline" 
+                      size="sm" 
+                      className={cn(
+                        "h-7 w-7 p-0 rounded-[4px] font-bold text-[12px]",
+                        paperModalPage === pageNum 
+                          ? "bg-[#fa541c] text-white border-[#fa541c]" 
+                          : "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-200"
+                      )}
+                      onClick={() => setPaperModalPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  ))}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
+                    disabled={paperModalPage === 5}
+                    onClick={() => setPaperModalPage(p => Math.min(5, p + 1))}
+                  >
+                    &gt;
+                  </Button>
+                </div>
+                <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
+                  <option>10 条/页</option>
+                  <option>20 条/页</option>
+                  <option>50 条/页</option>
+                </select>
               </div>
-              <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
-                <option>10 条/页</option>
-                <option>20 条/页</option>
-                <option>50 条/页</option>
-              </select>
             </div>
 
             {/* Footer Actions */}
@@ -1830,14 +1816,14 @@ export default function TeacherCourseManage() {
       {/* 选择学生 Modal (Figure 2 Design) */}
       {showSelectStudentModal && (
         <div 
-          className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left"
           onClick={() => {
             setSelectedAssignStudentUsernames(tempSelectedStudents);
             setShowSelectStudentModal(false);
           }}
         >
           <div 
-            className="bg-white w-full max-w-[800px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            className="bg-white w-full max-w-[800px] max-h-[85vh] rounded-xl overflow-hidden flex flex-col shadow-2xl border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -1858,132 +1844,134 @@ export default function TeacherCourseManage() {
 
             {/* Table Content */}
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white">
-              <table className="w-full text-left border-collapse whitespace-nowrap">
-                <thead>
-                  <tr className="border-b border-neutral-150 bg-white text-[13px] text-neutral-600">
-                    <th className="p-4 font-medium w-[50px] text-center">
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          const currentPageStudents = MOCK_STUDENTS_PAGED[studentModalPage] || [];
-                          const isAllCurrentSelected = currentPageStudents.every(s => selectedAssignStudentUsernames.includes(s.username));
-                          if (isAllCurrentSelected) {
-                            // Deselect all on current page
-                            const toRemove = currentPageStudents.map(s => s.username);
-                            setSelectedAssignStudentUsernames(prev => prev.filter(u => !toRemove.includes(u)));
-                          } else {
-                            // Select all on current page
-                            const toAdd = currentPageStudents.map(s => s.username).filter(u => !selectedAssignStudentUsernames.includes(u));
-                            setSelectedAssignStudentUsernames(prev => [...prev, ...toAdd]);
-                          }
-                        }}
-                        className={cn(
-                          "w-4 h-4 rounded-[3px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                          (MOCK_STUDENTS_PAGED[studentModalPage] || []).length > 0 && 
-                          (MOCK_STUDENTS_PAGED[studentModalPage] || []).every(s => selectedAssignStudentUsernames.includes(s.username))
-                            ? "bg-[#fa541c] border-[#fa541c] text-white"
-                            : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                        )}
-                      >
-                        {(MOCK_STUDENTS_PAGED[studentModalPage] || []).length > 0 && 
-                         (MOCK_STUDENTS_PAGED[studentModalPage] || []).every(s => selectedAssignStudentUsernames.includes(s.username)) && 
-                         <span className="text-[10px] font-bold">✓</span>}
-                      </button>
-                    </th>
-                    <th className="p-4 font-medium text-left">学生姓名</th>
-                    <th className="p-4 font-medium text-left">手机号</th>
-                    <th className="p-4 font-medium text-left">用户组</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(MOCK_STUDENTS_PAGED[studentModalPage] || []).map((student, i) => (
-                    <tr 
-                      key={i} 
-                      className={cn(
-                        "border-b border-neutral-100 hover:bg-neutral-50/30 cursor-pointer transition-colors text-[13px] text-neutral-700",
-                        selectedAssignStudentUsernames.includes(student.username) ? "bg-orange-50/10" : ""
-                      )}
-                      onClick={() => {
-                        setSelectedAssignStudentUsernames(prev => 
-                          prev.includes(student.username) 
-                            ? prev.filter(u => u !== student.username) 
-                            : [...prev, student.username]
-                        );
-                      }}
-                    >
-                      <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-white rounded overflow-hidden border border-neutral-200">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead>
+                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                      <th className="p-4 font-medium w-[50px] text-center">
                         <button 
                           type="button"
                           onClick={() => {
-                            setSelectedAssignStudentUsernames(prev => 
-                              prev.includes(student.username) 
-                                ? prev.filter(u => u !== student.username) 
-                                : [...prev, student.username]
-                            );
+                            const currentPageStudents = MOCK_STUDENTS_PAGED[studentModalPage] || [];
+                            const isAllCurrentSelected = currentPageStudents.every(s => selectedAssignStudentUsernames.includes(s.username));
+                            if (isAllCurrentSelected) {
+                              // Deselect all on current page
+                              const toRemove = currentPageStudents.map(s => s.username);
+                              setSelectedAssignStudentUsernames(prev => prev.filter(u => !toRemove.includes(u)));
+                            } else {
+                              // Select all on current page
+                              const toAdd = currentPageStudents.map(s => s.username).filter(u => !selectedAssignStudentUsernames.includes(u));
+                              setSelectedAssignStudentUsernames(prev => [...prev, ...toAdd]);
+                            }
                           }}
                           className={cn(
                             "w-4 h-4 rounded-[3px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                            selectedAssignStudentUsernames.includes(student.username)
+                            (MOCK_STUDENTS_PAGED[studentModalPage] || []).length > 0 && 
+                            (MOCK_STUDENTS_PAGED[studentModalPage] || []).every(s => selectedAssignStudentUsernames.includes(s.username))
                               ? "bg-[#fa541c] border-[#fa541c] text-white"
                               : "border-neutral-300 hover:border-[#fa541c] bg-white"
                           )}
                         >
-                          {selectedAssignStudentUsernames.includes(student.username) && <span className="text-[10px] font-bold">✓</span>}
+                          {(MOCK_STUDENTS_PAGED[studentModalPage] || []).length > 0 && 
+                           (MOCK_STUDENTS_PAGED[studentModalPage] || []).every(s => selectedAssignStudentUsernames.includes(s.username)) && 
+                           <span className="text-[10px] font-bold">✓</span>}
                         </button>
-                      </td>
-                      <td className="p-4 text-left font-medium text-neutral-900">{student.name}</td>
-                      <td className="p-4 text-left text-neutral-600">{student.phone}</td>
-                      <td className="p-4 text-left text-neutral-600">{student.group}</td>
+                      </th>
+                      <th className="p-4 font-medium text-left">学生姓名</th>
+                      <th className="p-4 font-medium text-left">手机号</th>
+                      <th className="p-4 font-medium text-left">用户组</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {(MOCK_STUDENTS_PAGED[studentModalPage] || []).map((student, i) => (
+                      <tr 
+                        key={i} 
+                        className={cn(
+                          "border-b border-neutral-100 hover:bg-neutral-50/30 cursor-pointer transition-colors text-[13px] text-neutral-700",
+                          selectedAssignStudentUsernames.includes(student.username) ? "bg-orange-50/10" : ""
+                        )}
+                        onClick={() => {
+                          setSelectedAssignStudentUsernames(prev => 
+                            prev.includes(student.username) 
+                              ? prev.filter(u => u !== student.username) 
+                              : [...prev, student.username]
+                          );
+                        }}
+                      >
+                        <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setSelectedAssignStudentUsernames(prev => 
+                                prev.includes(student.username) 
+                                  ? prev.filter(u => u !== student.username) 
+                                  : [...prev, student.username]
+                              );
+                            }}
+                            className={cn(
+                              "w-4 h-4 rounded-[3px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
+                              selectedAssignStudentUsernames.includes(student.username)
+                                ? "bg-[#fa541c] border-[#fa541c] text-white"
+                                : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                            )}
+                          >
+                            {selectedAssignStudentUsernames.includes(student.username) && <span className="text-[10px] font-bold">✓</span>}
+                          </button>
+                        </td>
+                        <td className="p-4 text-left font-medium text-neutral-900">{student.name}</td>
+                        <td className="p-4 text-left text-neutral-600">{student.phone}</td>
+                        <td className="p-4 text-left text-neutral-600">{student.group}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Pagination Component */}
-            <div className="flex items-center justify-end px-6 py-4 bg-transparent border-t border-neutral-100 gap-4 mt-2 select-none shrink-0">
-              <span className="text-[13px] text-neutral-500 font-medium">共 20 条</span>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
-                  disabled={studentModalPage === 1}
-                  onClick={() => setStudentModalPage(p => Math.max(1, p - 1))}
-                >
-                  &lt;
-                </Button>
-                {[1, 2, 3, 4, 5].map((pageNum) => (
+              {/* Pagination Component */}
+              <div className="flex items-center justify-end py-4 bg-transparent gap-4 mt-2 select-none">
+                <span className="text-[13px] text-neutral-500 font-medium">共 20 条</span>
+                <div className="flex items-center gap-2">
                   <Button 
-                    key={pageNum}
                     variant="outline" 
                     size="sm" 
-                    className={cn(
-                      "h-7 w-7 p-0 rounded-[4px] font-bold text-[12px]",
-                      studentModalPage === pageNum 
-                        ? "bg-[#fa541c] text-white border-[#fa541c]" 
-                        : "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-200"
-                    )}
-                    onClick={() => setStudentModalPage(pageNum)}
+                    className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
+                    disabled={studentModalPage === 1}
+                    onClick={() => setStudentModalPage(p => Math.max(1, p - 1))}
                   >
-                    {pageNum}
+                    &lt;
                   </Button>
-                ))}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
-                  disabled={studentModalPage === 5}
-                  onClick={() => setStudentModalPage(p => Math.min(5, p + 1))}
-                >
-                  &gt;
-                </Button>
+                  {[1, 2, 3, 4, 5].map((pageNum) => (
+                    <Button 
+                      key={pageNum}
+                      variant="outline" 
+                      size="sm" 
+                      className={cn(
+                        "h-7 w-7 p-0 rounded-[4px] font-bold text-[12px]",
+                        studentModalPage === pageNum 
+                          ? "bg-[#fa541c] text-white border-[#fa541c]" 
+                          : "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-200"
+                      )}
+                      onClick={() => setStudentModalPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  ))}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 w-7 p-0 rounded-[4px] bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700" 
+                    disabled={studentModalPage === 5}
+                    onClick={() => setStudentModalPage(p => Math.min(5, p + 1))}
+                  >
+                    &gt;
+                  </Button>
+                </div>
+                <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
+                  <option>10 条/页</option>
+                  <option>20 条/页</option>
+                  <option>50 条/页</option>
+                </select>
               </div>
-              <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
-                <option>10 条/页</option>
-                <option>20 条/页</option>
-                <option>50 条/页</option>
-              </select>
             </div>
 
             {/* Footer Actions */}
