@@ -363,157 +363,168 @@ export default function TeacherResources() {
           onClick={() => setIsSingleAdjustOpen(false)}
         >
           <div 
-            className="bg-white w-full max-w-[560px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0 text-left">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <Sliders className="w-5 h-5 text-[#fa541c]" />
                 <span>配置学生资源</span>
               </h2>
               <button 
                 onClick={() => setIsSingleAdjustOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Drawer Content - Form */}
-            <form onSubmit={saveSingleAdjustment} className="flex-1 flex flex-col overflow-hidden">
+            <form onSubmit={saveSingleAdjustment} className="flex-1 flex flex-col overflow-hidden text-left">
               <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-white custom-scrollbar">
                 
-                {/* Student Info Card */}
-                <div className="p-4 bg-neutral-50 rounded border border-neutral-200 text-xs grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-neutral-400">学生姓名：</span>
-                    <span className="font-semibold text-neutral-800">{targetUser.name}</span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">手机号：</span>
-                    <span className="font-mono text-neutral-800">{targetUser.phone}</span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">归属学院：</span>
-                    <span className="text-neutral-800">{targetUser.college}</span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">班级：</span>
-                    <span className="text-neutral-800">{targetUser.class}</span>
+                {/* Student Info Card in grid format */}
+                <div className="grid grid-cols-[100px_1fr] gap-4 items-start">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">学生信息</label>
+                  <div className="p-4 bg-neutral-50 rounded border border-neutral-200 text-xs grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-neutral-400">学生姓名：</span>
+                      <span className="font-semibold text-neutral-800">{targetUser.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">手机号：</span>
+                      <span className="font-mono text-neutral-800">{targetUser.phone}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">归属学院：</span>
+                      <span className="text-neutral-800">{targetUser.college}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">班级：</span>
+                      <span className="text-neutral-800">{targetUser.class}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Quotas input grids */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">配额资源配置</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-neutral-700 block">GPU卡时</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formGpu}
-                        onChange={(e) => setFormGpu(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-neutral-700 block">CPU时长</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formCpu}
-                        onChange={(e) => setFormCpu(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-neutral-700 block">项目数</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formProjects}
-                        onChange={(e) => setFormProjects(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-neutral-700 block">数据集数</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formDatasets}
-                        onChange={(e) => setFormDatasets(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-neutral-700 block">最佳实践数</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formPractices}
-                        onChange={(e) => setFormPractices(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-neutral-700 block">智能助手数</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formAiAssistants}
-                        onChange={(e) => setFormAiAssistants(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5 col-span-2">
-                      <label className="text-[12px] font-bold text-neutral-700 block">token余额</label>
-                      <input 
-                        type="number"
-                        min="0"
-                        value={formTokens}
-                        onChange={(e) => setFormTokens(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
-                        required
-                      />
-                    </div>
-                  </div>
+                {/* GPU卡时 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    GPU卡时 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={formGpu}
+                    onChange={(e) => setFormGpu(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* CPU时长 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    CPU时长 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={formCpu}
+                    onChange={(e) => setFormCpu(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* 项目数 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    项目数 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={formProjects}
+                    onChange={(e) => setFormProjects(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* 数据集数 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    数据集数 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={formDatasets}
+                    onChange={(e) => setFormDatasets(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* 智能助手数 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    智能助手数 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={formAiAssistants}
+                    onChange={(e) => setFormAiAssistants(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* token余额 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    token余额 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={formTokens}
+                    onChange={(e) => setFormTokens(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
                 </div>
 
                 {/* Expiry setting */}
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-neutral-700 block">有效期截止日期</label>
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    截止日期 <span className="text-[#fa541c]">*</span>
+                  </label>
                   <input 
                     type="date"
                     value={formExpiry}
                     onChange={(e) => setFormExpiry(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white"
                     required
                   />
                 </div>
               </div>
 
               {/* Drawer Footer */}
-              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-3 shrink-0">
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
                 <Button 
                   type="button" 
                   onClick={() => setIsSingleAdjustOpen(false)} 
                   variant="outline" 
-                  className="border-neutral-200 text-neutral-600 font-medium h-9 px-4 rounded-[4px] text-xs bg-white hover:bg-neutral-50"
+                  className="border-neutral-200 text-neutral-600 font-semibold h-9 px-6 rounded-[4px] text-[13px] bg-white hover:bg-neutral-50 transition-colors"
                 >
                   取消
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] shadow-sm text-xs cursor-pointer border-0"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-[4px] shadow-sm text-[13px] cursor-pointer border-0 transition-colors"
                 >
                   确认配置
                 </Button>
@@ -523,10 +534,16 @@ export default function TeacherResources() {
         </div>
       )}
 
-      {/* 批量增配 Modal */}
+      {/* 批量增配 Drawer (从界面右侧滑出) */}
       {isBulkOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white rounded shadow-2xl w-full max-w-[500px] overflow-hidden border border-neutral-100 flex flex-col animate-in zoom-in-95 duration-200">
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => setIsBulkOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
@@ -535,75 +552,85 @@ export default function TeacherResources() {
               </h2>
               <button 
                 onClick={() => setIsBulkOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="p-6 space-y-4">
-              {/* Info banner */}
-              <div className="p-3 bg-[#fff2e8] border border-[#ffbb96] rounded text-xs text-[#fa541c] leading-relaxed">
-                已选中 <strong>{selectedUserIds.length > 0 ? selectedUserIds.length : filteredUsers.length}</strong> 位学生的账号。
-                {selectedUserIds.length === 0 && " (当前未勾选学生，默认对列表内所有学生生效)"}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-white custom-scrollbar">
+              {/* Info banner in grid format */}
+              <div className="grid grid-cols-[100px_1fr] gap-4 items-start">
+                <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">已选学生</label>
+                <div className="p-3 bg-[#fff2e8] border border-[#ffbb96] rounded text-xs text-[#fa541c] leading-relaxed">
+                  已选中 <strong>{selectedUserIds.length > 0 ? selectedUserIds.length : filteredUsers.length}</strong> 位学生的账号。
+                  {selectedUserIds.length === 0 && " (当前未勾选学生，默认对列表内所有学生生效)"}
+                </div>
               </div>
 
               {/* Resource key */}
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-neutral-700 block">选择追加的资源类型</label>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  资源类型 <span className="text-[#fa541c]">*</span>
+                </label>
                 <select 
                   value={bulkResourceKey}
                   onChange={(e) => setBulkResourceKey(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800"
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white"
                 >
                   <option value="gpuHours">GPU卡时</option>
                   <option value="cpuHours">CPU时长</option>
                   <option value="projects">项目数</option>
                   <option value="datasets">数据集数</option>
-                  <option value="practices">最佳实践数</option>
                   <option value="aiAssistants">智能助手数</option>
                   <option value="tokens">token余额</option>
                 </select>
               </div>
 
               {/* Amount */}
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-neutral-700 block">输入追加资源数量</label>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  追加额度 <span className="text-[#fa541c]">*</span>
+                </label>
                 <input 
                   type="number" 
                   min="1"
                   value={bulkAmount}
                   onChange={(e) => setBulkAmount(e.target.value)}
-                  placeholder="请输入要追加的具体额度数值"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800" 
+                  placeholder="请输入要追加的额度数值"
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white" 
+                  required
                 />
               </div>
 
               {/* Expiry */}
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-neutral-700 block">有效期截止日期</label>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  截止日期 <span className="text-[#fa541c]">*</span>
+                </label>
                 <input 
                   type="date" 
                   value={bulkExpiry}
                   onChange={(e) => setBulkExpiry(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#fa541c] focus:border-[#fa541c] transition-all bg-white text-neutral-800" 
+                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white" 
+                  required
                 />
               </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
                 onClick={() => setIsBulkOpen(false)} 
                 variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-medium h-9 px-4 rounded-[4px] text-xs bg-white hover:bg-neutral-50"
+                className="border-neutral-200 text-neutral-600 font-semibold h-9 px-6 rounded-[4px] text-[13px] bg-white hover:bg-neutral-50 transition-colors"
               >
                 取消
               </Button>
               <Button 
                 onClick={executeBulkAllocation}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] shadow-sm text-xs cursor-pointer border-0"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-[4px] shadow-sm text-[13px] cursor-pointer border-0 transition-colors"
               >
                 确认并立即增配
               </Button>

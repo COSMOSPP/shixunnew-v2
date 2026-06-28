@@ -138,6 +138,74 @@ const MOCK_STUDENTS_PAGED: Record<number, MockStudent[]> = {
   ]
 };
 
+const getPaperDetails = (paperName: string) => {
+  // Try to find if matching paper exists in MOCK_PAPERS_PAGED
+  let matchedPaper: MockPaper | undefined;
+  for (const page in MOCK_PAPERS_PAGED) {
+    const found = MOCK_PAPERS_PAGED[page].find(p => p.name === paperName);
+    if (found) {
+      matchedPaper = found;
+      break;
+    }
+  }
+
+  // Define details for common papers
+  if (paperName === '作业试卷1' || paperName === 'Python 基础语法与核心库测试' || paperName === 'AI 聊天助手开发与集成测验') {
+    return {
+      objective: {
+        count: 3,
+        score: 3,
+        types: '单选题、填空题、简答题',
+      },
+      practical: {
+        count: 2,
+        score: 20,
+        list: ['搭建AI 聊天助手智能体', '人脸识别']
+      }
+    };
+  }
+  
+  if (paperName === '爬虫与 Pandas 数据处理大作业' || paperName === '作业试卷2') {
+    return {
+      objective: null,
+      practical: {
+        count: 2,
+        score: 20,
+        list: ['爬虫数据抓取与解析', 'Pandas 数据清洗与分析']
+      }
+    };
+  }
+
+  if (paperName === '人工神经网络与图像分类期末考核' || paperName === '作业试卷3' || paperName === '作业试卷4') {
+    return {
+      objective: {
+        count: 10,
+        score: 30,
+        types: '单选题、多选题、判断题',
+      },
+      practical: {
+        count: 1,
+        score: 70,
+        list: ['基于 ANN 的 CIFAR-10 图像分类']
+      }
+    };
+  }
+
+  // Default fallback matching screenshot
+  return {
+    objective: {
+      count: 3,
+      score: 3,
+      types: '单选题、填空题、简答题',
+    },
+    practical: {
+      count: 2,
+      score: 20,
+      list: ['搭建AI 聊天助手智能体', '人脸识别']
+    }
+  };
+};
+
 export default function TeacherCourseManage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -174,18 +242,11 @@ export default function TeacherCourseManage() {
   const [allExpanded, setAllExpanded] = useState(true);
   // Members Management states
   const [studentList, setStudentList] = useState([
-    { username: 'lilun1982', nickname: '理论1982', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1983', nickname: '理论1983', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1984', nickname: '理论1984', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1985', nickname: '理论1985', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1986', nickname: '理论1986', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1987', nickname: '理论1987', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1988', nickname: '理论1988', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1989', nickname: '理论1989', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1990', nickname: '理论1990', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1991', nickname: '理论1991', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1992', nickname: '理论1992', group: '0523', authTime: '2026-06-11 16:23:12' },
-    { username: 'lilun1993', nickname: '理论1993', group: '0523', authTime: '2026-06-11 16:23:12' }
+    { username: 'zhangsan', nickname: '张三', phone: '18656686967', courseProgress: '89%', taskProgress: '20%' },
+    { username: 'lisi', nickname: '李四', phone: '13656686967', courseProgress: '89%', taskProgress: '20%' },
+    { username: 'wangwu', nickname: '王五', phone: '13628399493', courseProgress: '89%', taskProgress: '20%' },
+    { username: 'liuneng1', nickname: '刘能', phone: '19628399493', courseProgress: '89%', taskProgress: '20%' },
+    { username: 'liuneng2', nickname: '刘能', phone: '19628399493', courseProgress: '89%', taskProgress: '20%' }
   ]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -239,6 +300,20 @@ export default function TeacherCourseManage() {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskPublishTime, setTaskPublishTime] = useState('2026-05-21T14:29');
   const [taskDeadline, setTaskDeadline] = useState('');
+  const [showAssignmentDetailDrawer, setShowAssignmentDetailDrawer] = useState(false);
+  const [selectedAssignmentDetail, setSelectedAssignmentDetail] = useState<any>(null);
+  const [showGradingDrawer, setShowGradingDrawer] = useState(false);
+  const [selectedGradingAssignment, setSelectedGradingAssignment] = useState<any>(null);
+  const [gradingSearchQuery, setGradingSearchQuery] = useState('');
+  const [gradingStudents, setGradingStudents] = useState([
+    { id: 1, name: '张三', phone: '18656686967', time: '2099/02/28 00:00', count: 2, status: '未提交', score: 100 },
+    { id: 2, name: '李四', phone: '13656686967', time: '2099/02/28 00:00', count: 3, status: '打分中', score: 40 },
+    { id: 3, name: '王五', phone: '13628399493', time: '2099/02/28 00:00', count: 4, status: '未发布', score: 80 },
+    { id: 4, name: '刘能', phone: '19628399493', time: '2099/02/28 00:00', count: 2, status: '已发布', score: 11 },
+    { id: 5, name: '刘能', phone: '19628399493', time: '2099/02/28 00:00', count: 1, status: '更新待发布', score: 56 },
+  ]);
+  const [selectedGradingStudentIds, setSelectedGradingStudentIds] = useState<number[]>([]);
+  const [gradingPage, setGradingPage] = useState(1);
   
   const [assignTarget, setAssignTarget] = useState<'all' | 'partial'>('all');
   const [selectedAssignStudentUsernames, setSelectedAssignStudentUsernames] = useState<string[]>([]);
@@ -253,6 +328,10 @@ export default function TeacherCourseManage() {
   const [isPageSizeDropdownOpen, setIsPageSizeDropdownOpen] = useState(false);
 
   const [showBulkRevokeModal, setShowBulkRevokeModal] = useState(false);
+  const [studentSearchQuery, setStudentSearchQuery] = useState('');
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentPageSize, setStudentPageSize] = useState(5);
+  const [isStudentPageSizeDropdownOpen, setIsStudentPageSizeDropdownOpen] = useState(false);
   const [showBulkAuthModal, setShowBulkAuthModal] = useState(false);
 
   React.useEffect(() => {
@@ -264,6 +343,10 @@ export default function TeacherCourseManage() {
   React.useEffect(() => {
     setAssignmentPage(1);
   }, [assignmentSearchQuery]);
+
+  React.useEffect(() => {
+    setStudentPage(1);
+  }, [studentSearchQuery]);
 
   const filteredAssignments = assignments.filter(task => 
     task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
@@ -345,7 +428,7 @@ export default function TeacherCourseManage() {
 
   const handleSendInvite = () => {
     if (!inviteInput.trim()) return;
-    const newStudent = { username: 'sunshen', nickname: '孙晨 (已邀请)', group: '0523', authTime: '2026-06-11 16:45:00' };
+    const newStudent = { username: 'sunshen', nickname: '孙晨 (已邀请)', phone: '13812345678', courseProgress: '0%', taskProgress: '0%' };
     setStudentList([...studentList, newStudent]);
     setShowInviteModal(false);
     setInviteInput("");
@@ -371,15 +454,15 @@ export default function TeacherCourseManage() {
 
   const handleConfirmBatchAuthorize = () => {
     const newStudents = [
-      { username: 'lilun1994', nickname: '理论1994', group: '0523', authTime: '2026-06-11 16:45:00' },
-      { username: 'lilun1995', nickname: '理论1995', group: '0523', authTime: '2026-06-11 16:45:00' },
-      { username: 'lilun1996', nickname: '理论1996', group: '0523', authTime: '2026-06-11 16:45:00' }
+      { username: 'lilun1994', nickname: '理论1994', phone: '13911112222', courseProgress: '90%', taskProgress: '35%' },
+      { username: 'lilun1995', nickname: '理论1995', phone: '13911113333', courseProgress: '90%', taskProgress: '35%' },
+      { username: 'lilun1996', nickname: '理论1996', phone: '13911114444', courseProgress: '90%', taskProgress: '35%' }
     ];
     setStudentList([...studentList, ...newStudents]);
     setShowBatchImportModal(false);
     setImportSelectedFile(null);
     setImportProgress(0);
-    alert("成功批量授权 3 名用户！");
+    alert("成功批量添加 3 名用户！");
   };
 
   const tabs = [
@@ -889,7 +972,10 @@ export default function TeacherCourseManage() {
                                   <td className="p-4 text-left">
                                     <div className="flex items-center gap-3.5">
                                       <button 
-                                        onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                        onClick={() => {
+                                          setSelectedAssignmentDetail(task);
+                                          setShowAssignmentDetailDrawer(true);
+                                        }}
                                         className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
                                       >
                                         详情
@@ -910,7 +996,10 @@ export default function TeacherCourseManage() {
                                         编辑
                                       </button>
                                       <button 
-                                        onClick={() => setShowGrading(true)}
+                                        onClick={() => {
+                                          setSelectedGradingAssignment(task);
+                                          setShowGradingDrawer(true);
+                                        }}
                                         className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
                                       >
                                         完成情况
@@ -1154,115 +1243,214 @@ export default function TeacherCourseManage() {
               )}
 
               {/* 3. 成员管理 (Members) */}
-              {activeTab === 'members' && (
-                <div className="p-6 animate-in fade-in duration-500">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-neutral-title">班级成员</h2>
-                  </div>
+              {activeTab === 'members' && (() => {
+                const filteredStudents = studentList.filter(student =>
+                  student.nickname.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                  student.phone.toLowerCase().includes(studentSearchQuery.toLowerCase())
+                );
+                const totalStudentPages = Math.ceil(filteredStudents.length / studentPageSize) || 1;
+                const paginatedStudents = filteredStudents.slice(
+                  (studentPage - 1) * studentPageSize,
+                  studentPage * studentPageSize
+                );
+                const filteredUsernames = filteredStudents.map(s => s.username);
+                const isAllSelected = filteredUsernames.length > 0 && filteredUsernames.every(username => selectedStudents.includes(username));
 
-                  <div className="flex items-center justify-between mb-6 gap-4">
-                    <div className="flex items-center relative">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                      <input type="text" placeholder="搜索用户名或学号..." className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-colors bg-white" />
+                return (
+                  <div className="p-6 lg:p-8 animate-in fade-in duration-500 bg-neutral-50/30 rounded-b-[24px]">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-xl font-bold text-neutral-title">班级成员</h2>
                     </div>
-                    {perspective === 'teacher' && (
-                      <div className="flex gap-3">
-                        <Button 
-                          onClick={handleBatchAuthorize}
-                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
-                        >
-                          批量授权
-                        </Button>
-                        <Button 
-                          onClick={handleBatchRevokeAuth}
-                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] shadow-sm rounded-[4px]"
-                        >
-                          批量解除授权
-                        </Button>
+
+                    <div className="flex items-center justify-between mb-6 gap-4">
+                      {/* Search Input on Left (matching Assignments page style) */}
+                      <div className="flex items-center relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                        <input 
+                          type="text" 
+                          placeholder="搜索学生姓名或手机号..." 
+                          value={studentSearchQuery}
+                          onChange={(e) => setStudentSearchQuery(e.target.value)}
+                          className="pl-9 pr-4 py-2 w-[300px] text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-colors bg-white text-[#262626]" 
+                        />
+                      </div>
+
+                      {perspective === 'teacher' && (
+                        <div className="flex items-center gap-3">
+                          <Button 
+                            onClick={handleBatchRevokeAuth}
+                            variant="outline"
+                            className="h-9 px-4 border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50 font-bold text-[13px] rounded-[4px] flex items-center gap-1.5 transition-all bg-white"
+                          >
+                            <Trash2 className="w-4 h-4" /> 批量移除
+                          </Button>
+                          <Button 
+                            onClick={handleBatchAuthorize}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm shadow-orange-500/10 h-9 px-4 rounded-[4px] text-[13px] font-bold transition-all border-0 cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" /> 批量添加
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Table matching Assignments style */}
+                    <div className="bg-white rounded overflow-hidden border border-neutral-200 mb-6">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse whitespace-nowrap">
+                          <thead>
+                            <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                              {perspective === 'teacher' && (
+                                <th className="p-4 font-medium w-12 text-center">
+                                  <input 
+                                    type="checkbox"
+                                    checked={isAllSelected}
+                                    onChange={() => {
+                                      if (isAllSelected) {
+                                        setSelectedStudents(prev => prev.filter(username => !filteredUsernames.includes(username)));
+                                      } else {
+                                        setSelectedStudents(prev => Array.from(new Set([...prev, ...filteredUsernames])));
+                                      }
+                                    }}
+                                    className="w-4 h-4 rounded text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 accent-[#fa541c] cursor-pointer mx-auto"
+                                  />
+                                </th>
+                              )}
+                              <th className="p-4 font-medium text-center text-neutral-600">学生姓名</th>
+                              <th className="p-4 font-medium text-center text-neutral-600">手机号</th>
+                              <th className="p-4 font-medium text-center text-neutral-600">课程进度</th>
+                              <th className="p-4 font-medium text-center text-neutral-600">作业进度</th>
+                              {perspective === 'teacher' && <th className="p-4 font-medium text-center text-neutral-600">操作</th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedStudents.map((student, i) => (
+                              <tr key={student.username} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                                {perspective === 'teacher' && (
+                                  <td className="p-4 text-center">
+                                    <input 
+                                      type="checkbox"
+                                      checked={selectedStudents.includes(student.username)}
+                                      onChange={() => {
+                                        setSelectedStudents(prev => 
+                                          prev.includes(student.username) 
+                                            ? prev.filter(username => username !== student.username) 
+                                            : [...prev, student.username]
+                                        );
+                                      }}
+                                      className="w-4 h-4 rounded text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 accent-[#fa541c] cursor-pointer mx-auto"
+                                    />
+                                  </td>
+                                )}
+                                <td className="p-4 text-center text-neutral-800 font-bold">{student.nickname}</td>
+                                <td className="p-4 text-center text-neutral-600 font-mono font-medium">{student.phone}</td>
+                                <td className="p-4 text-center text-neutral-800 font-bold font-mono">{student.courseProgress}</td>
+                                <td className="p-4 text-center text-neutral-800 font-bold font-mono">{student.taskProgress}</td>
+                                {perspective === 'teacher' && (
+                                  <td className="p-4 text-center">
+                                    <button 
+                                      onClick={() => handleRevokeAuth(student.username)}
+                                      className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                    >
+                                      移除
+                                    </button>
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                            {filteredStudents.length === 0 && (
+                              <tr>
+                                <td colSpan={perspective === 'teacher' ? 6 : 5} className="py-12 text-center text-[13px] text-neutral-400">
+                                  暂无匹配的班级成员数据
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Pagination matching Assignments style */}
+                    {filteredStudents.length > 0 && (
+                      <div className="flex items-center justify-end p-4 gap-4 bg-transparent mt-2 select-none">
+                        <span className="text-[13px] text-neutral-500">共 {filteredStudents.length} 条</span>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 rounded-sm bg-white" 
+                            disabled={studentPage === 1}
+                            onClick={() => setStudentPage(prev => Math.max(prev - 1, 1))}
+                          >
+                            &lt;
+                          </Button>
+                          {Array.from({ length: totalStudentPages }).map((_, index) => {
+                            const pageNum = index + 1;
+                            const isCurrent = pageNum === studentPage;
+                            return (
+                              <Button 
+                                key={pageNum}
+                                variant="outline" 
+                                size="sm" 
+                                className={cn(
+                                  "h-7 w-7 p-0 rounded-sm font-semibold transition-colors",
+                                  isCurrent 
+                                    ? "bg-[#fa541c] text-white border-[#fa541c] hover:bg-[#e84a15] hover:text-white" 
+                                    : "bg-white text-neutral-600 hover:text-[#fa541c] hover:border-orange-200"
+                                )}
+                                onClick={() => setStudentPage(pageNum)}
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          })}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 rounded-sm bg-white" 
+                            disabled={studentPage === totalStudentPages}
+                            onClick={() => setStudentPage(prev => Math.min(prev + 1, totalStudentPages))}
+                          >
+                            &gt;
+                          </Button>
+                        </div>
+                        
+                        <div className="relative">
+                          <button 
+                            type="button"
+                            onClick={() => setIsStudentPageSizeDropdownOpen(!isStudentPageSizeDropdownOpen)}
+                            className="appearance-none text-[13px] border border-neutral-200 rounded-[8px] pl-3 pr-8 py-1 bg-white focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 text-black cursor-pointer transition-all h-7 flex items-center gap-1.5 select-none text-left min-w-[76px] relative"
+                          >
+                            <span>{studentPageSize} 条/页</span>
+                            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+                          </button>
+                          {isStudentPageSizeDropdownOpen && (
+                            <div className="absolute bottom-full right-0 mb-1 bg-white border border-neutral-200 rounded-[8px] shadow-lg py-1 min-w-[90px] z-[120]">
+                              {[5, 10, 20, 50].map((size) => (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() => {
+                                    setStudentPageSize(size);
+                                    setStudentPage(1);
+                                    setIsStudentPageSizeDropdownOpen(false);
+                                  }}
+                                  className={cn(
+                                    "w-full text-left px-3 py-1.5 text-[12px] hover:bg-neutral-50 transition-colors block cursor-pointer border-0",
+                                    studentPageSize === size ? "text-[#fa541c] font-semibold bg-orange-50/20" : "text-neutral-700"
+                                  )}
+                                >
+                                  {size} 条/页
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
-
-                  <div className="bg-white rounded overflow-hidden border border-neutral-200">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse whitespace-nowrap">
-                        <thead>
-                          <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                            {perspective === 'teacher' && (
-                              <th className="p-4 font-medium w-12 text-center">
-                                <button 
-                                  type="button"
-                                  onClick={() => toggleSelectAllStudents(selectedStudents.length !== studentList.length || studentList.length === 0)}
-                                  className={cn(
-                                    "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                                    selectedStudents.length === studentList.length && studentList.length > 0
-                                      ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                      : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                                  )}
-                                >
-                                  {selectedStudents.length === studentList.length && studentList.length > 0 && <span className="text-[10px] font-bold">✓</span>}
-                                </button>
-                              </th>
-                            )}
-                            <th className="p-4 font-medium">用户账号</th>
-                            <th className="p-4 font-medium">用户名</th>
-                            <th className="p-4 font-medium">用户组</th>
-                            <th className="p-4 font-medium">授权时间</th>
-                            {perspective === 'teacher' && <th className="p-4 font-medium text-left">操作</th>}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {studentList.map((student, i) => (
-                            <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                              <td className="p-4 text-center">
-                                <button 
-                                  type="button"
-                                  onClick={() => toggleSelectStudent(student.username)}
-                                  className={cn(
-                                    "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all cursor-pointer mx-auto",
-                                    selectedStudents.includes(student.username)
-                                      ? "bg-[#fa541c] border-[#fa541c] text-white"
-                                      : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                                  )}
-                                >
-                                  {selectedStudents.includes(student.username) && <span className="text-[10px] font-bold">✓</span>}
-                                </button>
-                              </td>
-                              <td className="p-4 text-neutral-800">{student.username}</td>
-                              <td className="p-4 text-neutral-600">{student.nickname}</td>
-                              <td className="p-4 text-neutral-600">{student.group}</td>
-                              <td className="p-4 text-neutral-500">{student.authTime}</td>
-                              <td className="p-4 text-left">
-                                <button 
-                                  onClick={() => handleRevokeAuth(student.username)}
-                                  className="text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer font-bold rounded-[4px]"
-                                >
-                                  解除授权
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Pagination */}
-                  <div className="flex items-center justify-end p-4 gap-4 bg-transparent mt-4">
-                    <span className="text-[13px] text-neutral-500 font-medium">共 {studentList.length} 条</span>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-white" disabled>&lt;</Button>
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-[#fa541c] text-white border-[#fa541c]">1</Button>
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-white">&gt;</Button>
-                    </div>
-                    <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-[#fa541c] text-neutral-600">
-                      <option>10 条/页</option>
-                      <option>20 条/页</option>
-                      <option>50 条/页</option>
-                    </select>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* 4. 学情数据 (Analytics) */}
               {activeTab === 'analytics' && (
@@ -1653,6 +1841,585 @@ export default function TeacherCourseManage() {
           </div>
         </div>
       )}
+
+      {/* 作业详情 Drawer (弹出层) */}
+      {showAssignmentDetailDrawer && selectedAssignmentDetail && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => { 
+            setShowAssignmentDetailDrawer(false); 
+            setSelectedAssignmentDetail(null);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#fa541c]" />
+                作业详情
+              </h2>
+              <button 
+                onClick={() => { 
+                  setShowAssignmentDetailDrawer(false); 
+                  setSelectedAssignmentDetail(null);
+                }} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white text-[13px]">
+              <div className="space-y-6 py-2">
+                
+                {/* 作业名称 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#8c8c8c] text-right">
+                    作业名称
+                  </label>
+                  <div className="text-[13px] font-bold text-[#262626]">
+                    {selectedAssignmentDetail.title}
+                  </div>
+                </div>
+
+                {/* 作业试卷 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#8c8c8c] text-right">
+                    作业试卷
+                  </label>
+                  <div>
+                    <span
+                      onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                      className="text-[#fa541c] hover:text-[#e84a15] font-medium text-[13px] cursor-pointer hover:underline transition-colors"
+                    >
+                      {selectedAssignmentDetail.paperName}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 试题详情 Card */}
+                {(() => {
+                  const paperDetails = getPaperDetails(selectedAssignmentDetail.paperName);
+                  return (
+                    <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                      <div></div>
+                      <div className="border border-neutral-200 rounded-[4px] p-5 space-y-6 bg-white w-full">
+                        {paperDetails.objective && (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <h4 className="text-[14px] font-bold text-[#262626]">客观题</h4>
+                              <button 
+                                onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[12px] font-bold px-3 py-1 rounded-[4px] transition-colors shadow-sm shadow-orange-500/10 cursor-pointer border-0"
+                              >
+                                预览客观题
+                              </button>
+                            </div>
+                            <div className="text-[13px] text-neutral-800 space-y-1">
+                              <p className="font-semibold text-neutral-700">1. 客观题 {paperDetails.objective.count} 道，共 {paperDetails.objective.score} 分</p>
+                              <p className="text-neutral-400">客观题包括：{paperDetails.objective.types}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {paperDetails.objective && paperDetails.practical && (
+                          <div className="border-t border-neutral-100 my-4"></div>
+                        )}
+
+                        {paperDetails.practical && (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <h4 className="text-[14px] font-bold text-[#262626]">实训题</h4>
+                              <button 
+                                onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[12px] font-bold px-3 py-1 rounded-[4px] transition-colors shadow-sm shadow-orange-500/10 cursor-pointer border-0"
+                              >
+                                预览实操题
+                              </button>
+                            </div>
+                            <div className="text-[13px] text-neutral-800 space-y-1">
+                              <p className="font-semibold text-neutral-700">1. 实训题 {paperDetails.practical.count} 道，共 {paperDetails.practical.score} 分</p>
+                              <p className="text-neutral-400">
+                                实训题包括：{paperDetails.practical.list.map((item, idx) => `${idx + 1}、${item}`).join('、')}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 发布时间 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#8c8c8c] text-right">
+                    发布时间
+                  </label>
+                  <div className="text-[13px] text-neutral-800 font-medium">
+                    {selectedAssignmentDetail.publishTime.replace(/-/g, '/')}
+                  </div>
+                </div>
+
+                {/* 截止时间 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#8c8c8c] text-right">
+                    截止时间
+                  </label>
+                  <div className="text-[13px] text-neutral-800 font-medium">
+                    {selectedAssignmentDetail.deadline.replace(/-/g, '/')}
+                  </div>
+                </div>
+
+                {/* 分配人员 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#8c8c8c] text-right">
+                    分配人员
+                  </label>
+                  <div>
+                    <span 
+                      onClick={() => {
+                        if (selectedAssignmentDetail.assignTarget === 'partial') {
+                          setTempSelectedStudents(selectedAssignmentDetail.selectedStudents || []);
+                          setStudentModalPage(2);
+                          setShowSelectStudentModal(true);
+                        }
+                      }}
+                      className={cn(
+                        "text-[#fa541c] font-medium text-[13px] transition-colors",
+                        selectedAssignmentDetail.assignTarget === 'partial' ? "hover:text-[#e84a15] hover:underline cursor-pointer" : ""
+                      )}
+                    >
+                      {selectedAssignmentDetail.assignTarget === 'all' 
+                        ? '全部学生 (50 人)' 
+                        : `已选择 ${((selectedAssignmentDetail.selectedStudents || []).length || 3)} 人`
+                      }
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
+              <Button 
+                onClick={() => { 
+                  setShowAssignmentDetailDrawer(false); 
+                  setSelectedAssignmentDetail(null);
+                }} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showGradingDrawer && selectedGradingAssignment && (() => {
+        const gradingPageSize = 5;
+        const filteredGradingStudents = gradingStudents.filter(s =>
+          s.name.toLowerCase().includes(gradingSearchQuery.toLowerCase()) ||
+          s.phone.toLowerCase().includes(gradingSearchQuery.toLowerCase())
+        );
+        const totalGradingPages = Math.ceil(filteredGradingStudents.length / gradingPageSize) || 1;
+        const paginatedGradingStudents = filteredGradingStudents.slice(
+          (gradingPage - 1) * gradingPageSize,
+          gradingPage * gradingPageSize
+        );
+        const filteredIds = filteredGradingStudents.map(s => s.id);
+        const isAllSelected = filteredIds.length > 0 && filteredIds.every(id => selectedGradingStudentIds.includes(id));
+
+        return (
+          <div 
+            className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+            onClick={() => { 
+              setShowGradingDrawer(false); 
+              setSelectedGradingAssignment(null);
+              setSelectedGradingStudentIds([]);
+              setGradingSearchQuery('');
+              setGradingPage(1);
+            }}
+          >
+            <div 
+              className="bg-white w-full max-w-[960px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                  <CheckSquare className="w-5 h-5 text-[#fa541c]" />
+                  完成情况 - {selectedGradingAssignment.title}
+                </h2>
+                <button 
+                  onClick={() => { 
+                    setShowGradingDrawer(false); 
+                    setSelectedGradingAssignment(null);
+                    setSelectedGradingStudentIds([]);
+                    setGradingSearchQuery('');
+                    setGradingPage(1);
+                  }} 
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Body */}
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white text-[13px] flex flex-col gap-4">
+                {/* Toolbar */}
+                <div className="flex justify-between items-center gap-4 shrink-0">
+                  <div className="relative flex-1 max-w-[320px]">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                    <input 
+                      type="text" 
+                      placeholder="搜索学生姓名或手机号..." 
+                      value={gradingSearchQuery}
+                      onChange={(e) => {
+                        setGradingSearchQuery(e.target.value);
+                        setGradingPage(1); // reset to page 1 on search
+                      }}
+                      className="w-full pl-9 pr-4 h-9 border border-neutral-200 rounded-full text-[13px] bg-white text-[#262626] placeholder-neutral-400 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        if (selectedGradingStudentIds.length === 0) {
+                          setConfirmModal({
+                            show: true,
+                            title: '提示',
+                            message: '请选择需要智能批改的学生！',
+                            showCancel: false,
+                            onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                          });
+                          return;
+                        }
+                        setConfirmModal({
+                          show: true,
+                          title: '智能批改确认',
+                          message: `确定要对选中的 ${selectedGradingStudentIds.length} 位学生作业进行智能批改吗？此操作将自动为客观题及实操模块打分。`,
+                          showCancel: true,
+                          onConfirm: () => {
+                            setGradingStudents(prev => prev.map(s => 
+                              selectedGradingStudentIds.includes(s.id) ? { ...s, status: '未发布', score: Math.min(100, s.score + 10) } : s
+                            ));
+                            setSelectedGradingStudentIds([]);
+                            setConfirmModal({
+                              show: true,
+                              title: '操作成功',
+                              message: '已成功完成智能批改！',
+                              showCancel: false,
+                              onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                            });
+                          }
+                        });
+                      }}
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[13px] font-bold px-4 h-9 rounded-[4px] border-0 cursor-pointer transition-colors shadow-sm shadow-orange-500/10"
+                    >
+                      智能批改
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (selectedGradingStudentIds.length === 0) {
+                          setConfirmModal({
+                            show: true,
+                            title: '提示',
+                            message: '请选择需要发布成绩的学生！',
+                            showCancel: false,
+                            onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                          });
+                          return;
+                        }
+                        setConfirmModal({
+                          show: true,
+                          title: '发布成绩确认',
+                          message: `确定要发布选中的 ${selectedGradingStudentIds.length} 位学生的作业成绩吗？发布后学生可登录系统查看分值。`,
+                          showCancel: true,
+                          onConfirm: () => {
+                            setGradingStudents(prev => prev.map(s => 
+                              selectedGradingStudentIds.includes(s.id) ? { ...s, status: '已发布' } : s
+                            ));
+                            setSelectedGradingStudentIds([]);
+                            setConfirmModal({
+                              show: true,
+                              title: '操作成功',
+                              message: '成绩已成功发布！',
+                              showCancel: false,
+                              onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                            });
+                          }
+                        });
+                      }}
+                      className="border border-[#fa541c] text-[#fa541c] bg-white hover:bg-orange-50/30 text-[13px] font-bold px-4 h-9 rounded-[4px] cursor-pointer transition-colors"
+                    >
+                      发布成绩
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (selectedGradingStudentIds.length === 0) {
+                          setConfirmModal({
+                            show: true,
+                            title: '提示',
+                            message: '请选择需要延期的学生！',
+                            showCancel: false,
+                            onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                          });
+                          return;
+                        }
+                        setConfirmModal({
+                          show: true,
+                          title: '延期确认',
+                          message: `确定要为选中的 ${selectedGradingStudentIds.length} 位学生延长作业提交截止时间吗？延长后截止时间将自动顺延 3 天。`,
+                          showCancel: true,
+                          onConfirm: () => {
+                            setSelectedGradingStudentIds([]);
+                            setConfirmModal({
+                              show: true,
+                              title: '操作成功',
+                              message: '已成功为选中的学生延长提交截止时间！',
+                              showCancel: false,
+                              onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                            });
+                          }
+                        });
+                      }}
+                      className="border border-[#fa541c]/50 text-[#fa541c] bg-white hover:bg-orange-50/30 text-[13px] font-bold px-4 h-9 rounded-[4px] cursor-pointer transition-colors"
+                    >
+                      延期
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (selectedGradingStudentIds.length === 0) {
+                          setConfirmModal({
+                            show: true,
+                            title: '提示',
+                            message: '请选择需要打回的作业！',
+                            showCancel: false,
+                            onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                          });
+                          return;
+                        }
+                        setConfirmModal({
+                          show: true,
+                          title: '打回作业确认',
+                          message: `确定要打回选中的 ${selectedGradingStudentIds.length} 位学生的作业吗？打回后学生将可以重新上传并提交该项作业。`,
+                          showCancel: true,
+                          onConfirm: () => {
+                            setGradingStudents(prev => prev.map(s => 
+                              selectedGradingStudentIds.includes(s.id) ? { ...s, status: '更新待发布' } : s
+                            ));
+                            setSelectedGradingStudentIds([]);
+                            setConfirmModal({
+                              show: true,
+                              title: '操作成功',
+                              message: '作业已成功打回！',
+                              showCancel: false,
+                              onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                            });
+                          }
+                        });
+                      }}
+                      className="border border-neutral-250 text-neutral-600 bg-white hover:bg-neutral-50/80 text-[13px] font-bold px-4 h-9 rounded-[4px] cursor-pointer transition-colors"
+                    >
+                      打回
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setConfirmModal({
+                          show: true,
+                          title: '数据导出确认',
+                          message: '确定要导出当前班级所有选课学生的作业完成情况统计及成绩明细表吗？',
+                          showCancel: true,
+                          onConfirm: () => {
+                            setConfirmModal({
+                              show: true,
+                              title: '导出成功',
+                              message: '作业完成情况统计及学生成绩明细表已成功生成并下载！',
+                              showCancel: false,
+                              onConfirm: () => setConfirmModal(prev => ({ ...prev, show: false }))
+                            });
+                          }
+                        });
+                      }}
+                      className="border border-neutral-250 text-neutral-600 bg-white hover:bg-neutral-50/80 text-[13px] font-bold px-4 h-9 rounded-[4px] cursor-pointer transition-colors"
+                    >
+                      导出
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table matching Assignments style */}
+                <div className="bg-white rounded overflow-hidden border border-neutral-200 mb-2">
+                  <div className="overflow-x-auto overflow-y-auto custom-scrollbar max-h-[480px]">
+                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                      <thead>
+                        <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 sticky top-0 z-10">
+                          <th className="p-4 font-medium w-[50px] text-center bg-neutral-50/50">
+                            <input 
+                              type="checkbox"
+                              checked={isAllSelected}
+                              onChange={() => {
+                                if (isAllSelected) {
+                                  setSelectedGradingStudentIds(prev => prev.filter(id => !filteredIds.includes(id)));
+                                } else {
+                                  setSelectedGradingStudentIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+                                }
+                              }}
+                              className="w-4 h-4 rounded text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 accent-[#fa541c] cursor-pointer mx-auto"
+                            />
+                          </th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">学生姓名</th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">手机号</th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">提交时间</th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">提交次数</th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">状态</th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">总分</th>
+                          <th className="p-4 font-medium text-center bg-neutral-50/50">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                        {paginatedGradingStudents.map((s) => (
+                          <tr key={s.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                            <td className="p-4 text-center">
+                              <input 
+                                type="checkbox"
+                                checked={selectedGradingStudentIds.includes(s.id)}
+                                onChange={() => {
+                                  setSelectedGradingStudentIds(prev => 
+                                    prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
+                                  );
+                                }}
+                                className="w-4 h-4 rounded text-[#fa541c] focus:ring-[#fa541c] border-neutral-300 accent-[#fa541c] cursor-pointer mx-auto"
+                              />
+                            </td>
+                            <td className="p-4 text-center text-neutral-800 font-bold">{s.name}</td>
+                            <td className="p-4 text-center text-neutral-600 font-medium font-mono">{s.phone}</td>
+                            <td className="p-4 text-center text-neutral-500 font-mono">{s.time}</td>
+                            <td className="p-4 text-center text-neutral-600 font-medium">{s.count}</td>
+                            <td className="p-4 text-center">
+                              <span className={cn(
+                                "px-2 py-0.5 rounded-[4px] border text-[12px] transition-all",
+                                s.status === '已发布' && "bg-green-50 text-green-600 border-green-200",
+                                s.status === '打分中' && "bg-blue-50 text-blue-600 border-blue-200",
+                                s.status === '未发布' && "bg-[#fff2e8] text-[#fa541c] border-[#ffbb96]",
+                                s.status === '未提交' && "bg-neutral-50 text-neutral-600 border-neutral-200",
+                                s.status === '更新待发布' && "bg-purple-50 text-purple-600 border-purple-200"
+                              )}>
+                                {s.status}
+                              </span>
+                            </td>
+                            <td className="p-4 text-center font-bold text-neutral-800 font-mono">{s.score}</td>
+                            <td className="p-4 text-center">
+                              <div className="flex justify-center gap-3.5">
+                                <button
+                                  onClick={() => {
+                                    setShowGradingDrawer(false);
+                                    setShowGrading(true);
+                                  }}
+                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                >
+                                  查看成绩
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowGradingDrawer(false);
+                                    setShowGrading(true);
+                                  }}
+                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                >
+                                  评审作业
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredGradingStudents.length === 0 && (
+                          <tr>
+                            <td colSpan={8} className="py-12 text-center text-[13px] text-neutral-400">
+                              暂无匹配的学生提交记录
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Pagination (matching Papers list style and placed outside the card) */}
+                {filteredGradingStudents.length > 0 && (
+                  <div className="flex items-center justify-end px-6 py-4 gap-4 bg-transparent select-none">
+                      <span className="text-[13px] text-neutral-500">共 {filteredGradingStudents.length} 条</span>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 w-7 p-0 rounded-sm bg-white" 
+                          disabled={gradingPage === 1}
+                          onClick={() => setGradingPage(prev => Math.max(prev - 1, 1))}
+                        >
+                          &lt;
+                        </Button>
+                        {Array.from({ length: totalGradingPages }).map((_, index) => {
+                          const pageNum = index + 1;
+                          const isCurrent = pageNum === gradingPage;
+                          return (
+                            <Button 
+                              key={pageNum}
+                              variant="outline" 
+                              size="sm" 
+                              className={cn(
+                                "h-7 w-7 p-0 rounded-sm font-semibold transition-colors",
+                                isCurrent 
+                                  ? "bg-[#fa541c] text-white border-[#fa541c] hover:bg-[#e84a15] hover:text-white" 
+                                  : "bg-white text-neutral-600 hover:text-[#fa541c] hover:border-orange-200"
+                              )}
+                              onClick={() => setGradingPage(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 w-7 p-0 rounded-sm bg-white" 
+                          disabled={gradingPage === totalGradingPages}
+                          onClick={() => setGradingPage(prev => Math.min(prev + 1, totalGradingPages))}
+                        >
+                          &gt;
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
+                <Button 
+                  onClick={() => { 
+                    setShowGradingDrawer(false); 
+                    setSelectedGradingAssignment(null);
+                    setSelectedGradingStudentIds([]);
+                    setGradingSearchQuery('');
+                    setGradingPage(1);
+                  }} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                >
+                  关闭
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 选择试卷 Modal (Figure 1 Design) */}
       {showSelectPaperModal && (
@@ -3136,14 +3903,14 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 批量解除授权 Modal */}
+      {/* 批量移除 Modal */}
       {showBulkRevokeModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626]">
-                批量解除授权
+                批量移除
               </h2>
               <button 
                 onClick={() => setShowBulkRevokeModal(false)} 
@@ -3160,17 +3927,15 @@ export default function TeacherCourseManage() {
                   <table className="w-full text-left text-[12px] border-collapse bg-white">
                     <thead className="sticky top-0 bg-neutral-50 border-b border-neutral-200 z-10">
                       <tr className="text-neutral-550 font-bold">
-                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户账号</th>
-                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户名</th>
-                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户组</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">学生姓名</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700 text-center">手机号</th>
                       </tr>
                     </thead>
                     <tbody>
                       {studentList.filter(s => selectedStudents.includes(s.username)).map((student, i) => (
                         <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50/50 transition-colors">
-                          <td className="py-2.5 px-4 text-neutral-750 font-mono">{student.username}</td>
-                          <td className="py-2.5 px-4 text-neutral-800">{student.nickname}</td>
-                          <td className="py-2.5 px-4 text-neutral-550">{student.group}</td>
+                          <td className="py-2.5 px-4 text-neutral-800 font-bold">{student.nickname}</td>
+                          <td className="py-2.5 px-4 text-neutral-750 font-mono text-center">{student.phone}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -3179,7 +3944,7 @@ export default function TeacherCourseManage() {
               </div>
 
               <div className="flex items-center justify-between mt-4">
-                <div className="text-[14px] text-neutral-800 font-medium">是否对以上用户解除授权</div>
+                <div className="text-[14px] text-neutral-800 font-medium">是否对以上学生进行批量移除？</div>
                 <div className="text-[13px] text-neutral-400 font-medium">共 {selectedStudents.length} 条</div>
               </div>
             </div>
@@ -3208,14 +3973,14 @@ export default function TeacherCourseManage() {
         </div>
       )}
 
-      {/* 批量授权 Modal */}
+      {/* 批量添加 Modal */}
       {showBulkAuthModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[640px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626]">
-                批量授权
+                批量添加
               </h2>
               <button 
                 onClick={() => setShowBulkAuthModal(false)} 
@@ -3232,21 +3997,19 @@ export default function TeacherCourseManage() {
                   <table className="w-full text-left text-[12px] border-collapse bg-white">
                     <thead className="sticky top-0 bg-neutral-50 border-b border-neutral-200 z-10">
                       <tr className="text-neutral-550 font-bold">
-                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户账号</th>
-                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户名</th>
-                        <th className="py-2.5 px-4 font-bold text-neutral-700">用户组</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700">学生姓名</th>
+                        <th className="py-2.5 px-4 font-bold text-neutral-700 text-center">手机号</th>
                       </tr>
                     </thead>
                     <tbody>
                       {[
-                        { username: 'lilun1994', nickname: '理论1994', group: '0523' },
-                        { username: 'lilun1995', nickname: '理论1995', group: '0523' },
-                        { username: 'lilun1996', nickname: '理论1996', group: '0523' }
+                        { username: 'lilun1994', nickname: '理论1994', phone: '13911112222' },
+                        { username: 'lilun1995', nickname: '理论1995', phone: '13911113333' },
+                        { username: 'lilun1996', nickname: '理论1996', phone: '13911114444' }
                       ].map((student, i) => (
                         <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50/50 transition-colors">
-                          <td className="py-2.5 px-4 text-neutral-750 font-mono">{student.username}</td>
-                          <td className="py-2.5 px-4 text-neutral-800">{student.nickname}</td>
-                          <td className="py-2.5 px-4 text-neutral-550">{student.group}</td>
+                          <td className="py-2.5 px-4 text-neutral-800 font-bold">{student.nickname}</td>
+                          <td className="py-2.5 px-4 text-neutral-750 font-mono text-center">{student.phone}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -3255,7 +4018,7 @@ export default function TeacherCourseManage() {
               </div>
 
               <div className="flex items-center justify-between mt-4">
-                <div className="text-[14px] text-neutral-800 font-medium">是否对以上用户进行授权</div>
+                <div className="text-[14px] text-neutral-800 font-medium">是否对以上学生进行批量添加？</div>
                 <div className="text-[13px] text-neutral-400 font-medium">共 3 条</div>
               </div>
             </div>
@@ -3272,9 +4035,9 @@ export default function TeacherCourseManage() {
               <Button 
                 onClick={() => {
                   const newStudents = [
-                    { username: 'lilun1994', nickname: '理论1994', group: '0523', authTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') },
-                    { username: 'lilun1995', nickname: '理论1995', group: '0523', authTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') },
-                    { username: 'lilun1996', nickname: '理论1996', group: '0523', authTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') }
+                    { username: 'lilun1994', nickname: '理论1994', phone: '13911112222', courseProgress: '90%', taskProgress: '35%' },
+                    { username: 'lilun1995', nickname: '理论1995', phone: '13911113333', courseProgress: '90%', taskProgress: '35%' },
+                    { username: 'lilun1996', nickname: '理论1996', phone: '13911114444', courseProgress: '90%', taskProgress: '35%' }
                   ];
                   setStudentList([...studentList, ...newStudents]);
                   setShowBulkAuthModal(false);

@@ -103,6 +103,15 @@ export default function TeacherHome() {
   });
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [activeCourseDropdownId, setActiveCourseDropdownId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      setActiveCourseDropdownId(null);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
 
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
   const [courseFormName, setCourseFormName] = useState('');
@@ -479,19 +488,19 @@ export default function TeacherHome() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                    <th className="p-4 font-medium w-[35%]">课程信息</th>
-                    <th className="p-4 font-medium">授课教师</th>
-                    <th className="p-4 font-medium">课程范围</th>
-                    <th className="p-4 font-medium">状态</th>
-                    <th className="p-4 font-medium">审核状态</th>
-                    <th className="p-4 font-medium">操作</th>
+                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
+                    <th className="px-4 py-3 text-left w-[30%]">课程信息</th>
+                    <th className="px-4 py-3 text-left w-[14%]">授课教师</th>
+                    <th className="px-4 py-3 text-left w-[14%]">课程范围</th>
+                    <th className="px-4 py-3 text-left w-[14%]">状态</th>
+                    <th className="px-4 py-3 text-left w-[14%]">审核状态</th>
+                    <th className="px-4 py-3 text-left w-[14%]">操作</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCourses.map((course, index) => (
                     <tr key={course.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredCourses.length - 1 && "border-b-0")}>
-                      <td className="p-4">
+                      <td className="px-4 py-3 text-left">
                         <div className="flex items-center gap-4">
                           <div className="w-20 h-14 rounded-md overflow-hidden flex-shrink-0 border border-neutral-border/50 shadow-sm relative">
                             <img src={course.image} alt={course.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
@@ -502,10 +511,10 @@ export default function TeacherHome() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-neutral-600">
+                      <td className="px-4 py-3 text-left text-neutral-600">
                         <div className="text-neutral-800 font-medium">{course.teacher}</div>
                       </td>
-                      <td className="p-4">
+                      <td className="px-4 py-3 text-left">
                         {course.scope === '平台' ? (
                           <span className="px-2 py-0.5 bg-orange-50 text-orange-600 rounded text-[12px] border border-orange-200 font-medium">{course.scope}</span>
                         ) : course.scope === '租户' ? (
@@ -514,12 +523,12 @@ export default function TeacherHome() {
                           <span className="px-2 py-0.5 bg-neutral-50 text-neutral-500 rounded text-[12px] border border-neutral-200 font-medium">{course.scope}</span>
                         )}
                       </td>
-                      <td className="p-4">
+                      <td className="px-4 py-3 text-left">
                         <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '已发布' ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
                           {course.status}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td className="px-4 py-3 text-left">
                         {course.auditStatus === '已通过' && (
                           <span className="text-emerald-600 font-medium">已通过</span>
                         )}
@@ -530,9 +539,9 @@ export default function TeacherHome() {
                           <span className="text-rose-600 font-medium">已驳回</span>
                         )}
                       </td>
-                      <td className="p-4">
+                      <td className="px-4 py-3 text-left">
                         <div className="flex items-center gap-3">
-                          <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">查看</button>
+                          <button onClick={() => navigate(`/teacher/course/${course.id}`)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold">查看</button>
                           <button 
                             onClick={() => {
                               if (course.scope === '租户' || course.scope === '平台') return;
@@ -549,7 +558,7 @@ export default function TeacherHome() {
                             }} 
                             disabled={course.scope === '租户' || course.scope === '平台'}
                             className={cn(
-                              "transition-colors",
+                              "transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold",
                               (course.scope === '租户' || course.scope === '平台') 
                                 ? "text-neutral-400 cursor-not-allowed" 
                                 : "text-[#fa541c] hover:text-[#e84a15]"
@@ -557,69 +566,92 @@ export default function TeacherHome() {
                           >
                             编辑
                           </button>
-                          {course.status === '草稿' ? (
+
+                          {/* Dropdown for other options */}
+                          <div className="relative">
                             <button 
-                              onClick={() => {
-                                setConfirmDialog({
-                                  show: true,
-                                  title: '确认发布课程',
-                                  message: `确定要发布课程 "${course.name}" 吗？发布后选课学生将可见该课程。`,
-                                  onConfirm: () => handlePublishCourse(course.id)
-                                });
-                              }} 
-                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveCourseDropdownId(activeCourseDropdownId === course.id ? null : course.id);
+                              }}
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold flex items-center gap-0.5"
                             >
-                              发布
+                              更多 <ChevronDown className="w-3 h-3" />
                             </button>
-                          ) : (
-                            <button 
-                              onClick={() => {
-                                setConfirmDialog({
-                                  show: true,
-                                  title: '确认取消发布',
-                                  message: `确定要取消发布课程 "${course.name}" 吗？取消发布后学生将无法访问该课程。`,
-                                  onConfirm: () => handleCancelPublishCourse(course.id)
-                                });
-                              }} 
-                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
-                            >
-                              取消发布
-                            </button>
-                          )}
-                          {course.scope === '私有' && (
-                            <button 
-                              onClick={() => {
-                                setApplyPublicCourse(course);
-                                setApplyReason('');
-                                setApplyRange('租户');
-                                setIsApplyPublicModalOpen(true);
-                              }} 
-                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors"
-                            >
-                              申请公开
-                            </button>
-                          )}
-                          <button onClick={() => handleCopyCourse(course)} className="text-[#fa541c] hover:text-[#e84a15] transition-colors">复制</button>
-                          <button 
-                            onClick={() => {
-                              if (course.scope === '租户' || course.scope === '平台') return;
-                              setConfirmDialog({
-                                show: true,
-                                title: '确认删除课程',
-                                message: `确定要删除课程 "${course.name}" 吗？该操作不可撤销。`,
-                                onConfirm: () => handleDeleteCourse(course.id)
-                              });
-                            }}
-                            disabled={course.scope === '租户' || course.scope === '平台'}
-                            className={cn(
-                              "transition-colors",
-                              (course.scope === '租户' || course.scope === '平台') 
-                                ? "text-neutral-400 cursor-not-allowed" 
-                                : "text-[#fa541c] hover:text-[#e84a15]"
+                            {activeCourseDropdownId === course.id && (
+                              <div className="absolute right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg py-1 z-30 min-w-[100px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                                {course.status === '草稿' ? (
+                                  <button 
+                                    onClick={() => {
+                                      setConfirmDialog({
+                                        show: true,
+                                        title: '确认发布课程',
+                                        message: `确定要发布课程 "${course.name}" 吗？发布后选课学生将可见该课程。`,
+                                        onConfirm: () => handlePublishCourse(course.id)
+                                      });
+                                    }} 
+                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                  >
+                                    发布
+                                  </button>
+                                ) : (
+                                  <button 
+                                    onClick={() => {
+                                      setConfirmDialog({
+                                        show: true,
+                                        title: '确认取消发布',
+                                        message: `确定要取消发布课程 "${course.name}" 吗？取消发布后学生将无法访问该课程。`,
+                                        onConfirm: () => handleCancelPublishCourse(course.id)
+                                      });
+                                    }} 
+                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                  >
+                                    取消发布
+                                  </button>
+                                )}
+                                {course.scope === '私有' && (
+                                  <button 
+                                    onClick={() => {
+                                      setApplyPublicCourse(course);
+                                      setApplyReason('');
+                                      setApplyRange('租户');
+                                      setIsApplyPublicModalOpen(true);
+                                    }} 
+                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                  >
+                                    申请公开
+                                  </button>
+                                )}
+                                <button 
+                                  onClick={() => handleCopyCourse(course)}
+                                  className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                >
+                                  复制
+                                </button>
+                                <div className="h-[1px] bg-neutral-100 my-0.5"></div>
+                                <button 
+                                  onClick={() => {
+                                    if (course.scope === '租户' || course.scope === '平台') return;
+                                    setConfirmDialog({
+                                      show: true,
+                                      title: '确认删除课程',
+                                      message: `确定要删除课程 "${course.name}" 吗？该操作不可撤销。`,
+                                      onConfirm: () => handleDeleteCourse(course.id)
+                                    });
+                                  }}
+                                  disabled={course.scope === '租户' || course.scope === '平台'}
+                                  className={cn(
+                                    "w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 block font-medium transition-colors cursor-pointer",
+                                    (course.scope === '租户' || course.scope === '平台') 
+                                      ? "text-neutral-350 cursor-not-allowed hover:bg-transparent" 
+                                      : "text-[#fa541c] hover:bg-orange-50/50 hover:text-[#e84a15]"
+                                  )}
+                                >
+                                  删除
+                                </button>
+                              </div>
                             )}
-                          >
-                            删除
-                          </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
