@@ -1540,15 +1540,17 @@ export default function TeacherExams({ embedded = false }) {
                   </div>
                 </div>
               ) : (
-                <div className="bg-orange-50/20 rounded-xl p-4 border border-orange-100/60 space-y-2">
-                  <div className="text-[14px] font-bold text-neutral-800">场次名称：{detailsSession.name}</div>
-                  <div className="grid grid-cols-2 gap-y-1.5 text-xs text-neutral-600">
-                    <div>考试考场：<span className="text-neutral-900 font-semibold">{detailsSession.location}</span></div>
-                    <div>主监考官：<span className="text-neutral-900 font-semibold">{detailsSession.invigilator}</span></div>
-                    <div>考试状态：<span className="text-orange-600 font-semibold">{detailsSession.status}</span></div>
-                    <div>参考时间：<span className="text-neutral-800">{detailsSession.startTime.slice(5)}</span></div>
+                detailsType !== 'students' && (
+                  <div className="bg-orange-50/20 rounded-xl p-4 border border-orange-100/60 space-y-2">
+                    <div className="text-[14px] font-bold text-neutral-800">场次名称：{detailsSession.name}</div>
+                    <div className="grid grid-cols-2 gap-y-1.5 text-xs text-neutral-600">
+                      <div>考试考场：<span className="text-neutral-900 font-semibold">{detailsSession.location}</span></div>
+                      <div>主监考官：<span className="text-neutral-900 font-semibold">{detailsSession.invigilator}</span></div>
+                      <div>考试状态：<span className="text-orange-600 font-semibold">{detailsSession.status}</span></div>
+                      <div>参考时间：<span className="text-neutral-800">{detailsSession.startTime.slice(5)}</span></div>
+                    </div>
                   </div>
-                </div>
+                )
               )}
 
               {/* Conditional Content based on detailsType */}
@@ -1618,84 +1620,53 @@ export default function TeacherExams({ embedded = false }) {
 
                     {/* Action Buttons */}
                     <div className="flex flex-wrap items-center gap-2">
+                      {selectedStudentIds.length > 0 && (
+                        <Button
+                          onClick={() => {
+                            setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
+                            setSelectedStudentIds([]);
+                            showToast('批量移除成功！', 'success');
+                          }}
+                          className="bg-red-50 hover:bg-red-100 text-red-600 rounded-[4px] h-8 px-3 text-xs border border-red-200 cursor-pointer font-bold transition-all"
+                        >
+                          批量移除 ({selectedStudentIds.length})
+                        </Button>
+                      )}
                       <Button
                         onClick={() => {
-                          showToast('已刷新数据', 'success');
+                          const name = prompt('请输入学生姓名：');
+                          if (name && name.trim()) {
+                            const account = name.trim();
+                            const newId = Date.now();
+                            setCandidateList([
+                              ...candidateList,
+                              { id: newId, account, name, phone: '1875183' + Math.floor(1000 + Math.random() * 9000), group: '测试用户' }
+                            ]);
+                            showToast(`已成功添加考生: ${name}`, 'success');
+                          }
                         }}
-                        variant="outline"
-                        className="border-neutral-200 text-neutral-600 rounded-[4px] h-8 px-4 text-xs bg-white hover:bg-neutral-50 cursor-pointer font-medium"
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
                       >
-                        刷新
+                        添加考生
                       </Button>
                       <Button
                         onClick={() => {
                           showToast('批量导出成功，文件已开始下载', 'success');
                         }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
+                        className="bg-[#fa541c]/10 hover:bg-[#fa541c]/20 text-[#fa541c] rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold"
                       >
                         批量导出
                       </Button>
                       <Button
                         onClick={() => {
-                          if (selectedStudentIds.length === 0) {
-                            showToast('请先勾选需要移除的考生', 'error');
-                            return;
-                          }
-                          setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
-                          setSelectedStudentIds([]);
-                          showToast('批量移除成功！', 'success');
+                          showToast('已刷新数据', 'success');
                         }}
-                        className={cn(
-                          "rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold transition-all text-white",
-                          selectedStudentIds.length > 0 
-                            ? "bg-[#fa541c] hover:bg-[#e84a15] shadow-sm" 
-                            : "bg-[#ffbb96] opacity-90 cursor-not-allowed"
-                        )}
+                        variant="outline"
+                        className="border-neutral-200 text-neutral-500 rounded-[4px] h-8 px-3 text-xs bg-white hover:bg-neutral-50 cursor-pointer font-medium"
                       >
-                        批量移除
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          const newName = prompt('请输入快速添加的考生账号/姓名：');
-                          if (newName && newName.trim()) {
-                            const account = newName.trim();
-                            const newId = Date.now();
-                            setCandidateList([
-                              ...candidateList,
-                              { id: newId, account, name: account, phone: '1875183' + Math.floor(1000 + Math.random() * 9000), group: '测试用户' }
-                            ]);
-                            showToast(`已成功快速添加考生: ${account}`, 'success');
-                          }
-                        }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
-                      >
-                        快速添加
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          const account = prompt('请输入考生账号：');
-                          if (!account || !account.trim()) return;
-                          const name = prompt('请输入考生姓名：');
-                          if (!name || !name.trim()) return;
-                          const phone = prompt('请输入考生手机号：') || '18751836671';
-                          const group = prompt('请输入用户组：') || '测试用户';
-                          const newId = Date.now();
-                          setCandidateList([
-                            ...candidateList,
-                            { id: newId, account: account.trim(), name: name.trim(), phone: phone.trim(), group: group.trim() }
-                          ]);
-                          showToast(`已添加考生: ${name}`, 'success');
-                        }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
-                      >
-                        添加
+                        刷新
                       </Button>
                     </div>
-                  </div>
-
-                  {/* Table Heading */}
-                  <div className="text-left font-bold text-[#262626] text-sm pt-2">
-                    当前场次考生信息
                   </div>
 
                   {/* Candidates Table */}
