@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 interface QuotaItem {
   gpuHours: number;
@@ -502,12 +503,12 @@ export default function TeacherResources() {
                   <label className="text-[13px] font-bold text-[#262626] text-right">
                     截止日期 <span className="text-[#fa541c]">*</span>
                   </label>
-                  <input 
-                    type="date"
+                  <DateTimePicker 
                     value={formExpiry}
-                    onChange={(e) => setFormExpiry(e.target.value)}
-                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white"
-                    required
+                    onChange={(val) => setFormExpiry(val)}
+                    placeholder="请选择截止日期"
+                    className="text-[13px] w-full"
+                    showPresets={false}
                   />
                 </div>
               </div>
@@ -609,12 +610,12 @@ export default function TeacherResources() {
                 <label className="text-[13px] font-bold text-[#262626] text-right">
                   截止日期 <span className="text-[#fa541c]">*</span>
                 </label>
-                <input 
-                  type="date" 
+                <DateTimePicker 
                   value={bulkExpiry}
-                  onChange={(e) => setBulkExpiry(e.target.value)}
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white" 
-                  required
+                  onChange={(val) => setBulkExpiry(val)}
+                  placeholder="请选择截止日期"
+                  className="text-[13px] w-full"
+                  showPresets={false}
                 />
               </div>
             </div>

@@ -212,7 +212,17 @@ export default function TeacherCourseManage() {
   const [activeTab, setActiveTab] = useState('editor');
   const [perspective, setPerspective] = useState<'teacher' | 'student'>('teacher');
   const [showPerspectiveDropdown, setShowPerspectiveDropdown] = useState(false);
-  const [editorSubTab, setEditorSubTab] = useState<'directory' | 'assignments'>('directory');
+  const [editorSubTab, setEditorSubTab] = useState<'directory' | 'assignments'>(() => {
+    const hash = window.location.hash;
+    const searchIdx = hash.indexOf('?');
+    if (searchIdx !== -1) {
+      const searchParams = new URLSearchParams(hash.substring(searchIdx));
+      if (searchParams.get('tab') === 'assignments') {
+        return 'assignments';
+      }
+    }
+    return 'directory';
+  });
   const [showCourseDetail, setShowCourseDetail] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{title: string, type: string} | null>(null);
   const [showGrading, setShowGrading] = useState(false);
@@ -873,7 +883,7 @@ export default function TeacherCourseManage() {
                             <p className="text-[12px] text-neutral-400">客观题需在 90 分钟内完成答题，过程中无法暂停，仅支持提交一次答案，请提前合理安排时间</p>
                           </div>
                           
-                          <Button onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-orange-500/20 px-6 h-9 font-bold mt-2">
+                          <Button onClick={() => navigate(`/teacher/course/${id}/assignment-preview?type=objective`)} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] shadow-sm shadow-orange-500/20 px-6 h-9 font-bold mt-2">
                             预览作业
                           </Button>
                         </div>
@@ -1893,7 +1903,7 @@ export default function TeacherCourseManage() {
                   </label>
                   <div>
                     <span
-                      onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                      onClick={() => navigate(`/teacher/course/${id}/assignment-preview?type=objective`)}
                       className="text-[#fa541c] hover:text-[#e84a15] font-medium text-[13px] cursor-pointer hover:underline transition-colors"
                     >
                       {selectedAssignmentDetail.paperName}
@@ -1913,7 +1923,7 @@ export default function TeacherCourseManage() {
                             <div className="flex justify-between items-center">
                               <h4 className="text-[14px] font-bold text-[#262626]">客观题</h4>
                               <button 
-                                onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                onClick={() => navigate(`/teacher/course/${id}/assignment-preview?type=objective`)}
                                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[12px] font-bold px-3 py-1 rounded-[4px] transition-colors shadow-sm shadow-orange-500/10 cursor-pointer border-0"
                               >
                                 预览客观题
@@ -1935,7 +1945,7 @@ export default function TeacherCourseManage() {
                             <div className="flex justify-between items-center">
                               <h4 className="text-[14px] font-bold text-[#262626]">实训题</h4>
                               <button 
-                                onClick={() => navigate(`/teacher/course/${id}/assignment-preview`)}
+                                onClick={() => navigate(`/teacher/course/${id}/assignment-preview?type=practical`)}
                                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[12px] font-bold px-3 py-1 rounded-[4px] transition-colors shadow-sm shadow-orange-500/10 cursor-pointer border-0"
                               >
                                 预览实操题

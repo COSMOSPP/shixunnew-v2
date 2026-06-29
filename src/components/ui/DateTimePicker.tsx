@@ -9,6 +9,7 @@ export interface DateTimePickerProps {
   className?: string
   disabled?: boolean
   align?: 'left' | 'right'
+  showPresets?: boolean
 }
 
 export function DateTimePicker({
@@ -18,6 +19,7 @@ export function DateTimePicker({
   className,
   disabled = false,
   align = "right",
+  showPresets = true,
 }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   
@@ -269,7 +271,8 @@ export function DateTimePicker({
       {/* Date-Time Picker Popover */}
       {isOpen && (
         <div className={cn(
-          "absolute top-[calc(100%+6px)] z-50 bg-white border border-orange-100 rounded-2xl shadow-xl shadow-orange-500/5 backdrop-blur-md p-4 mt-1 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200 w-[500px]",
+          "absolute top-[calc(100%+6px)] z-50 bg-white border border-orange-100 rounded-2xl shadow-xl shadow-orange-500/5 backdrop-blur-md p-4 mt-1 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200",
+          showPresets ? "w-[500px]" : "w-[410px]",
           align === "left" ? "left-0" : "right-0"
         )}>
           {/* Main Selectors Layout: Calendar | Time Picker | Presets */}
@@ -386,21 +389,23 @@ export function DateTimePicker({
             </div>
 
             {/* 3. Quick Presets Panel */}
-            <div className="flex-1 shrink-0 border-l border-neutral-100 pl-4 flex flex-col gap-1.5 min-w-[100px]">
-              <span className="text-[11px] font-bold text-neutral-400 mb-1">快捷选项</span>
-              <div className="flex flex-col gap-1">
-                {getPresets().map((preset, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handlePresetSelect(preset.date)}
-                    className="text-left text-[12px] text-neutral-600 hover:text-[#fa541c] hover:bg-orange-50 px-2 py-1.5 rounded-lg transition-colors font-medium cursor-pointer border-0 bg-transparent"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
+            {showPresets && (
+              <div className="flex-1 shrink-0 border-l border-neutral-100 pl-4 flex flex-col gap-1.5 min-w-[100px]">
+                <span className="text-[11px] font-bold text-neutral-400 mb-1">快捷选项</span>
+                <div className="flex flex-col gap-1">
+                  {getPresets().map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handlePresetSelect(preset.date)}
+                      className="text-left text-[12px] text-neutral-600 hover:text-[#fa541c] hover:bg-orange-50 px-2 py-1.5 rounded-lg transition-colors font-medium cursor-pointer border-0 bg-transparent"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Footer Actions */}
@@ -424,14 +429,14 @@ export function DateTimePicker({
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-[12px] text-neutral-500 hover:text-red-500 px-2 py-1 rounded-md transition-colors border-0 bg-transparent cursor-pointer font-medium"
+                className="text-[12px] text-neutral-500 hover:text-red-500 px-2 py-1 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer font-medium"
               >
                 清除
               </button>
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3.5 py-1.5 rounded-lg text-[12px] font-bold transition-all shadow-md shadow-orange-500/10 cursor-pointer border-0"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3.5 py-1.5 rounded-[4px] text-[12px] font-bold transition-all shadow-md shadow-orange-500/10 cursor-pointer border-0"
               >
                 确定
               </button>

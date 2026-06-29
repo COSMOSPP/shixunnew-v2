@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Search, Plus, ChevronRight, ChevronDown, X, Power, Bot, 
+  Search, Plus, ChevronRight, ChevronDown, X, Power, Bot, Check,
   Code, PenTool, CheckCircle, BrainCircuit,
   Calendar, Clock, User,
   Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Link2, Maximize2, FileText,
@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 interface MockPaper {
   name: string;
@@ -167,10 +168,21 @@ export default function TeacherExams({ embedded = false }) {
   const [coOrganizer, setCoOrganizer] = useState('');
   const [intro, setIntro] = useState('');
   const [notice, setNotice] = useState('test');
-  const [paperConfig, setPaperConfig] = useState('考试试卷1');
+   const [paperConfig, setPaperConfig] = useState('');
   const [showSelectPaperModal, setShowSelectPaperModal] = useState(false);
   const [paperModalPage, setPaperModalPage] = useState(1);
-  const [tempSelectedPaper, setTempSelectedPaper] = useState('考试试卷1');
+  const [tempSelectedPaper, setTempSelectedPaper] = useState('');
+
+  // Add Session Drawer states
+  const [isAddSessionDrawerOpen, setIsAddSessionDrawerOpen] = useState(false);
+  const [targetExamId, setTargetExamId] = useState<number | null>(null);
+  const [sessionName, setSessionName] = useState('');
+  const [sessionType, setSessionType] = useState('正式场次');
+  const [sessionStartTime, setSessionStartTime] = useState('');
+  const [sessionEndTime, setSessionEndTime] = useState('');
+  const [sessionLocation, setSessionLocation] = useState('');
+  const [sessionInvigilator, setSessionInvigilator] = useState('');
+  const [isInvigilatorDropdownOpen, setIsInvigilatorDropdownOpen] = useState(false);
 
   // Details Drawer states
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
@@ -231,11 +243,11 @@ export default function TeacherExams({ embedded = false }) {
     setCoOrganizer('');
     setIntro('');
     setNotice('test');
-    setPaperConfig('考试试卷1');
+    setPaperConfig('');
     setDisableAI(false);
     setShowSelectPaperModal(false);
     setPaperModalPage(1);
-    setTempSelectedPaper('考试试卷1');
+    setTempSelectedPaper('');
     setIsExamRuleDropdownOpen(false);
   };
 
@@ -279,6 +291,49 @@ export default function TeacherExams({ embedded = false }) {
     }));
     setExpandedRow(examId);
     showToast('已添加新场次');
+  };
+
+  const handleSaveSession = () => {
+    if (!sessionName.trim()) {
+      showToast('请输入场次名称', 'error');
+      return;
+    }
+    if (!sessionStartTime || !sessionEndTime) {
+      showToast('请选择场次时间', 'error');
+      return;
+    }
+    if (!sessionInvigilator) {
+      showToast('请选择监考老师', 'error');
+      return;
+    }
+
+    setExams(exams.map(e => {
+      if (e.id === targetExamId) {
+        return {
+          ...e,
+          sessionsCount: e.sessionsCount + 1,
+          sessions: [
+            ...e.sessions,
+            {
+              id: Date.now(),
+              name: sessionName,
+              type: sessionType,
+              location: sessionLocation || '未分配考场',
+              status: '未开始',
+              invigilator: sessionInvigilator,
+              startTime: sessionStartTime.replace('T', ' '),
+              endTime: sessionEndTime.replace('T', ' '),
+              visibility: '隐藏'
+            }
+          ]
+        };
+      }
+      return e;
+    }));
+    
+    setExpandedRow(targetExamId);
+    setIsAddSessionDrawerOpen(false);
+    showToast('场次添加成功！');
   };
 
   const handleMockNavigate = (action: string) => {
@@ -552,7 +607,22 @@ export default function TeacherExams({ embedded = false }) {
                       <div className="flex items-center gap-3">
                         {expandedRow === exam.id ? (
                           <>
-                            <button onClick={() => handleConfirmAddSession(exam)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">添加场次</button>
+                            <button 
+                              onClick={() => {
+                                setTargetExamId(exam.id);
+                                setSessionName('');
+                                setSessionType('正式场次');
+                                setSessionStartTime('');
+                                setSessionEndTime('');
+                                setSessionLocation('');
+                                setSessionInvigilator('');
+                                setIsInvigilatorDropdownOpen(false);
+                                setIsAddSessionDrawerOpen(true);
+                              }} 
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                            >
+                              添加场次
+                            </button>
                             <button onClick={() => handleConfirmToggleExamStatus(exam)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">停用</button>
                           </>
                         ) : (
@@ -794,36 +864,58 @@ export default function TeacherExams({ embedded = false }) {
                   <div 
                     onClick={() => setIsExamRuleDropdownOpen(!isExamRuleDropdownOpen)}
                     className={cn(
-                      "min-h-[38px] w-full border rounded px-3.5 py-1.5 flex flex-wrap items-center gap-1.5 transition-all text-[#262626] bg-white cursor-pointer select-none border-neutral-200",
+                      "h-[36px] w-full border rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none border-neutral-200",
                       isExamRuleDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "hover:border-[#fa541c]"
                     )}
                   >
-                    <span className="text-[#262626]">{examRule || '选择规则'}</span>
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-                      <ChevronDown 
-                        className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isExamRuleDropdownOpen && "rotate-180")} 
-                        strokeWidth={1.5}
-                      />
-                    </div>
+                    <span className={cn(examRule ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                      {examRule || '请选择考试规则'}
+                    </span>
+                    <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isExamRuleDropdownOpen && "rotate-180")} />
                   </div>
                   {/* Dropdown Menu */}
                   {isExamRuleDropdownOpen && (
-                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                      {['仅能提交1次', '限时提交', '不允许二次提交', '无限次提交'].map((rule) => (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
                         <div
-                          key={rule}
                           onClick={() => {
-                            setExamRule(rule);
+                            setExamRule("");
                             setIsExamRuleDropdownOpen(false);
                           }}
                           className={cn(
-                            "px-4 py-2 text-left text-[13px] transition-colors cursor-pointer hover:bg-neutral-50",
-                            examRule === rule ? "text-[#fa541c] font-semibold bg-orange-50/10" : "text-neutral-700"
+                            "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                            !examRule 
+                              ? "bg-orange-50 text-[#fa541c] font-bold"
+                              : "text-neutral-400 hover:bg-orange-50/40 hover:text-neutral-600"
                           )}
                         >
-                          {rule}
+                          <span>请选择考试规则</span>
+                          {!examRule && (
+                            <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                          )}
                         </div>
-                      ))}
+                        {['仅能提交1次', '限时提交', '不允许二次提交', '无限次提交'].map((rule) => {
+                          const isSelected = examRule === rule;
+                          return (
+                            <div
+                              key={rule}
+                              onClick={() => {
+                                setExamRule(rule);
+                                setIsExamRuleDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected ? "bg-orange-50 text-[#fa541c] font-bold" : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{rule}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -927,142 +1019,32 @@ export default function TeacherExams({ embedded = false }) {
                   <span className="text-[#fa541c]">*</span>试卷配置
                 </label>
                 <div className="flex items-center gap-3">
-                  <span 
-                    className="text-[#fa541c] hover:text-[#e84a15] font-semibold cursor-pointer hover:underline text-[13px]"
-                    onClick={() => {
-                      setTempSelectedPaper(paperConfig);
-                      setShowSelectPaperModal(true);
-                    }}
-                  >
-                    {paperConfig || '未选择试卷'}
-                  </span>
-                  
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTempSelectedPaper(paperConfig);
-                      setShowSelectPaperModal(true);
-                    }}
-                    className="text-[#fa541c] hover:text-[#e84a15] font-semibold bg-transparent border-0 cursor-pointer p-0 text-[13px] transition-colors"
-                  >
-                    请选择
-                  </button>
+                  {paperConfig ? (
+                    <span 
+                      className="text-[#fa541c] hover:text-[#e84a15] font-semibold cursor-pointer hover:underline text-[13px]"
+                      onClick={() => {
+                        setTempSelectedPaper(paperConfig);
+                        setShowSelectPaperModal(true);
+                      }}
+                    >
+                      {paperConfig}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTempSelectedPaper(paperConfig);
+                        setShowSelectPaperModal(true);
+                      }}
+                      className="text-[#fa541c] hover:text-[#e84a15] font-semibold bg-transparent border-0 cursor-pointer p-0 text-[13px] transition-colors"
+                    >
+                      请选择
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="border-t border-neutral-100 mt-2 pt-6"></div>
 
-              {/* AI Config Section (The Core Feature) */}
-              <div className="bg-white rounded-xl p-5 border border-neutral-100 shadow-sm space-y-4 relative overflow-hidden group mx-1">
-                <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-100/40 to-orange-100/20 rounded-bl-full -z-0 pointer-events-none transition-transform duration-500 group-hover:scale-110"></div>
-                
-                <div className="flex items-center justify-between border-b border-neutral-50 pb-3 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
-                      <BrainCircuit className="w-4.5 h-4.5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-neutral-800 text-[15px]">考试期间禁用AI</h3>
-                      <p className="text-[11px] text-neutral-500 mt-0.5">防作弊策略，自动控制学生在考试期间的AI能力使用</p>
-                    </div>
-                  </div>
-                  
-                  {/* Premium Master Switch */}
-                  <div 
-                    onClick={() => setDisableAI(!disableAI)}
-                    className={cn(
-                      "w-12 h-6 rounded-full flex items-center px-1 cursor-pointer transition-colors duration-300 shadow-inner",
-                      disableAI ? "bg-gradient-to-r from-purple-600 to-indigo-600" : "bg-neutral-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-300 flex items-center justify-center",
-                      disableAI ? "translate-x-6" : "translate-x-0"
-                    )}>
-                      {disableAI && <Power className="w-2.5 h-2.5 text-purple-600" />}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sub Configs when master switch is ON */}
-                <div className={cn(
-                  "grid gap-3 transition-all duration-300 origin-top overflow-hidden",
-                  disableAI ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"
-                )}>
-                  <div className="min-h-0 space-y-3">
-                    <div className="bg-purple-50/50 border border-purple-100 rounded-lg p-3 text-xs text-purple-700 font-medium flex items-start gap-2 mb-2">
-                      <CheckCircle className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <p>启用后，将在指定场次的时间窗口内对参考学生生效。<strong>考试结束后自动恢复</strong>对应AI权限。</p>
-                    </div>
-
-                    <div className="space-y-3">
-                      {/* AI QA */}
-                      <div className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 bg-neutral-50/30 hover:border-purple-200 hover:bg-purple-50/20 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-md bg-white border border-neutral-200 flex items-center justify-center shadow-sm">
-                            <Bot className="w-4 h-4 text-indigo-500" />
-                          </div>
-                          <div>
-                            <div className="text-[13px] font-bold text-neutral-800">AI 问答助手</div>
-                            <div className="text-[11px] text-neutral-500">全局对话与多轮问答功能</div>
-                          </div>
-                        </div>
-                        <select 
-                          className="text-xs border border-neutral-200 rounded py-1 px-2 focus:outline-none focus:border-purple-500 bg-white shadow-sm font-medium"
-                          value={aiConfig.qa ? 'disable' : 'enable'}
-                          onChange={(e) => setAiConfig({...aiConfig, qa: e.target.value === 'disable'})}
-                        >
-                          <option value="disable">禁用</option>
-                          <option value="enable">允许使用</option>
-                        </select>
-                      </div>
-
-                      {/* Code Assistant */}
-                      <div className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 bg-neutral-50/30 hover:border-purple-200 hover:bg-purple-50/20 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-md bg-white border border-neutral-200 flex items-center justify-center shadow-sm">
-                            <Code className="w-4 h-4 text-sky-500" />
-                          </div>
-                          <div>
-                            <div className="text-[13px] font-bold text-neutral-800">代码生成与补全</div>
-                            <div className="text-[11px] text-neutral-500">IDE内的代码补全与诊断分析</div>
-                          </div>
-                        </div>
-                        <select 
-                          className="text-xs border border-neutral-200 rounded py-1 px-2 focus:outline-none focus:border-purple-500 bg-white shadow-sm font-medium"
-                          value={aiConfig.code ? 'disable' : 'enable'}
-                          onChange={(e) => setAiConfig({...aiConfig, code: e.target.value === 'disable'})}
-                        >
-                          <option value="disable">完全禁用</option>
-                          <option value="downgrade">降级 (仅提示语法)</option>
-                          <option value="enable">允许使用</option>
-                        </select>
-                      </div>
-
-                      {/* Generation Assistant */}
-                      <div className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 bg-neutral-50/30 hover:border-purple-200 hover:bg-purple-50/20 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-md bg-white border border-neutral-200 flex items-center justify-center shadow-sm">
-                            <PenTool className="w-4 h-4 text-emerald-500" />
-                          </div>
-                          <div>
-                            <div className="text-[13px] font-bold text-neutral-800">出题助手与文案生成</div>
-                            <div className="text-[11px] text-neutral-500">限制一键生成内容的能力</div>
-                          </div>
-                        </div>
-                        <select 
-                          className="text-xs border border-neutral-200 rounded py-1 px-2 focus:outline-none focus:border-purple-500 bg-white shadow-sm font-medium"
-                          value={aiConfig.question ? 'disable' : 'enable'}
-                          onChange={(e) => setAiConfig({...aiConfig, question: e.target.value === 'disable'})}
-                        >
-                          <option value="disable">禁用</option>
-                          <option value="enable">允许使用</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
             </div>
 
@@ -1071,15 +1053,236 @@ export default function TeacherExams({ embedded = false }) {
               <Button 
                 onClick={() => setIsCreateDrawerOpen(false)}
                 variant="outline"
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-lg cursor-pointer bg-white"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
               >
                 取消
               </Button>
               <Button 
                 onClick={handleCreate}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-lg shadow-sm border-0 cursor-pointer"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
               >
                 保存并配置场次
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Add Session Drawer */}
+      {isAddSessionDrawerOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-[13px]"
+          onClick={() => setIsAddSessionDrawerOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300 relative text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
+              <h2 className="text-[15px] font-bold text-neutral-850">新增场次配置</h2>
+              <button 
+                onClick={() => setIsAddSessionDrawerOpen(false)}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Drawer Body */}
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white relative">
+              {/* 场次名称 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  <span className="text-[#fa541c]">*</span>场次名称
+                </label>
+                <div className="relative w-full">
+                  <input
+                    type="text"
+                    value={sessionName}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 100) {
+                        setSessionName(e.target.value);
+                      }
+                    }}
+                    placeholder="请输入场次名称"
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 pr-16 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-[#262626] bg-white font-medium"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 font-medium">
+                    {sessionName.length} / 100
+                  </span>
+                </div>
+              </div>
+
+              {/* 场次类型 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  <span className="text-[#fa541c]">*</span>场次类型
+                </label>
+                <div className="flex items-center gap-6">
+                  <div 
+                    onClick={() => setSessionType('正式场次')}
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                  >
+                    {sessionType === '正式场次' ? (
+                      <div className="w-[18px] h-[18px] rounded-full border border-[#fa541c] flex items-center justify-center shrink-0">
+                        <div className="w-[9px] h-[9px] rounded-full bg-[#fa541c]" />
+                      </div>
+                    ) : (
+                      <div className="w-[18px] h-[18px] rounded-full border border-neutral-300 shrink-0" />
+                    )}
+                    <span className={cn("text-[13px] transition-colors font-medium", sessionType === '正式场次' ? "text-[#fa541c]" : "text-neutral-600")}>正式场次</span>
+                  </div>
+                  <div 
+                    onClick={() => setSessionType('测试场次')}
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                  >
+                    {sessionType === '测试场次' ? (
+                      <div className="w-[18px] h-[18px] rounded-full border border-[#fa541c] flex items-center justify-center shrink-0">
+                        <div className="w-[9px] h-[9px] rounded-full bg-[#fa541c]" />
+                      </div>
+                    ) : (
+                      <div className="w-[18px] h-[18px] rounded-full border border-neutral-300 shrink-0" />
+                    )}
+                    <span className={cn("text-[13px] transition-colors font-medium", sessionType === '测试场次' ? "text-[#fa541c]" : "text-neutral-600")}>测试场次</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 场次时间 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  <span className="text-[#fa541c]">*</span>场次时间
+                </label>
+                <div className="flex items-center gap-2 text-[13px] w-full text-neutral-800">
+                  <div className="flex-1">
+                    <DateTimePicker 
+                      value={sessionStartTime}
+                      onChange={(val) => setSessionStartTime(val)}
+                      placeholder="请选择开始时间"
+                      className="text-[13px] w-full"
+                      showPresets={false}
+                      align="left"
+                    />
+                  </div>
+                  <span className="text-neutral-400 font-medium">—</span>
+                  <div className="flex-1">
+                    <DateTimePicker 
+                      value={sessionEndTime}
+                      onChange={(val) => setSessionEndTime(val)}
+                      placeholder="请选择结束时间"
+                      className="text-[13px] w-full"
+                      showPresets={false}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 考场 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  考场
+                </label>
+                <div className="relative w-full">
+                  <input
+                    type="text"
+                    value={sessionLocation}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 100) {
+                        setSessionLocation(e.target.value);
+                      }
+                    }}
+                    placeholder="请输入考场"
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 pr-16 text-[13px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-[#262626] bg-white font-medium"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 font-medium">
+                    {sessionLocation.length} / 100
+                  </span>
+                </div>
+              </div>
+
+              {/* 监考老师 */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  <span className="text-[#fa541c]">*</span>监考老师
+                </label>
+                <div className="relative w-full text-[13px]">
+                  <div 
+                    onClick={() => setIsInvigilatorDropdownOpen(!isInvigilatorDropdownOpen)}
+                    className={cn(
+                      "h-[36px] w-full border rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none border-neutral-200",
+                      isInvigilatorDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className={cn(sessionInvigilator ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                      {sessionInvigilator || '请选择监考老师'}
+                    </span>
+                    <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isInvigilatorDropdownOpen && "rotate-180")} />
+                  </div>
+                  {isInvigilatorDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                        <div
+                          onClick={() => {
+                            setSessionInvigilator("");
+                            setIsInvigilatorDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                            !sessionInvigilator 
+                              ? "bg-orange-50 text-[#fa541c] font-bold"
+                              : "text-neutral-400 hover:bg-orange-50/40 hover:text-neutral-600"
+                          )}
+                        >
+                          <span>请选择监考老师</span>
+                          {!sessionInvigilator && (
+                            <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                          )}
+                        </div>
+                        {['张维老师', '李杰老师', '王莹老师', '陈晨老师'].map((teacher) => {
+                          const isSelected = sessionInvigilator === teacher;
+                          return (
+                            <div
+                              key={teacher}
+                              onClick={() => {
+                                setSessionInvigilator(teacher);
+                                setIsInvigilatorDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected ? "bg-orange-50 text-[#fa541c] font-bold" : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{teacher}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 z-10">
+              <Button 
+                onClick={() => setIsAddSessionDrawerOpen(false)}
+                variant="outline"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleSaveSession}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+              >
+                保存场次
               </Button>
             </div>
 
