@@ -4,7 +4,7 @@ import {
   Code, PenTool, CheckCircle, BrainCircuit,
   Calendar, Clock, User,
   Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Link2, Maximize2, FileText,
-  Users, Award, Trophy, ShieldCheck
+  Users, Award, Trophy, ShieldCheck, RotateCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -198,11 +198,16 @@ export default function TeacherExams({ embedded = false }) {
     { id: 3, account: 'lisi', name: '李四', phone: '13912345678', group: '数据科学二班' },
     { id: 4, account: 'wangwu', name: '王五', phone: '13512345678', group: '软件工程一班' }
   ]);
+  const [isBatchDropdownOpen, setIsBatchDropdownOpen] = useState(false);
+  const batchDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (examRuleDropdownRef.current && !examRuleDropdownRef.current.contains(event.target as Node)) {
         setIsExamRuleDropdownOpen(false);
+      }
+      if (batchDropdownRef.current && !batchDropdownRef.current.contains(event.target as Node)) {
+        setIsBatchDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -1625,37 +1630,56 @@ export default function TeacherExams({ embedded = false }) {
                           showToast('已刷新数据', 'success');
                         }}
                         variant="outline"
-                        className="border border-neutral-200 text-neutral-600 rounded-[4px] h-8 px-2.5 text-xs bg-white hover:bg-neutral-50 cursor-pointer font-medium shrink-0"
+                        className="border border-neutral-200 text-neutral-500 rounded-[4px] h-8 w-8 p-0 flex items-center justify-center bg-white hover:bg-neutral-50 cursor-pointer shrink-0"
+                        title="刷新"
                       >
-                        刷新
+                        <RotateCw className="w-3.5 h-3.5" />
                       </Button>
-                      <Button
-                        onClick={() => {
-                          showToast('批量导出成功，文件已开始下载', 'success');
-                        }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold shadow-sm shrink-0"
-                      >
-                        批量导出
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          if (selectedStudentIds.length === 0) {
-                            showToast('请先勾选需要移除的考生', 'error');
-                            return;
-                          }
-                          setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
-                          setSelectedStudentIds([]);
-                          showToast('批量移除成功！', 'success');
-                        }}
-                        className={cn(
-                          "rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold transition-all text-white shrink-0",
-                          selectedStudentIds.length > 0 
-                            ? "bg-[#fa541c] hover:bg-[#e84a15] shadow-sm" 
-                            : "bg-[#ffbb96] opacity-80 cursor-not-allowed"
+
+                      {/* Batch Action Dropdown */}
+                      <div ref={batchDropdownRef} className="relative shrink-0 text-left">
+                        <Button
+                          onClick={() => setIsBatchDropdownOpen(!isBatchDropdownOpen)}
+                          className="bg-[#fa541c]/10 hover:bg-[#fa541c]/20 text-[#fa541c] rounded-[4px] h-8 px-3 text-xs border-0 cursor-pointer font-bold flex items-center gap-1.5 shrink-0 transition-colors"
+                        >
+                          <span>批量操作</span>
+                          <ChevronDown className={cn("w-3 h-3 transition-transform duration-200 text-[#fa541c]", isBatchDropdownOpen && "rotate-180")} />
+                        </Button>
+                        {isBatchDropdownOpen && (
+                          <div className="absolute right-0 mt-1 w-28 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[160] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div
+                              onClick={() => {
+                                setIsBatchDropdownOpen(false);
+                                showToast('批量导出成功，文件已开始下载', 'success');
+                              }}
+                              className="px-3 py-2 text-left text-xs text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900 cursor-pointer transition-colors"
+                            >
+                              批量导出
+                            </div>
+                            <div
+                              onClick={() => {
+                                setIsBatchDropdownOpen(false);
+                                if (selectedStudentIds.length === 0) {
+                                  showToast('请先勾选需要移除的考生', 'error');
+                                  return;
+                                }
+                                setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
+                                setSelectedStudentIds([]);
+                                showToast('批量移除成功！', 'success');
+                              }}
+                              className={cn(
+                                "px-3 py-2 text-left text-xs transition-colors cursor-pointer",
+                                selectedStudentIds.length > 0
+                                  ? "text-red-600 hover:bg-red-50"
+                                  : "text-neutral-300 cursor-not-allowed bg-neutral-50/20"
+                              )}
+                            >
+                              批量移除 {selectedStudentIds.length > 0 && `(${selectedStudentIds.length})`}
+                            </div>
+                          </div>
                         )}
-                      >
-                        批量移除
-                      </Button>
+                      </div>
+
                       <Button
                         onClick={() => {
                           const newName = prompt('请输入快速添加的考生账号/姓名：');
@@ -1696,10 +1720,10 @@ export default function TeacherExams({ embedded = false }) {
                   </div>
 
                   {/* Candidates Table */}
-                  <div className="border border-neutral-100 rounded-[4px] overflow-hidden shadow-sm">
+                  <div className="w-full overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[380px]">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-neutral-50/50 border-b border-neutral-100 text-neutral-500 font-medium h-10 select-none">
+                        <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10 select-none">
                           <th className="p-3 w-10 text-center">
                             <input 
                               type="checkbox"
@@ -1721,14 +1745,14 @@ export default function TeacherExams({ embedded = false }) {
                           <th className="p-3 text-center">操作</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-50 text-neutral-700 bg-white">
+                      <tbody className="divide-y divide-neutral-100 text-neutral-700 bg-white">
                         {candidateList.filter(stu => 
                           stu.account.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
                           stu.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
                         ).map((stu) => {
                           const isChecked = selectedStudentIds.includes(stu.id);
                           return (
-                            <tr key={stu.id} className="hover:bg-neutral-50/20 h-11">
+                            <tr key={stu.id} className="hover:bg-neutral-50/50 transition-colors h-11">
                               <td className="p-3 text-center">
                                 <input 
                                   type="checkbox"
@@ -1743,10 +1767,10 @@ export default function TeacherExams({ embedded = false }) {
                                   className="w-3.5 h-3.5 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] accent-[#fa541c] cursor-pointer"
                                 />
                               </td>
-                              <td className="p-3 text-neutral-800 font-medium font-mono">{stu.account}</td>
-                              <td className="p-3 text-neutral-800">{stu.name}</td>
+                              <td className="p-3 font-semibold text-neutral-800 font-mono">{stu.account}</td>
+                              <td className="p-3 text-neutral-700">{stu.name}</td>
                               <td className="p-3 text-neutral-500 font-mono">{stu.phone}</td>
-                              <td className="p-3 text-neutral-600">{stu.group}</td>
+                              <td className="p-3 text-neutral-500">{stu.group}</td>
                               <td className="p-3 text-center">
                                 <button
                                   onClick={() => {
