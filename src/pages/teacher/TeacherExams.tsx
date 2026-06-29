@@ -1606,65 +1606,91 @@ export default function TeacherExams({ embedded = false }) {
               {detailsType === 'students' && (
                 <div className="space-y-4 text-[13px]">
                   {/* Top Bar with Search and Action Buttons */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white pb-1 select-none">
+                  <div className="flex items-center justify-between gap-3 bg-white pb-1 select-none flex-nowrap w-full">
                     {/* Search Input */}
-                    <div className="w-full sm:w-auto">
+                    <div className="shrink-0">
                       <input 
                         type="text" 
                         placeholder="账号/姓名" 
                         value={studentSearchQuery}
                         onChange={(e) => setStudentSearchQuery(e.target.value)}
-                        className="w-full sm:w-56 border border-neutral-200 rounded-[4px] px-3 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
+                        className="w-40 border border-neutral-200 rounded-[4px] px-3 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
                       />
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      {selectedStudentIds.length > 0 && (
-                        <Button
-                          onClick={() => {
-                            setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
-                            setSelectedStudentIds([]);
-                            showToast('批量移除成功！', 'success');
-                          }}
-                          className="bg-red-50 hover:bg-red-100 text-red-600 rounded-[4px] h-8 px-3 text-xs border border-red-200 cursor-pointer font-bold transition-all"
-                        >
-                          批量移除 ({selectedStudentIds.length})
-                        </Button>
-                      )}
-                      <Button
-                        onClick={() => {
-                          const name = prompt('请输入学生姓名：');
-                          if (name && name.trim()) {
-                            const account = name.trim();
-                            const newId = Date.now();
-                            setCandidateList([
-                              ...candidateList,
-                              { id: newId, account, name, phone: '1875183' + Math.floor(1000 + Math.random() * 9000), group: '测试用户' }
-                            ]);
-                            showToast(`已成功添加考生: ${name}`, 'success');
-                          }
-                        }}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
-                      >
-                        添加考生
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          showToast('批量导出成功，文件已开始下载', 'success');
-                        }}
-                        className="bg-[#fa541c]/10 hover:bg-[#fa541c]/20 text-[#fa541c] rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold"
-                      >
-                        批量导出
-                      </Button>
+                    <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
                       <Button
                         onClick={() => {
                           showToast('已刷新数据', 'success');
                         }}
                         variant="outline"
-                        className="border-neutral-200 text-neutral-500 rounded-[4px] h-8 px-3 text-xs bg-white hover:bg-neutral-50 cursor-pointer font-medium"
+                        className="border border-neutral-200 text-neutral-600 rounded-[4px] h-8 px-2.5 text-xs bg-white hover:bg-neutral-50 cursor-pointer font-medium shrink-0"
                       >
                         刷新
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          showToast('批量导出成功，文件已开始下载', 'success');
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold shadow-sm shrink-0"
+                      >
+                        批量导出
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (selectedStudentIds.length === 0) {
+                            showToast('请先勾选需要移除的考生', 'error');
+                            return;
+                          }
+                          setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
+                          setSelectedStudentIds([]);
+                          showToast('批量移除成功！', 'success');
+                        }}
+                        className={cn(
+                          "rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold transition-all text-white shrink-0",
+                          selectedStudentIds.length > 0 
+                            ? "bg-[#fa541c] hover:bg-[#e84a15] shadow-sm" 
+                            : "bg-[#ffbb96] opacity-80 cursor-not-allowed"
+                        )}
+                      >
+                        批量移除
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const newName = prompt('请输入快速添加的考生账号/姓名：');
+                          if (newName && newName.trim()) {
+                            const account = newName.trim();
+                            const newId = Date.now();
+                            setCandidateList([
+                              ...candidateList,
+                              { id: newId, account, name: account, phone: '1875183' + Math.floor(1000 + Math.random() * 9000), group: '测试用户' }
+                            ]);
+                            showToast(`已成功快速添加考生: ${account}`, 'success');
+                          }
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold shadow-sm shrink-0"
+                      >
+                        快速添加
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const account = prompt('请输入考生账号：');
+                          if (!account || !account.trim()) return;
+                          const name = prompt('请输入考生姓名：');
+                          if (!name || !name.trim()) return;
+                          const phone = prompt('请输入考生手机号：') || '18751836671';
+                          const group = prompt('请输入用户组：') || '测试用户';
+                          const newId = Date.now();
+                          setCandidateList([
+                            ...candidateList,
+                            { id: newId, account: account.trim(), name: name.trim(), phone: phone.trim(), group: group.trim() }
+                          ]);
+                          showToast(`已添加考生: ${name}`, 'success');
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold shadow-sm shrink-0"
+                      >
+                        添加
                       </Button>
                     </div>
                   </div>
