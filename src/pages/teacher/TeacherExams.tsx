@@ -189,6 +189,16 @@ export default function TeacherExams({ embedded = false }) {
   const [detailsType, setDetailsType] = useState<'students' | 'scores' | 'scoring' | 'invigilation' | 'rank' | 'exam'>('students');
   const [detailsSession, setDetailsSession] = useState<any>(null);
 
+  // Candidates Drawer states
+  const [studentSearchQuery, setStudentSearchQuery] = useState('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+  const [candidateList, setCandidateList] = useState([
+    { id: 1, account: 'liuwei', name: 'liuwei', phone: '18751836671', group: '测试用户' },
+    { id: 2, account: 'zhangsan', name: '张三', phone: '13812345678', group: '人工智能一班' },
+    { id: 3, account: 'lisi', name: '李四', phone: '13912345678', group: '数据科学二班' },
+    { id: 4, account: 'wangwu', name: '王五', phone: '13512345678', group: '软件工程一班' }
+  ]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (examRuleDropdownRef.current && !examRuleDropdownRef.current.contains(event.target as Node)) {
@@ -1592,51 +1602,179 @@ export default function TeacherExams({ embedded = false }) {
               )}
 
               {detailsType === 'students' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-neutral-800 text-sm">考生列表 (共 21 人)</span>
-                    <Button 
-                      size="sm" 
-                      onClick={() => showToast('已成功导入考生名单')}
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[11px] rounded h-7 border-0 cursor-pointer px-2.5"
-                    >
-                      导入名单
-                    </Button>
+                <div className="space-y-4 text-[13px]">
+                  {/* Top Bar with Search and Action Buttons */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white pb-1 select-none">
+                    {/* Search Input */}
+                    <div className="w-full sm:w-auto">
+                      <input 
+                        type="text" 
+                        placeholder="账号/姓名" 
+                        value={studentSearchQuery}
+                        onChange={(e) => setStudentSearchQuery(e.target.value)}
+                        className="w-full sm:w-56 border border-neutral-200 rounded-[4px] px-3 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        onClick={() => {
+                          showToast('已刷新数据', 'success');
+                        }}
+                        variant="outline"
+                        className="border-neutral-200 text-neutral-600 rounded-[4px] h-8 px-4 text-xs bg-white hover:bg-neutral-50 cursor-pointer font-medium"
+                      >
+                        刷新
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          showToast('批量导出成功，文件已开始下载', 'success');
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
+                      >
+                        批量导出
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (selectedStudentIds.length === 0) {
+                            showToast('请先勾选需要移除的考生', 'error');
+                            return;
+                          }
+                          setCandidateList(candidateList.filter(stu => !selectedStudentIds.includes(stu.id)));
+                          setSelectedStudentIds([]);
+                          showToast('批量移除成功！', 'success');
+                        }}
+                        className={cn(
+                          "rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold transition-all text-white",
+                          selectedStudentIds.length > 0 
+                            ? "bg-[#fa541c] hover:bg-[#e84a15] shadow-sm" 
+                            : "bg-[#ffbb96] opacity-90 cursor-not-allowed"
+                        )}
+                      >
+                        批量移除
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const newName = prompt('请输入快速添加的考生账号/姓名：');
+                          if (newName && newName.trim()) {
+                            const account = newName.trim();
+                            const newId = Date.now();
+                            setCandidateList([
+                              ...candidateList,
+                              { id: newId, account, name: account, phone: '1875183' + Math.floor(1000 + Math.random() * 9000), group: '测试用户' }
+                            ]);
+                            showToast(`已成功快速添加考生: ${account}`, 'success');
+                          }
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
+                      >
+                        快速添加
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const account = prompt('请输入考生账号：');
+                          if (!account || !account.trim()) return;
+                          const name = prompt('请输入考生姓名：');
+                          if (!name || !name.trim()) return;
+                          const phone = prompt('请输入考生手机号：') || '18751836671';
+                          const group = prompt('请输入用户组：') || '测试用户';
+                          const newId = Date.now();
+                          setCandidateList([
+                            ...candidateList,
+                            { id: newId, account: account.trim(), name: name.trim(), phone: phone.trim(), group: group.trim() }
+                          ]);
+                          showToast(`已添加考生: ${name}`, 'success');
+                        }}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-4 text-xs border-0 cursor-pointer font-bold shadow-sm"
+                      >
+                        添加
+                      </Button>
+                    </div>
                   </div>
-                  <div className="border border-neutral-200 rounded overflow-hidden">
-                    <table className="w-full text-left border-collapse">
+
+                  {/* Table Heading */}
+                  <div className="text-left font-bold text-[#262626] text-sm pt-2">
+                    当前场次考生信息
+                  </div>
+
+                  {/* Candidates Table */}
+                  <div className="border border-neutral-100 rounded-[4px] overflow-hidden shadow-sm">
+                    <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                        <tr className="bg-neutral-50/50 border-b border-neutral-100 text-neutral-500 font-medium h-10 select-none">
+                          <th className="p-3 w-10 text-center">
+                            <input 
+                              type="checkbox"
+                              checked={candidateList.length > 0 && candidateList.every(stu => selectedStudentIds.includes(stu.id))}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedStudentIds(candidateList.map(stu => stu.id));
+                                } else {
+                                  setSelectedStudentIds([]);
+                                }
+                              }}
+                              className="w-3.5 h-3.5 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] accent-[#fa541c] cursor-pointer"
+                            />
+                          </th>
+                          <th className="p-3">账号</th>
                           <th className="p-3">姓名</th>
-                          <th className="p-3">准考证号</th>
-                          <th className="p-3">班级</th>
-                          <th className="p-3 text-center">状态</th>
+                          <th className="p-3">手机号</th>
+                          <th className="p-3">用户组</th>
+                          <th className="p-3 text-center">操作</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-100 text-xs text-neutral-700">
-                        {[
-                          { name: '张三', code: 'EXAM001', class: '人工智能一班', status: '正常' },
-                          { name: '李四', code: 'EXAM002', class: '人工智能一班', status: '正常' },
-                          { name: '王五', code: 'EXAM003', class: '数据科学二班', status: '正常' },
-                          { name: '赵六', code: 'EXAM004', class: '软件工程一班', status: '正常' },
-                          { name: '周七', code: 'EXAM005', class: '软件工程一班', status: '正常' },
-                          { name: '钱八', code: 'EXAM006', class: '人工智能一班', status: '正常' },
-                          { name: '孙九', code: 'EXAM007', class: '数据科学一班', status: '请假' },
-                        ].map((stu, i) => (
-                          <tr key={i} className="hover:bg-neutral-50/50">
-                            <td className="p-3 font-semibold text-neutral-900">{stu.name}</td>
-                            <td className="p-3 font-mono text-neutral-500">{stu.code}</td>
-                            <td className="p-3">{stu.class}</td>
-                            <td className="p-3 text-center">
-                              <span className={cn(
-                                "px-1.5 py-0.5 rounded text-[10px]",
-                                stu.status === '正常' ? "bg-green-50 text-green-600" : "bg-neutral-100 text-neutral-400"
-                              )}>
-                                {stu.status}
-                              </span>
+                      <tbody className="divide-y divide-neutral-50 text-neutral-700 bg-white">
+                        {candidateList.filter(stu => 
+                          stu.account.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                          stu.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
+                        ).map((stu) => {
+                          const isChecked = selectedStudentIds.includes(stu.id);
+                          return (
+                            <tr key={stu.id} className="hover:bg-neutral-50/20 h-11">
+                              <td className="p-3 text-center">
+                                <input 
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedStudentIds([...selectedStudentIds, stu.id]);
+                                    } else {
+                                      setSelectedStudentIds(selectedStudentIds.filter(id => id !== stu.id));
+                                    }
+                                  }}
+                                  className="w-3.5 h-3.5 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] accent-[#fa541c] cursor-pointer"
+                                />
+                              </td>
+                              <td className="p-3 text-neutral-800 font-medium font-mono">{stu.account}</td>
+                              <td className="p-3 text-neutral-800">{stu.name}</td>
+                              <td className="p-3 text-neutral-500 font-mono">{stu.phone}</td>
+                              <td className="p-3 text-neutral-600">{stu.group}</td>
+                              <td className="p-3 text-center">
+                                <button
+                                  onClick={() => {
+                                    setCandidateList(candidateList.filter(s => s.id !== stu.id));
+                                    setSelectedStudentIds(selectedStudentIds.filter(id => id !== stu.id));
+                                    showToast(`已成功移除考生: ${stu.name}`, 'success');
+                                  }}
+                                  className="text-red-500 hover:text-red-600 font-semibold cursor-pointer border-0 bg-transparent p-0 text-xs transition-colors"
+                                >
+                                  移除
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {candidateList.filter(stu => 
+                          stu.account.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                          stu.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
+                        ).length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="p-8 text-center text-neutral-400">
+                              暂无考生数据
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
