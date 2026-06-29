@@ -4349,7 +4349,7 @@ export default function TeacherQuestions() {
               </button>
             </div>
 
-            <div className="p-6 flex-1 bg-white space-y-4 text-left flex flex-col min-h-0 overflow-hidden">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white space-y-5 text-left flex flex-col min-h-0">
               {viewingBankDetail ? (
               // BANK DETAIL VIEW
               <div className="space-y-4 flex-1 flex flex-col min-h-0 text-left">
@@ -4385,7 +4385,7 @@ export default function TeacherQuestions() {
                   <span className="text-[11px] text-neutral-400 font-normal">展示该题库下收录的试题</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar min-h-0">
+                <div className="w-full overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[380px]">
                   <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                     <thead>
                       <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
@@ -4500,7 +4500,7 @@ export default function TeacherQuestions() {
                   </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar min-h-0">
+                <div className="w-full overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[440px]">
                   <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                     <thead>
                       <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10">
