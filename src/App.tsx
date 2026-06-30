@@ -91,6 +91,7 @@ import TeacherBilling from "./pages/teacher/TeacherBilling";
 import TeacherAIQuota from "./pages/teacher/TeacherAIQuota";
 import TeacherAudit from "./pages/teacher/TeacherAudit";
 import TeacherLogs from "./pages/teacher/TeacherLogs";
+import TeacherExamRules from "./pages/teacher/TeacherExamRules";
 
 export default function App() {
   return (
@@ -131,6 +132,7 @@ export default function App() {
           <Route path="aiquota" element={<TeacherAIQuota />} />
           <Route path="audit" element={<TeacherAudit />} />
           <Route path="logs" element={<TeacherLogs />} />
+          <Route path="examrules" element={<TeacherExamRules />} />
         </Route>
 
         {/* User Dashboard */}

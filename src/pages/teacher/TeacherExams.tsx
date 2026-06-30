@@ -53,6 +53,17 @@ const MOCK_PAPERS_PAGED: Record<number, MockPaper[]> = {
   ]
 };
 
+const MOCK_AVAILABLE_CANDIDATES = [
+  { id: 1001, account: 't03_liuwei', name: '2', phone: '18751836676', group: '测试用户' },
+  { id: 1002, account: 't02_liuwei', name: '2', phone: '18751836675', group: '测试用户' },
+  { id: 1003, account: 't01_liuwei', name: '2', phone: '18751836674', group: '测试用户' },
+  { id: 1004, account: 'sqgjb_wsy', name: '王姝懿', phone: '18702931827', group: '测试用户' },
+  { id: 1005, account: 'sqgjb_zmj', name: '赵梦姣', phone: '15332456648', group: '测试用户' },
+  { id: 1006, account: 'sqgjb_hfy', name: '黄方瑜', phone: '17319923385', group: '测试用户' },
+  { id: 1007, account: 'sqgjb_hj', name: '何杰', phone: '19929217900', group: '测试用户' },
+  { id: 1008, account: 'sqgjb_zwt', name: '朱文涛', phone: '13385203356', group: '测试用户' }
+];
+
 export default function TeacherExams({ embedded = false }) {
   const navigate = useNavigate();
   // Exams mock data
@@ -200,6 +211,14 @@ export default function TeacherExams({ embedded = false }) {
   ]);
   const [isBatchDropdownOpen, setIsBatchDropdownOpen] = useState(false);
   const batchDropdownRef = useRef<HTMLDivElement>(null);
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [quickAddAccountsText, setQuickAddAccountsText] = useState('');
+  const [showAddCandidatesModal, setShowAddCandidatesModal] = useState(false);
+  const [addSearchQuery, setAddSearchQuery] = useState('');
+  const [selectedAddStudentIds, setSelectedAddStudentIds] = useState<number[]>([]);
+  const [addCandidatesPage, setAddCandidatesPage] = useState(1);
+  const [invigilationTab, setInvigilationTab] = useState<'overview' | 'content' | 'notice'>('overview');
+  const [invigilationSearchQuery, setInvigilationSearchQuery] = useState('');
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -215,6 +234,10 @@ export default function TeacherExams({ embedded = false }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    setAddCandidatesPage(1);
+  }, [addSearchQuery]);
   
   // AI Disable Config states
   const [disableAI, setDisableAI] = useState(false);
@@ -547,6 +570,16 @@ export default function TeacherExams({ embedded = false }) {
     setIsDetailsDrawerOpen(true);
   };
 
+  const filteredAvailableCandidates = MOCK_AVAILABLE_CANDIDATES.filter(candidate => {
+    const query = addSearchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      candidate.account.toLowerCase().includes(query) ||
+      candidate.name.toLowerCase().includes(query) ||
+      candidate.group.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className={cn("space-y-4", embedded ? "" : "p-6")}>
       
@@ -824,7 +857,7 @@ export default function TeacherExams({ embedded = false }) {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-4 fade-in duration-300">
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[300] animate-in slide-in-from-top-4 fade-in duration-300">
           <div className="bg-white px-6 py-3 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-500" />
             <span className="text-sm font-bold text-neutral-800">{toastMessage.message}</span>
@@ -1308,17 +1341,35 @@ export default function TeacherExams({ embedded = false }) {
       {/* Confirm Modal */}
       {confirmModal.show && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-[420px] overflow-hidden border border-neutral-100 animate-in zoom-in-95 duration-150">
-            <div className="px-6 py-5">
-              <h3 className="text-[15px] font-bold text-[#262626] mb-2">{confirmModal.title}</h3>
-              <p className="text-xs text-neutral-500 leading-relaxed whitespace-pre-wrap">{confirmModal.message}</p>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
+                {confirmModal.title}
+              </h2>
+              <button 
+                onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <div className="px-6 py-4 bg-neutral-50/50 border-t border-neutral-100 flex justify-end gap-2.5">
+
+            {/* Body */}
+            <div className="p-6 bg-white flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              <div className="text-[14px] text-neutral-750 leading-normal whitespace-pre-wrap">
+                {confirmModal.message}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               {confirmModal.showCancel && (
                 <Button 
                   onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
                   variant="outline"
-                  className="border-neutral-200 text-neutral-650 font-semibold h-8 px-4 rounded-[4px] text-xs bg-white hover:bg-neutral-50"
+                  className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
                 >
                   取消
                 </Button>
@@ -1328,9 +1379,9 @@ export default function TeacherExams({ embedded = false }) {
                   setConfirmModal(prev => ({ ...prev, show: false }));
                   confirmModal.onConfirm();
                 }}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-5 rounded-[4px] text-xs border-0 cursor-pointer animate-none"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
-                确认
+                确定
               </Button>
             </div>
           </div>
@@ -1500,7 +1551,10 @@ export default function TeacherExams({ embedded = false }) {
           onClick={() => setIsDetailsDrawerOpen(false)}
         >
           <div 
-            className="bg-white w-full max-w-[600px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300 relative"
+            className={cn(
+              "bg-white w-full h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300 relative",
+              detailsType === 'invigilation' ? "max-w-[1100px]" : "max-w-[600px]"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
@@ -1613,13 +1667,14 @@ export default function TeacherExams({ embedded = false }) {
                   {/* Top Bar with Search and Action Buttons */}
                   <div className="flex items-center justify-between gap-3 bg-white pb-1 select-none flex-nowrap w-full">
                     {/* Search Input */}
-                    <div className="shrink-0">
+                    <div className="relative shrink-0">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                       <input 
                         type="text" 
                         placeholder="账号/姓名" 
                         value={studentSearchQuery}
                         onChange={(e) => setStudentSearchQuery(e.target.value)}
-                        className="w-40 border border-neutral-200 rounded-[4px] px-3 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
+                        className="w-48 pl-9 pr-4 py-1.5 text-xs border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
                       />
                     </div>
 
@@ -1681,37 +1736,13 @@ export default function TeacherExams({ embedded = false }) {
                       </div>
 
                       <Button
-                        onClick={() => {
-                          const newName = prompt('请输入快速添加的考生账号/姓名：');
-                          if (newName && newName.trim()) {
-                            const account = newName.trim();
-                            const newId = Date.now();
-                            setCandidateList([
-                              ...candidateList,
-                              { id: newId, account, name: account, phone: '1875183' + Math.floor(1000 + Math.random() * 9000), group: '测试用户' }
-                            ]);
-                            showToast(`已成功快速添加考生: ${account}`, 'success');
-                          }
-                        }}
+                        onClick={() => setShowQuickAddModal(true)}
                         className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold shadow-sm shrink-0"
                       >
                         快速添加
                       </Button>
                       <Button
-                        onClick={() => {
-                          const account = prompt('请输入考生账号：');
-                          if (!account || !account.trim()) return;
-                          const name = prompt('请输入考生姓名：');
-                          if (!name || !name.trim()) return;
-                          const phone = prompt('请输入考生手机号：') || '18751836671';
-                          const group = prompt('请输入用户组：') || '测试用户';
-                          const newId = Date.now();
-                          setCandidateList([
-                            ...candidateList,
-                            { id: newId, account: account.trim(), name: name.trim(), phone: phone.trim(), group: group.trim() }
-                          ]);
-                          showToast(`已添加考生: ${name}`, 'success');
-                        }}
+                        onClick={() => setShowAddCandidatesModal(true)}
                         className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-8 px-2.5 text-xs border-0 cursor-pointer font-bold shadow-sm shrink-0"
                       >
                         添加
@@ -1774,11 +1805,19 @@ export default function TeacherExams({ embedded = false }) {
                               <td className="p-3 text-center">
                                 <button
                                   onClick={() => {
-                                    setCandidateList(candidateList.filter(s => s.id !== stu.id));
-                                    setSelectedStudentIds(selectedStudentIds.filter(id => id !== stu.id));
-                                    showToast(`已成功移除考生: ${stu.name}`, 'success');
+                                    setConfirmModal({
+                                      show: true,
+                                      title: '确认移除考生',
+                                      message: `确定要从考生名单中移除考生 "${stu.name}" 吗？该操作不可撤销。`,
+                                      showCancel: true,
+                                      onConfirm: () => {
+                                        setCandidateList(candidateList.filter(s => s.id !== stu.id));
+                                        setSelectedStudentIds(selectedStudentIds.filter(id => id !== stu.id));
+                                        showToast(`已成功移除考生: ${stu.name}`, 'success');
+                                      }
+                                    });
                                   }}
-                                  className="text-red-500 hover:text-red-600 font-semibold cursor-pointer border-0 bg-transparent p-0 text-xs transition-colors"
+                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold cursor-pointer border-0 bg-transparent p-0 text-xs transition-colors"
                                 >
                                   移除
                                 </button>
@@ -1915,56 +1954,263 @@ export default function TeacherExams({ embedded = false }) {
               )}
 
               {detailsType === 'invigilation' && (
-                <div className="space-y-4">
-                  <div className="border border-neutral-200 rounded overflow-hidden">
-                    <div className="bg-neutral-50/50 p-4 border-b border-neutral-200 flex justify-between items-center">
-                      <span className="font-bold text-neutral-800 text-sm">主考官监考安排</span>
-                      <span className="text-xs text-green-600 font-semibold flex items-center gap-1">● 监考设备就绪</span>
-                    </div>
-                    <div className="p-4 space-y-3.5">
-                      <div className="flex justify-between border-b border-neutral-100 pb-2">
-                        <span className="text-neutral-500">主监考教师：</span>
-                        <span className="text-neutral-800 font-bold">{detailsSession.invigilator}</span>
-                      </div>
-                      <div className="flex justify-between border-b border-neutral-100 pb-2">
-                        <span className="text-neutral-500">巡考教师：</span>
-                        <span className="text-neutral-800 font-bold">王老师 (教务处)</span>
-                      </div>
-                      <div className="flex justify-between border-b border-neutral-100 pb-2">
-                        <span className="text-neutral-500">安排地点：</span>
-                        <span className="text-neutral-800 font-bold">{detailsSession.location}</span>
-                      </div>
-                      <div className="flex justify-between pb-1">
-                        <span className="text-neutral-500">考前广播准备：</span>
-                        <span className="text-neutral-800 font-bold">已录入并配置完成</span>
-                      </div>
-                    </div>
+                <div className="space-y-5 flex flex-col h-full -mt-2">
+                  {/* Tabs Header */}
+                  <div className="flex border-b border-neutral-150 gap-6 select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20">
+                    {[
+                      { key: 'overview', name: '考试总览' },
+                      { key: 'content', name: '考试内容' },
+                      { key: 'notice', name: '考试须知' }
+                    ].map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setInvigilationTab(tab.key as any)}
+                        className={cn(
+                          "pb-2.5 font-bold border-b-2 whitespace-nowrap text-[13px] bg-transparent border-0 cursor-pointer transition-all",
+                          invigilationTab === tab.key 
+                            ? "text-[#fa541c] border-[#fa541c]" 
+                            : "text-neutral-500 border-transparent hover:text-[#fa541c]"
+                        )}
+                      >
+                        {tab.name}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Anti-cheat configuration lists */}
-                  <div className="border border-neutral-200 rounded overflow-hidden">
-                    <div className="bg-neutral-50/50 p-4 border-b border-neutral-200">
-                      <span className="font-bold text-neutral-800 text-sm">防作弊策略配置 (Anti-Cheat Policies)</span>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {[
-                        { title: '摄像头抓拍抓取检测', desc: '考中随机截取答题环境，识别人脸特征及替考行为。', enabled: true },
-                        { title: '锁屏与切屏限制策略', desc: '超过 3 次切换窗口即判定作弊并自动强制交卷。', enabled: true },
-                        { title: '考试IP绑定校验', desc: '禁止非特定IP登录，防止外网代刷、代考。', enabled: true },
-                        { title: 'AI异常轨迹预警', desc: '异常复制粘贴、快速答题以及鼠标划出页面进行警告。', enabled: true },
-                      ].map((item, i) => (
-                        <div key={i} className="flex justify-between items-center gap-4 border-b border-neutral-100/60 pb-3 last:border-0 last:pb-0">
-                          <div>
-                            <div className="text-xs font-bold text-neutral-800">{item.title}</div>
-                            <div className="text-[11px] text-neutral-400 mt-0.5">{item.desc}</div>
+                  {/* Tab Contents */}
+                  {invigilationTab === 'overview' && (
+                    <div className="space-y-4">
+                      {/* Top Info Cards */}
+                      <div className="grid grid-cols-2 gap-5 select-none">
+                        {/* Left Card: 考试信息 */}
+                        <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white shadow-sm">
+                          <div className="bg-neutral-50/50 px-4 py-2.5 border-b border-neutral-150 font-bold text-neutral-800 text-[13px]">
+                            考试信息
                           </div>
-                          <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-semibold flex-shrink-0">
-                            已启用
-                          </span>
+                          <div className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                            <div className="px-4 py-2.5 flex items-center">
+                              <span className="w-20 text-neutral-500">考试名称：</span>
+                              <span className="text-neutral-800 font-medium">545212</span>
+                            </div>
+                            <div className="px-4 py-2.5 flex items-center">
+                              <span className="w-20 text-neutral-500">场次名称：</span>
+                              <span className="text-neutral-800 font-medium">1223</span>
+                            </div>
+                            <div className="px-4 py-2.5 flex items-center">
+                              <span className="w-20 text-neutral-500">考场：</span>
+                              <span className="text-neutral-800 font-medium">--</span>
+                            </div>
+                          </div>
                         </div>
-                      ))}
+
+                        {/* Right Card: 考生信息 */}
+                        <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white shadow-sm">
+                          <div className="bg-neutral-50/50 px-4 py-2.5 border-b border-neutral-150 font-bold text-neutral-800 text-[13px]">
+                            考生信息
+                          </div>
+                          <div className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                            <div className="px-4 py-2.5 flex items-center">
+                              <span className="w-28 text-neutral-500">未登录人数：</span>
+                              <span className="text-neutral-800 font-bold font-mono">1</span>
+                            </div>
+                            <div className="px-4 py-2.5 flex items-center">
+                              <span className="w-28 text-neutral-500">已登录人数：</span>
+                              <span className="text-neutral-800 font-bold font-mono">1</span>
+                            </div>
+                            <div className="px-4 py-2.5 flex items-center">
+                              <span className="w-28 text-neutral-500">已交卷人数：</span>
+                              <span className="text-neutral-800 font-bold font-mono">1</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Filter & Action Toolbar */}
+                      <div className="flex items-center justify-between gap-3 mt-4 select-none">
+                        {/* Left search */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={invigilationSearchQuery}
+                            onChange={(e) => setInvigilationSearchQuery(e.target.value)}
+                            placeholder="请输入账号/姓名"
+                            className="w-48 px-3 py-1.5 text-xs border border-neutral-200 rounded-[4px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
+                          />
+                          <Button
+                            onClick={() => showToast('正在执行查询...', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                          >
+                            查询
+                          </Button>
+                        </div>
+
+                        {/* Right action buttons */}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => showToast('已成功初始化试卷', 'success')}
+                            className="bg-[#ffbb96] hover:bg-[#ff9c6e] text-white font-bold h-8 px-3.5 rounded-[4px] text-xs border-0 cursor-pointer"
+                          >
+                            初始化试卷
+                          </Button>
+                          <Button
+                            onClick={() => showToast('正在统分中...', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                          >
+                            统分
+                          </Button>
+                          <Button
+                            onClick={() => showToast('环境已开始初始化', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                          >
+                            初始化环境
+                          </Button>
+                          <Button
+                            onClick={() => showToast('环境清理已开始', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                          >
+                            清理环境
+                          </Button>
+                          <Button
+                            onClick={() => showToast('数据导出成功，正在开始下载', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                          >
+                            导出
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Candidates Table */}
+                      <div className="w-full overflow-y-auto border border-neutral-150 rounded-[8px] bg-white custom-scrollbar max-h-[350px]">
+                        <table className="w-full text-left border-collapse text-xs select-none">
+                          <thead>
+                            <tr className="border-b border-neutral-100 text-neutral-600 font-semibold sticky top-0 z-10 text-[13px] bg-neutral-50">
+                              <th className="p-3 w-10 text-center bg-neutral-50">
+                                <input
+                                  type="checkbox"
+                                  className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                                />
+                              </th>
+                              <th className="p-3 text-left bg-neutral-50">账号</th>
+                              <th className="p-3 text-left bg-neutral-50">姓名</th>
+                              <th className="p-3 text-left bg-neutral-50">试卷状态</th>
+                              <th className="p-3 text-left bg-neutral-50">环境状态</th>
+                              <th className="p-3 text-left bg-neutral-50">可用环境</th>
+                              <th className="p-3 text-left bg-neutral-50">监考状态</th>
+                              <th className="p-3 text-left bg-neutral-50">状态</th>
+                              <th className="p-3 text-center bg-neutral-50">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-neutral-100 text-[13px]">
+                            {[
+                              { id: 2001, account: 'df0003', name: 'df0003', paperStatus: '已出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '未登录' },
+                              { id: 2002, account: 'df0002', name: 'df0002', paperStatus: '已出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '已交卷' }
+                            ].filter(s => {
+                              const query = invigilationSearchQuery.toLowerCase().trim();
+                              if (!query) return true;
+                              return s.account.toLowerCase().includes(query) || s.name.toLowerCase().includes(query);
+                            }).map((student) => (
+                              <tr key={student.id} className="hover:bg-neutral-50/40 text-neutral-700 bg-white transition-colors">
+                                <td className="p-3 text-center">
+                                  <input
+                                    type="checkbox"
+                                    className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                                  />
+                                </td>
+                                <td className="p-3 font-medium text-neutral-900 font-mono">{student.account}</td>
+                                <td className="p-3">{student.name}</td>
+                                <td className="p-3">
+                                  <span className="text-[#fa541c] bg-[#fff2e8] border border-[#ffd8bf] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                    {student.paperStatus}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <span className="text-[#8c8c8c] bg-[#f5f5f5] border border-[#d9d9d9] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                    {student.envStatus}
+                                  </span>
+                                </td>
+                                <td className="p-3 font-mono">{student.avEnv}</td>
+                                <td className="p-3">{student.invStatus}</td>
+                                <td className="p-3">
+                                  <span className={cn(
+                                    "px-2 py-0.5 rounded text-[11px] font-medium inline-block border",
+                                    student.loginStatus === '已交卷'
+                                      ? "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]"
+                                      : "text-[#8c8c8c] bg-[#f5f5f5] border-[#d9d9d9]"
+                                  )}>
+                                    {student.loginStatus}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-center">
+                                  <div className="flex items-center justify-center gap-2 text-xs">
+                                    <button
+                                      onClick={() => showToast('正在查询环境详情...', 'info')}
+                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors"
+                                    >
+                                      环境详情
+                                    </button>
+                                    <span className="text-neutral-300">|</span>
+                                    <button
+                                      onClick={() => showToast('正在加载学生答卷...', 'info')}
+                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors"
+                                    >
+                                      查看试卷
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {invigilationTab === 'content' && (
+                    <div className="space-y-4">
+                      <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white p-4 shadow-sm">
+                        <h3 className="font-bold text-neutral-800 text-[14px] mb-3">机器学习基础测试卷 (总分 100 分)</h3>
+                        <div className="space-y-3.5 divide-y divide-neutral-100 text-xs">
+                          <div className="pt-3 first:pt-0">
+                            <div className="flex items-center justify-between text-neutral-800 font-semibold">
+                              <span>一、单选题 (共 10 题，共 30 分)</span>
+                              <span className="text-neutral-500 font-mono">已启用</span>
+                            </div>
+                            <p className="text-neutral-500 mt-1 text-[11px]">包含线性回归、正则化、过拟合等核心概念选择。</p>
+                          </div>
+                          <div className="pt-3">
+                            <div className="flex items-center justify-between text-neutral-800 font-semibold">
+                              <span>二、编程简答题 (共 2 题，共 30 分)</span>
+                              <span className="text-neutral-500 font-mono">已启用</span>
+                            </div>
+                            <p className="text-neutral-500 mt-1 text-[11px]">手写梯度下降核心逻辑，说明 Transformer 架构组件作用。</p>
+                          </div>
+                          <div className="pt-3">
+                            <div className="flex items-center justify-between text-neutral-800 font-semibold">
+                              <span>三、综合实训题 (共 1 题，共 40 分)</span>
+                              <span className="text-neutral-500 font-mono">已启用</span>
+                            </div>
+                            <p className="text-neutral-500 mt-1 text-[11px]">搭建深度神经网络进行图像分类，并在云端完成模型部署。</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {invigilationTab === 'notice' && (
+                    <div className="space-y-4">
+                      <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white shadow-sm">
+                        <div className="bg-neutral-50/50 p-4 border-b border-neutral-150 font-bold text-neutral-800 text-[14px]">
+                          考试纪律与规范要求
+                        </div>
+                        <div className="p-4 space-y-3 text-[13px] text-neutral-600 leading-relaxed">
+                          <p>1. 请各位参考考生提前准备好考试环境，确保摄像头与音频输入输出设备运行良好，光线充足，人脸无遮挡。</p>
+                          <p>2. 考中系统将自动启用摄像头防作弊轨迹抓拍及网页切屏警示监控。</p>
+                          <p>3. 累计切换考试窗口或浏览器页面超过 3 次，系统将自动判定为作弊，执行强制交卷，成绩按零分处理。</p>
+                          <p>4. 严禁替考、抄袭或使用未经许可的任何辅助资料。一经发现，考官有权当场取消考生成绩并严肃处理。</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2041,6 +2287,363 @@ export default function TeacherExams({ embedded = false }) {
           </div>
         </div>
       )}
+
+      {/* 快速添加考生 Modal */}
+      {showQuickAddModal && (
+        <div 
+          className="fixed inset-0 z-[250] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left text-[13px]"
+          onClick={() => {
+            setShowQuickAddModal(false);
+            setQuickAddAccountsText('');
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[540px] rounded-xl overflow-hidden flex flex-col shadow-2xl border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-white shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#fa541c]" /> 快速添加考生
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowQuickAddModal(false);
+                  setQuickAddAccountsText('');
+                }} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 bg-white flex flex-col gap-4">
+              <div className="flex items-start gap-2">
+                <span className="text-sm font-semibold text-[#262626] mt-2 w-[48px] shrink-0 text-right">账号：</span>
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="relative w-full">
+                    <textarea
+                      value={quickAddAccountsText}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const lines = val.split('\n');
+                        if (lines.length <= 200) {
+                          setQuickAddAccountsText(val);
+                        } else {
+                          const cappedText = lines.slice(0, 200).join('\n');
+                          setQuickAddAccountsText(cappedText);
+                          showToast('最多只能输入200行', 'error');
+                        }
+                      }}
+                      className="w-full h-[220px] p-3 text-[13px] border border-[#d9d9d9] rounded-[6px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 resize-none custom-scrollbar"
+                    />
+                    <div className="absolute bottom-2 right-3 text-xs text-neutral-400 select-none">
+                      {quickAddAccountsText === '' ? 0 : quickAddAccountsText.split('\n').length}/200
+                    </div>
+                  </div>
+                  <div className="text-[12px] text-[#fa541c] font-medium leading-relaxed">
+                    输入账号，最多支持200行，每行一个账号，支持多行快速添加考生
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-neutral-50/50 border-t border-neutral-100 flex justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => {
+                  setShowQuickAddModal(false);
+                  setQuickAddAccountsText('');
+                }} 
+                variant="outline"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  const lines = quickAddAccountsText.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                  if (lines.length === 0) {
+                    showToast('请输入考生账号', 'error');
+                    return;
+                  }
+
+                  const newCandidates = lines.map((account, index) => ({
+                    id: Date.now() + index,
+                    account,
+                    name: account,
+                    phone: '1875183' + Math.floor(1000 + Math.random() * 9000),
+                    group: '测试用户'
+                  }));
+
+                  setCandidateList([
+                    ...candidateList,
+                    ...newCandidates
+                  ]);
+                  showToast(`已成功快速添加 ${newCandidates.length} 位考生`, 'success');
+                  setShowQuickAddModal(false);
+                  setQuickAddAccountsText('');
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 添加考生 Modal */}
+      {showAddCandidatesModal && (() => {
+        const PAGE_SIZE = 5;
+        const totalPages = Math.ceil(filteredAvailableCandidates.length / PAGE_SIZE) || 1;
+        
+        // Paginated subset of filtered candidates
+        const pagedCandidates = filteredAvailableCandidates.slice(
+          (addCandidatesPage - 1) * PAGE_SIZE,
+          addCandidatesPage * PAGE_SIZE
+        );
+
+        return (
+          <div 
+            className="fixed inset-0 z-[250] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left text-[13px]"
+            onClick={() => {
+              setShowAddCandidatesModal(false);
+              setAddSearchQuery('');
+              setSelectedAddStudentIds([]);
+            }}
+          >
+            <div 
+              className="bg-white w-full max-w-[720px] rounded-xl overflow-hidden flex flex-col shadow-2xl border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-white shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                  <Users className="w-5 h-5 text-[#fa541c]" /> 添加考生
+                </h2>
+                <button 
+                  onClick={() => {
+                    setShowAddCandidatesModal(false);
+                    setAddSearchQuery('');
+                    setSelectedAddStudentIds([]);
+                  }} 
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 bg-white flex flex-col gap-5">
+                {/* Search input section - Styled matching course module search */}
+                <div className="relative w-full max-w-[320px]">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={addSearchQuery}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 100) {
+                        setAddSearchQuery(e.target.value);
+                      }
+                    }}
+                    placeholder="请输入用户组/账号/姓名搜索"
+                    className="w-full pl-9 pr-20 py-2 text-sm border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-white"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-neutral-450 select-none pointer-events-none">
+                    {addSearchQuery.length} / 100
+                  </div>
+                </div>
+
+                {/* Candidates Table with non-transparent solid headers */}
+                <div className="w-full overflow-y-auto border border-neutral-150 rounded-[8px] bg-white custom-scrollbar max-h-[250px]">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-neutral-100 text-neutral-600 font-semibold sticky top-0 z-10 select-none text-[13px]">
+                        <th className="p-3 w-12 text-center bg-neutral-50 border-b border-neutral-100">
+                          <input 
+                            type="checkbox"
+                            checked={pagedCandidates.length > 0 && pagedCandidates.every(s => selectedAddStudentIds.includes(s.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                // Add all on CURRENT page
+                                const pageIds = pagedCandidates.map(s => s.id);
+                                setSelectedAddStudentIds(prev => Array.from(new Set([...prev, ...pageIds])));
+                              } else {
+                                // Remove all on CURRENT page
+                                const pageIds = pagedCandidates.map(s => s.id);
+                                setSelectedAddStudentIds(prev => prev.filter(id => !pageIds.includes(id)));
+                              }
+                            }}
+                            className="w-4 h-4 text-[#fa541c] border-neutral-300 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                          />
+                        </th>
+                        <th className="p-3 text-left bg-neutral-50 border-b border-neutral-100">账号</th>
+                        <th className="p-3 text-left bg-neutral-50 border-b border-neutral-100">姓名</th>
+                        <th className="p-3 text-left bg-neutral-50 border-b border-neutral-100">手机号</th>
+                        <th className="p-3 text-left bg-neutral-50 border-b border-neutral-100">用户组</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-[13px]">
+                      {pagedCandidates.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-neutral-400 bg-white">
+                            暂无符合搜索条件的未添加考生
+                          </td>
+                        </tr>
+                      ) : (
+                        pagedCandidates.map((candidate) => (
+                          <tr 
+                            key={candidate.id}
+                            className={cn(
+                              "hover:bg-neutral-50/40 cursor-pointer transition-colors text-neutral-700 bg-white",
+                              selectedAddStudentIds.includes(candidate.id) ? "bg-orange-50/10" : ""
+                            )}
+                            onClick={() => {
+                              if (selectedAddStudentIds.includes(candidate.id)) {
+                                setSelectedAddStudentIds(selectedAddStudentIds.filter(id => id !== candidate.id));
+                              } else {
+                                setSelectedAddStudentIds([...selectedAddStudentIds, candidate.id]);
+                              }
+                            }}
+                          >
+                            <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                              <input 
+                                type="checkbox"
+                                checked={selectedAddStudentIds.includes(candidate.id)}
+                                onChange={() => {
+                                  if (selectedAddStudentIds.includes(candidate.id)) {
+                                    setSelectedAddStudentIds(selectedAddStudentIds.filter(id => id !== candidate.id));
+                                  } else {
+                                    setSelectedAddStudentIds([...selectedAddStudentIds, candidate.id]);
+                                  }
+                                }}
+                                className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                              />
+                            </td>
+                            <td className="p-3 text-left font-medium text-neutral-900">{candidate.account}</td>
+                            <td className="p-3 text-left">{candidate.name}</td>
+                            <td className="p-3 text-left text-neutral-500">{candidate.phone}</td>
+                            <td className="p-3 text-left text-neutral-500">{candidate.group}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination Component */}
+                <div className="flex items-center justify-end py-2 bg-transparent select-none mt-2 gap-4">
+                  <span className="text-[13px] text-neutral-500">
+                    共 {filteredAvailableCandidates.length} 条
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0 rounded-sm bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" 
+                      disabled={addCandidatesPage === 1}
+                      onClick={() => setAddCandidatesPage(p => Math.max(1, p - 1))}
+                    >
+                      &lt;
+                    </Button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                      <Button 
+                        key={pageNum}
+                        variant="outline" 
+                        size="sm" 
+                        className={cn(
+                          "h-7 w-7 p-0 rounded-sm font-bold text-[12px] cursor-pointer",
+                          addCandidatesPage === pageNum 
+                            ? "bg-[#fa541c] text-white border-[#fa541c] hover:bg-[#fa541c] hover:text-white" 
+                            : "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-200"
+                        )}
+                        onClick={() => setAddCandidatesPage(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    ))}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0 rounded-sm bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" 
+                      disabled={addCandidatesPage === totalPages}
+                      onClick={() => setAddCandidatesPage(p => Math.min(totalPages, p + 1))}
+                    >
+                      &gt;
+                    </Button>
+                  </div>
+                  <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white">
+                    <option>5 条/页</option>
+                    <option>10 条/页</option>
+                    <option>20 条/页</option>
+                  </select>
+                </div>
+
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 bg-neutral-50/50 border-t border-neutral-100 flex justify-end gap-3 shrink-0">
+                <Button 
+                  onClick={() => {
+                    setShowAddCandidatesModal(false);
+                    setAddSearchQuery('');
+                    setSelectedAddStudentIds([]);
+                  }} 
+                  variant="outline"
+                  className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={() => {
+                    if (selectedAddStudentIds.length === 0) {
+                      showToast('请选择需要添加的考生', 'error');
+                      return;
+                    }
+
+                    const candidatesToAdd = MOCK_AVAILABLE_CANDIDATES.filter(c => selectedAddStudentIds.includes(c.id));
+                    
+                    // Filter out candidates that are already in candidateList
+                    const uniqueCandidatesToAdd = candidatesToAdd.filter(c => !candidateList.some(curr => curr.account === c.account));
+                    const skippedCount = candidatesToAdd.length - uniqueCandidatesToAdd.length;
+
+                    if (uniqueCandidatesToAdd.length === 0) {
+                      showToast('所选考生均已在名单中', 'info');
+                      setShowAddCandidatesModal(false);
+                      setAddSearchQuery('');
+                      setSelectedAddStudentIds([]);
+                      return;
+                    }
+
+                    setCandidateList([
+                      ...candidateList,
+                      ...uniqueCandidatesToAdd
+                    ]);
+
+                    if (skippedCount > 0) {
+                      showToast(`成功添加 ${uniqueCandidatesToAdd.length} 位考生（已自动跳过 ${skippedCount} 位已存在考生）`, 'success');
+                    } else {
+                      showToast(`已成功添加 ${uniqueCandidatesToAdd.length} 位考生`, 'success');
+                    }
+
+                    setShowAddCandidatesModal(false);
+                    setAddSearchQuery('');
+                    setSelectedAddStudentIds([]);
+                  }}
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+                >
+                  确定
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
