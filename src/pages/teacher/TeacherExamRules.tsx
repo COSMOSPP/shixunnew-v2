@@ -284,13 +284,14 @@ export default function TeacherExamRules() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
-              <h2 className="text-[15px] font-bold text-neutral-850">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                {editingRule ? <Edit className="w-5 h-5 text-[#fa541c]" /> : <Plus className="w-5 h-5 text-[#fa541c]" />}
                 {editingRule ? '编辑考试规则' : '新建考试规则'}
               </h2>
               <button 
                 onClick={() => setIsRuleModalOpen(false)} 
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -300,11 +301,11 @@ export default function TeacherExamRules() {
             <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-white custom-scrollbar">
               
               {/* 规则名称 */}
-              <div className="flex items-start gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 pt-2 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   规则名称 <span className="text-[#fa541c]">*</span>
-                </div>
-                <div className="flex-1 relative">
+                </label>
+                <div className="relative">
                   <input
                     type="text"
                     value={ruleFormName}
@@ -314,7 +315,7 @@ export default function TeacherExamRules() {
                       }
                     }}
                     placeholder="请输入规则名称"
-                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-9 pr-20"
+                    className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-[#262626] h-9 pr-20"
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-neutral-400 select-none pointer-events-none font-mono">
                     {ruleFormName.length} / 100
@@ -323,10 +324,10 @@ export default function TeacherExamRules() {
               </div>
 
               {/* 规则状态 */}
-              <div className="flex items-center gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   规则状态 <span className="text-[#fa541c]">*</span>
-                </div>
+                </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('未应用', '未应用', ruleFormStatus, setRuleFormStatus)}
                   {renderRadio('已应用', '已应用', ruleFormStatus, setRuleFormStatus)}
@@ -334,27 +335,27 @@ export default function TeacherExamRules() {
               </div>
 
               {/* 考试配置 Divider */}
-              <div className="flex items-center gap-4 py-2 select-none">
+              <div className="flex items-center gap-4 py-2 select-none w-full">
                 <span className="text-neutral-200">——</span>
                 <span className="text-[14px] font-bold text-neutral-800">考试配置</span>
                 <div className="flex-1 h-[1px] bg-neutral-100"></div>
               </div>
 
               {/* 提交方式 */}
-              <div className="flex items-center gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   提交方式 <span className="text-[#fa541c]">*</span>
-                </div>
+                </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('整体提交', '整体提交', ruleFormSubmitMethod, setRuleFormSubmitMethod)}
                 </div>
               </div>
 
               {/* 交卷次数 */}
-              <div className="flex items-center gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   交卷次数 <span className="text-[#fa541c]">*</span>
-                </div>
+                </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('仅一次', '仅一次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
                   {renderRadio('多次', '多次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
@@ -362,10 +363,10 @@ export default function TeacherExamRules() {
               </div>
 
               {/* 查看提交记录 */}
-              <div className="flex items-center gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   查看提交记录 <span className="text-[#fa541c]">*</span>
-                </div>
+                </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('展示', '展示', ruleFormViewRecords, setRuleFormViewRecords)}
                   {renderRadio('不展示', '不展示', ruleFormViewRecords, setRuleFormViewRecords)}
@@ -373,27 +374,27 @@ export default function TeacherExamRules() {
               </div>
 
               {/* 评分配置 Divider */}
-              <div className="flex items-center gap-4 py-2 select-none">
+              <div className="flex items-center gap-4 py-2 select-none w-full">
                 <span className="text-neutral-200">——</span>
                 <span className="text-[14px] font-bold text-neutral-800">评分配置</span>
                 <div className="flex-1 h-[1px] bg-neutral-100"></div>
               </div>
 
               {/* 分数取值 */}
-              <div className="flex items-center gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   分数取值 <span className="text-[#fa541c]">*</span>
-                </div>
+                </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('最后一次提交记录', '最后一次提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
                 </div>
               </div>
 
               {/* 批阅设置 */}
-              <div className="flex items-center gap-4">
-                <div className="w-24 text-[13px] text-neutral-400 font-bold shrink-0 select-none">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   批阅设置 <span className="text-[#fa541c]">*</span>
-                </div>
+                </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('提交后批阅', '提交后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
                   {renderRadio('结束考试后批阅', '结束考试后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
