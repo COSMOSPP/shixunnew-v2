@@ -405,7 +405,7 @@ export default function TeacherGrading() {
               </div>
 
               {/* Table - Styled to match question bank management list style */}
-              <div className="w-full overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[380px] flex-1">
+              <div className="w-full overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[380px]">
                 <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10 select-none">
@@ -467,7 +467,7 @@ export default function TeacherGrading() {
 
               {/* Drawer Pagination matching main list page pagination */}
               {totalDrawerItems > 0 && (
-                <div className="flex items-center justify-end px-6 py-4 border-t border-neutral-border/30 select-none bg-neutral-50/20 gap-4 mt-2 rounded-[8px]">
+                <div className="flex items-center justify-end px-6 py-4 select-none bg-neutral-50/20 gap-4 mt-2 rounded-[8px]">
                   <span className="text-[13px] text-neutral-500">
                     共 {totalDrawerItems} 条
                   </span>
