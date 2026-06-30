@@ -36,6 +36,9 @@ export default function TeacherGrading() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Candidates search query inside drawer
+  const [candQuery, setCandQuery] = useState('');
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -73,6 +76,12 @@ export default function TeacherGrading() {
     t.sessionName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Filter Candidates inside drawer
+  const filteredSubmissions = submissions.filter(sub => 
+    sub.name.toLowerCase().includes(candQuery.toLowerCase()) ||
+    sub.account.toLowerCase().includes(candQuery.toLowerCase())
+  );
+
   // Pagination calculations
   const totalTasks = filteredTasks.length;
   const totalPages = Math.ceil(totalTasks / pageSize) || 1;
@@ -82,15 +91,16 @@ export default function TeacherGrading() {
   const handleOpenGrading = (task: GradingTask) => {
     setSelectedTask(task);
     setIsDrawerOpen(true);
+    setCandQuery('');
     showToast(`已拉起「${task.examName}」批阅工作台`, 'success');
     
-    // Generate mock submissions for the selected task
+    // Generate mock submissions for the selected task matching target screenshots
     const mockSubs: StudentSubmission[] = [
-      { id: 101, name: '陈小明', account: '2026010045', status: '已交卷', gradedStatus: task.id === 4 ? '待批阅' : '已批阅', score: task.id === 4 ? null : 85 },
-      { id: 102, name: '林静媛', account: '2026010067', status: '已交卷', gradedStatus: task.id === 4 ? '待批阅' : '已批阅', score: task.id === 4 ? null : 92 },
-      { id: 103, name: '王志军', account: '2026010082', status: '已交卷', gradedStatus: '待批阅', score: null },
-      { id: 104, name: '李瑞杰', account: '2026010103', status: '已交卷', gradedStatus: task.id === 4 ? '待批阅' : '已批阅', score: task.id === 4 ? null : 78 },
-      { id: 105, name: '张美佳', account: '2026010156', status: '进行中', gradedStatus: '待批阅', score: null }
+      { id: 101, name: '2', account: 't********j', status: '已交卷', gradedStatus: '待批阅', score: 0 },
+      { id: 102, name: '陈小明', account: 't2026010045a', status: '已交卷', gradedStatus: '已批阅', score: 4 },
+      { id: 103, name: '林静媛', account: 't2026010067b', status: '已交卷', gradedStatus: '待批阅', score: 0 },
+      { id: 104, name: '王志军', account: 't2026010082c', status: '已交卷', gradedStatus: '待批阅', score: 0 },
+      { id: 105, name: '李瑞杰', account: 't2026010103d', status: '已交卷', gradedStatus: '已批阅', score: 3 }
     ];
     setSubmissions(mockSubs);
   };
@@ -102,8 +112,19 @@ export default function TeacherGrading() {
       return;
     }
     setGradingStudent(student);
-    setScoreInput(student.score !== null ? student.score.toString() : '');
+    setScoreInput(student.score !== null ? student.score.toString() : '0');
     setCommentInput('');
+  };
+
+  // Refresh candidates handler
+  const handleRefreshCandidates = () => {
+    setCandQuery('');
+    showToast('已刷新数据', 'success');
+  };
+
+  // View exam handler
+  const handleViewExam = (sub: StudentSubmission) => {
+    showToast(`正在打开考生 ${sub.name} 的答卷详情...`, 'info');
   };
 
   // Save single student score
@@ -113,8 +134,8 @@ export default function TeacherGrading() {
       return;
     }
     const scoreVal = Number(scoreInput);
-    if (scoreVal < 0 || scoreVal > 100) {
-      showToast('分数必须在 0 到 100 之间', 'error');
+    if (scoreVal < 0 || scoreVal > 4) {
+      showToast('分数必须在 0 到 4 之间', 'error');
       return;
     }
 
@@ -147,7 +168,7 @@ export default function TeacherGrading() {
       });
     }
 
-    showToast(`已成功录入 ${gradingStudent!.name} 的成绩：${scoreVal}分`, 'success');
+    showToast(`已成功录入考生 ${gradingStudent!.name} 的成绩：${scoreVal}分`, 'success');
     setGradingStudent(null);
   };
 
@@ -230,13 +251,13 @@ export default function TeacherGrading() {
                       {task.time}
                     </td>
                     <td className="px-3 py-3.5 font-medium text-neutral-700">
-                      <span className="text-[#52c41a]">{task.gradedCount}</span> 人
+                      <span className="text-[#52c41a]">{task.gradedCount}</span>
                     </td>
                     <td className="px-3 py-3.5 font-medium">
                       {task.pendingCount > 0 ? (
-                        <span className="text-amber-500 font-bold">{task.pendingCount} 人</span>
+                        <span className="text-[#fa541c] font-bold">{task.pendingCount}</span>
                       ) : (
-                        <span className="text-neutral-400">0 人</span>
+                        <span className="text-neutral-400">0</span>
                       )}
                     </td>
                     <td className="pl-3 pr-6 py-3.5 text-center">
@@ -345,78 +366,85 @@ export default function TeacherGrading() {
               </button>
             </div>
 
-            {/* Candidates Submission List */}
+            {/* Candidates Submission List - Styled exactly like Figure 2 */}
             <div className="flex-1 overflow-y-auto p-6 bg-white space-y-4 custom-scrollbar">
-              <div className="bg-neutral-50 border border-neutral-200/60 rounded-[6px] p-4 flex justify-between items-center select-none">
-                <div className="flex items-center gap-6">
-                  <div>
-                    <span className="text-[11px] text-neutral-450 block">已批阅</span>
-                    <span className="text-lg font-bold text-green-600">{selectedTask.gradedCount}人</span>
-                  </div>
-                  <div className="h-8 w-[1px] bg-neutral-200"></div>
-                  <div>
-                    <span className="text-[11px] text-neutral-450 block">待批阅</span>
-                    <span className="text-lg font-bold text-amber-500">{selectedTask.pendingCount}人</span>
-                  </div>
+              {/* Filter row */}
+              <div className="flex justify-between items-center select-none gap-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="请输入姓名"
+                    value={candQuery}
+                    onChange={(e) => setCandQuery(e.target.value)}
+                    className="w-[180px] border border-neutral-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder:text-neutral-350 bg-white h-8"
+                  />
                 </div>
-                <div className="text-right">
-                  <span className="text-[11px] text-neutral-400 block font-mono">考场总人数</span>
-                  <span className="text-[15px] font-bold text-neutral-800">{selectedTask.gradedCount + selectedTask.pendingCount}人</span>
-                </div>
+                <Button
+                  onClick={handleRefreshCandidates}
+                  variant="outline"
+                  className="border-neutral-200 text-neutral-600 text-xs px-4 h-8 hover:bg-neutral-50 rounded bg-white font-medium cursor-pointer transition-colors"
+                >
+                  刷新
+                </Button>
               </div>
 
-              <div className="bg-white rounded-[6px] border border-neutral-200 overflow-hidden">
+              {/* Table */}
+              <div className="bg-white rounded-[6px] border border-neutral-200/80 overflow-hidden">
                 <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                   <thead>
-                    <tr className="border-b border-neutral-200/50 bg-neutral-50/50 text-[12px] text-neutral-600 font-semibold">
-                      <th className="pl-4 pr-2 py-3 bg-transparent">姓名</th>
-                      <th className="px-2 py-3 bg-transparent">账号</th>
-                      <th className="px-2 py-3 bg-transparent">答卷状态</th>
+                    <tr className="border-b border-neutral-200/50 bg-neutral-50/50 text-[12px] text-neutral-600 font-semibold select-none">
+                      <th className="pl-4 pr-2 py-3 bg-transparent">账号</th>
+                      <th className="px-2 py-3 bg-transparent">姓名</th>
                       <th className="px-2 py-3 bg-transparent">批阅状态</th>
-                      <th className="px-2 py-3 bg-transparent">当前得分</th>
-                      <th className="pl-2 pr-4 py-3 text-center bg-transparent w-24">操作</th>
+                      <th className="px-2 py-3 bg-transparent">得分 / 总分</th>
+                      <th className="pl-2 pr-4 py-3 text-center bg-transparent w-36">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 text-[12px] text-neutral-700 bg-white">
-                    {submissions.map((sub) => (
-                      <tr key={sub.id} className="hover:bg-neutral-50/30 transition-colors">
-                        <td className="pl-4 pr-2 py-3 font-semibold text-neutral-900">{sub.name}</td>
-                        <td className="px-2 py-3 text-neutral-500 font-mono">{sub.account}</td>
-                        <td className="px-2 py-3">
-                          <span className={cn(
-                            "px-1.5 py-0.5 rounded text-[10px] font-medium border",
-                            sub.status === '已交卷' ? "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]" :
-                            sub.status === '进行中' ? "text-blue-500 bg-blue-50 border-blue-200" :
-                            "text-neutral-400 bg-neutral-50 border-neutral-200"
-                          )}>
-                            {sub.status}
-                          </span>
-                        </td>
-                        <td className="px-2 py-3">
-                          <span className={cn(
-                            "w-2 h-2 rounded-full inline-block mr-1.5",
-                            sub.gradedStatus === '已批阅' ? "bg-green-500" : "bg-amber-400"
-                          )}></span>
-                          <span className="font-medium text-neutral-700">{sub.gradedStatus}</span>
-                        </td>
-                        <td className="px-2 py-3 font-bold">
-                          {sub.score !== null ? (
-                            <span className="text-[#fa541c] text-sm">{sub.score} 分</span>
-                          ) : (
-                            <span className="text-neutral-400">-</span>
-                          )}
-                        </td>
-                        <td className="pl-2 pr-4 py-3 text-center">
-                          <button
-                            onClick={() => handleStartGrade(sub)}
-                            disabled={sub.status !== '已交卷'}
-                            className="text-[#fa541c] hover:text-[#e84a15] disabled:text-neutral-300 bg-transparent border-0 cursor-pointer p-0 text-[11px] font-bold transition-colors disabled:cursor-not-allowed"
-                          >
-                            {sub.gradedStatus === '已批阅' ? '重新批阅' : '开始批阅'}
-                          </button>
+                    {filteredSubmissions.length > 0 ? (
+                      filteredSubmissions.map((sub) => (
+                        <tr key={sub.id} className="hover:bg-neutral-50/30 transition-colors">
+                          <td className="pl-4 pr-2 py-3 text-neutral-800 font-mono">{sub.account}</td>
+                          <td className="px-2 py-3 font-semibold text-[#262626]">{sub.name}</td>
+                          <td className="px-2 py-3">
+                            <span className={cn(
+                              "px-1.5 py-0.5 rounded text-[10px] font-medium border select-none",
+                              sub.gradedStatus === '已批阅' 
+                                ? "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]" 
+                                : "text-neutral-500 bg-neutral-50 border-neutral-200/60"
+                            )}>
+                              {sub.gradedStatus}
+                            </span>
+                          </td>
+                          <td className="px-2 py-3 font-mono text-neutral-600">
+                            {sub.score !== null ? `${sub.score} / 4` : '0 / 4'}
+                          </td>
+                          <td className="pl-2 pr-4 py-3 text-center">
+                            <div className="flex items-center justify-center gap-2 text-neutral-300 select-none">
+                              <button
+                                onClick={() => handleViewExam(sub)}
+                                className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 text-[11px] font-semibold transition-colors"
+                              >
+                                查看试卷
+                              </button>
+                              <span>|</span>
+                              <button
+                                onClick={() => handleStartGrade(sub)}
+                                className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 text-[11px] font-semibold transition-colors"
+                              >
+                                变更批阅状态
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-neutral-400 bg-white select-none">
+                          没有找到符合条件的考生
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -458,7 +486,7 @@ export default function TeacherGrading() {
 
                     <div className="space-y-1.5">
                       <label className="text-[13px] font-bold text-neutral-700 flex items-center gap-1 select-none">
-                        打分 (满分 100 分) <span className="text-red-500">*</span>
+                        打分 (满分 4 分) <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
