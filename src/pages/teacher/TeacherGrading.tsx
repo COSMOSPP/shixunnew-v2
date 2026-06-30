@@ -404,55 +404,49 @@ export default function TeacherGrading() {
                 </Button>
               </div>
 
-              {/* Table */}
-              <div className="bg-white rounded-[8px] border border-neutral-border overflow-hidden flex-1">
+              {/* Table - Styled to match question bank management list style */}
+              <div className="w-full overflow-y-auto border border-neutral-100 rounded-[8px] bg-white custom-scrollbar max-h-[380px] flex-1">
                 <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                   <thead>
-                    <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none">
-                      <th className="pl-6 pr-3 py-3.5 font-medium text-left bg-transparent">账号</th>
-                      <th className="px-3 py-3.5 font-medium text-left bg-transparent">姓名</th>
-                      <th className="px-3 py-3.5 font-medium text-left bg-transparent">批阅状态</th>
-                      <th className="px-3 py-3.5 font-medium text-left bg-transparent">得分 / 总分</th>
-                      <th className="pl-3 pr-6 py-3.5 font-medium text-center bg-transparent w-36">操作</th>
+                    <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium sticky top-0 z-10 select-none">
+                      <th className="p-3 pl-4">账号</th>
+                      <th className="p-3">姓名</th>
+                      <th className="p-3 text-center">批阅状态</th>
+                      <th className="p-3 text-center">得分 / 总分</th>
+                      <th className="p-3 text-center pr-4 w-36">操作</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700 bg-white">
+                  <tbody className="divide-y divide-neutral-100 text-neutral-700">
                     {paginatedSubmissions.length > 0 ? (
-                      paginatedSubmissions.map((sub, idx) => (
-                        <tr 
-                          key={sub.id} 
-                          className={cn(
-                            "border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]",
-                            idx === paginatedSubmissions.length - 1 && "border-b-0"
-                          )}
-                        >
-                          <td className="pl-6 pr-3 py-3.5 text-neutral-850 font-mono">{sub.account}</td>
-                          <td className="px-3 py-3.5 font-medium text-[#262626]">{sub.name}</td>
-                          <td className="px-3 py-3.5">
+                      paginatedSubmissions.map((sub) => (
+                        <tr key={sub.id} className="hover:bg-neutral-50/50 transition-colors">
+                          <td className="p-3 pl-4 text-neutral-800 font-mono">{sub.account}</td>
+                          <td className="p-3 font-semibold text-neutral-800">{sub.name}</td>
+                          <td className="p-3 text-center">
                             <span className={cn(
-                              "px-1.5 py-0.5 rounded text-[10px] font-medium border select-none",
+                              "px-1.5 py-0.5 text-[10px] rounded border font-medium select-none",
                               sub.gradedStatus === '已批阅' 
-                                ? "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]" 
-                                : "text-neutral-500 bg-neutral-50 border-neutral-200/60"
+                                ? "bg-green-50 text-green-600 border-green-200" 
+                                : "bg-neutral-50 text-neutral-500 border-neutral-200"
                             )}>
                               {sub.gradedStatus}
                             </span>
                           </td>
-                          <td className="px-3 py-3.5 font-mono text-neutral-500">
+                          <td className="p-3 text-center font-mono text-neutral-600 font-medium">
                             {sub.score !== null ? `${sub.score} / 4` : '0 / 4'}
                           </td>
-                          <td className="pl-3 pr-6 py-3.5 text-center">
-                            <div className="flex items-center justify-center gap-2 text-neutral-300 select-none">
+                          <td className="p-3 text-center pr-4">
+                            <div className="flex items-center justify-center gap-1 text-neutral-300 select-none">
                               <button
                                 onClick={() => handleViewExam(sub)}
-                                className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 text-[11px] font-semibold transition-colors"
+                                className="text-xs text-[#fa541c] hover:underline transition-colors border-0 bg-transparent p-0 cursor-pointer font-medium"
                               >
                                 查看试卷
                               </button>
-                              <span>|</span>
+                              <span className="mx-1.5 text-neutral-200">|</span>
                               <button
                                 onClick={() => handleStartGrade(sub)}
-                                className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 text-[11px] font-semibold transition-colors"
+                                className="text-xs text-[#fa541c] hover:underline transition-colors border-0 bg-transparent p-0 cursor-pointer font-medium"
                               >
                                 变更批阅状态
                               </button>
