@@ -18,8 +18,9 @@ interface ExamRule {
   time: string;
   submitMethod: '整体提交';
   submitLimit: '仅一次' | '多次';
+  submitLimitCount?: string;
   viewRecords: '展示' | '不展示';
-  scoreMethod: '最后一次提交记录';
+  scoreMethod: '最后一次提交记录' | '最高分提交记录';
   gradingMethod: '提交后批阅' | '结束考试后批阅';
 }
 
@@ -29,9 +30,9 @@ export default function TeacherExamRules() {
   
   // Rules State
   const [rulesList, setRulesList] = useState<ExamRule[]>([
-    { id: 1, name: '人工智能期末考防作弊策略组', status: '已应用', time: '2026/06/12 10:30', submitMethod: '整体提交', submitLimit: '仅一次', viewRecords: '展示', scoreMethod: '最后一次提交记录', gradingMethod: '提交后批阅' },
+    { id: 1, name: '人工智能期末考防作弊策略组', status: '已应用', time: '2026/06/12 10:30', submitMethod: '整体提交', submitLimit: '仅一次', viewRecords: '展示', scoreMethod: '最后一次提交记录', gradingMethod: '结束考试后批阅' },
     { id: 2, name: '随堂测试常规监控规则模板', status: '未应用', time: '2026/06/18 14:15', submitMethod: '整体提交', submitLimit: '仅一次', viewRecords: '不展示', scoreMethod: '最后一次提交记录', gradingMethod: '结束考试后批阅' },
-    { id: 3, name: '编程算法竞赛严格反切屏限流规则', status: '已应用', time: '2026/06/25 09:00', submitMethod: '整体提交', submitLimit: '多次', viewRecords: '展示', scoreMethod: '最后一次提交记录', gradingMethod: '提交后批阅' }
+    { id: 3, name: '编程算法竞赛严格反切屏限流规则', status: '已应用', time: '2026/06/25 09:00', submitMethod: '整体提交', submitLimit: '多次', submitLimitCount: '3次', viewRecords: '展示', scoreMethod: '最高分提交记录', gradingMethod: '结束考试后批阅' }
   ]);
 
   // Drawer states
@@ -43,9 +44,10 @@ export default function TeacherExamRules() {
   const [ruleFormStatus, setRuleFormStatus] = useState<'已应用' | '未应用'>('未应用');
   const [ruleFormSubmitMethod, setRuleFormSubmitMethod] = useState<'整体提交'>('整体提交');
   const [ruleFormSubmitLimit, setRuleFormSubmitLimit] = useState<'仅一次' | '多次'>('仅一次');
+  const [ruleFormSubmitLimitCount, setRuleFormSubmitLimitCount] = useState<string>('2次');
   const [ruleFormViewRecords, setRuleFormViewRecords] = useState<'展示' | '不展示'>('展示');
-  const [ruleFormScoreMethod, setRuleFormScoreMethod] = useState<'最后一次提交记录'>('最后一次提交记录');
-  const [ruleFormGradingMethod, setRuleFormGradingMethod] = useState<'提交后批阅' | '结束考试后批阅'>('提交后批阅');
+  const [ruleFormScoreMethod, setRuleFormScoreMethod] = useState<'最后一次提交记录' | '最高分提交记录'>('最后一次提交记录');
+  const [ruleFormGradingMethod, setRuleFormGradingMethod] = useState<'提交后批阅' | '结束考试后批阅'>('结束考试后批阅');
 
   // Confirmation Modal states
   const [confirmDeleteRule, setConfirmDeleteRule] = useState<ExamRule | null>(null);
@@ -65,9 +67,10 @@ export default function TeacherExamRules() {
     setRuleFormStatus('未应用');
     setRuleFormSubmitMethod('整体提交');
     setRuleFormSubmitLimit('仅一次');
+    setRuleFormSubmitLimitCount('2次');
     setRuleFormViewRecords('展示');
     setRuleFormScoreMethod('最后一次提交记录');
-    setRuleFormGradingMethod('提交后批阅');
+    setRuleFormGradingMethod('结束考试后批阅');
     setIsRuleModalOpen(true);
   };
 
@@ -78,6 +81,7 @@ export default function TeacherExamRules() {
     setRuleFormStatus(rule.status);
     setRuleFormSubmitMethod(rule.submitMethod);
     setRuleFormSubmitLimit(rule.submitLimit);
+    setRuleFormSubmitLimitCount(rule.submitLimitCount || '2次');
     setRuleFormViewRecords(rule.viewRecords);
     setRuleFormScoreMethod(rule.scoreMethod);
     setRuleFormGradingMethod(rule.gradingMethod);
@@ -98,6 +102,7 @@ export default function TeacherExamRules() {
         status: ruleFormStatus,
         submitMethod: ruleFormSubmitMethod,
         submitLimit: ruleFormSubmitLimit,
+        submitLimitCount: ruleFormSubmitLimit === '多次' ? ruleFormSubmitLimitCount : undefined,
         viewRecords: ruleFormViewRecords,
         scoreMethod: ruleFormScoreMethod,
         gradingMethod: ruleFormGradingMethod
@@ -112,6 +117,7 @@ export default function TeacherExamRules() {
         time: new Date().toISOString().replace('T', ' ').slice(0, 16).replace(/-/g, '/'),
         submitMethod: ruleFormSubmitMethod,
         submitLimit: ruleFormSubmitLimit,
+        submitLimitCount: ruleFormSubmitLimit === '多次' ? ruleFormSubmitLimitCount : undefined,
         viewRecords: ruleFormViewRecords,
         scoreMethod: ruleFormScoreMethod,
         gradingMethod: ruleFormGradingMethod
@@ -323,21 +329,10 @@ export default function TeacherExamRules() {
                 </div>
               </div>
 
-              {/* 规则状态 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right select-none">
-                  规则状态 <span className="text-[#fa541c]">*</span>
-                </label>
-                <div className="flex items-center gap-6">
-                  {renderRadio('未应用', '未应用', ruleFormStatus, setRuleFormStatus)}
-                  {renderRadio('已应用', '已应用', ruleFormStatus, setRuleFormStatus)}
-                </div>
-              </div>
-
               {/* 考试配置 Divider */}
               <div className="flex items-center gap-4 py-2 select-none w-full">
                 <span className="text-neutral-200">——</span>
-                <span className="text-[14px] font-bold text-neutral-800">考试配置</span>
+                <span className="text-[14px] font-bold text-neutral-400">考试配置</span>
                 <div className="flex-1 h-[1px] bg-neutral-100"></div>
               </div>
 
@@ -357,8 +352,29 @@ export default function TeacherExamRules() {
                   交卷次数 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="flex items-center gap-6">
-                  {renderRadio('仅一次', '仅一次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
-                  {renderRadio('多次', '多次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
+                  <div className="flex items-center gap-6">
+                    {renderRadio('仅一次', '仅一次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
+                    {renderRadio('多次', '多次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
+                  </div>
+                  {ruleFormSubmitLimit === '多次' && (
+                    <div className="flex items-center gap-1.5 animate-fade-in">
+                      {['2次', '3次', '5次', '不限'].map(times => (
+                        <button
+                          key={times}
+                          type="button"
+                          onClick={() => setRuleFormSubmitLimitCount(times)}
+                          className={cn(
+                            "px-2.5 py-0.5 rounded text-[11px] font-bold border transition-colors cursor-pointer",
+                            ruleFormSubmitLimitCount === times
+                              ? "bg-[#fa541c]/5 text-[#fa541c] border-[#fa541c]"
+                              : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-300"
+                          )}
+                        >
+                          {times}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -376,7 +392,7 @@ export default function TeacherExamRules() {
               {/* 评分配置 Divider */}
               <div className="flex items-center gap-4 py-2 select-none w-full">
                 <span className="text-neutral-200">——</span>
-                <span className="text-[14px] font-bold text-neutral-800">评分配置</span>
+                <span className="text-[14px] font-bold text-neutral-400">评分配置</span>
                 <div className="flex-1 h-[1px] bg-neutral-100"></div>
               </div>
 
@@ -387,6 +403,7 @@ export default function TeacherExamRules() {
                 </label>
                 <div className="flex items-center gap-6">
                   {renderRadio('最后一次提交记录', '最后一次提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
+                  {renderRadio('最高分提交记录', '最高分提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
                 </div>
               </div>
 
@@ -396,7 +413,6 @@ export default function TeacherExamRules() {
                   批阅设置 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="flex items-center gap-6">
-                  {renderRadio('提交后批阅', '提交后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
                   {renderRadio('结束考试后批阅', '结束考试后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
                 </div>
               </div>
