@@ -4448,7 +4448,7 @@ export default function TeacherQuestions() {
                       placeholder="搜索题库名称..."
                       value={searchBankQuery}
                       onChange={(e) => setSearchBankQuery(e.target.value)}
-                      className="w-full pl-9 pr-4 py-1.5 border border-neutral-200 rounded text-xs bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]"
+                      className="w-full pl-9 pr-4 py-1.5 bg-white border border-neutral-border rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400 h-8"
                     />
                   </div>
                   <Button 
