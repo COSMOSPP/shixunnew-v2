@@ -49,6 +49,16 @@ export default function TeacherExamRules() {
   const [ruleFormScoreMethod, setRuleFormScoreMethod] = useState<'最后一次提交记录' | '最高分提交记录'>('最后一次提交记录');
   const [ruleFormGradingMethod, setRuleFormGradingMethod] = useState<'提交后批阅' | '结束考试后批阅'>('结束考试后批阅');
 
+  // Conditional form fields sync
+  React.useEffect(() => {
+    if (ruleFormSubmitLimit === '多次') {
+      setRuleFormGradingMethod('结束考试后批阅');
+    }
+    if (ruleFormSubmitLimit === '仅一次') {
+      setRuleFormScoreMethod('最后一次提交记录');
+    }
+  }, [ruleFormSubmitLimit]);
+
   // Confirmation Modal states
   const [confirmDeleteRule, setConfirmDeleteRule] = useState<ExamRule | null>(null);
 
@@ -397,23 +407,36 @@ export default function TeacherExamRules() {
               </div>
 
               {/* 分数取值 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
                 <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   分数取值 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="flex items-center gap-6">
-                  {renderRadio('最后一次提交记录', '最后一次提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
-                  {renderRadio('最高分提交记录', '最高分提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
+                  {ruleFormSubmitLimit === '仅一次' ? (
+                    renderRadio('最后一次提交记录', '最后一次提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)
+                  ) : (
+                    <>
+                      {renderRadio('最后一次提交记录', '最后一次提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
+                      {renderRadio('最高分提交记录', '最高分提交记录', ruleFormScoreMethod, setRuleFormScoreMethod)}
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* 批阅设置 */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4 animate-fade-in">
                 <label className="text-[13px] font-bold text-[#262626] text-right select-none">
                   批阅设置 <span className="text-[#fa541c]">*</span>
                 </label>
                 <div className="flex items-center gap-6">
-                  {renderRadio('结束考试后批阅', '结束考试后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
+                  {ruleFormSubmitLimit === '仅一次' ? (
+                    <>
+                      {renderRadio('提交后批阅', '提交后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
+                      {renderRadio('结束考试后批阅', '结束考试后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)}
+                    </>
+                  ) : (
+                    renderRadio('结束考试后批阅', '结束考试后批阅', ruleFormGradingMethod, setRuleFormGradingMethod)
+                  )}
                 </div>
               </div>
 
