@@ -387,14 +387,9 @@ export default function TeacherExamRules() {
                         >
                           —
                         </button>
-                        {/* Number & Check Circle */}
-                        <div className="w-14 h-full flex items-center justify-center gap-1 bg-white px-2">
+                        {/* Number Only */}
+                        <div className="w-10 h-full flex items-center justify-center bg-white">
                           <span className="text-[13px] font-medium text-neutral-700">{ruleFormSubmitTimesVal}</span>
-                          <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 flex items-center justify-center text-neutral-400">
-                            <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
-                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                            </svg>
-                          </div>
                         </div>
                         {/* Plus */}
                         <button
