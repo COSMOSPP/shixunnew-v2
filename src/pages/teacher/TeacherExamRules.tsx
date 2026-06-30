@@ -45,6 +45,7 @@ export default function TeacherExamRules() {
   const [ruleFormSubmitMethod, setRuleFormSubmitMethod] = useState<'整体提交'>('整体提交');
   const [ruleFormSubmitLimit, setRuleFormSubmitLimit] = useState<'仅一次' | '多次'>('仅一次');
   const [ruleFormSubmitLimitCount, setRuleFormSubmitLimitCount] = useState<string>('2次');
+  const [ruleFormSubmitTimesVal, setRuleFormSubmitTimesVal] = useState<number>(2);
   const [ruleFormViewRecords, setRuleFormViewRecords] = useState<'展示' | '不展示'>('展示');
   const [ruleFormScoreMethod, setRuleFormScoreMethod] = useState<'最后一次提交记录' | '最高分提交记录'>('最后一次提交记录');
   const [ruleFormGradingMethod, setRuleFormGradingMethod] = useState<'提交后批阅' | '结束考试后批阅'>('结束考试后批阅');
@@ -78,6 +79,7 @@ export default function TeacherExamRules() {
     setRuleFormSubmitMethod('整体提交');
     setRuleFormSubmitLimit('仅一次');
     setRuleFormSubmitLimitCount('2次');
+    setRuleFormSubmitTimesVal(2);
     setRuleFormViewRecords('展示');
     setRuleFormScoreMethod('最后一次提交记录');
     setRuleFormGradingMethod('结束考试后批阅');
@@ -92,6 +94,12 @@ export default function TeacherExamRules() {
     setRuleFormSubmitMethod(rule.submitMethod);
     setRuleFormSubmitLimit(rule.submitLimit);
     setRuleFormSubmitLimitCount(rule.submitLimitCount || '2次');
+    if (rule.submitLimitCount) {
+      const num = parseInt(rule.submitLimitCount);
+      setRuleFormSubmitTimesVal(isNaN(num) ? 2 : num);
+    } else {
+      setRuleFormSubmitTimesVal(2);
+    }
     setRuleFormViewRecords(rule.viewRecords);
     setRuleFormScoreMethod(rule.scoreMethod);
     setRuleFormGradingMethod(rule.gradingMethod);
@@ -104,6 +112,7 @@ export default function TeacherExamRules() {
       showToast('请输入规则名称', 'error');
       return;
     }
+    const finalSubmitCount = ruleFormSubmitLimit === '多次' ? `${ruleFormSubmitTimesVal}次` : undefined;
     if (editingRule) {
       // Update
       setRulesList(rulesList.map(r => r.id === editingRule.id ? { 
@@ -112,7 +121,7 @@ export default function TeacherExamRules() {
         status: ruleFormStatus,
         submitMethod: ruleFormSubmitMethod,
         submitLimit: ruleFormSubmitLimit,
-        submitLimitCount: ruleFormSubmitLimit === '多次' ? ruleFormSubmitLimitCount : undefined,
+        submitLimitCount: finalSubmitCount,
         viewRecords: ruleFormViewRecords,
         scoreMethod: ruleFormScoreMethod,
         gradingMethod: ruleFormGradingMethod
@@ -127,7 +136,7 @@ export default function TeacherExamRules() {
         time: new Date().toISOString().replace('T', ' ').slice(0, 16).replace(/-/g, '/'),
         submitMethod: ruleFormSubmitMethod,
         submitLimit: ruleFormSubmitLimit,
-        submitLimitCount: ruleFormSubmitLimit === '多次' ? ruleFormSubmitLimitCount : undefined,
+        submitLimitCount: finalSubmitCount,
         viewRecords: ruleFormViewRecords,
         scoreMethod: ruleFormScoreMethod,
         gradingMethod: ruleFormGradingMethod
@@ -367,22 +376,36 @@ export default function TeacherExamRules() {
                     {renderRadio('多次', '多次', ruleFormSubmitLimit, setRuleFormSubmitLimit)}
                   </div>
                   {ruleFormSubmitLimit === '多次' && (
-                    <div className="flex items-center gap-1.5 animate-fade-in">
-                      {['2次', '3次', '5次', '不限'].map(times => (
+                    <div className="flex items-center gap-2 animate-fade-in select-none">
+                      {/* Custom Stepper */}
+                      <div className="flex items-center border border-neutral-200 rounded-[4px] bg-white h-7 overflow-hidden">
+                        {/* Minus */}
                         <button
-                          key={times}
                           type="button"
-                          onClick={() => setRuleFormSubmitLimitCount(times)}
-                          className={cn(
-                            "px-2.5 py-0.5 rounded text-[11px] font-bold border transition-colors cursor-pointer",
-                            ruleFormSubmitLimitCount === times
-                              ? "bg-[#fa541c]/5 text-[#fa541c] border-[#fa541c]"
-                              : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-300"
-                          )}
+                          onClick={() => setRuleFormSubmitTimesVal(v => Math.max(2, v - 1))}
+                          className="w-7 h-full flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 border-0 border-r border-neutral-200 text-neutral-500 font-medium cursor-pointer transition-colors text-[10px]"
                         >
-                          {times}
+                          —
                         </button>
-                      ))}
+                        {/* Number & Check Circle */}
+                        <div className="w-14 h-full flex items-center justify-center gap-1 bg-white px-2">
+                          <span className="text-[13px] font-medium text-neutral-700">{ruleFormSubmitTimesVal}</span>
+                          <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 flex items-center justify-center text-neutral-400">
+                            <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        {/* Plus */}
+                        <button
+                          type="button"
+                          onClick={() => setRuleFormSubmitTimesVal(v => Math.min(100, v + 1))}
+                          className="w-7 h-full flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 border-0 border-l border-neutral-200 text-neutral-500 font-medium cursor-pointer transition-colors text-[12px]"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <span className="text-[13px] text-neutral-450 font-bold">次</span>
                     </div>
                   )}
                 </div>
