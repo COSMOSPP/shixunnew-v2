@@ -8,7 +8,8 @@ import {
   ChevronRight,
   BookOpen,
   CheckCircle,
-  FileText
+  FileText,
+  RotateCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -42,6 +43,10 @@ export default function TeacherGrading() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+
+  // Candidates drawer pagination states
+  const [drawerPage, setDrawerPage] = useState(1);
+  const [drawerPageSize, setDrawerPageSize] = useState(5);
 
   // Mock Grading Tasks Data
   const [tasksList, setTasksList] = useState<GradingTask[]>([
@@ -87,11 +92,17 @@ export default function TeacherGrading() {
   const totalPages = Math.ceil(totalTasks / pageSize) || 1;
   const paginatedTasks = filteredTasks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  // Candidates pagination calculations
+  const totalDrawerItems = filteredSubmissions.length;
+  const totalDrawerPages = Math.ceil(totalDrawerItems / drawerPageSize) || 1;
+  const paginatedSubmissions = filteredSubmissions.slice((drawerPage - 1) * drawerPageSize, drawerPage * drawerPageSize);
+
   // Handle open grading drawer
   const handleOpenGrading = (task: GradingTask) => {
     setSelectedTask(task);
     setIsDrawerOpen(true);
     setCandQuery('');
+    setDrawerPage(1);
     showToast(`已拉起「${task.examName}」批阅工作台`, 'success');
     
     // Generate mock submissions for the selected task matching target screenshots
@@ -366,47 +377,58 @@ export default function TeacherGrading() {
               </button>
             </div>
 
-            {/* Candidates Submission List - Styled exactly like Figure 2 */}
-            <div className="flex-1 overflow-y-auto p-6 bg-white space-y-4 custom-scrollbar">
+            {/* Candidates Submission List - Styled to match main page table and pagination */}
+            <div className="flex-1 overflow-y-auto p-6 bg-white space-y-4 custom-scrollbar flex flex-col">
               {/* Filter row */}
               <div className="flex justify-between items-center select-none gap-4">
-                <div className="relative">
+                <div className="relative w-48">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                   <input
                     type="text"
                     placeholder="请输入姓名"
                     value={candQuery}
-                    onChange={(e) => setCandQuery(e.target.value)}
-                    className="w-[180px] border border-neutral-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] text-neutral-800 placeholder:text-neutral-350 bg-white h-8"
+                    onChange={(e) => {
+                      setCandQuery(e.target.value);
+                      setDrawerPage(1);
+                    }}
+                    className="pl-9 pr-4 py-1.5 w-full bg-white border border-neutral-border rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400 h-8"
                   />
                 </div>
                 <Button
                   onClick={handleRefreshCandidates}
                   variant="outline"
-                  className="border-neutral-200 text-neutral-600 text-xs px-4 h-8 hover:bg-neutral-50 rounded bg-white font-medium cursor-pointer transition-colors"
+                  className="border border-neutral-200 text-neutral-500 rounded-[4px] h-8 w-8 p-0 flex items-center justify-center bg-white hover:bg-neutral-50 cursor-pointer shrink-0"
+                  title="刷新"
                 >
-                  刷新
+                  <RotateCw className="w-3.5 h-3.5" />
                 </Button>
               </div>
 
               {/* Table */}
-              <div className="bg-white rounded-[6px] border border-neutral-200/80 overflow-hidden">
+              <div className="bg-white rounded-[8px] border border-neutral-border overflow-hidden flex-1">
                 <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                   <thead>
-                    <tr className="border-b border-neutral-200/50 bg-neutral-50/50 text-[12px] text-neutral-600 font-semibold select-none">
-                      <th className="pl-4 pr-2 py-3 bg-transparent">账号</th>
-                      <th className="px-2 py-3 bg-transparent">姓名</th>
-                      <th className="px-2 py-3 bg-transparent">批阅状态</th>
-                      <th className="px-2 py-3 bg-transparent">得分 / 总分</th>
-                      <th className="pl-2 pr-4 py-3 text-center bg-transparent w-36">操作</th>
+                    <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none">
+                      <th className="pl-6 pr-3 py-3.5 font-medium text-left bg-transparent">账号</th>
+                      <th className="px-3 py-3.5 font-medium text-left bg-transparent">姓名</th>
+                      <th className="px-3 py-3.5 font-medium text-left bg-transparent">批阅状态</th>
+                      <th className="px-3 py-3.5 font-medium text-left bg-transparent">得分 / 总分</th>
+                      <th className="pl-3 pr-6 py-3.5 font-medium text-center bg-transparent w-36">操作</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100 text-[12px] text-neutral-700 bg-white">
-                    {filteredSubmissions.length > 0 ? (
-                      filteredSubmissions.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-neutral-50/30 transition-colors">
-                          <td className="pl-4 pr-2 py-3 text-neutral-800 font-mono">{sub.account}</td>
-                          <td className="px-2 py-3 font-semibold text-[#262626]">{sub.name}</td>
-                          <td className="px-2 py-3">
+                  <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700 bg-white">
+                    {paginatedSubmissions.length > 0 ? (
+                      paginatedSubmissions.map((sub, idx) => (
+                        <tr 
+                          key={sub.id} 
+                          className={cn(
+                            "border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]",
+                            idx === paginatedSubmissions.length - 1 && "border-b-0"
+                          )}
+                        >
+                          <td className="pl-6 pr-3 py-3.5 text-neutral-850 font-mono">{sub.account}</td>
+                          <td className="px-3 py-3.5 font-medium text-[#262626]">{sub.name}</td>
+                          <td className="px-3 py-3.5">
                             <span className={cn(
                               "px-1.5 py-0.5 rounded text-[10px] font-medium border select-none",
                               sub.gradedStatus === '已批阅' 
@@ -416,10 +438,10 @@ export default function TeacherGrading() {
                               {sub.gradedStatus}
                             </span>
                           </td>
-                          <td className="px-2 py-3 font-mono text-neutral-600">
+                          <td className="px-3 py-3.5 font-mono text-neutral-500">
                             {sub.score !== null ? `${sub.score} / 4` : '0 / 4'}
                           </td>
-                          <td className="pl-2 pr-4 py-3 text-center">
+                          <td className="pl-3 pr-6 py-3.5 text-center">
                             <div className="flex items-center justify-center gap-2 text-neutral-300 select-none">
                               <button
                                 onClick={() => handleViewExam(sub)}
@@ -448,6 +470,63 @@ export default function TeacherGrading() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Drawer Pagination matching main list page pagination */}
+              {totalDrawerItems > 0 && (
+                <div className="flex items-center justify-end px-6 py-4 border-t border-neutral-border/30 select-none bg-neutral-50/20 gap-4 mt-2 rounded-[8px]">
+                  <span className="text-[13px] text-neutral-500">
+                    共 {totalDrawerItems} 条
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0 rounded-sm bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" 
+                      disabled={drawerPage === 1}
+                      onClick={() => setDrawerPage(p => Math.max(1, p - 1))}
+                    >
+                      &lt;
+                    </Button>
+                    {Array.from({ length: totalDrawerPages }, (_, i) => i + 1).map((pageNum) => (
+                      <Button 
+                        key={pageNum}
+                        variant="outline" 
+                        size="sm" 
+                        className={cn(
+                          "h-7 w-7 p-0 rounded-sm font-bold text-[12px] cursor-pointer",
+                          drawerPage === pageNum 
+                            ? "bg-[#fa541c] text-white border-[#fa541c] hover:bg-[#fa541c] hover:text-white" 
+                            : "bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-200"
+                        )}
+                        onClick={() => setDrawerPage(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    ))}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0 rounded-sm bg-white border-neutral-200 text-neutral-500 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" 
+                      disabled={drawerPage === totalDrawerPages}
+                      onClick={() => setDrawerPage(p => Math.min(totalDrawerPages, p + 1))}
+                    >
+                      &gt;
+                    </Button>
+                  </div>
+                  <select 
+                    value={drawerPageSize}
+                    onChange={(e) => {
+                      setDrawerPageSize(Number(e.target.value));
+                      setDrawerPage(1);
+                    }}
+                    className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white"
+                  >
+                    {[5, 10, 20].map(size => (
+                      <option key={size} value={size}>{size} 条/页</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* Drawer Footer */}
