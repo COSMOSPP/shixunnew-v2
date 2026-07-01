@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
-  ArrowLeft, BookOpen, Pin, Eye, X, Plus
+  ArrowLeft, BookOpen, Pin, Eye, X, Plus, CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -131,26 +131,26 @@ const NEW_QUESTIONS = [
   {
     id: 16,
     type: "practical",
-    typeName: "实训题",
-    score: 10,
-    title: "基于人工神经网络算法的图像分类实践",
-    content: "一、实验主题\n基于人工神经网络算法 of 图像分类实践\n\n二、实验目的\n掌握有监督学习的基本概念与人工神经网络的核心原理；\n学会使用torchvision库加载手写数字数据集并进行数据预处理；\n学会运用pytorch构建卷积神经网络模型，掌握模型结构的设置方法；\n掌握运用交叉验证、网格搜索等技术实现模型调优，提升模型泛化能力；\n掌握运用准确率、精确率、召回率、F1-score指标评估模型性能的方法；\n能够处理神经网络训练过程中的结构设置、参数调优和防止过拟合等常见问题，提升对有监督学习任务的理解和实际问题分析能力。\n\n三、实验内容\n安装pytorch和torchvision，并导入torch、torchvision、matplotlib、sklearn库；\n运用torch和torchvision实现计算单元设置和数据集预处理；\n运用pytorch构建循环神经网络模型，包括卷积层、池化层和全连接层；\n运用交叉验证、网格搜索技术实现卷积神经网络超参数调优，提升模型性能；\n运用准确率、精确率、召回率、F1-score指标评估模型性能；\n可视化展示最佳模型预测结果。"
+    typeName: "实训编程题",
+    score: 40,
+    title: "【Python 实训】基于人工神经网络算法的图像分类实践",
+    content: "一、实验主题\n基于人工神经网络算法 of 图像分类实践\n\n二、实验目的\n掌握有监督学习的基本概念与人工神经网络的核心原理；\n学会使用torchvision库加载手写数字数据集并进行数据预处理；\n学会运用pytorch构建卷积神经网络模型，掌握模型结构的设置方法；\n掌握运用交叉验证、网格搜索等技术实现模型调优，提升模型泛化能力；\n掌握运用准确率、精确率、召回率、F1-score指标评估模型性能的方法；\n能够处理神经网络训练过程中的结构设置、参数调优和防止过拟合等常见问题，提升对有监督学习任务的理解 and 实际问题分析能力。\n\n三、实验内容\n安装pytorch和torchvision，并导入torch、torchvision、matplotlib、sklearn库；\n运用torch和torchvision实现计算单元设置和数据预处理；\n运用pytorch构建循环神经网络模型，包括卷积层、池化层 and 全连接层；\n运用交叉验证、网格搜索技术实现卷积神经网络超参数调优，提升模型性能；\n运用准确率、精确率、召回率、F1-score指标评估模型性能；\n可视化展示最佳模型预测结果。"
   },
   {
     id: 17,
     type: "practical",
-    typeName: "实训题",
-    score: 10,
-    title: "基于卷积神经网络(CNN)的手写数字识别(MNIST)",
+    typeName: "实训编程题",
+    score: 40,
+    title: "【Python 实训】基于卷积神经网络(CNN)的手写数字识别(MNIST)",
     content: "一、实验主题\n基于卷积神经网络(CNN)的手写数字识别(MNIST)\n\n二、实验目的\n理解卷积操作、池化操作对图像局部特征提取的作用；\n掌握在PyTorch中搭建经典LeNet-5或自定义CNN结构的方法；\n学会利用训练集训练CNN并使用验证集调整超参数（如卷积核大小、步长等）。\n\n三、实验内容\n1. 下载并加载MNIST手写数字数据集，绘制样本图像；\n2. 搭建包含两个卷积层和两个全连接层的经典神经网络；\n3. 运行模型训练，记录并可视化每个Epoch of Loss和Accuracy变化。"
   },
   {
     id: 18,
     type: "practical",
-    typeName: "实训题",
-    score: 10,
-    title: "智能音箱产品数据分析与对话系统评估",
-    content: "一、实验主题\n智能音箱产品数据分析与对话系统评估\n\n二、实验目的\n掌握对话交互意图识别准确度的计算方法；\n学会清洗和解析用户会话日志，统计各意图的请求频率；\n评估意图识别模型的召回率和精确率，找出识别较差的意图类型。\n\n三、实验内容\n1. 导入对话日志文件，进行文本去噪与标签映射；\n2. 计算意图识别的混淆矩阵，统计总体Accuracy与各意图下的F1-score；\n3. 提出优化意见，输出评估分析报告。"
+    typeName: "实训编程题",
+    score: 40,
+    title: "【Python 实训】智能音箱产品数据分析与对话系统评估",
+    content: "一、实验主题\n智能音箱产品数据分析与对话系统评估\n\n二、实验目的\n掌握对话交互意图识别准确度的计算方法；\n学会清洗和解析用户会话日志，统计各意图的请求频率；\n评估意图识别模型的召回率和精确率，找出识别较差的意图类型。\n\n三、实验内容\n1. 导入对话日志文件，进行文本去噪与标签映射；\n2. 计算意图识别 of 混淆矩阵，统计总体Accuracy与各意图下的F1-score；\n3. 提出优化意见，输出评估分析报告。"
   }
 ];
 
@@ -241,61 +241,47 @@ export default function TeacherAssignmentPreview() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] flex flex-col font-sans -mt-6 -mx-6 md:-mx-8">
-      {/* Top Banner (Orange Theme with Timer) */}
-      <div className="bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#fa541c] pt-6 pb-14 px-10 relative overflow-hidden shrink-0">
-        {/* Background decorations */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -right-20 -top-20 w-[400px] h-[400px] border-[40px] border-white/5 rounded-full"></div>
-          <div className="absolute -right-10 top-10 w-[300px] h-[300px] border-[2px] border-white/10 rounded-full"></div>
+    <div className="h-screen bg-[#f5f7fa] flex flex-col font-sans overflow-hidden">
+      {/* Header Bar */}
+      <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex justify-between items-center shrink-0 text-left">
+        {/* Left Side */}
+        <div className="flex items-center gap-4 select-none">
+          <button 
+            onClick={handleExitPreview}
+            className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px]"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            退出
+          </button>
+          <div className="w-[1px] h-4 bg-neutral-200"></div>
+          <span className="font-bold text-neutral-800 text-[14px]">
+            {previewType === 'practical' ? "人工智能实操课作业 (预览)" : "人工智能客观题作业 (预览)"}
+          </span>
         </div>
 
-        <div className="max-w-[1400px] mx-auto relative z-10 flex justify-between items-end">
-          <div className="text-white">
-            <div className="flex items-center gap-2 text-[12px] text-white/70 mb-4 font-medium tracking-wider">
-              <button onClick={handleExitPreview} className="hover:text-white transition-colors flex items-center gap-1 bg-transparent border-0 cursor-pointer">
-                <ArrowLeft className="w-3.5 h-3.5" /> 返回课程管理
-              </button>
-              <span>/</span>
-              <span>人工智能基础与实践</span>
-              <span>/</span>
-              <span className="text-white font-bold">作业预览模式</span>
-            </div>
-            
-            <h1 className="text-[26px] font-bold mb-2 tracking-wider">
-              {previewType === 'practical' ? "人工智能实操课作业 (预览)" : "人工智能客观题作业 (预览)"}
-            </h1>
-            
-            <div className="flex items-center gap-4 text-[13px] text-white/90">
-              <span className="bg-white/20 px-2 py-0.5 rounded text-[11px] font-bold">教师端预览</span>
-              <span>总分：{previewType === 'practical' ? "30" : "20"} 分</span>
-              <span>限时：90 分钟</span>
-            </div>
-          </div>
-          
-          <div className="text-white flex flex-col items-end">
-             <div className="text-[12px] text-white/80 mb-1.5 tracking-widest font-medium">倒计时</div>
-             <div className="flex items-baseline gap-2">
-                <div className="bg-white/20 backdrop-blur-sm rounded-md px-3 py-1.5 text-xl font-bold border border-white/10 w-28 text-center">
-                  {formatTime(timeLeft)}
-                </div>
-             </div>
+        {/* Middle Side */}
+        <div className="hidden md:flex items-center gap-2 text-[#52c41a] font-medium text-xs">
+          <CheckCircle className="w-4 h-4" />
+          <span>系统已于 11:10:00 自动保存</span>
+        </div>
+
+        {/* Right Side */}
+        <div className="flex items-center gap-4">
+          {/* Timer Box */}
+          <div className="bg-neutral-50 border border-neutral-200 rounded px-3 py-1.5 flex items-center gap-2 font-mono text-[14px] font-bold text-neutral-700 select-none">
+            <span className="text-neutral-400 font-normal text-xs">⏱</span>
+            <span>{formatTime(timeLeft)}</span>
           </div>
         </div>
       </div>
 
       {/* Content Container */}
-      <div className="flex-1 -mt-6 px-6 pb-6 relative z-20 overflow-hidden flex flex-col">
-        <div className="max-w-[1400px] w-full mx-auto flex flex-1 bg-white border border-neutral-200/80 shadow-lg rounded-xl overflow-hidden min-h-[650px] h-[calc(100vh-14rem)]">
+      <div className="flex-1 mt-[20px] px-6 pb-6 relative z-20 overflow-hidden flex flex-col">
+        <div className="max-w-[1400px] w-full mx-auto flex flex-1 bg-white border border-neutral-200/80 shadow-lg rounded-xl overflow-hidden min-h-[650px] h-[calc(100vh-7.5rem)]">
           {/* Left Answering Area */}
           <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
             {/* Scrollable Question Content */}
             <div className="flex-1 overflow-y-auto px-10 pt-10 pb-4 text-left">
-              {/* Question Paper Title */}
-              <h1 className="text-[16px] font-bold text-neutral-800 mb-6 pb-4 border-b border-neutral-100 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#fa541c]" />
-                <span>人工智能基础与实践章节测验作业</span>
-              </h1>
 
               {/* Question Type and Score */}
               {question && (
@@ -307,40 +293,37 @@ export default function TeacherAssignmentPreview() {
               )}
 
               {/* Question Body */}
-              {question && question.type !== 'practical' ? (
+              {question && (
                 <div>
-                  <div className="text-neutral-800 mb-6 text-[15px] font-bold leading-relaxed">
+                  <div className="text-neutral-800 mb-6 text-[15px] font-bold leading-relaxed text-left">
                     {question.title}
                   </div>
 
-                  {/* Options (Read-Only Preview - Cannot select answers) */}
-                  <div className="space-y-3 max-w-[800px]">
-                    {question.options?.map((opt, optIdx) => {
-                      return (
-                        <div
-                          key={optIdx}
-                          className="px-5 py-4 border border-neutral-200 rounded-[4px] bg-neutral-50/30 cursor-default select-none transition-all"
-                        >
-                          <span className="text-[14px] text-neutral-600 font-medium">{opt}</span>
+                  {question.type !== 'practical' ? (
+                    /* Options (Read-Only Preview - Cannot select answers) */
+                    <div className="space-y-3 max-w-[800px]">
+                      {question.options?.map((opt, optIdx) => {
+                        return (
+                          <div
+                            key={optIdx}
+                            className="px-5 py-4 border border-neutral-200 rounded-[4px] bg-neutral-50/30 cursor-default select-none transition-all text-left"
+                          >
+                            <span className="text-[14px] text-neutral-600 font-medium">{opt}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Practical Questions layout */
+                    <div className="space-y-4 max-w-[900px] text-left">
+                      <div className="border border-neutral-200 rounded-lg p-5 bg-white overflow-y-auto max-h-[50vh] text-[13px] leading-relaxed text-neutral-600 shadow-xs">
+                        <div className="whitespace-pre-wrap font-medium space-y-1">
+                          {question.content}
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                /* Practical Questions layout */
-                question && (
-                  <div className="space-y-4 max-w-[900px]">
-                    <div className="border border-neutral-200 rounded-lg p-5 bg-white overflow-y-auto max-h-[42vh] text-[14px] leading-relaxed text-[#333] shadow-xs">
-                      <div className="border border-neutral-200 rounded-md p-3 mb-4 font-bold text-neutral-800 bg-neutral-50">
-                        {question.title}
-                      </div>
-                      <div className="whitespace-pre-wrap font-medium space-y-1 text-neutral-600">
-                        {question.content}
                       </div>
                     </div>
-                  </div>
-                )
+                  )}
+                </div>
               )}
             </div>
 
@@ -358,28 +341,24 @@ export default function TeacherAssignmentPreview() {
               <div className="flex items-center gap-3">
                 {question && question.type === 'practical' && (
                   <Button 
+                    disabled
                     variant="outline"
-                    onClick={() => {
-                      setShowPracticalIDE(true);
-                    }}
-                    className="border-[#fa541c] text-[#fa541c] hover:bg-[#fa541c]/5 hover:text-[#e84a15] hover:border-[#e84a15] px-6 h-9.5 text-[13px] font-bold rounded-[4px] transition-all flex items-center gap-1.5"
+                    className="border-neutral-200 text-neutral-400 bg-neutral-50 opacity-60 px-6 h-9.5 text-[13px] font-bold rounded-[4px] cursor-not-allowed flex items-center gap-1.5"
                   >
                     开始答题
                   </Button>
                 )}
                 
-                <Button 
-                  onClick={() => {
-                    if (currentQuestionIdx < questions.length - 1) {
+                {currentQuestionIdx < questions.length - 1 && (
+                  <Button 
+                    onClick={() => {
                       setCurrentQuestionIdx(prev => prev + 1);
-                    } else {
-                      handleExitPreview();
-                    }
-                  }}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1 cursor-pointer"
-                >
-                  {currentQuestionIdx === questions.length - 1 ? "退出预览" : "下一题"}
-                </Button>
+                    }}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    下一题
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -445,20 +424,20 @@ export default function TeacherAssignmentPreview() {
             <div className="border-t border-neutral-100 pt-5 mt-4">
               <div className="flex items-center justify-around text-[12px] text-neutral-400 mb-5">
                 <div className="flex flex-col items-center gap-1.5">
-                  <div className="w-4 h-4 rounded-full border border-neutral-300 bg-white"></div>
+                  <div className="w-4.5 h-4.5 rounded-full border border-neutral-300 bg-white"></div>
                   <span>未看</span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
-                  <div className="w-4 h-4 rounded-full border-2 border-[#fa541c] bg-white"></div>
+                  <div className="w-4.5 h-4.5 rounded-full border-2 border-[#fa541c] bg-white ring-2 ring-[#fa541c]/15"></div>
                   <span>当前</span>
                 </div>
               </div>
 
               <Button 
                 onClick={handleExitPreview}
-                className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3 font-bold shadow-lg shadow-orange-500/10 rounded-[4px] transition-all text-sm cursor-pointer"
+                className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3 font-bold shadow-lg shadow-orange-500/10 rounded-[4px] transition-all text-sm cursor-pointer border-0"
               >
-                退出作业预览
+                退出预览
               </Button>
             </div>
           </div>

@@ -116,11 +116,13 @@ export default function App() {
         <Route path="/skill-builder" element={<SkillBuilder />} />
         <Route path="/practice-chat" element={<PracticeChat />} />
 
+        {/* Full-screen teacher assignment preview without top layout header */}
+        <Route path="/teacher/course/:id/assignment-preview" element={<TeacherAssignmentPreview />} />
+
         {/* Teacher Dashboard */}
         <Route path="/teacher" element={<TeacherLayout />}>
           <Route index element={<TeacherHome />} />
           <Route path="course/:id" element={<TeacherCourseManage />} />
-          <Route path="course/:id/assignment-preview" element={<TeacherAssignmentPreview />} />
           <Route path="course/:id/experiment/:experimentId" element={<TeacherExperimentIDE />} />
           <Route path="questions" element={<TeacherQuestions />} />
           <Route path="papers" element={<TeacherPapers />} />
