@@ -261,12 +261,23 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
 
   useEffect(() => {
     (window as any).__IS_ANSWERING__ = showStudentAnswering;
+    (window as any).__EXAM_TITLE__ = "中国电信云网资源管理(三级)云网资源管理(三级)";
     window.dispatchEvent(new CustomEvent("answering-state-change"));
     return () => {
       (window as any).__IS_ANSWERING__ = false;
       window.dispatchEvent(new CustomEvent("answering-state-change"));
     };
   }, [showStudentAnswering]);
+
+  useEffect(() => {
+    const handleExit = () => {
+      setShowStudentAnswering(false);
+    };
+    window.addEventListener("exit-answering", handleExit);
+    return () => {
+      window.removeEventListener("exit-answering", handleExit);
+    };
+  }, []);
 
   useEffect(() => {
     if (!showStudentAnswering) return;
@@ -667,17 +678,14 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
     };
 
     return (
-      <div className="min-h-screen bg-[#f5f7fa] flex flex-col font-sans -mt-6 -mx-6 md:-mx-8 pt-0 px-6 pb-6 md:pb-8 md:px-8 animate-in fade-in duration-300">
+      <div className="h-screen bg-[#f5f7fa] flex flex-col font-sans overflow-hidden animate-in fade-in duration-300">
         {/* Content Container */}
-        <div className="flex flex-1 overflow-hidden h-[calc(100vh-5rem)] md:h-[calc(100vh-5.5rem)] bg-white border border-neutral-200/80 shadow-lg">
-          {/* Left Answering Area */}
-          <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
-            {/* Scrollable Question Content */}
-            <div className="flex-1 overflow-y-auto px-10 pt-12 pb-4">
-              {/* Question Paper Title */}
-              <h1 className="text-[17px] font-bold text-neutral-title mb-6 pb-4 border-b border-neutral-100">
-                中国电信云网资源管理(三级)云网资源管理(三级)
-              </h1>
+        <div className="flex-1 mt-[20px] px-6 pb-6 relative z-20 overflow-hidden flex flex-col">
+          <div className="max-w-[1400px] w-full mx-auto flex flex-1 bg-white border border-neutral-200/80 shadow-lg rounded-xl overflow-hidden min-h-[600px] h-[calc(100vh-7.5rem)]">
+            {/* Left Answering Area */}
+            <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
+              {/* Scrollable Question Content */}
+              <div className="flex-1 overflow-y-auto px-10 pt-10 pb-4 text-left">
 
               {/* Question Type and Score */}
               <div className="flex items-center justify-between mb-5">
@@ -897,6 +905,7 @@ export default function CourseDetail({ onBack, onShowLearningPath, initialLesson
             </div>
           </div>
         </div>
+      </div>
 
         {/* 提交答案 Drawer */}
         {isSubmitAnswerDrawerOpen && createPortal(
