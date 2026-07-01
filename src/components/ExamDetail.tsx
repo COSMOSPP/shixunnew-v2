@@ -59,7 +59,7 @@ export default function ExamDetail({ exam, onBack, onStart, onViewResult }: Exam
                      </Button>
                   ) : exam.status === "进行中" ? (
                      <Button onClick={onStart} className="h-11 px-8 rounded-[8px] bg-[#fa541c] hover:bg-[#d4380d] text-white font-bold shadow-md">
-                        <PlayCircle className="w-5 h-5 mr-2" /> 继续考试
+                        <PlayCircle className="w-5 h-5 mr-2" /> 开始考试
                      </Button>
                   ) : (
                      <>

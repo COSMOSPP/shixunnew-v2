@@ -230,10 +230,10 @@ export default function UserExams() {
                       {exam.status === "已结束" ? null : exam.status === "进行中" ? (
                         <Button className="w-full h-9 text-[13px] rounded-[6px] bg-[#fa541c] hover:bg-[#ff7a45] text-white gap-1.5">
                           <PlayCircle className="w-4 h-4" />
-                          继续考试
+                          开始考试
                         </Button>
                       ) : (
-                        <Button className="w-full h-9 text-[13px] rounded-[6px] bg-[#fa541c] hover:bg-[#ff7a45] text-white gap-1.5">
+                        <Button disabled className="w-full h-9 text-[13px] rounded-[6px] border-neutral-200 text-neutral-400 bg-neutral-100 cursor-not-allowed gap-1.5 opacity-60">
                           <PlayCircle className="w-4 h-4" />
                           开始考试
                         </Button>
