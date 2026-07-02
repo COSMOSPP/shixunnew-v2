@@ -402,6 +402,7 @@ export default function TeacherProjects({
   // Application for Public State
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [projectToApply, setProjectToApply] = useState<Project | null>(null);
+  const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
   const [applyTargetAudience, setApplyTargetAudience] = useState('');
   const [applyUsageSuggestion, setApplyUsageSuggestion] = useState('');
   const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
@@ -958,45 +959,85 @@ export default function TeacherProjects({
                     >
                       编辑
                     </button>
-                    {proj.range === '私有' && proj.isAvailable && (proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过') && (
-                      <button 
-                        onClick={() => handleApplyPublic(proj)} 
-                        className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
-                      >
-                        公开
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => handleCopy(proj)} 
-                      className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
-                    >
-                      复制
-                    </button>
-                    {(proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过') && (
-                      <button 
-                        onClick={() => handleDelete(proj.id)} 
-                        className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
-                      >
-                        删除
-                      </button>
-                    )}
-                    {(proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过') && (
-                      proj.isAvailable ? (
-                        <button 
-                          onClick={() => handleToggleAvailable(proj.id, false)} 
-                          className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
-                        >
-                          禁用
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleToggleAvailable(proj.id, true)} 
-                          className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px]"
-                        >
-                          启用
-                        </button>
-                      )
-                    )}
+                    
+                    {/* Secondary actions dropdown */}
+                    {(() => {
+                      const secondaryActions = [];
+                      
+                      const showPublic = proj.range === '私有' && proj.isAvailable && (proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过');
+                      if (showPublic) {
+                        secondaryActions.push({
+                          label: '公开',
+                          onClick: () => handleApplyPublic(proj)
+                        });
+                      }
+
+                      secondaryActions.push({
+                        label: '复制',
+                        onClick: () => handleCopy(proj)
+                      });
+
+                      const showToggle = (proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过');
+                      if (showToggle) {
+                        if (proj.isAvailable) {
+                          secondaryActions.push({
+                            label: '禁用',
+                            onClick: () => handleToggleAvailable(proj.id, false)
+                          });
+                        } else {
+                          secondaryActions.push({
+                            label: '启用',
+                            onClick: () => handleToggleAvailable(proj.id, true)
+                          });
+                        }
+                      }
+
+                      const showDelete = (proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过');
+                      if (showDelete) {
+                        secondaryActions.push({
+                          label: '删除',
+                          onClick: () => handleDelete(proj.id),
+                          isDanger: true
+                        });
+                      }
+
+                      if (secondaryActions.length === 0) return null;
+
+                      return (
+                        <div className="relative">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdownId(activeDropdownId === proj.id ? null : proj.id);
+                            }}
+                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer font-medium text-[13px] rounded-[4px] flex items-center gap-0.5"
+                          >
+                            更多 <ChevronDown className="w-3 h-3" />
+                          </button>
+                          {activeDropdownId === proj.id && (
+                            <div className="absolute right-0 top-full mt-1.5 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[100px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                              {secondaryActions.map((act, actIdx) => (
+                                <button 
+                                  key={actIdx}
+                                  onClick={() => {
+                                    setActiveDropdownId(null);
+                                    act.onClick();
+                                  }}
+                                  className={cn(
+                                    "w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] bg-transparent border-0 cursor-pointer block transition-colors",
+                                    act.isDanger 
+                                      ? "hover:bg-orange-50/50 text-[#fa541c] font-medium" 
+                                      : "text-neutral-750"
+                                  )}
+                                >
+                                  {act.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </td>
               </tr>
