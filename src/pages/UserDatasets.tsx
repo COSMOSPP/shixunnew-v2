@@ -212,31 +212,26 @@ export default function UserDatasets() {
               })}
             </div>
 
-            {/* Load More / Pagination */}
-            <div className="mt-8 flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-caption hover:text-[#fa541c] hover:border-[#fa541c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] bg-[#fa541c] text-white font-medium">1</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">2</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">3</button>
-                <span className="px-2 text-neutral-caption">...</span>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">12</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+            {/* Pagination */}
+            <div className="flex items-center justify-end p-4 gap-4 mt-8">
+              <span className="text-[13px] text-neutral-500">共 235 条</span>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]" disabled>&lt;</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">2</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">3</Button>
+                <span className="px-1 text-neutral-caption text-[13px]">...</span>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">&gt;</Button>
               </div>
-              
-              <div className="flex items-center gap-4 text-[13px] text-neutral-body">
-                <div className="flex items-center gap-2">
-                  <span>每页</span>
-                  <button className="flex items-center gap-1 px-2 py-1 border border-neutral-border rounded-[4px] hover:border-[#fa541c] transition-colors">
-                    20 <ChevronDown className="w-3 h-3" />
-                  </button>
-                  <span>条</span>
+              <div className="relative bg-white rounded-[6px]">
+                <select className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm">
+                  <option className="bg-white">10 条/页</option>
+                  <option className="bg-white">20 条/页</option>
+                  <option className="bg-white">50 条/页</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                  <ChevronDown className="w-3 h-3" />
                 </div>
-                <span>共 235 个数据集</span>
               </div>
             </div>
         </div>

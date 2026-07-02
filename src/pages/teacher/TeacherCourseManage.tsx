@@ -4,7 +4,7 @@ import {
   ArrowLeft, BarChart2, BookOpen, Users, 
   Download, Plus, Search, FileText, CheckCircle, 
   Clock, MoreVertical, Settings, BarChart, Copy,
-  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info, HelpCircle
+  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info, HelpCircle, RotateCw, Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
@@ -336,13 +336,35 @@ export default function TeacherCourseManage() {
   const [assignmentPage, setAssignmentPage] = useState(1);
   const [assignmentPageSize, setAssignmentPageSize] = useState(5); // default 5 items per page so pagination is visible
   const [isPageSizeDropdownOpen, setIsPageSizeDropdownOpen] = useState(false);
-
   const [showBulkRevokeModal, setShowBulkRevokeModal] = useState(false);
+
+  // Score Modal States
+  const [showScoreModal, setShowScoreModal] = useState(false);
+  const [scoreModalAssignment, setScoreModalAssignment] = useState<any>(null);
+  const [scoreStudents, setScoreStudents] = useState([
+    { name: 'df0002', account: 'df0002', phone: '13212345654', group: '0514-df', score: 0 },
+    { name: '吕梦霞', account: 'kaoshi_2_002', phone: '17779303833', group: 'test20251016', score: 0 }
+  ]);
+  const [scoreSortKey, setScoreSortKey] = useState<'group' | 'score' | null>(null);
+  const [scoreSortOrder, setScoreSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  // Review Modal States
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewModalStudent, setReviewModalStudent] = useState<any>(null);
+  const [reviewModalAssignment, setReviewModalAssignment] = useState<any>(null);
+  const [showReviewPreview, setShowReviewPreview] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [studentPage, setStudentPage] = useState(1);
   const [studentPageSize, setStudentPageSize] = useState(5);
   const [isStudentPageSizeDropdownOpen, setIsStudentPageSizeDropdownOpen] = useState(false);
   const [showBulkAuthModal, setShowBulkAuthModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    setToastMessage({ message, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   React.useEffect(() => {
     if (selectedPaperName && !editingAssignmentId) {
@@ -357,6 +379,145 @@ export default function TeacherCourseManage() {
   React.useEffect(() => {
     setStudentPage(1);
   }, [studentSearchQuery]);
+
+  const sortedScoreStudents = [...scoreStudents].sort((a, b) => {
+    if (!scoreSortKey) return 0;
+    const valA = a[scoreSortKey];
+    const valB = b[scoreSortKey];
+    if (typeof valA === 'number' && typeof valB === 'number') {
+      return scoreSortOrder === 'asc' ? valA - valB : valB - valA;
+    }
+    return scoreSortOrder === 'asc'
+      ? String(valA).localeCompare(String(valB))
+      : String(valB).localeCompare(String(valA));
+  });
+
+  const getEarnedScore = (secId: string, studentScore: number) => {
+    if (studentScore === 100) {
+      if (secId === 'single') return 20;
+      if (secId === 'multiple') return 20;
+      if (secId === 'essay') return 20;
+      if (secId === 'coding') return 40;
+    }
+    if (studentScore === 80) {
+      if (secId === 'single') return 20;
+      if (secId === 'multiple') return 20;
+      if (secId === 'essay') return 15;
+      if (secId === 'coding') return 25;
+    }
+    if (studentScore === 56) {
+      if (secId === 'single') return 10;
+      if (secId === 'multiple') return 10;
+      if (secId === 'essay') return 11;
+      if (secId === 'coding') return 25;
+    }
+    if (studentScore === 40) {
+      if (secId === 'single') return 10;
+      if (secId === 'multiple') return 10;
+      if (secId === 'essay') return 10;
+      if (secId === 'coding') return 10;
+    }
+    if (studentScore === 11) {
+      if (secId === 'single') return 10;
+      if (secId === 'multiple') return 0;
+      if (secId === 'essay') return 1;
+      if (secId === 'coding') return 0;
+    }
+    return 0;
+  };
+
+  const getDynamicPreviewQuestions = (studentScore: number) => {
+    return [
+      {
+        id: 1,
+        type: '单选题',
+        title: '下列哪个 Python 数据类型是不可变的？',
+        options: [
+          { key: 'A', value: 'List (列表)' },
+          { key: 'B', value: 'Dictionary (字典)' },
+          { key: 'C', value: 'Tuple (元组)' },
+          { key: 'D', value: 'Set (集合)' }
+        ],
+        answer: 'C',
+        studentAnswer: studentScore > 11 ? 'C' : 'A',
+        isCorrect: studentScore > 11,
+        score: studentScore > 11 ? 10 : 0,
+        maxScore: 10
+      },
+      {
+        id: 2,
+        type: '单选题',
+        title: '在 Python 中，下列哪个关键字用于定义匿名函数？',
+        options: [
+          { key: 'A', value: 'def' },
+          { key: 'B', value: 'lambda' },
+          { key: 'C', value: 'class' },
+          { key: 'D', value: 'func' }
+        ],
+        answer: 'B',
+        studentAnswer: studentScore >= 80 ? 'B' : 'A',
+        isCorrect: studentScore >= 80,
+        score: studentScore >= 80 ? 10 : 0,
+        maxScore: 10
+      },
+      {
+        id: 3,
+        type: '多选题',
+        title: '以下哪些属于 Python 中的内置修饰器 (Decorator)？',
+        options: [
+          { key: 'A', value: '@property' },
+          { key: 'B', value: '@staticmethod' },
+          { key: 'C', value: '@classmethod' },
+          { key: 'D', value: '@override' }
+        ],
+        answer: ['A', 'B', 'C'],
+        studentAnswer: studentScore === 100 || studentScore === 80 || studentScore === 56 ? ['A', 'B', 'C'] : (studentScore === 11 ? ['A', 'B'] : []),
+        isCorrect: studentScore === 100 || studentScore === 80 || studentScore === 56,
+        score: (studentScore === 100 || studentScore === 80 || studentScore === 56) ? 10 : (studentScore === 11 ? 5 : 0),
+        maxScore: 10
+      },
+      {
+        id: 4,
+        type: '多选题',
+        title: '下列关于 Python 列表 (List) 和元组 (Tuple) 的说法，正确的有？',
+        options: [
+          { key: 'A', value: '列表是可变对象，元组是不可变对象' },
+          { key: 'B', value: '列表和元组都支持切片操作' },
+          { key: 'C', value: '列表和元组都可以作为字典的键' },
+          { key: 'D', value: '元组的内存开销通常比列表小' }
+        ],
+        answer: ['A', 'B', 'D'],
+        studentAnswer: studentScore === 100 || studentScore === 80 ? ['A', 'B', 'D'] : ['A', 'C'],
+        isCorrect: studentScore === 100 || studentScore === 80,
+        score: studentScore === 100 || studentScore === 80 ? 10 : 0,
+        maxScore: 10
+      },
+      {
+        id: 5,
+        type: '简答题',
+        title: '请简述 Python 中 is 和 == 的区别。',
+        answerText: 'is 比较的是两个对象的物理内存地址是否相同（同一性），而 == 比较的是两个对象的值是否相等（相等性）。例如，a = [1, 2] 和 b = [1, 2]，a == b 为 True，但 a is b 为 False。',
+        studentAnswerText: studentScore > 40
+          ? 'is 比较的是两个对象的物理内存地址是否相同（同一性），而 == 比较的是两个对象的值是否相等（相等性）。例如，a = [1, 2] 和 b = [1, 2]，a == b 为 True，但 a is b 为 False。'
+          : (studentScore === 40 ? 'is比较地址，==比较内容。' : '未作答'),
+        isCorrect: studentScore > 40,
+        score: studentScore === 100 ? 20 : (studentScore === 80 ? 15 : (studentScore === 56 ? 11 : (studentScore === 40 ? 10 : (studentScore === 11 ? 1 : 0)))),
+        maxScore: 20
+      },
+      {
+        id: 6,
+        type: '实训编程题',
+        title: '请编写一个 Python 函数，计算斐波那契数列的第 n 项。要求输入正整数 n，返回对应的斐波那契数，时间复杂度控制在 O(n)。',
+        answerText: 'def fibonacci(n):\n    if n <= 0: return 0\n    if n == 1: return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b',
+        studentAnswerText: studentScore > 40
+          ? 'def fibonacci(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b'
+          : (studentScore === 40 ? 'def fibonacci(n):\n    # 递归法（时间复杂度较高）\n    if n <= 1: return n\n    return fibonacci(n-1) + fibonacci(n-2)' : '未作答'),
+        isCorrect: studentScore > 40,
+        score: studentScore === 100 ? 40 : (studentScore === 80 ? 25 : (studentScore === 56 ? 25 : (studentScore === 40 ? 10 : 0))),
+        maxScore: 40
+      }
+    ];
+  };
 
   const filteredAssignments = assignments.filter(task => 
     task.title.toLowerCase().includes(assignmentSearchQuery.toLowerCase()) ||
@@ -2330,8 +2491,8 @@ export default function TeacherCourseManage() {
                               <div className="flex justify-center gap-3.5">
                                 <button
                                   onClick={() => {
-                                    setShowGradingDrawer(false);
-                                    setShowGrading(true);
+                                    setScoreModalAssignment(selectedGradingAssignment);
+                                    setShowScoreModal(true);
                                   }}
                                   className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
                                 >
@@ -2339,8 +2500,9 @@ export default function TeacherCourseManage() {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    setShowGradingDrawer(false);
-                                    setShowGrading(true);
+                                    setReviewModalStudent(s);
+                                    setReviewModalAssignment(selectedGradingAssignment);
+                                    setShowReviewModal(true);
                                   }}
                                   className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
                                 >
@@ -4057,6 +4219,435 @@ export default function TeacherCourseManage() {
                 确认
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Score Details Modal */}
+      {showScoreModal && (
+        <div 
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left"
+          onClick={() => {
+            setShowScoreModal(false);
+            setScoreModalAssignment(null);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[850px] max-h-[85vh] rounded-xl overflow-hidden flex flex-col shadow-2xl border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-white shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Award className="w-5 h-5 text-[#fa541c]" />
+                成绩详情 - {scoreModalAssignment?.title || '作业'}
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowScoreModal(false);
+                  setScoreModalAssignment(null);
+                }} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white flex flex-col">
+              
+              {/* Action Toolbar */}
+              <div className="flex justify-end items-center mb-4 gap-2.5">
+                <Button
+                  onClick={() => {
+                    showToast('已刷新数据', 'success');
+                  }}
+                  variant="outline"
+                  className="border border-neutral-200 text-neutral-500 rounded-[4px] h-8 w-8 p-0 flex items-center justify-center bg-white hover:bg-neutral-50 cursor-pointer shrink-0"
+                  title="刷新"
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                </Button>
+                <button
+                  onClick={() => {
+                    const headers = ['姓名', '账号', '手机号', '用户组', '成绩'];
+                    const rows = scoreStudents.map(s => [s.name, s.account, s.phone, s.group, s.score]);
+                    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `成绩明细_${scoreModalAssignment?.title || '作业'}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    showToast('批量导出成功，文件已开始下载', 'success');
+                  }}
+                  className="px-4 py-1.5 bg-[#fa541c] text-white hover:bg-[#e84a15] rounded-[4px] font-medium transition-colors text-[13px] cursor-pointer shadow-sm border-0 flex items-center justify-center gap-1.5"
+                >
+                  导出
+                </button>
+              </div>
+
+              {/* Table Container */}
+              <div className="bg-white rounded overflow-hidden border border-neutral-200">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead>
+                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[120px]">姓名</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[150px]">账号</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[150px]">手机号</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[180px] text-neutral-600">用户组</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[100px] text-neutral-600">成绩</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                    {sortedScoreStudents.map((s, index) => (
+                      <tr key={index} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors text-[13px]">
+                        <td className="p-4 text-neutral-800 font-medium">{s.name}</td>
+                        <td className="p-4 text-neutral-600 font-mono">{s.account}</td>
+                        <td className="p-4 text-neutral-600 font-mono">{s.phone}</td>
+                        <td className="p-4 text-neutral-600">{s.group}</td>
+                        <td className="p-4 text-neutral-800 font-bold font-mono">{s.score}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
+              <Button 
+                onClick={() => {
+                  setShowScoreModal(false);
+                  setScoreModalAssignment(null);
+                }} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+              >
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Review Assignment Modal (matching TeacherGrading.tsx View Exam style) */}
+      {showReviewModal && reviewModalStudent && (
+        <div 
+          className="fixed inset-0 z-[120] bg-black/50 backdrop-blur-[2px] flex items-center justify-center animate-fade-in p-4 text-[13px]"
+          onClick={() => {
+            setShowReviewModal(false);
+            setReviewModalStudent(null);
+            setReviewModalAssignment(null);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[550px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h3 className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-[#fa541c]" />
+                评审作业 - {reviewModalStudent.name}
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setReviewModalStudent(null);
+                  setReviewModalAssignment(null);
+                }} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <div className="border border-neutral-100 rounded-md overflow-hidden bg-white">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium select-none whitespace-nowrap">
+                      <th className="p-3 pl-4 w-16 whitespace-nowrap">序号</th>
+                      <th className="p-3">题型</th>
+                      <th className="p-3">题目数量</th>
+                      <th className="p-3">总分值</th>
+                      <th className="p-3">得分值</th>
+                      <th className="p-3 text-center pr-4">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                    {[
+                      { id: 'single', name: '单选题', count: 10, totalPoints: 10 },
+                      { id: 'multiple', name: '多选题', count: 5, totalPoints: 10 },
+                      { id: 'essay', name: '简答题', count: 2, totalPoints: 30 },
+                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 50 }
+                    ].map((sec, idx) => {
+                      const earnedScore = reviewModalStudent ? getEarnedScore(sec.id, reviewModalStudent.score) : 0;
+                      return (
+                        <tr key={sec.id} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
+                          <td className="p-3 pl-4 font-mono text-neutral-500 whitespace-nowrap">{idx + 1}</td>
+                          <td className="p-3 font-semibold text-neutral-800">{sec.name}</td>
+                          <td className="p-3 text-neutral-600">{sec.count} 题</td>
+                          <td className="p-3 text-neutral-600">{sec.totalPoints} 分</td>
+                          <td className="p-3 font-bold text-neutral-850">{earnedScore} 分</td>
+                          <td className="p-3 text-center pr-4">
+                            <button
+                              onClick={() => {
+                                setShowReviewPreview(true);
+                                setCurrentQuestionIndex(idx);
+                              }}
+                              className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border border-[#fa541c]/30 hover:border-[#fa541c] bg-transparent px-2.5 py-1 rounded-[4px] cursor-pointer font-medium"
+                            >
+                              预览
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end shrink-0">
+              <Button 
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setReviewModalStudent(null);
+                  setReviewModalAssignment(null);
+                }} 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Review Assignment Workspace */}
+      {showReviewPreview && reviewModalStudent && (() => {
+        const questions = getDynamicPreviewQuestions(reviewModalStudent.score);
+        const q = questions[currentQuestionIndex];
+        return (
+          <div className="fixed inset-0 z-[200] bg-[#f5f5f5] flex flex-col font-sans text-neutral-800 animate-fade-in text-[13px]">
+            {/* Header Bar */}
+            <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex items-center shrink-0 text-left select-none">
+              <button 
+                onClick={() => setShowReviewPreview(false)}
+                className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px]"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                退出
+              </button>
+              <div className="w-[1px] h-4 bg-neutral-200 mx-4"></div>
+              <span className="font-bold text-neutral-800 text-[14px]">
+                {reviewModalAssignment?.title || 'Python 基础 - 答卷预览'}
+              </span>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 mt-[20px] px-6 pb-6 relative z-20 overflow-hidden flex flex-col">
+              <div className="max-w-[1400px] w-full mx-auto flex flex-1 bg-white border border-neutral-200/80 shadow-lg rounded-xl overflow-hidden min-h-[600px] h-[calc(100vh-14rem)]">
+                {/* Left Answering Area */}
+                <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
+                  {/* Scrollable Question Content */}
+                  <div className="flex-1 overflow-y-auto px-10 pt-10 pb-4 text-left">
+                    
+                    {/* Question Type and Score */}
+                    <div className="flex items-center justify-between mb-5 select-none">
+                      <div className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
+                        <span>{currentQuestionIndex + 1}、{q.type}</span>
+                        <span className="text-[13px] text-neutral-400 font-normal">({q.maxScore}分)</span>
+                        <span className="text-[13px] text-[#fa541c] font-bold ml-2">（得分: {q.score}分）</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-2.5 py-1 bg-orange-50 text-[#fa541c] border border-orange-100/50 rounded-[4px] font-medium">
+                          该题{q.maxScore}.0分
+                        </span>
+                        <span className="px-2.5 py-1 bg-orange-50 text-[#fa541c] border border-orange-100/50 rounded-[4px] font-bold">
+                          得{q.score}分
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Question Title */}
+                    <div className="text-neutral-800 mb-6 text-[15px] font-bold leading-relaxed">
+                      {q.title}
+                    </div>
+
+                    {/* Options / Textarea depending on question type */}
+                    {q.options ? (
+                      <div className="space-y-6 max-w-[800px]">
+                        <div className="space-y-3">
+                          {q.options.map((opt) => {
+                            const isSelected = Array.isArray(q.studentAnswer) ? q.studentAnswer.includes(opt.key) : q.studentAnswer === opt.key;
+                            const isRight = Array.isArray(q.answer) ? q.answer.includes(opt.key) : q.answer === opt.key;
+                            
+                            let cardStyle = "border-neutral-200 bg-neutral-50/30 text-neutral-600";
+                            if (q.isCorrect) {
+                              if (isSelected) {
+                                cardStyle = "border-green-500 text-green-600 bg-green-50/10 font-bold";
+                              }
+                            } else {
+                              if (isSelected) {
+                                cardStyle = "border-red-500 text-red-600 bg-red-50/10 font-bold";
+                              } else if (isRight) {
+                                cardStyle = "border-green-500 text-green-600 bg-green-50/10 font-bold";
+                              }
+                            }
+
+                            return (
+                              <div 
+                                key={opt.key}
+                                className={cn(
+                                  "px-5 py-4 border rounded-[4px] font-medium text-left flex items-center justify-between text-[14px]",
+                                  cardStyle
+                                )}
+                              >
+                                <span>{opt.key}. {opt.value}</span>
+                                <div className="flex gap-2 text-xs shrink-0 select-none">
+                                  {isSelected && (
+                                    <span className={cn(
+                                      "px-2 py-0.5 rounded-[4px] text-[11px] font-bold",
+                                      q.isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                    )}>学生作答</span>
+                                  )}
+                                  {isRight && !isSelected && (
+                                    <span className="px-2 py-0.5 rounded-[4px] text-[11px] font-bold bg-green-100 text-green-700">正确答案</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Answer Details matching the mock image exactly */}
+                        <div className="pt-4 border-t border-neutral-100 flex flex-col gap-2.5 text-left text-[14px] select-none">
+                          <div className="flex items-center gap-1.5 font-bold text-neutral-650">
+                            <span>正确答案：</span>
+                            <span className="text-[#52c41a] font-mono">{Array.isArray(q.answer) ? q.answer.sort().join(', ') : q.answer}</span>
+                          </div>
+                          <div className="flex items-center gap-2 font-bold text-neutral-650">
+                            <span>学生答案：</span>
+                            <span className="text-neutral-700 font-mono">{Array.isArray(q.studentAnswer) ? q.studentAnswer.sort().join(', ') : q.studentAnswer}</span>
+                            {q.isCorrect ? (
+                              <span className="text-[#52c41a] font-sans font-bold text-[18px]">✓</span>
+                            ) : (
+                              <span className="text-[#f5222d] font-sans font-bold text-[18px]">✗</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6 max-w-[900px] text-left pt-2">
+                        {/* Student Answer */}
+                        <div className="space-y-2">
+                          <span className="text-xs font-semibold text-neutral-500 block">学生作答：</span>
+                          <pre className="p-4 bg-neutral-50 border border-neutral-200 rounded-[4px] text-[13px] text-neutral-700 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                            {q.studentAnswerText}
+                          </pre>
+                        </div>
+
+                        {/* Standard Answer */}
+                        <div className="space-y-2">
+                          <span className="text-xs font-semibold text-green-700 block">参考答案：</span>
+                          <pre className="p-4 bg-green-50/20 border border-green-200 rounded-[4px] text-[13px] text-green-800 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                            {q.answerText}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom Actions Row */}
+                  <div className="flex items-center justify-between px-10 py-5 border-t border-neutral-100 bg-white shrink-0 shadow-[0_-4px_16px_rgba(0,0,0,0.02)] z-10 select-none">
+                    <Button
+                      variant="outline"
+                      disabled={currentQuestionIndex === 0}
+                      onClick={() => setCurrentQuestionIndex(idx => idx - 1)}
+                      className="border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-6 h-9.5 text-[13px] font-bold rounded-[4px]"
+                    >
+                      上一题
+                    </Button>
+                    
+                    <Button 
+                      disabled={currentQuestionIndex === questions.length - 1}
+                      onClick={() => setCurrentQuestionIndex(idx => idx + 1)}
+                      className={cn(
+                        "px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1 cursor-pointer",
+                        currentQuestionIndex === questions.length - 1
+                          ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200 shadow-none"
+                          : "bg-[#fa541c] hover:bg-[#e84a15] text-white"
+                      )}
+                    >
+                      下一题
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Right Sidebar navigation */}
+                <div className="w-80 border-l border-neutral-200 flex flex-col bg-white px-6 pt-8 pb-6 shrink-0 justify-between h-full text-left select-none">
+                  <div className="overflow-y-auto flex-1 no-scrollbar space-y-6 flex flex-col justify-between">
+                    {/* Sidebar navigations for all types */}
+                    <div className="space-y-6 pt-2">
+                      {['单选题', '多选题', '简答题', '实训编程题'].map((typeStr) => {
+                        const typeQuestions = questions.map((q, qIdx) => ({ ...q, originalIndex: qIdx })).filter(q => q.type === typeStr);
+                        if (typeQuestions.length === 0) return null;
+                        return (
+                          <div key={typeStr} className="space-y-3">
+                            <h3 className="text-[13px] font-bold text-neutral-800">{typeStr}</h3>
+                            <div className="grid grid-cols-5 gap-3">
+                              {typeQuestions.map((item) => {
+                                const isActive = item.originalIndex === currentQuestionIndex;
+                                return (
+                                  <div 
+                                    key={item.id}
+                                    onClick={() => setCurrentQuestionIndex(item.originalIndex)}
+                                    className={cn(
+                                      "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative border border-transparent",
+                                      item.score > 0
+                                        ? (isActive ? "bg-emerald-500 text-white shadow-[0_4px_8px_rgba(16,185,129,0.4)] scale-[1.02]" : "bg-emerald-500 text-white")
+                                        : (isActive ? "bg-red-500 text-white shadow-[0_4px_8px_rgba(239,68,68,0.4)] scale-[1.02]" : "bg-red-500 text-white")
+                                    )}
+                                  >
+                                    {item.originalIndex + 1}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Exit Preview Button below the navigations */}
+                    <div className="pt-6 border-t border-neutral-200 mt-6 select-none shrink-0">
+                      <Button 
+                        onClick={() => setShowReviewPreview(false)}
+                        className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white border-0 font-bold h-9.5 text-[13px] rounded-[4px] cursor-pointer transition-colors shadow-sm"
+                      >
+                        退出预览
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+      {toastMessage && (
+        <div className="fixed top-8 left-1/2 -translate-y-1/2 z-[300] animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="bg-white px-6 py-3 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            <span className="text-sm font-bold text-neutral-800">{toastMessage.message}</span>
           </div>
         </div>
       )}

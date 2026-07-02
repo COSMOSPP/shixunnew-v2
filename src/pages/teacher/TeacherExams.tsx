@@ -72,64 +72,119 @@ export default function TeacherExams({ embedded = false }) {
       id: 1,
       name: '机器学习技术与应用',
       status: '启用',
-      sessionsCount: 3,
+      sessionsCount: 6,
       enrolled: 21,
       creator: '管理员',
       createTime: '2099/02/28 00:00',
       sessions: [
         {
           id: 101,
-          name: '9月25日下午场',
-          type: '正式场次',
-          location: '天宝路C402',
-          status: '已结束',
-          invigilator: '张三',
-          startTime: '2099/02/28 00:00',
-          endTime: '2099/02/28 00:00',
+          name: 'Python基础测试-第一场',
+          type: '测试场次',
+          location: '求实楼A201',
+          status: '未开始',
+          invigilator: '张建国',
+          startTime: '2099/09/25 09:00',
+          endTime: '2099/09/25 11:30',
           visibility: '显示'
         },
         {
           id: 102,
-          name: '9月25日下午场',
+          name: 'Python核心测试-第二场',
+          type: '测试场次',
+          location: '天宝路C402',
+          status: '进行中',
+          invigilator: '李红卫',
+          startTime: '2099/10/12 14:00',
+          endTime: '2099/10/12 16:30',
+          visibility: '显示'
+        },
+        {
+          id: 103,
+          name: '机器学习技术与应用期末考',
           type: '正式场次',
+          location: '计算中心301',
+          status: '已结束',
+          invigilator: '王志坚',
+          startTime: '2099/06/18 09:00',
+          endTime: '2099/06/18 11:30',
+          visibility: '显示'
+        },
+        {
+          id: 104,
+          name: '数据分析实战技能测试',
+          type: '测试场次',
           location: '天宝路C402',
           status: '已结束',
-          invigilator: '张三',
-          startTime: '2099/02/28 00:00',
-          endTime: '2099/02/28 00:00',
+          invigilator: '孙梅',
+          startTime: '2099/05/20 14:00',
+          endTime: '2099/05/20 16:00',
+          visibility: '显示'
+        },
+        {
+          id: 105,
+          name: '天宝路正式模拟考试场次',
+          type: '正式场次',
+          location: '天宝路C402',
+          status: '未开始',
+          invigilator: '赵海涛',
+          startTime: '2099/11/01 10:00',
+          endTime: '2099/11/01 12:00',
+          visibility: '隐藏'
+        },
+        {
+          id: 106,
+          name: '深度学习技术正式考',
+          type: '正式场次',
+          location: '信工楼501',
+          status: '进行中',
+          invigilator: '吴明',
+          startTime: '2099/10/15 15:00',
+          endTime: '2099/10/15 17:00',
           visibility: '显示'
         }
       ]
     },
     {
       id: 2,
-      name: '机器学习技术与应用',
+      name: '深度学习与计算机视觉',
       status: '启用',
       sessionsCount: 3,
-      enrolled: 21,
+      enrolled: 18,
       creator: '管理员',
-      createTime: '2099/02/28 00:00',
+      createTime: '2099/03/12 00:00',
       sessions: [
         {
           id: 201,
-          name: '9月25日下午场',
+          name: 'AI创新算法实践考核',
           type: '正式场次',
-          location: '天宝路C402',
+          location: '科教楼B104',
           status: '已结束',
-          invigilator: '张三',
-          startTime: '2099/02/28 00:00',
-          endTime: '2099/02/28 00:00',
+          invigilator: '周建勋',
+          startTime: '2099/04/10 09:00',
+          endTime: '2099/04/10 11:30',
           visibility: '显示'
         },
         {
           id: 202,
-          name: '9月25日下午场',
-          type: '正式场次',
+          name: '大语言模型应用能力测试场',
+          type: '测试场次',
+          location: '求实楼B302',
+          status: '进行中',
+          invigilator: '郑涛',
+          startTime: '2099/10/20 13:00',
+          endTime: '2099/10/20 15:30',
+          visibility: '显示'
+        },
+        {
+          id: 203,
+          name: '基础语法入门测试场次',
+          type: '测试场次',
           location: '天宝路C402',
-          status: '已结束',
-          invigilator: '张三',
-          startTime: '2099/02/28 00:00',
-          endTime: '2099/02/28 00:00',
+          status: '未开始',
+          invigilator: '陈小红',
+          startTime: '2099/12/01 09:00',
+          endTime: '2099/12/01 10:30',
           visibility: '显示'
         }
       ]
@@ -187,6 +242,7 @@ export default function TeacherExams({ embedded = false }) {
   // Add Session Drawer states
   const [isAddSessionDrawerOpen, setIsAddSessionDrawerOpen] = useState(false);
   const [targetExamId, setTargetExamId] = useState<number | null>(null);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
   const [sessionName, setSessionName] = useState('');
   const [sessionType, setSessionType] = useState('正式场次');
   const [sessionStartTime, setSessionStartTime] = useState('');
@@ -347,23 +403,34 @@ export default function TeacherExams({ embedded = false }) {
 
     setExams(exams.map(e => {
       if (e.id === targetExamId) {
+        const isEditing = e.sessions.some(s => s.id === editingSessionId);
         return {
           ...e,
-          sessionsCount: e.sessionsCount + 1,
-          sessions: [
-            ...e.sessions,
-            {
-              id: Date.now(),
-              name: sessionName,
-              type: sessionType,
-              location: sessionLocation || '未分配考场',
-              status: '未开始',
-              invigilator: sessionInvigilator,
-              startTime: sessionStartTime.replace('T', ' '),
-              endTime: sessionEndTime.replace('T', ' '),
-              visibility: '隐藏'
-            }
-          ]
+          sessions: isEditing
+            ? e.sessions.map(s => s.id === editingSessionId ? {
+                ...s,
+                name: sessionName,
+                type: sessionType,
+                location: sessionLocation || '未分配考场',
+                invigilator: sessionInvigilator,
+                startTime: sessionStartTime.replace('T', ' '),
+                endTime: sessionEndTime.replace('T', ' ')
+              } : s)
+            : [
+                ...e.sessions,
+                {
+                  id: Date.now(),
+                  name: sessionName,
+                  type: sessionType,
+                  location: sessionLocation || '未分配考场',
+                  status: '未开始',
+                  invigilator: sessionInvigilator,
+                  startTime: sessionStartTime.replace('T', ' '),
+                  endTime: sessionEndTime.replace('T', ' '),
+                  visibility: '隐藏'
+                }
+              ],
+          sessionsCount: isEditing ? e.sessionsCount : e.sessionsCount + 1
         };
       }
       return e;
@@ -371,7 +438,7 @@ export default function TeacherExams({ embedded = false }) {
     
     setExpandedRow(targetExamId);
     setIsAddSessionDrawerOpen(false);
-    showToast('场次添加成功！');
+    showToast(editingSessionId ? '场次修改成功！' : '场次添加成功！');
   };
 
   const handleMockNavigate = (action: string) => {
@@ -528,6 +595,19 @@ export default function TeacherExams({ embedded = false }) {
     });
   };
 
+  const handleEditSession = (examId: number, session: any) => {
+    setTargetExamId(examId);
+    setEditingSessionId(session.id);
+    setSessionName(session.name);
+    setSessionType(session.type);
+    setSessionStartTime(session.startTime.replace(' ', 'T'));
+    setSessionEndTime(session.endTime.replace(' ', 'T'));
+    setSessionLocation(session.location);
+    setSessionInvigilator(session.invigilator);
+    setIsInvigilatorDropdownOpen(false);
+    setIsAddSessionDrawerOpen(true);
+  };
+
   const handleSessionStudents = (session: any) => {
     setDetailsSession(session);
     setDetailsType('students');
@@ -568,6 +648,121 @@ export default function TeacherExams({ embedded = false }) {
     setDetailsSession(session);
     setDetailsType('rank');
     setIsDetailsDrawerOpen(true);
+  };
+
+  const getSessionActions = (examId: number, session: any) => {
+    const actions: { label: string; onClick: () => void; isDanger?: boolean }[] = [];
+
+    const onEdit = () => handleEditSession(examId, session);
+    const onDelete = () => handleConfirmDeleteSession(examId, session);
+    const onCopy = () => handleConfirmCopySession(examId, session);
+    const onStudents = () => handleSessionStudents(session);
+    const onInvigilators = () => handleSessionInvigilators(session);
+    const onScoring = () => handleSessionScoring(session);
+    const onToggleVisibility = () => handleToggleSessionVisibility(examId, session.id, session.visibility);
+    const onStartExam = () => {
+      setExams(exams.map(e => {
+        if (e.id === examId) {
+          return {
+            ...e,
+            sessions: e.sessions.map(s => s.id === session.id ? { ...s, status: '进行中' } : s)
+          };
+        }
+        return e;
+      }));
+      showToast('考试已启动！', 'success');
+    };
+    const onEndExam = () => {
+      setExams(exams.map(e => {
+        if (e.id === examId) {
+          return {
+            ...e,
+            sessions: e.sessions.map(s => s.id === session.id ? { ...s, status: '已结束' } : s)
+          };
+        }
+        return e;
+      }));
+      showToast('考试已结束！', 'success');
+    };
+    const onScores = () => handleSessionScores(session);
+    const onPublish = () => handleSessionPublish(session);
+    const onRank = () => handleSessionRank(session);
+
+    if (session.type === '测试场次') {
+      if (session.status === '未开始') {
+        // 编辑、删除、复制、考生名单、监考信息、批阅任务、开始考试、隐藏
+        return [
+          { label: '开始考试', onClick: onStartExam },
+          { label: '考生名单', onClick: onStudents },
+          { label: '编辑', onClick: onEdit },
+          { label: '监考信息', onClick: onInvigilators },
+          { label: '批阅任务', onClick: onScoring },
+          { label: '复制', onClick: onCopy },
+          { label: session.visibility === '显示' ? '隐藏' : '显示', onClick: onToggleVisibility },
+          { label: '删除', onClick: onDelete, isDanger: true }
+        ];
+      } else if (session.status === '进行中') {
+        // 编辑、复制、考生名单、监考信息、结束考试、隐藏
+        return [
+          { label: '结束考试', onClick: onEndExam },
+          { label: '考生名单', onClick: onStudents },
+          { label: '编辑', onClick: onEdit },
+          { label: '监考信息', onClick: onInvigilators },
+          { label: '复制', onClick: onCopy },
+          { label: session.visibility === '显示' ? '隐藏' : '显示', onClick: onToggleVisibility }
+        ];
+      } else if (session.status === '已结束') {
+        // 删除、复制、考生名单、监考信息、批阅任务、查看成绩、公布成绩、排行榜、隐藏
+        return [
+          { label: '查看成绩', onClick: onScores },
+          { label: '公布成绩', onClick: onPublish },
+          { label: '考生名单', onClick: onStudents },
+          { label: '监考信息', onClick: onInvigilators },
+          { label: '批阅任务', onClick: onScoring },
+          { label: '排行榜', onClick: onRank },
+          { label: '复制', onClick: onCopy },
+          { label: session.visibility === '显示' ? '隐藏' : '显示', onClick: onToggleVisibility },
+          { label: '删除', onClick: onDelete, isDanger: true }
+        ];
+      }
+    } else { // 正式场次
+      if (session.status === '未开始') {
+        // 编辑、删除、复制、考生名单、监考信息、批阅任务、隐藏
+        return [
+          { label: '考生名单', onClick: onStudents },
+          { label: '编辑', onClick: onEdit },
+          { label: '监考信息', onClick: onInvigilators },
+          { label: '批阅任务', onClick: onScoring },
+          { label: '复制', onClick: onCopy },
+          { label: session.visibility === '显示' ? '隐藏' : '显示', onClick: onToggleVisibility },
+          { label: '删除', onClick: onDelete, isDanger: true }
+        ];
+      } else if (session.status === '进行中') {
+        // 编辑、复制、考生名单、监考信息、批阅任务、隐藏
+        return [
+          { label: '考生名单', onClick: onStudents },
+          { label: '编辑', onClick: onEdit },
+          { label: '监考信息', onClick: onInvigilators },
+          { label: '批阅任务', onClick: onScoring },
+          { label: '复制', onClick: onCopy },
+          { label: session.visibility === '显示' ? '隐藏' : '显示', onClick: onToggleVisibility }
+        ];
+      } else if (session.status === '已结束') {
+        // 删除、复制、考生名单、监考信息、批阅任务、查看成绩、公布成绩、排行榜、隐藏
+        return [
+          { label: '查看成绩', onClick: onScores },
+          { label: '公布成绩', onClick: onPublish },
+          { label: '考生名单', onClick: onStudents },
+          { label: '监考信息', onClick: onInvigilators },
+          { label: '批阅任务', onClick: onScoring },
+          { label: '排行榜', onClick: onRank },
+          { label: '复制', onClick: onCopy },
+          { label: session.visibility === '显示' ? '隐藏' : '显示', onClick: onToggleVisibility },
+          { label: '删除', onClick: onDelete, isDanger: true }
+        ];
+      }
+    }
+    return [];
   };
 
   const filteredAvailableCandidates = MOCK_AVAILABLE_CANDIDATES.filter(candidate => {
@@ -653,11 +848,12 @@ export default function TeacherExams({ embedded = false }) {
                     <td className="p-4 text-left text-neutral-500 font-mono">{exam.createTime}</td>
                     <td className="p-4 text-left">
                       <div className="flex items-center gap-3">
-                        {expandedRow === exam.id ? (
+                        {exam.status === '启用' ? (
                           <>
                             <button 
                               onClick={() => {
                                 setTargetExamId(exam.id);
+                                setEditingSessionId(null);
                                 setSessionName('');
                                 setSessionType('正式场次');
                                 setSessionStartTime('');
@@ -671,41 +867,33 @@ export default function TeacherExams({ embedded = false }) {
                             >
                               添加场次
                             </button>
-                            <button onClick={() => handleConfirmToggleExamStatus(exam)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">停用</button>
+                            <button 
+                              onClick={() => handleConfirmToggleExamStatus(exam)} 
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                            >
+                              取消启用
+                            </button>
                           </>
                         ) : (
                           <>
-                            <button onClick={() => handleExamDetails(exam)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">详情</button>
-                            <button onClick={() => handleEditExam(exam)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]">编辑</button>
-                            
-                            {/* Dropdown triggers */}
-                            <div className="relative">
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveDropdownId(activeDropdownId === `exam-${exam.id}` ? null : `exam-${exam.id}`);
-                                }}
-                                className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px] flex items-center gap-0.5"
-                              >
-                                更多 <ChevronDown className="w-3 h-3" />
-                              </button>
-                              {activeDropdownId === `exam-${exam.id}` && (
-                                <div className="absolute left-0 sm:left-auto sm:right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg py-1 z-30 min-w-[100px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
-                                  <button 
-                                    onClick={() => handleConfirmToggleExamStatus(exam)}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                  >
-                                    {exam.status === '启用' ? '停用' : '启用'}
-                                  </button>
-                                  <button 
-                                    onClick={() => handleConfirmDeleteExam(exam)}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-orange-50/50 hover:text-[#e84a15] text-[12px] text-[#fa541c] bg-transparent border-0 cursor-pointer block font-medium transition-colors"
-                                  >
-                                    删除
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                            <button 
+                              onClick={() => handleEditExam(exam)} 
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                            >
+                              编辑
+                            </button>
+                            <button 
+                              onClick={() => handleConfirmDeleteExam(exam)} 
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                            >
+                              删除
+                            </button>
+                            <button 
+                              onClick={() => handleConfirmToggleExamStatus(exam)} 
+                              className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                            >
+                              启用
+                            </button>
                           </>
                         )}
                       </div>
@@ -736,7 +924,12 @@ export default function TeacherExams({ embedded = false }) {
                                 <tr key={session.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50/30 text-[12px]">
                                   <td className="p-3 text-left text-neutral-700 font-medium">{session.name}</td>
                                   <td className="p-3 text-left">
-                                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[11px] border border-indigo-200 font-medium">
+                                    <span className={cn(
+                                      "px-2 py-0.5 rounded text-[11px] border font-medium",
+                                      session.type === '正式场次'
+                                        ? "bg-orange-50 text-orange-600 border-orange-200"
+                                        : "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                    )}>
                                       {session.type}
                                     </span>
                                   </td>
@@ -744,7 +937,9 @@ export default function TeacherExams({ embedded = false }) {
                                   <td className="p-3 text-left">
                                     <span className={cn(
                                       "px-2 py-0.5 text-[11px] rounded border font-medium",
-                                      session.status === '已结束' ? "bg-neutral-50 text-neutral-500 border-neutral-200" : "bg-orange-50 text-orange-600 border-orange-200"
+                                      session.status === '进行中' && "bg-emerald-50 text-emerald-600 border-emerald-200",
+                                      session.status === '未开始' && "bg-amber-50 text-amber-600 border-amber-200",
+                                      session.status === '已结束' && "bg-neutral-50 text-neutral-500 border-neutral-200"
                                     )}>
                                       {session.status}
                                     </span>
@@ -755,68 +950,63 @@ export default function TeacherExams({ embedded = false }) {
                                   <td className="p-3 text-left text-neutral-600">{session.visibility}</td>
                                   <td className="p-3 text-left">
                                     <div className="flex items-center gap-3">
-                                      <button onClick={() => handleSessionStudents(session)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">考生名单</button>
-                                      <button onClick={() => handleSessionScores(session)} className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]">查看成绩</button>
-                                      
-                                      {/* Dropdown overlay */}
-                                      <div className="relative">
-                                        <button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setActiveDropdownId(activeDropdownId === `session-${session.id}` ? null : `session-${session.id}`);
-                                          }}
-                                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px] flex items-center gap-0.5"
-                                        >
-                                          更多 <ChevronDown className="w-3 h-3" />
-                                        </button>
-                                        {activeDropdownId === `session-${session.id}` && (
-                                          <div className="absolute right-0 bottom-full mb-1.5 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[120px] text-left animate-in fade-in slide-in-from-bottom-1 duration-150">
-                                            <button 
-                                              onClick={() => handleSessionScoring(session)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                            >
-                                              批阅任务
-                                            </button>
-                                            <button 
-                                              onClick={() => handleSessionPublish(session)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                            >
-                                              公布成绩
-                                            </button>
-                                            <button 
-                                              onClick={() => handleSessionInvigilators(session)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                            >
-                                              监考信息
-                                            </button>
-                                            <button 
-                                              onClick={() => handleSessionRank(session)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                            >
-                                              排行榜
-                                            </button>
-                                            <button 
-                                              onClick={() => handleConfirmCopySession(exam.id, session)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                            >
-                                              复制场次
-                                            </button>
-                                            <button 
-                                              onClick={() => handleToggleSessionVisibility(exam.id, session.id, session.visibility)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
-                                            >
-                                              {session.visibility === '显示' ? '隐藏场次' : '显示场次'}
-                                            </button>
-                                            <div className="h-[1px] bg-neutral-100 my-0.5"></div>
-                                            <button 
-                                              onClick={() => handleConfirmDeleteSession(exam.id, session)}
-                                              className="w-full text-left px-3 py-1.5 hover:bg-orange-50/50 hover:text-[#e84a15] text-[12px] text-[#fa541c] bg-transparent border-0 cursor-pointer block font-medium transition-colors"
-                                            >
-                                              删除场次
-                                            </button>
-                                          </div>
-                                        )}
-                                      </div>
+                                      {(() => {
+                                        const actions = getSessionActions(exam.id, session);
+                                        const primaryActions = actions.slice(0, 3);
+                                        const secondaryActions = actions.slice(3);
+                                        return (
+                                          <>
+                                            {primaryActions.map((act, actIdx) => (
+                                              <button
+                                                key={actIdx}
+                                                onClick={act.onClick}
+                                                className={cn(
+                                                  "font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px]",
+                                                  act.isDanger 
+                                                    ? "text-red-500 hover:text-red-750" 
+                                                    : "text-[#fa541c] hover:text-[#e84a15]"
+                                                )}
+                                              >
+                                                {act.label}
+                                              </button>
+                                            ))}
+                                            {secondaryActions.length > 0 && (
+                                              <div className="relative">
+                                                <button 
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveDropdownId(activeDropdownId === `session-${session.id}` ? null : `session-${session.id}`);
+                                                  }}
+                                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors cursor-pointer bg-transparent border-0 p-0 text-[12px] flex items-center gap-0.5"
+                                                >
+                                                  更多 <ChevronDown className="w-3 h-3" />
+                                                </button>
+                                                {activeDropdownId === `session-${session.id}` && (
+                                                  <div className="absolute right-0 bottom-full mb-1.5 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[120px] text-left animate-in fade-in slide-in-from-bottom-1 duration-150">
+                                                    {secondaryActions.map((act, actIdx) => (
+                                                      <button 
+                                                        key={actIdx}
+                                                        onClick={() => {
+                                                          setActiveDropdownId(null);
+                                                          act.onClick();
+                                                        }}
+                                                        className={cn(
+                                                          "w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] bg-transparent border-0 cursor-pointer block transition-colors",
+                                                          act.isDanger 
+                                                            ? "hover:bg-orange-50/50 text-[#fa541c] font-medium" 
+                                                            : "text-neutral-750"
+                                                        )}
+                                                      >
+                                                        {act.label}
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
+                                          </>
+                                        );
+                                      })()}
                                     </div>
                                   </td>
                                 </tr>
@@ -847,11 +1037,16 @@ export default function TeacherExams({ embedded = false }) {
             <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
             <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&gt;</Button>
           </div>
-          <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 font-medium bg-white">
-            <option>10 条/页</option>
-            <option>20 条/页</option>
-            <option>50 条/页</option>
-          </select>
+          <div className="relative bg-white rounded-[6px]">
+            <select className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm">
+              <option className="bg-white">10 条/页</option>
+              <option className="bg-white">20 条/页</option>
+              <option className="bg-white">50 条/页</option>
+            </select>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+              <ChevronDown className="w-3 h-3" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1129,7 +1324,9 @@ export default function TeacherExams({ embedded = false }) {
           >
             {/* Drawer Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
-              <h2 className="text-[15px] font-bold text-neutral-850">新增场次配置</h2>
+              <h2 className="text-[15px] font-bold text-neutral-850">
+                {editingSessionId ? '编辑场次配置' : '新增场次配置'}
+              </h2>
               <button 
                 onClick={() => setIsAddSessionDrawerOpen(false)}
                 className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"

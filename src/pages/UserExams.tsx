@@ -11,7 +11,9 @@ import {
   Award,
   PlayCircle,
   CheckCircle2,
-  Calendar
+  Calendar,
+  MapPin,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ExamDetail from "@/components/ExamDetail";
@@ -25,9 +27,17 @@ export default function UserExams() {
   const exams = [
     {
       title: "2026年春季网络安全基础认证考试",
+      examName: "2026年春季网络安全基础认证考试",
+      sessionName: "第一场 (A卷)",
+      examRoom: "网络安全实验室-302",
+      sessionStatus: "进行中",
+      status: "进行中",
+      startTime: "2026-07-02 09:00",
+      endTime: "2026-07-02 11:30",
+      candidateStatus: "未交卷",
+      attempts: 0,
+      maxAttempts: 9,
       type: "认证考试",
-      status: "未开始",
-      startTime: "2026-04-15 14:00",
       duration: "120分钟",
       score: null,
       totalScore: 100,
@@ -37,9 +47,17 @@ export default function UserExams() {
     },
     {
       title: "Python 编程进阶阶段测试",
+      examName: "Python 编程进阶阶段测试",
+      sessionName: "期中机考",
+      examRoom: "软件工程实训室-501",
+      sessionStatus: "未开始",
+      status: "未开始",
+      startTime: "2026-07-05 14:00",
+      endTime: "2026-07-05 15:30",
+      candidateStatus: "未登录",
+      attempts: 0,
+      maxAttempts: 1,
       type: "阶段考试",
-      status: "进行中",
-      startTime: "2026-03-16 09:00",
       duration: "90分钟",
       score: null,
       totalScore: 100,
@@ -49,9 +67,17 @@ export default function UserExams() {
     },
     {
       title: "Linux 常用命令随堂小测",
-      type: "随堂测验",
+      examName: "Linux 常用命令随堂小测",
+      sessionName: "第三次周测",
+      examRoom: "线上考场 (防作弊模式)",
+      sessionStatus: "已结束",
       status: "已结束",
-      startTime: "2026-03-10 10:00",
+      startTime: "2026-06-25 10:00",
+      endTime: "2026-06-25 10:45",
+      candidateStatus: "已交卷",
+      attempts: 1,
+      maxAttempts: 1,
+      type: "随堂测验",
       duration: "30分钟",
       score: 95,
       totalScore: 100,
@@ -61,9 +87,17 @@ export default function UserExams() {
     },
     {
       title: "云计算架构设计师认证 (初级)",
-      type: "认证考试",
+      examName: "云计算架构设计师认证 (初级)",
+      sessionName: "第一批次",
+      examRoom: "云计算实训中心-204",
+      sessionStatus: "已结束",
       status: "已结束",
-      startTime: "2026-02-20 14:00",
+      startTime: "2026-06-20 14:00",
+      endTime: "2026-06-20 16:30",
+      candidateStatus: "已交卷",
+      attempts: 1,
+      maxAttempts: 3,
+      type: "认证考试",
       duration: "150分钟",
       score: 88,
       totalScore: 100,
@@ -73,9 +107,17 @@ export default function UserExams() {
     },
     {
       title: "前端开发基础随堂测验",
-      type: "随堂测验",
+      examName: "前端开发基础随堂测验",
+      sessionName: "HTML/CSS阶段考",
+      examRoom: "移动开发实训室-403",
+      sessionStatus: "已结束",
       status: "已结束",
-      startTime: "2026-02-15 10:00",
+      startTime: "2026-06-15 10:00",
+      endTime: "2026-06-15 10:45",
+      candidateStatus: "已交卷",
+      attempts: 2,
+      maxAttempts: 5,
+      type: "随堂测验",
       duration: "45分钟",
       score: 92,
       totalScore: 100,
@@ -85,9 +127,17 @@ export default function UserExams() {
     },
     {
       title: "数据库原理与应用阶段测试",
-      type: "阶段考试",
+      examName: "数据库原理与应用阶段测试",
+      sessionName: "SQL专题考核",
+      examRoom: "数据科学中心-102",
+      sessionStatus: "已结束",
       status: "已结束",
-      startTime: "2026-01-25 14:00",
+      startTime: "2026-06-10 14:00",
+      endTime: "2026-06-10 16:00",
+      candidateStatus: "已交卷",
+      attempts: 1,
+      maxAttempts: 2,
+      type: "阶段考试",
       duration: "120分钟",
       score: 78,
       totalScore: 100,
@@ -120,22 +170,6 @@ export default function UserExams() {
 
       {/* Filters */}
       <div className="flex flex-col gap-4 mb-8">
-        <div className="flex items-start gap-4">
-          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5">考试标签</span>
-          <div className="flex flex-wrap gap-2">
-            {["全部", "随堂测验", "阶段考试", "认证考试"].map((tag, i) => (
-              <button 
-                key={i}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-[13px] transition-colors",
-                  i === 0 ? "bg-[#fa541c] text-white" : "bg-white border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
-                )}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
         <div className="flex items-start gap-4">
           <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5">考试状态</span>
           <div className="flex flex-wrap gap-2">
@@ -186,95 +220,138 @@ export default function UserExams() {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-[16px] font-bold text-neutral-title truncate group-hover:text-[#fa541c] transition-colors">
-                          {exam.title}
+                      {/* 考试名称 and Badges */}
+                      <div className="flex flex-wrap items-center gap-3 mb-3">
+                        <h3 className="text-[16px] font-bold text-neutral-title truncate group-hover:text-[#fa541c] transition-colors max-w-md">
+                          {exam.examName}
                         </h3>
-                        <span className="inline-block px-2 py-0.5 rounded-[4px] bg-neutral-bg text-neutral-body text-[12px] flex-shrink-0">
-                          {exam.type}
-                        </span>
-                        {exam.status === "未开始" && (
-                          <span className="inline-block px-2 py-0.5 rounded-[4px] bg-blue-50 text-blue-600 border border-blue-200 text-[12px] flex-shrink-0">
-                            未开始
+                        
+                        {/* 场次状态 */}
+                        {exam.sessionStatus === "未开始" && (
+                          <span className="inline-block px-2.5 py-0.5 rounded-[4px] bg-blue-50 text-blue-600 border border-blue-200 text-[12px] font-medium flex-shrink-0">
+                            场次：未开始
                           </span>
                         )}
-                        {exam.status === "进行中" && (
-                          <span className="inline-block px-2 py-0.5 rounded-[4px] bg-green-50 text-green-600 border border-green-200 text-[12px] flex-shrink-0">
-                            进行中
+                        {exam.sessionStatus === "进行中" && (
+                          <span className="inline-block px-2.5 py-0.5 rounded-[4px] bg-green-50 text-green-600 border border-green-200 text-[12px] font-medium flex-shrink-0 animate-pulse">
+                            场次：进行中
                           </span>
                         )}
-                        {exam.status === "已结束" && (
-                          <span className="inline-block px-2 py-0.5 rounded-[4px] bg-gray-50 text-gray-600 border border-gray-200 text-[12px] flex-shrink-0">
-                            已结束
+                        {exam.sessionStatus === "已结束" && (
+                          <span className="inline-block px-2.5 py-0.5 rounded-[4px] bg-gray-50 text-gray-500 border border-gray-200 text-[12px] font-medium flex-shrink-0">
+                            场次：已结束
+                          </span>
+                        )}
+
+                        {/* 考生状态 */}
+                        {exam.candidateStatus === "未登录" && (
+                          <span className="inline-block px-2.5 py-0.5 rounded-[4px] bg-neutral-100 text-neutral-500 border border-neutral-200 text-[12px] font-medium flex-shrink-0">
+                            考生：未登录
+                          </span>
+                        )}
+                        {exam.candidateStatus === "未交卷" && (
+                          <span className="inline-block px-2.5 py-0.5 rounded-[4px] bg-amber-50 text-amber-600 border border-amber-200 text-[12px] font-medium flex-shrink-0">
+                            考生：未交卷
+                          </span>
+                        )}
+                        {exam.candidateStatus === "已交卷" && (
+                          <span className="inline-block px-2.5 py-0.5 rounded-[4px] bg-emerald-50 text-emerald-600 border border-emerald-200 text-[12px] font-medium flex-shrink-0">
+                            考生：已交卷
                           </span>
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-6 text-[13px] text-neutral-body">
+                      {/* Grid info: 场次名称, 考场, 考试次数 */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 gap-x-6 text-[13px] text-neutral-body mb-2.5">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-4 h-4 text-neutral-caption" />
+                          <FileText className="w-4 h-4 text-neutral-caption shrink-0" />
+                          <span className="truncate">场次名称：{exam.sessionName}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-neutral-caption shrink-0" />
+                          <span className="truncate">考场：{exam.examRoom}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <RefreshCw className="w-4 h-4 text-neutral-caption shrink-0" />
+                          <span>考试次数：<strong className="text-neutral-title font-semibold">{exam.attempts}</strong>/{exam.maxAttempts}</span>
+                        </div>
+                      </div>
+
+                      {/* Time details */}
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[13px] text-neutral-body">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-neutral-caption shrink-0" />
                           <span>开始时间：{exam.startTime}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Clock className="w-4 h-4 text-neutral-caption" />
-                          <span>时长：{exam.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <FileText className="w-4 h-4 text-neutral-caption" />
-                          <span>总分：{exam.totalScore}分 (及格：{exam.passScore}分)</span>
+                          <Clock className="w-4 h-4 text-neutral-caption shrink-0" />
+                          <span>结束时间：{exam.endTime}</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-3 flex-shrink-0 min-w-[120px]">
-                      {exam.status === "已结束" ? null : exam.status === "进行中" ? (
-                        <Button className="w-full h-9 text-[13px] rounded-[6px] bg-[#fa541c] hover:bg-[#ff7a45] text-white gap-1.5">
-                          <PlayCircle className="w-4 h-4" />
-                          开始考试
-                        </Button>
-                      ) : (
-                        <Button disabled className="w-full h-9 text-[13px] rounded-[6px] border-neutral-200 text-neutral-400 bg-neutral-100 cursor-not-allowed gap-1.5 opacity-60">
-                          <PlayCircle className="w-4 h-4" />
-                          开始考试
-                        </Button>
-                      )}
+                    {/* Buttons module */}
+                    <div className="flex flex-col gap-2.5 flex-shrink-0 min-w-[110px]" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        onClick={() => {
+                          setSelectedExam(exam);
+                          setIsTakingExam(true);
+                        }}
+                        disabled={exam.sessionStatus === "已结束" || exam.candidateStatus === "已交卷" || exam.attempts >= exam.maxAttempts}
+                        className={cn(
+                          "w-full h-9 text-[13px] rounded-[6px] transition-all gap-1.5 font-medium flex items-center justify-center",
+                          (exam.sessionStatus === "已结束" || exam.candidateStatus === "已交卷" || exam.attempts >= exam.maxAttempts)
+                            ? "bg-neutral-100 border border-neutral-200 text-neutral-400 cursor-not-allowed opacity-60"
+                            : "bg-[#fa541c] hover:bg-[#ff7a45] text-white shadow-sm"
+                        )}
+                      >
+                        <PlayCircle className="w-4 h-4" />
+                        开始考试
+                      </Button>
                       
-                      {exam.status === "已结束" && (
-                        <Button variant="outline" className="w-full h-8 text-[12px] rounded-[6px] border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]">
-                          查看解析
-                        </Button>
-                      )}
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedExam(exam);
+                          setIsViewingResult(true);
+                        }}
+                        disabled={exam.candidateStatus !== "已交卷" && exam.sessionStatus !== "已结束"}
+                        className={cn(
+                          "w-full h-9 text-[13px] rounded-[6px] transition-all gap-1.5 font-medium flex items-center justify-center",
+                          (exam.candidateStatus !== "已交卷" && exam.sessionStatus !== "已结束")
+                            ? "bg-neutral-50 border border-neutral-200 text-neutral-300 cursor-not-allowed"
+                            : "border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
+                        )}
+                      >
+                        <FileText className="w-4 h-4" />
+                        查看试卷
+                      </Button>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Load More / Pagination */}
-            <div className="mt-8 flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-caption hover:text-[#fa541c] hover:border-[#fa541c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] bg-[#fa541c] text-white font-medium">1</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">2</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">3</button>
-                <span className="px-2 text-neutral-caption">...</span>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">8</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+            {/* Pagination */}
+            <div className="flex items-center justify-end p-4 gap-4 mt-8">
+              <span className="text-[13px] text-neutral-500">共 75 条</span>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]" disabled>&lt;</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px] bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">2</Button>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">3</Button>
+                <span className="px-1 text-neutral-caption text-[13px]">...</span>
+                <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-[4px]">&gt;</Button>
               </div>
-              
-              <div className="flex items-center gap-4 text-[13px] text-neutral-body">
-                <div className="flex items-center gap-2">
-                  <span>每页</span>
-                  <button className="flex items-center gap-1 px-2 py-1 border border-neutral-border rounded-[4px] hover:border-[#fa541c] transition-colors">
-                    10 <ChevronDown className="w-3 h-3" />
-                  </button>
-                  <span>条</span>
+              <div className="relative bg-white rounded-[6px]">
+                <select className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm">
+                  <option className="bg-white">10 条/页</option>
+                  <option className="bg-white">20 条/页</option>
+                  <option className="bg-white">50 条/页</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                  <ChevronDown className="w-3 h-3" />
                 </div>
-                <span>共 75 个考试</span>
               </div>
             </div>
         </div>
