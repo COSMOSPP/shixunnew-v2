@@ -952,8 +952,8 @@ export default function TeacherExams({ embedded = false }) {
                                     <div className="flex items-center gap-3">
                                       {(() => {
                                         const actions = getSessionActions(exam.id, session);
-                                        const primaryActions = actions.slice(0, 3);
-                                        const secondaryActions = actions.slice(3);
+                                        const primaryActions = actions.slice(0, 2);
+                                        const secondaryActions = actions.slice(2);
                                         return (
                                           <>
                                             {primaryActions.map((act, actIdx) => (
