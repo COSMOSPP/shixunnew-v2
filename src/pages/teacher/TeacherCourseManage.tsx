@@ -4367,7 +4367,7 @@ export default function TeacherCourseManage() {
           }}
         >
           <div 
-            className="bg-white w-full max-w-[550px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white w-full max-w-[760px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -4390,7 +4390,7 @@ export default function TeacherCourseManage() {
 
             {/* Modal Body */}
             <div className="p-6">
-              <div className="border border-neutral-100 rounded-md overflow-hidden bg-white">
+              <div className="border border-neutral-100 rounded-md overflow-hidden bg-white overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium select-none whitespace-nowrap">
