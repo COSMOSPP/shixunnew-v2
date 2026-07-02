@@ -991,10 +991,10 @@ export default function TeacherExams({ embedded = false }) {
                                                           act.onClick();
                                                         }}
                                                         className={cn(
-                                                          "w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] bg-transparent border-0 cursor-pointer block transition-colors",
+                                                          "w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all",
                                                           act.isDanger 
-                                                            ? "hover:bg-orange-50/50 text-[#fa541c] font-medium" 
-                                                            : "text-neutral-750"
+                                                            ? "text-[#fa541c] font-semibold hover:bg-orange-50" 
+                                                            : "text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                                         )}
                                                       >
                                                         {act.label}
