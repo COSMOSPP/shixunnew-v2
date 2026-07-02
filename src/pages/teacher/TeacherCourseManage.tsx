@@ -342,13 +342,14 @@ export default function TeacherCourseManage() {
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [scoreModalAssignment, setScoreModalAssignment] = useState<any>(null);
   const [scoreStudents, setScoreStudents] = useState([
-    { name: 'df0002', account: 'df0002', phone: '13212345654', group: '0514-df', score: 100, submitTime: '2099/02/28 10:15' },
-    { name: '吕梦霞', account: 'kaoshi_2_002', phone: '17779303833', group: 'test20251016', score: 80, submitTime: '2099/02/28 11:20' },
-    { name: '张小凡', account: 'kaoshi_2_003', phone: '18829399482', group: 'test20251016', score: 56, submitTime: '2099/02/28 14:05' },
-    { name: '王小二', account: 'kaoshi_2_004', phone: '15392839948', group: 'test20251016', score: 40, submitTime: '2099/02/28 15:30' },
-    { name: '李莫愁', account: 'kaoshi_2_005', phone: '13928391822', group: 'test20251016', score: 11, submitTime: '2099/02/28 16:45' }
+    { id: 1, time: '2026/07/02 14:32:18', score: 100 },
+    { id: 2, time: '2026/07/02 15:02:44', score: 80 },
+    { id: 3, time: '2026/07/02 15:10:15', score: 56 },
+    { id: 4, time: '2026/07/02 15:45:00', score: 40 },
+    { id: 5, time: '2026/07/02 16:01:23', score: 11 },
+    { id: 6, time: '2026/07/02 16:15:30', score: 0 }
   ]);
-  const [scoreSortKey, setScoreSortKey] = useState<'group' | 'score' | null>(null);
+  const [scoreSortKey, setScoreSortKey] = useState<'time' | 'score' | null>(null);
   const [scoreSortOrder, setScoreSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Review Modal States
@@ -4273,7 +4274,7 @@ export default function TeacherCourseManage() {
                 <button
                   onClick={() => {
                     const headers = ['序号', '提交时间', '成绩'];
-                    const rows = sortedScoreStudents.map((s, index) => [index + 1, s.submitTime || '--', s.score]);
+                    const rows = sortedScoreStudents.map((s, idx) => [idx + 1, s.time, s.score]);
                     const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
@@ -4298,16 +4299,38 @@ export default function TeacherCourseManage() {
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[80px] text-center">序号</th>
-                      <th className="p-4 font-bold bg-neutral-50/50 text-left">提交时间</th>
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[120px] text-center">成绩</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[100px] text-center">序号</th>
+                      <th 
+                        className="p-4 font-bold bg-neutral-50/50 text-center cursor-pointer select-none hover:bg-neutral-100/70"
+                        onClick={() => {
+                          setScoreSortKey('time');
+                          setScoreSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                        }}
+                      >
+                        <div className="inline-flex items-center justify-center gap-1 w-full">
+                          提交时间
+                          {scoreSortKey === 'time' && (scoreSortOrder === 'asc' ? ' ↑' : ' ↓')}
+                        </div>
+                      </th>
+                      <th 
+                        className="p-4 font-bold bg-neutral-50/50 w-[150px] text-center cursor-pointer select-none hover:bg-neutral-100/70"
+                        onClick={() => {
+                          setScoreSortKey('score');
+                          setScoreSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                        }}
+                      >
+                        <div className="inline-flex items-center justify-center gap-1 w-full">
+                          成绩
+                          {scoreSortKey === 'score' && (scoreSortOrder === 'asc' ? ' ↑' : ' ↓')}
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 text-neutral-700">
                     {sortedScoreStudents.map((s, index) => (
                       <tr key={index} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors text-[13px]">
-                        <td className="p-4 text-center font-mono text-neutral-500">{index + 1}</td>
-                        <td className="p-4 text-left font-mono text-neutral-600">{s.submitTime || '--'}</td>
+                        <td className="p-4 text-center text-neutral-500 font-mono">{index + 1}</td>
+                        <td className="p-4 text-center text-neutral-600 font-mono">{s.time}</td>
                         <td className="p-4 text-center text-neutral-800 font-bold font-mono">{s.score}</td>
                       </tr>
                     ))}
@@ -4366,27 +4389,17 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              <div className="flex items-center justify-between text-neutral-600 text-xs bg-neutral-50 p-3 rounded-md border border-neutral-200/60 select-none">
-                <div className="flex items-center gap-4">
-                  <div>学生姓名：<span className="font-bold text-neutral-800">{reviewModalStudent.name}</span></div>
-                  <div className="w-[1px] h-3 bg-neutral-200"></div>
-                  <div>提交时间：<span className="font-mono text-neutral-800">{reviewModalStudent.time || '--'}</span></div>
-                </div>
-                <div>
-                  作业得分：<span className="text-[13px] font-bold text-[#fa541c] font-mono">{reviewModalStudent.score}</span> / 100 分
-                </div>
-              </div>
-
+            <div className="p-6">
               <div className="border border-neutral-100 rounded-md overflow-hidden bg-white">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium select-none whitespace-nowrap">
-                      <th className="p-3 pl-4 w-16 whitespace-nowrap">序号</th>
+                      <th className="p-3 pl-4 w-12 whitespace-nowrap">序号</th>
                       <th className="p-3">题型</th>
                       <th className="p-3">题目数量</th>
-                      <th className="p-3">总分值</th>
-                      <th className="p-3">得分值</th>
+                      <th className="p-3">作业总分</th>
+                      <th className="p-3">作业得分</th>
+                      <th className="p-3">提交时间</th>
                       <th className="p-3 text-center pr-4">操作</th>
                     </tr>
                   </thead>
@@ -4405,6 +4418,7 @@ export default function TeacherCourseManage() {
                           <td className="p-3 text-neutral-600">{sec.count} 题</td>
                           <td className="p-3 text-neutral-600">{sec.totalPoints} 分</td>
                           <td className="p-3 font-bold text-neutral-850">{earnedScore} 分</td>
+                          <td className="p-3 text-neutral-500 font-mono">{reviewModalStudent?.time || '--'}</td>
                           <td className="p-3 text-center pr-4">
                             <button
                               onClick={() => {
