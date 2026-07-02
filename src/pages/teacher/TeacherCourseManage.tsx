@@ -342,8 +342,11 @@ export default function TeacherCourseManage() {
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [scoreModalAssignment, setScoreModalAssignment] = useState<any>(null);
   const [scoreStudents, setScoreStudents] = useState([
-    { name: 'df0002', account: 'df0002', phone: '13212345654', group: '0514-df', score: 0 },
-    { name: '吕梦霞', account: 'kaoshi_2_002', phone: '17779303833', group: 'test20251016', score: 0 }
+    { name: 'df0002', account: 'df0002', phone: '13212345654', group: '0514-df', score: 100, submitTime: '2099/02/28 10:15' },
+    { name: '吕梦霞', account: 'kaoshi_2_002', phone: '17779303833', group: 'test20251016', score: 80, submitTime: '2099/02/28 11:20' },
+    { name: '张小凡', account: 'kaoshi_2_003', phone: '18829399482', group: 'test20251016', score: 56, submitTime: '2099/02/28 14:05' },
+    { name: '王小二', account: 'kaoshi_2_004', phone: '15392839948', group: 'test20251016', score: 40, submitTime: '2099/02/28 15:30' },
+    { name: '李莫愁', account: 'kaoshi_2_005', phone: '13928391822', group: 'test20251016', score: 11, submitTime: '2099/02/28 16:45' }
   ]);
   const [scoreSortKey, setScoreSortKey] = useState<'group' | 'score' | null>(null);
   const [scoreSortOrder, setScoreSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -4269,8 +4272,8 @@ export default function TeacherCourseManage() {
                 </Button>
                 <button
                   onClick={() => {
-                    const headers = ['姓名', '账号', '手机号', '用户组', '成绩'];
-                    const rows = scoreStudents.map(s => [s.name, s.account, s.phone, s.group, s.score]);
+                    const headers = ['序号', '提交时间', '成绩'];
+                    const rows = sortedScoreStudents.map((s, index) => [index + 1, s.submitTime || '--', s.score]);
                     const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
@@ -4295,21 +4298,17 @@ export default function TeacherCourseManage() {
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[120px]">姓名</th>
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[150px]">账号</th>
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[150px]">手机号</th>
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[180px] text-neutral-600">用户组</th>
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[100px] text-neutral-600">成绩</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[80px] text-center">序号</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 text-left">提交时间</th>
+                      <th className="p-4 font-bold bg-neutral-50/50 w-[120px] text-center">成绩</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 text-neutral-700">
                     {sortedScoreStudents.map((s, index) => (
                       <tr key={index} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors text-[13px]">
-                        <td className="p-4 text-neutral-800 font-medium">{s.name}</td>
-                        <td className="p-4 text-neutral-600 font-mono">{s.account}</td>
-                        <td className="p-4 text-neutral-600 font-mono">{s.phone}</td>
-                        <td className="p-4 text-neutral-600">{s.group}</td>
-                        <td className="p-4 text-neutral-800 font-bold font-mono">{s.score}</td>
+                        <td className="p-4 text-center font-mono text-neutral-500">{index + 1}</td>
+                        <td className="p-4 text-left font-mono text-neutral-600">{s.submitTime || '--'}</td>
+                        <td className="p-4 text-center text-neutral-800 font-bold font-mono">{s.score}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -4367,7 +4366,18 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between text-neutral-600 text-xs bg-neutral-50 p-3 rounded-md border border-neutral-200/60 select-none">
+                <div className="flex items-center gap-4">
+                  <div>学生姓名：<span className="font-bold text-neutral-800">{reviewModalStudent.name}</span></div>
+                  <div className="w-[1px] h-3 bg-neutral-200"></div>
+                  <div>提交时间：<span className="font-mono text-neutral-800">{reviewModalStudent.time || '--'}</span></div>
+                </div>
+                <div>
+                  作业得分：<span className="text-[13px] font-bold text-[#fa541c] font-mono">{reviewModalStudent.score}</span> / 100 分
+                </div>
+              </div>
+
               <div className="border border-neutral-100 rounded-md overflow-hidden bg-white">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
@@ -4382,10 +4392,10 @@ export default function TeacherCourseManage() {
                   </thead>
                   <tbody className="divide-y divide-neutral-100 text-neutral-700">
                     {[
-                      { id: 'single', name: '单选题', count: 10, totalPoints: 10 },
-                      { id: 'multiple', name: '多选题', count: 5, totalPoints: 10 },
-                      { id: 'essay', name: '简答题', count: 2, totalPoints: 30 },
-                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 50 }
+                      { id: 'single', name: '单选题', count: 2, totalPoints: 20 },
+                      { id: 'multiple', name: '多选题', count: 2, totalPoints: 20 },
+                      { id: 'essay', name: '简答题', count: 1, totalPoints: 20 },
+                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 40 }
                     ].map((sec, idx) => {
                       const earnedScore = reviewModalStudent ? getEarnedScore(sec.id, reviewModalStudent.score) : 0;
                       return (
