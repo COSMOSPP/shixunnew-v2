@@ -990,12 +990,7 @@ export default function TeacherExams({ embedded = false }) {
                                                           setActiveDropdownId(null);
                                                           act.onClick();
                                                         }}
-                                                        className={cn(
-                                                          "w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all",
-                                                          act.isDanger 
-                                                            ? "text-[#fa541c] font-semibold hover:bg-orange-50" 
-                                                            : "text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
-                                                        )}
+                                                        className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                                       >
                                                         {act.label}
                                                       </button>
