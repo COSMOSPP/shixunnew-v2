@@ -261,28 +261,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
 
   const handleConfirmSubmit = () => {
     setShowSubmitConfirmModal(false);
-    
-    // Calculate score
-    let score = 0;
-    NEW_QUESTIONS.forEach((q, idx) => {
-      const answer = userAnswers[idx];
-      if (q.type === 'single') {
-        if (answer === 0) {
-          score += q.score;
-        }
-      } else if (q.type === 'multi') {
-        if (Array.isArray(answer) && answer.length === 2 && answer.includes(0) && answer.includes(1)) {
-          score += q.score;
-        }
-      } else if (q.type === 'practical') {
-        if (answer === true) {
-          score += q.score;
-        }
-      }
-    });
-
-    setCalculatedScore(score);
-    setShowSubmitSuccessModal(true);
+    onSubmit();
   };
 
   if (showPracticalIDE) {
@@ -703,10 +682,9 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
               </button>
             </div>
 
-            {/* Body */}
             <div className="p-10 text-center bg-white">
               <div className="text-[14px] text-neutral-750 leading-relaxed font-medium">
-                请确认所有题型已提交答案，当前考试还可以提交{exam.maxAttempts !== undefined ? Math.max(0, exam.maxAttempts - exam.attempts) : 97}次，是否确认提交考试？
+                请确认所有题型已提交答案，当前考试还可以提交97次，是否确认提交考试？
               </div>
             </div>
 
