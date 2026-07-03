@@ -89,53 +89,42 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
       </div>
 
       <div className="max-w-6xl mx-auto w-full -mt-24 relative z-20 pb-12">
-        <div className="bg-white rounded-xl border border-neutral-200/80 shadow-md p-6 flex flex-col gap-6">
+        <div className="bg-white rounded border border-neutral-200 p-8 flex flex-col gap-6 shadow-xs">
           <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
-            <h2 className="text-[16px] font-bold text-neutral-900">答卷提交记录</h2>
-            <span className="text-[12px] text-neutral-500 font-medium">共提交 {attemptRows.length} 次</span>
+            <h2 className="text-[16px] font-bold text-neutral-800">答卷提交记录</h2>
+            <span className="text-[13px] text-neutral-500 font-medium">共提交 {attemptRows.length} 次</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse whitespace-nowrap">
-              <thead>
-                <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600">
-                  <th className="pl-6 pr-3 py-3.5 font-medium text-left">提交次数</th>
-                  <th className="px-3 py-3.5 font-medium text-left">题型</th>
-                  <th className="px-3 py-3.5 font-medium text-left">提交时间</th>
-                  <th className="pl-3 pr-6 py-3.5 font-medium text-right">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attemptRows.map((row, idx) => (
-                  <tr 
-                    key={row.attemptNumber} 
-                    className={cn(
-                      "border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]",
-                      idx === attemptRows.length - 1 && "border-b-0"
-                    )}
-                  >
-                    <td className="pl-6 pr-3 py-3 text-left">
-                      <div className="text-neutral-800 font-medium">第 {row.attemptNumber} 次提交</div>
-                    </td>
-                    <td className="px-3 py-3 text-neutral-600">
-                      <div>{row.types}</div>
-                    </td>
-                    <td className="px-3 py-3 text-neutral-600 font-mono">
-                      <div>{row.time}</div>
-                    </td>
-                    <td className="pl-3 pr-6 py-3 text-right">
-                      <button 
-                        type="button"
-                        onClick={() => alert(`正在加载第 ${row.attemptNumber} 次提交的答卷预览...`)}
-                        className="text-[#fa541c] hover:text-[#e84a15] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-semibold whitespace-nowrap"
-                      >
-                        预览
-                      </button>
-                    </td>
+          <div className="bg-white rounded overflow-hidden border border-neutral-200">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
+                    <th className="p-4 font-medium">提交次数</th>
+                    <th className="p-4 font-medium">题型</th>
+                    <th className="p-4 font-medium">提交时间</th>
+                    <th className="p-4 font-medium text-right">操作</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {attemptRows.map((row) => (
+                    <tr key={row.attemptNumber} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
+                      <td className="p-4 text-neutral-800 font-bold">第 {row.attemptNumber} 次提交</td>
+                      <td className="p-4 text-neutral-600 font-medium">{row.types}</td>
+                      <td className="p-4 text-neutral-500">{row.time}</td>
+                      <td className="p-4 text-right">
+                        <button 
+                          onClick={() => alert(`正在加载第 ${row.attemptNumber} 次提交的答卷预览...`)}
+                          className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0"
+                        >
+                          预览
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
