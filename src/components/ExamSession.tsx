@@ -856,7 +856,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
             {/* Body */}
             <div className="p-10 text-center bg-white">
               <div className="text-[14px] text-neutral-750 leading-relaxed font-medium">
-                考试时间到，系统已自动提交您的试卷！您的最终得分是：{calculatedScore} 分（总分 50 分）。
+                考试时间到，系统已自动提交您的试卷！
               </div>
             </div>
 
