@@ -49,7 +49,7 @@ export default function ExamDetail({ exam, onBack, onStart, onViewResult }: Exam
   return (
     <div className="flex flex-col h-full bg-[#f5f6f8] relative w-[100vw] left-1/2 -translate-x-1/2 -mt-6">
       {/* Detail Header Wrapper */}
-      <div className="bg-white border-b border-neutral-border pt-8 pb-6 px-14 shadow-sm relative">
+      <div className="bg-white border-b border-neutral-border pt-8 pb-6 px-14 relative">
         <div className="max-w-6xl mx-auto flex gap-8 items-start relative z-10">
           <div className="flex-1">
              <div className="flex items-center text-[13px] text-neutral-caption mb-6">

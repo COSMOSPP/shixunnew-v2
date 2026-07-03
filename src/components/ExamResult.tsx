@@ -13,7 +13,7 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
 
   return (
     <div className="flex flex-col h-full bg-[#f5f6f8] relative w-[100vw] left-1/2 -translate-x-1/2 -mt-6">
-      <div className="bg-gradient-to-r from-[#ea5b22] to-[#fd8d44] pt-8 pb-36 px-14 shadow-sm relative overflow-hidden shrink-0">
+      <div className="bg-gradient-to-r from-[#ea5b22] to-[#fd8d44] pt-8 pb-36 px-14 relative overflow-hidden shrink-0">
         {/* Background Decorative Patterns */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         
