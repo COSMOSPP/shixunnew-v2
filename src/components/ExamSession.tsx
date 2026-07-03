@@ -217,6 +217,11 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
   const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
   const [calculatedScore, setCalculatedScore] = useState(0);
 
+  const isAllQuestionsAnswered = Object.keys(userAnswers).filter(k => {
+    const ans = userAnswers[Number(k)];
+    return ans !== undefined && (Array.isArray(ans) ? ans.length > 0 : String(ans).trim() !== "");
+  }).length === NEW_QUESTIONS.length;
+
   const userAnswersRef = useRef(userAnswers);
   useEffect(() => {
     userAnswersRef.current = userAnswers;
@@ -555,7 +560,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                   </Button>
                 )}
                 
-                {currentQuestionIdx < NEW_QUESTIONS.length - 1 && (
+                {currentQuestionIdx < NEW_QUESTIONS.length - 1 && !isAllQuestionsAnswered && (
                   <Button 
                     onClick={() => setCurrentQuestionIdx(prev => prev + 1)}
                     className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1"
@@ -568,102 +573,100 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
           </div>
 
           {/* Right Sidebar navigation */}
-          <div className="w-80 border-l border-neutral-border flex flex-col bg-white px-6 pt-12 pb-6 shrink-0 justify-between">
-            <div className="overflow-y-auto flex-1 no-scrollbar">
-              {/* Profile Avatar */}
-              <div className="flex flex-col items-center pb-5 border-b border-neutral-150 mb-5">
-                <img 
-                  src="https://picsum.photos/seed/studentavatar/150/150" 
-                  alt="Student Avatar" 
-                  className="w-full aspect-[16/9] object-cover rounded-lg border border-neutral-200 mb-2"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-
-              {/* Grid lists */}
-              <div className="space-y-5">
-                {/* Single choices */}
-                {NEW_QUESTIONS.some(q => q.type === 'single') && (
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">单选题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {NEW_QUESTIONS.filter(q => q.type === 'single').map((q, filteredIdx) => {
-                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                        return renderQuestionCircle(idx, filteredIdx + 1);
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Multiple choices */}
-                {NEW_QUESTIONS.some(q => q.type === 'multi') && (
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">多选题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {NEW_QUESTIONS.filter(q => q.type === 'multi').map((q, filteredIdx) => {
-                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                        return renderQuestionCircle(idx, filteredIdx + 1);
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Judgment questions */}
-                {NEW_QUESTIONS.some(q => q.type === 'judge') && (
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">判断题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {NEW_QUESTIONS.filter(q => q.type === 'judge').map((q, filteredIdx) => {
-                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                        return renderQuestionCircle(idx, filteredIdx + 1);
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Blank questions */}
-                {NEW_QUESTIONS.some(q => q.type === 'blank') && (
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">填空题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {NEW_QUESTIONS.filter(q => q.type === 'blank').map((q, filteredIdx) => {
-                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                        return renderQuestionCircle(idx, filteredIdx + 1);
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Essay questions */}
-                {NEW_QUESTIONS.some(q => q.type === 'essay') && (
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">简答题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {NEW_QUESTIONS.filter(q => q.type === 'essay').map((q, filteredIdx) => {
-                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                        return renderQuestionCircle(idx, filteredIdx + 1);
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Practical questions */}
-                {NEW_QUESTIONS.some(q => q.type === 'practical') && (
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">实训题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {NEW_QUESTIONS.filter(q => q.type === 'practical').map((q, filteredIdx) => {
-                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                        return renderQuestionCircle(idx, filteredIdx + 1);
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
+          <div className="w-80 border-l border-neutral-border flex flex-col bg-white px-6 pt-12 pb-6 shrink-0 justify-between h-full">
+            {/* Profile Avatar (Fixed, does not scroll) */}
+            <div className="flex flex-col items-center pb-5 border-b border-neutral-150 mb-5 shrink-0">
+              <img 
+                src="https://picsum.photos/seed/studentavatar/150/150" 
+                alt="Student Avatar" 
+                className="w-full aspect-[16/9] object-cover rounded-lg border border-neutral-200 mb-2"
+                referrerPolicy="no-referrer"
+              />
             </div>
 
-            {/* Legend & Submission */}
-            <div className="border-t border-neutral-150 pt-5 mt-4">
+            {/* Grid lists (Scrollable) */}
+            <div className="overflow-y-auto flex-1 no-scrollbar space-y-5 pr-1">
+              {/* Single choices */}
+              {NEW_QUESTIONS.some(q => q.type === 'single') && (
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">单选题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'single').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Multiple choices */}
+              {NEW_QUESTIONS.some(q => q.type === 'multi') && (
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">多选题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'multi').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Judgment questions */}
+              {NEW_QUESTIONS.some(q => q.type === 'judge') && (
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">判断题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'judge').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Blank questions */}
+              {NEW_QUESTIONS.some(q => q.type === 'blank') && (
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">填空题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'blank').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Essay questions */}
+              {NEW_QUESTIONS.some(q => q.type === 'essay') && (
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">简答题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'essay').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Practical questions */}
+              {NEW_QUESTIONS.some(q => q.type === 'practical') && (
+                <div>
+                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">实训题</h3>
+                  <div className="grid grid-cols-5 gap-3">
+                    {NEW_QUESTIONS.filter(q => q.type === 'practical').map((q, filteredIdx) => {
+                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                      return renderQuestionCircle(idx, filteredIdx + 1);
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Legend & Submission (Fixed at bottom) */}
+            <div className="border-t border-neutral-150 pt-5 mt-4 shrink-0">
               <div className="flex items-center justify-around text-[12px] text-neutral-caption mb-5">
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="w-4 h-4 rounded-full bg-[#fa541c]"></div>
