@@ -518,7 +518,7 @@ export default function TeacherGrading() {
                               className={cn(
                                 "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  ? "bg-[#fa541c] border-[#fa541c] text-white font-bold animate-scale-up"
                                   : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
@@ -548,7 +548,7 @@ export default function TeacherGrading() {
                               className={cn(
                                 "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  ? "bg-[#fa541c] border-[#fa541c] text-white font-bold animate-scale-up"
                                   : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
@@ -578,7 +578,7 @@ export default function TeacherGrading() {
                               className={cn(
                                 "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  ? "bg-[#fa541c] border-[#fa541c] text-white font-bold animate-scale-up"
                                   : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
@@ -608,8 +608,8 @@ export default function TeacherGrading() {
                               className={cn(
                                 "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
-                                  : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
+                                  ? "bg-[#52c41a] border-[#52c41a] text-white font-bold animate-scale-up"
+                                  : "border-[#52c41a]/30 bg-[#52c41a]/5 text-[#389e0d] hover:bg-[#52c41a]/10 hover:border-[#52c41a]/50"
                               )}
                             >
                               {index + 1}
