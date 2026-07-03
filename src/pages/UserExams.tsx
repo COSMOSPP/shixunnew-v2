@@ -152,7 +152,7 @@ export default function UserExams() {
   }
 
   if (isTakingExam && selectedExam) {
-    return <ExamSession exam={selectedExam} onBack={() => setIsTakingExam(false)} onSubmit={() => { setIsTakingExam(false); setIsViewingResult(true); }} />;
+    return <ExamSession exam={selectedExam} onBack={() => setIsTakingExam(false)} onSubmit={() => { setIsTakingExam(false); setSelectedExam(null); }} />;
   }
 
   if (selectedExam) {
