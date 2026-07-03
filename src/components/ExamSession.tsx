@@ -499,18 +499,14 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                   </Button>
                 )}
                 
-                <Button 
-                  onClick={() => {
-                    if (currentQuestionIdx < NEW_QUESTIONS.length - 1) {
-                      setCurrentQuestionIdx(prev => prev + 1);
-                    } else {
-                      handleSubmitAnswering();
-                    }
-                  }}
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1"
-                >
-                  {currentQuestionIdx === NEW_QUESTIONS.length - 1 ? "提交作业" : "下一题"}
-                </Button>
+                {currentQuestionIdx < NEW_QUESTIONS.length - 1 && (
+                  <Button 
+                    onClick={() => setCurrentQuestionIdx(prev => prev + 1)}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1"
+                  >
+                    下一题
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -592,14 +588,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                 onClick={handleSubmitAnswering}
                 className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3 font-bold shadow-lg shadow-orange-500/10 rounded-[4px] transition-all text-sm cursor-pointer"
               >
-                提交作业
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={onBack}
-                className="w-full mt-3 border-neutral-300 hover:text-[#fa541c] hover:border-orange-200 hover:bg-[#fa541c]/5 py-3 font-bold rounded-[4px] transition-all text-sm cursor-pointer"
-              >
-                退出试卷
+                提交试卷
               </Button>
             </div>
           </div>
@@ -697,24 +686,45 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
         document.body
       )}
 
-      {/* 提交作业确认 Modal */}
+      {/* 提交考试确认 Modal */}
       {showSubmitConfirmModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-[#fa541c] flex items-center gap-2">
-                提示
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
+                提交考试
               </h2>
-              <button onClick={() => setShowSubmitConfirmModal(false)} className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors">
+              <button 
+                onClick={() => setShowSubmitConfirmModal(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-[14px] text-neutral-700 font-medium">{submitConfirmMessage}</p>
+
+            {/* Body */}
+            <div className="p-10 text-center bg-white">
+              <div className="text-[14px] text-neutral-750 leading-relaxed font-medium">
+                请确认所有题型已提交答案，当前考试还可以提交{exam.maxAttempts !== undefined ? Math.max(0, exam.maxAttempts - exam.attempts) : 97}次，是否确认提交考试？
+              </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
-              <Button type="button" onClick={() => setShowSubmitConfirmModal(false)} variant="outline" className="border-neutral-200 text-neutral-600 font-bold h-10 px-6">取消</Button>
-              <Button type="button" onClick={handleConfirmSubmit} className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20">确定提交</Button>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setShowSubmitConfirmModal(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleConfirmSubmit} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
+              >
+                确定
+              </Button>
             </div>
           </div>
         </div>
@@ -776,7 +786,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
               </button>
             </div>
             <div className="p-6">
-              <p className="text-[14px] text-neutral-700 font-medium">作业提交成功！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+              <p className="text-[14px] text-neutral-700 font-medium">试卷提交成功！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
             </div>
             <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
               <Button 
