@@ -168,10 +168,10 @@ export default function UserExams() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-4 mb-8">
-        <div className="flex items-start gap-4">
-          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap mt-1.5">考试状态</span>
+      {/* Filters & Search */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <span className="text-[14px] text-neutral-body font-medium whitespace-nowrap">考试状态</span>
           <div className="flex flex-wrap gap-2">
             {["全部", "未开始", "进行中", "已结束"].map((tag, i) => (
               <button 
@@ -185,18 +185,6 @@ export default function UserExams() {
               </button>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Tabs & Search */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center bg-white rounded-full p-1 border border-neutral-border">
-          <button className="px-6 py-1.5 rounded-full text-[14px] font-medium bg-[#f5f6f8] text-neutral-title">
-            最新
-          </button>
-          <button className="px-6 py-1.5 rounded-full text-[14px] font-medium text-neutral-body hover:text-neutral-title">
-            最热
-          </button>
         </div>
         
         <div className="relative w-72">
@@ -295,12 +283,11 @@ export default function UserExams() {
                       <Button 
                         onClick={() => {
                           setSelectedExam(exam);
-                          setIsTakingExam(true);
                         }}
-                        disabled={exam.sessionStatus === "已结束" || exam.candidateStatus === "已交卷" || exam.attempts >= exam.maxAttempts}
+                        disabled={exam.attempts >= exam.maxAttempts}
                         className={cn(
                           "w-full h-9 text-[13px] rounded-[6px] transition-all gap-1.5 font-medium flex items-center justify-center",
-                          (exam.sessionStatus === "已结束" || exam.candidateStatus === "已交卷" || exam.attempts >= exam.maxAttempts)
+                          (exam.attempts >= exam.maxAttempts)
                             ? "bg-neutral-100 border border-neutral-200 text-neutral-400 cursor-not-allowed opacity-60"
                             : "bg-[#fa541c] hover:bg-[#ff7a45] text-white shadow-sm"
                         )}

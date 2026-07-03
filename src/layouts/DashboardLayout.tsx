@@ -157,55 +157,45 @@ export default function DashboardLayout({ type }: DashboardLayoutProps) {
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#f5f6f8]">
       {/* Header */}
       <header className={cn(
-        "h-14 flex items-center justify-between px-4 flex-shrink-0 z-50 transition-colors duration-200",
-        isAnswering ? "bg-white border-b border-neutral-200/60 text-neutral-800" : "bg-[#1f1f1f] text-white"
+        "h-16 flex items-center justify-between px-8 flex-shrink-0 z-50 transition-colors duration-200",
+        isAnswering ? "bg-white border-b border-neutral-200 border-t-[3px] border-t-purple-600 text-neutral-800" : "bg-[#1f1f1f] text-white"
       )}>
         {isAnswering ? (
-          /* Answering Header (White background, style matching teacher's preview top) */
+          /* Answering Header (White background) */
           <>
             {/* Left Side */}
-            <div className="flex items-center gap-4 select-none">
+            <div className="flex items-center select-none">
               <button 
                 onClick={() => window.dispatchEvent(new CustomEvent("exit-answering"))}
-                className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px] flex items-center gap-1"
+                className="text-neutral-caption hover:text-neutral-title flex items-center gap-1.5 text-[14px] font-medium border-0 bg-transparent cursor-pointer p-0"
               >
-                <ArrowLeft className="w-4 h-4" />
-                退出
+                <span className="text-[16px] font-bold">←</span> 退出
               </button>
-              <div className="w-[1px] h-4 bg-neutral-200"></div>
+              <div className="h-4 w-px bg-neutral-200 mx-4"></div>
               <span className="font-bold text-neutral-800 text-[14px]">
                 {(window as any).__EXAM_TITLE__ || "中国电信云网资源管理(三级)云网资源管理(三级)"}
               </span>
             </div>
 
-            {/* Middle Side */}
-            <div className="hidden md:flex items-center gap-2 text-[#52c41a] font-medium text-xs select-none">
-              <CheckCircle className="w-4 h-4" />
-              <span>系统已于 11:10:00 自动保存</span>
-            </div>
-
             {/* Right Side */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 text-neutral-600 select-none">
-                <div className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </div>
-                <Webcam className="w-4.5 h-4.5 text-neutral-400" />
-                <span className="text-[13px] text-neutral-700 font-medium">正在监控</span>
+            <div className="flex items-center">
+              <div className="flex items-center gap-2 text-neutral-title text-[13px] font-semibold select-none">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <Webcam className="w-4.5 h-4.5 text-neutral-400 shrink-0" />
+                <span className="text-[13px] text-[#262626] font-semibold">正在监控</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded px-3 py-1.5 font-mono text-[14px] font-bold text-neutral-700 select-none">
-                <Clock className="w-4 h-4 text-neutral-400" />
-                <span className="text-neutral-500 font-normal text-xs">距考试结束：</span>
-                <span className="text-neutral-800">{formatExamTime(examTimeLeft)}</span>
+              <div className="border border-[#fa541c] bg-orange-50/5 rounded-[4px] px-3.5 py-1.5 flex items-center gap-2 font-mono font-bold text-[13px] text-[#fa541c] ml-6 shadow-xs select-none">
+                <Clock className="w-4 h-4 text-[#fa541c] shrink-0" />
+                <span className="font-sans text-[#fa541c] font-medium">距离考试结束：</span>
+                <span className="text-[#fa541c]">{formatExamTime(examTimeLeft)}</span>
               </div>
 
-              <div className="flex items-center gap-2 select-none">
-                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-neutral-100 border border-neutral-200">
-                  <UserIcon className="w-4 h-4 text-neutral-500" />
+              <div className="flex items-center gap-2 select-none ml-6 font-semibold text-neutral-title text-[13px]">
+                <div className="flex items-center justify-center w-7 h-7 rounded-full border border-orange-200 bg-[#fa541c]/5 text-[#fa541c]">
+                  <UserIcon className="w-3.5 h-3.5 text-[#fa541c] shrink-0" />
                 </div>
-                <span className="text-[13px] text-neutral-700 font-semibold">学生1</span>
+                <span>学生1</span>
               </div>
             </div>
           </>
