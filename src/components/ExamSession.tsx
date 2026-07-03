@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Pin, Check, Plus, X, CheckCircle2, Monitor, Clock, User, Webcam } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 import TeacherExperimentIDE from '@/pages/teacher/TeacherExperimentIDE';
 
 interface ExamSessionProps {
@@ -155,6 +156,50 @@ const NEW_QUESTIONS = [
     score: 10,
     title: "智能音箱产品数据分析与对话系统评估",
     content: "一、实验主题\n智能音箱产品数据分析与对话系统评估\n\n二、实验目的\n掌握对话交互意图识别准确度的计算方法；\n学会清洗和解析用户会话日志，统计各意图的请求频率；\n评估意图识别模型的召回率和精确率，找出识别较差的意图类型。\n\n三、实验内容\n1. 导入对话日志文件，进行文本去噪与标签映射；\n2. 计算意图识别的混淆矩阵，统计总体Accuracy与各意图下的F1-score；\n3. 提出优化意见，输出评估分析报告。"
+  },
+  {
+    id: 19,
+    type: "judge",
+    typeName: "判断题",
+    score: 2,
+    title: "HTTP协议是基于TCP/IP协议之上的应用层协议。",
+    options: ["正确", "错误"]
+  },
+  {
+    id: 20,
+    type: "judge",
+    typeName: "判断题",
+    score: 2,
+    title: "有监督学习在训练过程中不需要带有标注的答案或标签。",
+    options: ["正确", "错误"]
+  },
+  {
+    id: 21,
+    type: "blank",
+    typeName: "填空题",
+    score: 2,
+    title: "Python 想要开启一个简单的 HTTP 服务，可以使用命令：python -m ____"
+  },
+  {
+    id: 22,
+    type: "blank",
+    typeName: "填空题",
+    score: 2,
+    title: "在机器学习的分类任务中，模型最终输出的是离散的____。"
+  },
+  {
+    id: 23,
+    type: "essay",
+    typeName: "简答题",
+    score: 10,
+    title: "请简述有监督学习和无监督学习的主要区别，并各举一个常见的算法实例。"
+  },
+  {
+    id: 24,
+    type: "essay",
+    typeName: "简答题",
+    score: 10,
+    title: "请简要说明卷积神经网络中的池化层（Pooling Layer）的主要作用及其常用类型。"
   }
 ];
 
@@ -231,7 +276,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
   };
 
   const handleSelectOption = (qIdx: number, optIdx: number, type: string) => {
-    if (type === 'single') {
+    if (type === 'single' || type === 'judge') {
       setUserAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
     } else {
       const currentAnswers = userAnswers[qIdx] || [];
@@ -385,7 +430,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
               </div>
 
               {/* Question Body */}
-              {question.type !== 'practical' ? (
+              {(question.type === 'single' || question.type === 'multi' || question.type === 'judge') && (
                 <div>
                   {/* Clean Light-Bordered Question block */}
                   <div className="text-neutral-title mb-6 text-[15px] font-bold leading-relaxed flex items-center">
@@ -395,7 +440,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                   {/* Options */}
                   <div className="space-y-3">
                     {question.options?.map((opt, optIdx) => {
-                      const isChecked = question.type === 'single'
+                      const isChecked = (question.type === 'single' || question.type === 'judge')
                         ? userAnswers[currentQuestionIdx] === optIdx
                         : (userAnswers[currentQuestionIdx] || []).includes(optIdx);
                       return (
@@ -409,7 +454,7 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                               : "bg-transparent border-neutral-150 hover:text-[#fa541c] hover:border-orange-200 hover:bg-[#fa541c]/5"
                           )}
                         >
-                          {question.type === 'single' ? (
+                          {(question.type === 'single' || question.type === 'judge') ? (
                             <div className={cn(
                               "w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors",
                               isChecked ? "border-[#fa541c]" : "border-neutral-300 group-hover:border-orange-200"
@@ -433,7 +478,39 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                     })}
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {question.type === 'blank' && (
+                <div className="space-y-4">
+                  <div className="text-neutral-title mb-6 text-[15px] font-bold leading-relaxed">
+                    {question.title}
+                  </div>
+                  <div className="max-w-[400px]">
+                    <Input
+                      value={userAnswers[currentQuestionIdx] || ""}
+                      onChange={(e) => setUserAnswers(prev => ({ ...prev, [currentQuestionIdx]: e.target.value }))}
+                      placeholder="请输入答案..."
+                      className="border-neutral-200 focus:border-[#fa541c] focus:ring-[#fa541c] rounded-[4px] h-10 w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {question.type === 'essay' && (
+                <div className="space-y-4">
+                  <div className="text-neutral-title mb-6 text-[15px] font-bold leading-relaxed">
+                    {question.title}
+                  </div>
+                  <textarea
+                    value={userAnswers[currentQuestionIdx] || ""}
+                    onChange={(e) => setUserAnswers(prev => ({ ...prev, [currentQuestionIdx]: e.target.value }))}
+                    placeholder="请在这里写下您的简答..."
+                    className="w-full min-h-[160px] border border-neutral-200 hover:border-neutral-300 focus:border-[#fa541c] focus:outline-none p-4 rounded-lg text-[14px] leading-relaxed transition-all shadow-xs"
+                  />
+                </div>
+              )}
+
+              {question.type === 'practical' && (
                 /* Practical Questions layout */
                 <div className="space-y-4">
                   <div className="border border-neutral-200 rounded-lg p-5 bg-white overflow-y-auto max-h-[50vh] text-[14px] leading-relaxed text-[#333] text-left shadow-xs">
@@ -506,37 +583,82 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
               {/* Grid lists */}
               <div className="space-y-5">
                 {/* Single choices */}
-                <div>
-                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">单选题</h3>
-                  <div className="grid grid-cols-5 gap-3">
-                    {NEW_QUESTIONS.filter(q => q.type === 'single').map((q, filteredIdx) => {
-                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                      return renderQuestionCircle(idx, filteredIdx + 1);
-                    })}
+                {NEW_QUESTIONS.some(q => q.type === 'single') && (
+                  <div>
+                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">单选题</h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {NEW_QUESTIONS.filter(q => q.type === 'single').map((q, filteredIdx) => {
+                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                        return renderQuestionCircle(idx, filteredIdx + 1);
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Multiple choices */}
-                <div>
-                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">多选题</h3>
-                  <div className="grid grid-cols-5 gap-3">
-                    {NEW_QUESTIONS.filter(q => q.type === 'multi').map((q, filteredIdx) => {
-                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                      return renderQuestionCircle(idx, filteredIdx + 1);
-                    })}
+                {NEW_QUESTIONS.some(q => q.type === 'multi') && (
+                  <div>
+                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">多选题</h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {NEW_QUESTIONS.filter(q => q.type === 'multi').map((q, filteredIdx) => {
+                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                        return renderQuestionCircle(idx, filteredIdx + 1);
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Judgment questions */}
+                {NEW_QUESTIONS.some(q => q.type === 'judge') && (
+                  <div>
+                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">判断题</h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {NEW_QUESTIONS.filter(q => q.type === 'judge').map((q, filteredIdx) => {
+                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                        return renderQuestionCircle(idx, filteredIdx + 1);
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Blank questions */}
+                {NEW_QUESTIONS.some(q => q.type === 'blank') && (
+                  <div>
+                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">填空题</h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {NEW_QUESTIONS.filter(q => q.type === 'blank').map((q, filteredIdx) => {
+                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                        return renderQuestionCircle(idx, filteredIdx + 1);
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Essay questions */}
+                {NEW_QUESTIONS.some(q => q.type === 'essay') && (
+                  <div>
+                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">简答题</h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {NEW_QUESTIONS.filter(q => q.type === 'essay').map((q, filteredIdx) => {
+                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                        return renderQuestionCircle(idx, filteredIdx + 1);
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Practical questions */}
-                <div>
-                  <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">实训题</h3>
-                  <div className="grid grid-cols-5 gap-3">
-                    {NEW_QUESTIONS.filter(q => q.type === 'practical').map((q, filteredIdx) => {
-                      const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
-                      return renderQuestionCircle(idx, filteredIdx + 1);
-                    })}
+                {NEW_QUESTIONS.some(q => q.type === 'practical') && (
+                  <div>
+                    <h3 className="text-[13px] font-bold text-neutral-title mb-2.5">实训题</h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {NEW_QUESTIONS.filter(q => q.type === 'practical').map((q, filteredIdx) => {
+                        const idx = NEW_QUESTIONS.findIndex(x => x.id === q.id);
+                        return renderQuestionCircle(idx, filteredIdx + 1);
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
