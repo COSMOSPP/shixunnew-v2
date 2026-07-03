@@ -732,10 +732,11 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
 
       {/* 考试时间到 Modal */}
       {showTimeoutModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-red-600 flex items-center gap-2">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
                 考试结束
               </h2>
               <button 
@@ -743,22 +744,27 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                   setShowTimeoutModal(false);
                   onSubmit();
                 }} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-[14px] text-neutral-700 font-medium">考试时间到，系统已自动提交您的作业！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+
+            {/* Body */}
+            <div className="p-10 text-center bg-white">
+              <div className="text-[14px] text-neutral-750 leading-relaxed font-medium">
+                考试时间到，系统已自动提交您的试卷！您的最终得分是：{calculatedScore} 分（总分 50 分）。
+              </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
-                type="button" 
                 onClick={() => {
                   setShowTimeoutModal(false);
                   onSubmit();
                 }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
                 确定
               </Button>
@@ -769,10 +775,11 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
 
       {/* 提交成功 Modal */}
       {showSubmitSuccessModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden border border-neutral-200 flex flex-col animate-in zoom-in-95 duration-150">
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-              <h2 className="text-[16px] font-bold text-green-600 flex items-center gap-2">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
                 提交成功
               </h2>
               <button 
@@ -780,22 +787,27 @@ export default function ExamSession({ exam, onBack, onSubmit }: ExamSessionProps
                   setShowSubmitSuccessModal(false);
                   onSubmit();
                 }} 
-                className="text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200 p-1.5 rounded-full transition-colors"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-[14px] text-neutral-700 font-medium">试卷提交成功！您的最终得分是：{calculatedScore} 分（总分 50 分）。</p>
+
+            {/* Body */}
+            <div className="p-10 text-center bg-white">
+              <div className="text-[14px] text-neutral-750 leading-relaxed font-medium">
+                试卷提交成功！您的最终得分是：{calculatedScore} 分（总分 50 分）。
+              </div>
             </div>
-            <div className="p-5 border-t border-neutral-100 bg-white flex items-center justify-end gap-3">
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
               <Button 
-                type="button" 
                 onClick={() => {
                   setShowSubmitSuccessModal(false);
                   onSubmit();
                 }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-10 px-8 shadow-md shadow-orange-500/20"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
               >
                 确定
               </Button>
