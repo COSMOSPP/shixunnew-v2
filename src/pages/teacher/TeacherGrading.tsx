@@ -516,12 +516,10 @@ export default function TeacherGrading() {
                                 setPreviewQuestionIdx(index);
                               }}
                               className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
                               {index + 1}
@@ -548,12 +546,10 @@ export default function TeacherGrading() {
                                 setPreviewQuestionIdx(index);
                               }}
                               className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
                               {index + 1}
@@ -580,12 +576,10 @@ export default function TeacherGrading() {
                                 setPreviewQuestionIdx(index);
                               }}
                               className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
                               {index + 1}
@@ -612,12 +606,10 @@ export default function TeacherGrading() {
                                 setPreviewQuestionIdx(index);
                               }}
                               className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
                                 isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                                  ? "border-[#fa541c] bg-[#fa541c] text-white font-bold"
+                                  : "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50"
                               )}
                             >
                               {index + 1}

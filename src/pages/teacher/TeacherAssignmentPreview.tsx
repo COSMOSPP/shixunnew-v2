@@ -217,9 +217,9 @@ export default function TeacherAssignmentPreview() {
     const isCurrent = currentQuestionIdx === idx;
     let circleColorClass = "";
     if (isCurrent) {
-      circleColorClass = "border-2 border-[#fa541c] text-[#fa541c] bg-white font-bold shadow-xs";
+      circleColorClass = "border-[#fa541c] bg-[#fa541c] text-white font-bold";
     } else {
-      circleColorClass = "border-neutral-300 text-neutral-600 bg-white hover:border-[#fa541c] hover:text-[#fa541c]";
+      circleColorClass = "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50";
     }
 
     return (
