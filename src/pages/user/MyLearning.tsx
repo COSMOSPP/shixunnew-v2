@@ -435,7 +435,18 @@ export default function MyLearning() {
                 <button className="flex-1 md:flex-none bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-600 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
                   查看详情
                 </button>
-                <button clas  const renderScoresTab = () => {
+                <button className="flex-1 md:flex-none bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5">
+                  <Play className="w-4 h-4 fill-white" /> 继续学习
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderScoresTab = () => {
     const mockExams = [
       { name: 'Python高级数据处理与可视化期末考', time: '2026-05-04 10:00', score: 95 },
       { name: '电商用户行为预测实战考评', time: '2026-04-28 14:00', score: 88 },
