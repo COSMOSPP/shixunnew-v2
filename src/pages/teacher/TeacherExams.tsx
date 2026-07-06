@@ -4,7 +4,7 @@ import {
   Code, PenTool, CheckCircle, BrainCircuit,
   Calendar, Clock, User,
   Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Link2, Maximize2, FileText,
-  Users, Award, Trophy, ShieldCheck, RotateCw, Download, Trash2, RefreshCw
+  Users, Award, Trophy, ShieldCheck, RotateCw, Download, Trash2, RefreshCw, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -255,6 +255,12 @@ export default function TeacherExams({ embedded = false }) {
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
   const [detailsType, setDetailsType] = useState<'students' | 'scores' | 'scoring' | 'invigilation' | 'rank' | 'exam'>('students');
   const [detailsSession, setDetailsSession] = useState<any>(null);
+
+  // Scoring Drawer states
+  const [scoringType, setScoringType] = useState<'anonymous' | 'realname'>('anonymous');
+  const [scoringTab, setScoringTab] = useState<'admin' | 'candidate'>('admin');
+  const [scoringSearchInput, setScoringSearchInput] = useState('');
+  const [scoringSearchQuery, setScoringSearchQuery] = useState('');
 
   // Candidates Drawer states
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
@@ -1749,34 +1755,55 @@ export default function TeacherExams({ embedded = false }) {
           <div 
             className={cn(
               "bg-white w-full h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300 relative",
-              detailsType === 'invigilation' ? "max-w-[1100px]" : "max-w-[600px]"
+              (detailsType === 'invigilation' || detailsType === 'scoring') ? "max-w-[1100px]" : "max-w-[600px]"
             )}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
-              <h2 className="text-[15px] font-bold text-neutral-850 flex items-center gap-2">
-                {detailsType === 'students' && <Users className="w-5 h-5 text-[#fa541c]" />}
-                {detailsType === 'scores' && <Award className="w-5 h-5 text-[#fa541c]" />}
-                {detailsType === 'scoring' && <PenTool className="w-5 h-5 text-[#fa541c]" />}
-                {detailsType === 'invigilation' && <ShieldCheck className="w-5 h-5 text-[#fa541c]" />}
-                {detailsType === 'rank' && <Trophy className="w-5 h-5 text-[#fa541c]" />}
-                {detailsType === 'exam' && <FileText className="w-5 h-5 text-[#fa541c]" />}
-                
-                {detailsType === 'students' && '考生名单详情'}
-                {detailsType === 'scores' && '查看成绩明细'}
-                {detailsType === 'scoring' && '批阅任务控制台'}
-                {detailsType === 'invigilation' && '监考安排详情'}
-                {detailsType === 'rank' && '场次成绩排行榜'}
-                {detailsType === 'exam' && '考试详情面板'}
-              </h2>
-              <button 
-                onClick={() => setIsDetailsDrawerOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+            {detailsType === 'scoring' ? (
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-white z-10 select-none">
+                <div className="flex items-center gap-3.5">
+                  <button 
+                    onClick={() => setIsDetailsDrawerOpen(false)}
+                    className="flex items-center gap-1.5 text-neutral-600 hover:text-[#fa541c] font-bold text-[14px] cursor-pointer border-0 bg-transparent"
+                  >
+                    <ArrowLeft className="w-4.5 h-4.5" />
+                    返回
+                  </button>
+                  <span className="text-neutral-300 font-light">|</span>
+                  <span className="text-[15px] font-extrabold text-neutral-850">批阅任务</span>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => showToast('已成功刷新数据', 'success')}
+                  className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                >
+                  刷新
+                </Button>
+              </div>
+            ) : (
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
+                <h2 className="text-[15px] font-bold text-neutral-850 flex items-center gap-2">
+                  {detailsType === 'students' && <Users className="w-5 h-5 text-[#fa541c]" />}
+                  {detailsType === 'scores' && <Award className="w-5 h-5 text-[#fa541c]" />}
+                  {detailsType === 'invigilation' && <ShieldCheck className="w-5 h-5 text-[#fa541c]" />}
+                  {detailsType === 'rank' && <Trophy className="w-5 h-5 text-[#fa541c]" />}
+                  {detailsType === 'exam' && <FileText className="w-5 h-5 text-[#fa541c]" />}
+                  
+                  {detailsType === 'students' && '考生名单详情'}
+                  {detailsType === 'scores' && '查看成绩明细'}
+                  {detailsType === 'invigilation' && '监考安排详情'}
+                  {detailsType === 'rank' && '场次成绩排行榜'}
+                  {detailsType === 'exam' && '考试详情面板'}
+                </h2>
+                <button 
+                  onClick={() => setIsDetailsDrawerOpen(false)}
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* Drawer Body */}
             <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white relative">
@@ -2142,51 +2169,332 @@ export default function TeacherExams({ embedded = false }) {
               )}
 
               {detailsType === 'scoring' && (
-                <div className="space-y-4">
-                  <div className="p-3 bg-purple-50/40 border border-purple-100 rounded-lg flex items-center gap-3">
-                    <PenTool className="w-5 h-5 text-purple-600" />
-                    <div className="text-xs text-purple-950">
-                      <strong>AI辅助评分提示：</strong> 客观选择题与判断题已由AI评判打分完毕。现有 21 份主观编程设计题需要教师人工或AI辅助评阅。
+                <div className="space-y-5 flex flex-col h-full select-none text-[13px]">
+                  {/* Top Info Card: 批阅信息 */}
+                  <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between">
+                    <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
+                      <PenTool className="w-4 h-4 text-[#fa541c]" />
+                      批阅信息
+                    </div>
+                    <div className="p-4 grid grid-cols-2 gap-6 text-[13px] text-neutral-700 flex-1">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-450 font-medium">未参加考试(或未交卷)考生</span>
+                          <span className="text-neutral-850 font-bold font-mono bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">0</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-450 font-medium">已分配批阅任务考生</span>
+                          <span className="text-neutral-850 font-bold font-mono bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">0</span>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-450 font-medium">未分配批阅任务考生</span>
+                          <span className="text-neutral-850 font-bold font-mono bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">1</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-450 font-medium">批阅类型</span>
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="scoringType"
+                                checked={scoringType === 'anonymous'}
+                                onChange={() => setScoringType('anonymous')}
+                                className="accent-[#fa541c] w-4 h-4 cursor-pointer"
+                              />
+                              <span className={cn("text-[13px] font-bold", scoringType === 'anonymous' ? "text-[#fa541c]" : "text-neutral-500 hover:text-neutral-800")}>匿名</span>
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="scoringType"
+                                checked={scoringType === 'realname'}
+                                onChange={() => setScoringType('realname')}
+                                className="accent-[#fa541c] w-4 h-4 cursor-pointer"
+                              />
+                              <span className={cn("text-[13px] font-bold", scoringType === 'realname' ? "text-[#fa541c]" : "text-neutral-500 hover:text-neutral-800")}>实名</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="border border-neutral-200 rounded overflow-hidden">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
-                          <th className="p-3">题目描述</th>
-                          <th className="p-3">待阅卷份数</th>
-                          <th className="p-3 text-center">批阅操作</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-100 text-xs text-neutral-700">
-                        {[
-                          { name: '机器学习实践题-线性回归模型实现', count: 21, status: '待批阅' },
-                          { name: '问答题-说明Transformer自注意力机制的计算步骤', count: 21, status: '待批阅' },
-                          { name: '综合编程题-PyTorch多层感知机模型设计', count: 0, status: '已完成' },
-                        ].map((task, i) => (
-                          <tr key={i} className="hover:bg-neutral-50/50">
-                            <td className="p-3 text-neutral-800 font-medium truncate max-w-[280px]" title={task.name}>{task.name}</td>
-                            <td className="p-3 text-neutral-500 font-mono">{task.count} / 21</td>
-                            <td className="p-3 text-center">
-                              {task.count > 0 ? (
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    showToast('正在为您拉起阅卷控制台...', 'success');
-                                  }}
-                                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-[11px] font-bold rounded h-7 border-0 cursor-pointer px-3.5 animate-none"
-                                >
-                                  开始批阅
-                                </Button>
-                              ) : (
-                                <span className="text-green-600 font-semibold text-xs">批阅完成</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+
+                  {/* Title & Action Toolbar */}
+                  <div className="flex items-center justify-between gap-3 mt-4">
+                    <h3 className="text-base font-extrabold text-neutral-850">已分配的批阅任务</h3>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => showToast('已成功刷新批阅任务列表', 'success')}
+                        className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                      >
+                        刷新
+                      </Button>
+                      <Button
+                        onClick={() => showToast('正在执行批量移除批阅任务...', 'success')}
+                        className="bg-red-500 hover:bg-red-600 text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                      >
+                        移除批阅任务
+                      </Button>
+                      <Button
+                        onClick={() => showToast('正在拉起分配批阅任务弹窗...', 'success')}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                      >
+                        分配批阅任务
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* Tabs header */}
+                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white pb-0 shrink-0 mt-3">
+                    {[
+                      { key: 'admin', name: '管理员视角' },
+                      { key: 'candidate', name: '考生视角' }
+                    ].map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setScoringTab(tab.key as any)}
+                        className={cn(
+                          "pb-2 text-[13px] font-medium transition-all relative whitespace-nowrap cursor-pointer -mb-[1px] border-b-2 bg-transparent border-t-0 border-x-0",
+                          scoringTab === tab.key 
+                            ? "text-[#fa541c] font-bold border-[#fa541c]" 
+                            : "text-neutral-500 hover:text-neutral-800 border-transparent"
+                        )}
+                      >
+                        {tab.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab contents (with 20px gap, using mt-5) */}
+                  {scoringTab === 'admin' && (
+                    <div className="space-y-4 mt-5">
+                      <div className="w-full overflow-y-auto border border-neutral-150 rounded-[8px] bg-white custom-scrollbar max-h-[350px]">
+                        <table className="w-full text-left border-collapse text-xs select-none">
+                          <thead>
+                            <tr className="border-b border-neutral-100 text-neutral-600 font-semibold sticky top-0 z-10 text-[13px] bg-neutral-50">
+                              <th className="p-3 text-left bg-neutral-50">批阅账号</th>
+                              <th className="p-3 text-left bg-neutral-50">批阅姓名</th>
+                              <th className="p-3 text-left bg-neutral-50">分配人数</th>
+                              <th className="p-3 text-left bg-neutral-50">批阅进度</th>
+                              <th className="p-3 text-center bg-neutral-50">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                            {[
+                              { account: 'teacher_01', name: '张三老师', count: 15, done: 12 },
+                              { account: 'teacher_02', name: '李四老师', count: 12, done: 6 },
+                              { account: 'teacher_ai', name: 'AI智能批阅助手', count: 20, done: 20 }
+                            ].map((row, idx) => (
+                              <tr key={idx} className="hover:bg-neutral-50/40 transition-colors">
+                                <td className="p-3 font-semibold text-neutral-600 font-mono">{row.account}</td>
+                                <td className="p-3 font-medium text-neutral-850">{row.name}</td>
+                                <td className="p-3 font-mono text-neutral-500">{row.count} 人</td>
+                                <td className="p-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-24 h-2.5 bg-neutral-100 rounded-full overflow-hidden shrink-0 border border-neutral-200">
+                                      <div 
+                                        className={cn(
+                                          "h-full rounded-full transition-all",
+                                          row.done === row.count ? "bg-emerald-500" : "bg-[#fa541c]"
+                                        )} 
+                                        style={{ width: `${(row.done / row.count) * 100}%` }}
+                                      />
+                                    </div>
+                                    <span className="font-mono text-xs font-semibold text-neutral-500">
+                                      {row.done}/{row.count} ({Math.round((row.done / row.count) * 100)}%)
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-center">
+                                  <div className="flex items-center justify-center gap-3">
+                                    <button 
+                                      onClick={() => showToast('正在跳转分配调整...', 'success')}
+                                      className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer"
+                                    >
+                                      调整分配
+                                    </button>
+                                    <button 
+                                      onClick={() => showToast('正在加载批阅明细...', 'success')}
+                                      className="text-neutral-500 hover:text-neutral-850 hover:underline font-bold bg-transparent border-0 cursor-pointer"
+                                    >
+                                      查看明细
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                            {[
+                              { account: 'teacher_01', name: '张三老师', count: 15, done: 12 },
+                              { account: 'teacher_02', name: '李四老师', count: 12, done: 6 },
+                              { account: 'teacher_ai', name: 'AI智能批阅助手', count: 20, done: 20 }
+                            ].length === 0 && (
+                              <tr>
+                                <td colSpan={5} className="p-8 text-center text-neutral-400">
+                                  暂无数据
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {scoringTab === 'candidate' && (
+                    <div className="space-y-4 mt-5">
+                      {/* Candidate Perspective Filter Toolbar */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={scoringSearchInput}
+                            onChange={(e) => setScoringSearchInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') setScoringSearchQuery(scoringSearchInput);
+                            }}
+                            placeholder="请输入账号/姓名"
+                            className="pl-3 pr-3 py-1.5 text-xs border border-neutral-200 rounded-[4px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-neutral-850 bg-white w-48 h-8"
+                          />
+                          <Button
+                            onClick={() => setScoringSearchQuery(scoringSearchInput)}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-4 h-8 text-[12px] font-bold rounded-[4px] border-0 cursor-pointer shadow-sm transition-colors"
+                          >
+                            查询
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => showToast('已成功批量提交最终成绩', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                          >
+                            批量提交最终分
+                          </Button>
+                          <Button
+                            onClick={() => showToast('正在拉起导入最终成绩...', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                          >
+                            导入最终成绩
+                          </Button>
+                          <Button
+                            onClick={() => showToast('已导出批阅成绩表格', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                          >
+                            导出批阅成绩
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Candidates List Table */}
+                      <div className="w-full overflow-y-auto border border-neutral-150 rounded-[8px] bg-white custom-scrollbar max-h-[350px]">
+                        <table className="w-full text-left border-collapse text-xs select-none">
+                          <thead>
+                            <tr className="border-b border-neutral-100 text-neutral-600 font-semibold sticky top-0 z-10 text-[13px] bg-neutral-50">
+                              <th className="p-3 w-10 text-center bg-neutral-50">
+                                <input
+                                  type="checkbox"
+                                  className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                                />
+                              </th>
+                              <th className="p-3 text-left bg-neutral-50">考生账号</th>
+                              <th className="p-3 text-left bg-neutral-50">考生姓名</th>
+                              <th className="p-3 text-left bg-neutral-50">考号</th>
+                              <th className="p-3 text-left bg-neutral-50">最终得分</th>
+                              <th className="p-3 text-center bg-neutral-50">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                            {[
+                              { account: 'df0003', name: '王小明', examNo: '2026050103', score: '92', status: '已提交' },
+                              { account: 'df0002', name: '张小强', examNo: '2026050102', score: '45', status: '批阅中' },
+                              { account: 'df0001', name: '李华', examNo: '2026050101', score: '80', status: '已提交' },
+                              { account: 'df0004', name: '赵大山', examNo: '2026050104', score: '--', status: '未批改' }
+                            ].filter(s => {
+                              const q = scoringSearchQuery.toLowerCase().trim();
+                              if (!q) return true;
+                              return s.account.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+                            }).map((student, idx) => (
+                              <tr key={idx} className="hover:bg-neutral-50/40 text-neutral-700 bg-white transition-colors">
+                                <td className="p-3 text-center">
+                                  <input
+                                    type="checkbox"
+                                    className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                                  />
+                                </td>
+                                <td className="p-3 font-semibold text-neutral-650 font-mono">{student.account}</td>
+                                <td className="p-3 font-medium text-neutral-800">{student.name}</td>
+                                <td className="p-3 font-mono text-neutral-500">{student.examNo}</td>
+                                <td className="p-3">
+                                  {student.score !== '--' ? (
+                                    <span className={cn(
+                                      "font-extrabold font-mono text-[14px]",
+                                      student.status === '已提交' ? "text-[#fa541c]" : "text-neutral-500"
+                                    )}>
+                                      {student.score} <span className="text-[11px] font-normal text-neutral-400">分</span>
+                                    </span>
+                                  ) : (
+                                    <span className="text-neutral-450 font-medium">--</span>
+                                  )}
+                                </td>
+                                <td className="p-3 text-center">
+                                  {student.status === '已提交' && (
+                                    <div className="flex items-center justify-center gap-3">
+                                      <button 
+                                        onClick={() => showToast('正在加载试卷答题...', 'success')}
+                                        className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer"
+                                      >
+                                        查看答卷
+                                      </button>
+                                      <button 
+                                        onClick={() => showToast('正在拉起重新打分面板...', 'success')}
+                                        className="text-neutral-500 hover:text-neutral-800 hover:underline font-bold bg-transparent border-0 cursor-pointer"
+                                      >
+                                        重新打分
+                                      </button>
+                                    </div>
+                                  )}
+                                  {student.status === '批阅中' && (
+                                    <button 
+                                      onClick={() => showToast('正在拉起阅卷界面...', 'success')}
+                                      className="text-orange-500 hover:text-orange-650 hover:underline font-bold bg-transparent border-0 cursor-pointer"
+                                    >
+                                      批阅答卷
+                                    </button>
+                                  )}
+                                  {student.status === '未批改' && (
+                                    <button 
+                                      onClick={() => showToast('请先分配阅卷老师...', 'success')}
+                                      className="text-blue-500 hover:text-blue-600 hover:underline font-bold bg-transparent border-0 cursor-pointer"
+                                    >
+                                      分配老师
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                            {[
+                              { account: 'df0003', name: '王小明', examNo: '2026050103', score: '92', status: '已提交' },
+                              { account: 'df0002', name: '张小强', examNo: '2026050102', score: '45', status: '批阅中' },
+                              { account: 'df0001', name: '李华', examNo: '2026050101', score: '80', status: '已提交' },
+                              { account: 'df0004', name: '赵大山', examNo: '2026050104', score: '--', status: '未批改' }
+                            ].filter(s => {
+                              const q = scoringSearchQuery.toLowerCase().trim();
+                              if (!q) return true;
+                              return s.account.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+                            }).length === 0 && (
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-neutral-400">
+                                  暂无数据
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
