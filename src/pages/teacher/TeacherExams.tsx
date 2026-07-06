@@ -938,7 +938,7 @@ export default function TeacherExams({ embedded = false }) {
                                     <span className={cn(
                                       "px-2 py-0.5 text-[11px] rounded border font-medium",
                                       session.status === '进行中' && "bg-emerald-50 text-emerald-600 border-emerald-200",
-                                      session.status === '未开始' && "bg-amber-50 text-amber-600 border-amber-200",
+                                      session.status === '未开始' && "bg-blue-50 text-blue-600 border-blue-200",
                                       session.status === '已结束' && "bg-neutral-50 text-neutral-500 border-neutral-200"
                                     )}>
                                       {session.status}
