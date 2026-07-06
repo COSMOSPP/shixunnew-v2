@@ -2193,7 +2193,7 @@ export default function TeacherExams({ embedded = false }) {
               {detailsType === 'invigilation' && (
                 <div className="space-y-5 flex flex-col h-full -mt-2">
                   {/* Tabs Header */}
-                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20">
+                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white pb-0 shrink-0 sticky top-0 z-20">
                     {[
                       { key: 'overview', name: '考试总览' },
                       { key: 'content', name: '考试内容' },
@@ -2280,13 +2280,13 @@ export default function TeacherExams({ embedded = false }) {
                       <div className="flex items-center justify-between gap-3 mt-4 select-none">
                         {/* Left search */}
                         <div className="relative flex items-center">
-                          <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 pointer-events-none" />
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
                           <input
                             type="text"
                             value={invigilationSearchQuery}
                             onChange={(e) => setInvigilationSearchQuery(e.target.value)}
                             placeholder="输入姓名或账号搜索"
-                            className="w-48 pl-8 pr-3 py-1.5 text-xs border border-neutral-200 rounded-[4px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-neutral-800 bg-white h-8"
+                            className="pl-9 pr-4 py-2 w-60 bg-white border border-neutral-200 rounded-full text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400 h-9"
                           />
                         </div>
 
@@ -2295,40 +2295,35 @@ export default function TeacherExams({ embedded = false }) {
                           <Button
                             variant="outline"
                             onClick={() => showToast('已成功初始化试卷', 'success')}
-                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
-                            <FileText className="w-3.5 h-3.5" />
                             初始化试卷
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => showToast('环境已开始初始化', 'success')}
-                            className="border-neutral-200 text-neutral-600 hover:text-blue-650 hover:border-blue-200 hover:bg-blue-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
+                            className="border-neutral-200 text-neutral-600 hover:text-blue-650 hover:border-blue-200 hover:bg-blue-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
-                            <RefreshCw className="w-3.5 h-3.5" />
                             初始化环境
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => showToast('环境清理已开始', 'success')}
-                            className="border-neutral-200 text-neutral-600 hover:text-red-650 hover:border-red-200 hover:bg-red-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
+                            className="border-neutral-200 text-neutral-600 hover:text-red-650 hover:border-red-200 hover:bg-red-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
                             清理环境
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => showToast('数据导出成功，正在开始下载', 'success')}
-                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
-                            <Download className="w-3.5 h-3.5" />
                             导出数据
                           </Button>
                           <Button
                             onClick={() => showToast('正在统分中...', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm flex items-center gap-1.5 transition-colors"
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
                           >
-                            <CheckCircle className="w-3.5 h-3.5" />
                             统分
                           </Button>
                         </div>
@@ -2388,7 +2383,7 @@ export default function TeacherExams({ embedded = false }) {
                                 </td>
                                 <td className="p-3">
                                   {student.envStatus === '运行中' && (
-                                    <span className="text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                    <span className="text-green-600 bg-green-50 border border-green-100 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
                                       运行中
                                     </span>
                                   )}
