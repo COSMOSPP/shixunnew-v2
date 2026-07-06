@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import ExamResult from "@/components/ExamResult";
 import { 
   ChevronRight, MonitorPlay, FolderKanban, Database, Plus, Play, Download, Search,
   BookOpen, Clock, Bot, TrendingUp, Calendar as CalendarIcon, Target, Flame, Trash2, ArrowRight, ChevronLeft, Sparkles,
@@ -10,6 +11,20 @@ import { cn } from "@/lib/utils";
 
 export default function MyLearning() {
   const [activeTab, setActiveTab] = useState<'learning' | 'duration' | 'ai-path' | 'scores'>('learning');
+  const [isViewingExamResult, setIsViewingExamResult] = useState(false);
+  const [selectedExamForResult, setSelectedExamForResult] = useState<any>(null);
+
+  if (isViewingExamResult && selectedExamForResult) {
+    return (
+      <ExamResult 
+        exam={selectedExamForResult} 
+        onBack={() => {
+          setIsViewingExamResult(false);
+          setSelectedExamForResult(null);
+        }} 
+      />
+    );
+  }
 
   const renderLearningTab = () => (
     <div className="space-y-8 animation-fade-in">
@@ -420,29 +435,11 @@ export default function MyLearning() {
                 <button className="flex-1 md:flex-none bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-600 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
                   查看详情
                 </button>
-                <button className="flex-1 md:flex-none bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5">
-                  <Play className="w-4 h-4 fill-white" /> 继续学习
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const [scoresSubTab, setScoresSubTab] = useState<'exam' | 'homework'>('exam');
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 2000);
-  };
-
-  const renderScoresTab = () => {
+                <button clas  const renderScoresTab = () => {
     const mockExams = [
-      { name: 'Python高级数据处理与可视化期末考', time: '2026-05-04 10:00', score: 95, pass: '优秀', action: '查看解析' },
-      { name: '电商用户行为预测实战考评', time: '2026-04-28 14:00', score: 88, pass: '良好', action: '查看解析' },
-      { name: '机器学习基础期中测试', time: '2026-04-15 09:00', score: 55, pass: '不及格', action: '重新补考' },
+      { name: 'Python高级数据处理与可视化期末考', time: '2026-05-04 10:00', score: 95 },
+      { name: '电商用户行为预测实战考评', time: '2026-04-28 14:00', score: 88 },
+      { name: '机器学习基础期中测试', time: '2026-04-15 09:00', score: 55 },
     ];
 
     const mockHomeworks = [
@@ -461,30 +458,25 @@ export default function MyLearning() {
           </h2>
         </div>
 
-        {/* Sub tabs selector */}
-        <div className="flex bg-neutral-200/50 p-0.5 rounded-lg w-max mb-4">
-          <button
-            onClick={() => setScoresSubTab('exam')}
-            className={cn(
-              "px-5 py-1.5 text-xs font-bold rounded-[6px] transition-all cursor-pointer border-0",
-              scoresSubTab === 'exam' 
-                ? "bg-white text-neutral-800 shadow-sm" 
-                : "text-neutral-500 hover:text-neutral-800 bg-transparent"
-            )}
-          >
-            考试成绩
-          </button>
-          <button
-            onClick={() => setScoresSubTab('homework')}
-            className={cn(
-              "px-5 py-1.5 text-xs font-bold rounded-[6px] transition-all cursor-pointer border-0",
-              scoresSubTab === 'homework' 
-                ? "bg-white text-neutral-800 shadow-sm" 
-                : "text-neutral-500 hover:text-neutral-800 bg-transparent"
-            )}
-          >
-            作业成绩
-          </button>
+        {/* Optimized Sub Tabs Switcher with Bottom Underline styling */}
+        <div className="border-b border-neutral-200 flex gap-6 select-none mb-6">
+          {[
+            { key: 'exam', name: '考试成绩' },
+            { key: 'homework', name: '作业成绩' }
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setScoresSubTab(tab.key as any)}
+              className={cn(
+                "pb-2.5 text-[14px] font-bold transition-all relative whitespace-nowrap cursor-pointer -mb-[1px] border-b-2 bg-transparent border-t-0 border-x-0 outline-none",
+                scoresSubTab === tab.key 
+                  ? "text-[#fa541c] border-[#fa541c]" 
+                  : "text-neutral-500 hover:text-[#fa541c] border-transparent"
+              )}
+            >
+              {tab.name}
+            </button>
+          ))}
         </div>
 
         {scoresSubTab === 'exam' ? (
@@ -492,12 +484,10 @@ export default function MyLearning() {
             <table className="w-full text-left border-collapse text-xs select-none">
               <thead>
                 <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 font-semibold text-[13px]">
-                  <th className="p-4">考试名称</th>
-                  <th className="p-4">考试时间</th>
-                  <th className="p-4">及格标准</th>
-                  <th className="p-4">考卷得分</th>
-                  <th className="p-4">评级</th>
-                  <th className="p-4 text-center">操作</th>
+                  <th className="p-4 w-2/5">考试名称</th>
+                  <th className="p-4 w-1/4">考试时间</th>
+                  <th className="p-4 w-1/5 text-center">考卷得分</th>
+                  <th className="p-4 text-center w-3/20">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
@@ -505,39 +495,27 @@ export default function MyLearning() {
                   <tr key={index} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="p-4 font-bold text-neutral-900">{exam.name}</td>
                     <td className="p-4 text-neutral-500 font-mono">{exam.time}</td>
-                    <td className="p-4 text-neutral-500">60分 / 100分</td>
                     <td className={cn(
-                      "p-4 font-extrabold font-mono text-[15px]",
+                      "p-4 text-center font-extrabold font-mono text-[15px]",
                       exam.score >= 60 ? "text-[#fa541c]" : "text-red-500"
                     )}>
                       {exam.score} 分
                     </td>
-                    <td className="p-4">
-                      <span className={cn(
-                        "px-2 py-0.5 rounded text-[11px] font-bold inline-block border",
-                        exam.pass === '优秀' && "text-emerald-600 bg-emerald-50 border-emerald-100",
-                        exam.pass === '良好' && "text-blue-600 bg-blue-50 border-blue-100",
-                        exam.pass === '不及格' && "text-red-600 bg-red-50 border-red-100"
-                      )}>
-                        {exam.pass}
-                      </span>
-                    </td>
                     <td className="p-4 text-center">
-                      {exam.action === '重新补考' ? (
-                        <button
-                          onClick={() => showToast('正在拉起补考环境，请稍候...')}
-                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer border-0"
-                        >
-                          重新补考
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => showToast('正在加载试卷答卷明细...')}
-                          className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold cursor-pointer bg-transparent border-0"
-                        >
-                          查看解析
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          setSelectedExamForResult({
+                            title: exam.name,
+                            score: exam.score,
+                            startTime: exam.time,
+                            attempts: 1
+                          });
+                          setIsViewingExamResult(true);
+                        }}
+                        className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold cursor-pointer bg-transparent border-0"
+                      >
+                        预览
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -549,12 +527,12 @@ export default function MyLearning() {
             <table className="w-full text-left border-collapse text-xs select-none">
               <thead>
                 <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 font-semibold text-[13px]">
-                  <th className="p-4 w-[240px]">作业名称</th>
-                  <th className="p-4 w-[140px]">提交时间</th>
-                  <th className="p-4 w-[100px]">批阅得分</th>
-                  <th className="p-4 w-[140px]">作业状态</th>
-                  <th className="p-4">老师评语</th>
-                  <th className="p-4 text-center w-[100px]">操作</th>
+                  <th className="p-4 w-1/4">作业名称</th>
+                  <th className="p-4 w-[15%]">提交时间</th>
+                  <th className="p-4 w-[10%] text-center">批阅得分</th>
+                  <th className="p-4 w-[15%] text-center">作业状态</th>
+                  <th className="p-4 w-1/4">老师评语</th>
+                  <th className="p-4 text-center w-[10%]">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
@@ -562,7 +540,7 @@ export default function MyLearning() {
                   <tr key={index} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="p-4 font-bold text-neutral-900">{hw.name}</td>
                     <td className="p-4 text-neutral-500 font-mono">{hw.time}</td>
-                    <td className="p-4 font-extrabold font-mono text-[14px]">
+                    <td className="p-4 text-center font-extrabold font-mono text-[14px]">
                       {hw.score !== null ? (
                         <span className={hw.score >= 60 ? "text-[#fa541c]" : "text-red-500"}>
                           {hw.score} <span className="text-[11px] font-normal text-neutral-400">分</span>
@@ -571,7 +549,7 @@ export default function MyLearning() {
                         <span className="text-neutral-400 font-normal">--</span>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 text-center">
                       {hw.status === '合格' && (
                         <span className="px-2 py-0.5 rounded text-[11px] font-bold inline-block border text-emerald-600 bg-emerald-50 border-emerald-100">
                           合格
@@ -583,8 +561,8 @@ export default function MyLearning() {
                         </span>
                       )}
                       {hw.status === '打回重做' && (
-                        <span className="px-2 py-0.5 rounded text-[11px] font-bold inline-block border text-red-650 bg-red-50 border-red-150 animate-pulse">
-                          ⚠️ 打回重做中
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold inline-block border text-red-600 bg-red-50 border-red-200">
+                          打回重做
                         </span>
                       )}
                     </td>
@@ -593,18 +571,42 @@ export default function MyLearning() {
                     </td>
                     <td className="p-4 text-center">
                       {hw.canRedo ? (
-                        <button
-                          onClick={() => showToast('正在进入作业重做环境，请按要求提交作业')}
-                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer border-0 animate-bounce"
-                        >
-                          去重做
-                        </button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => showToast('正在进入作业重做环境，请按要求提交作业')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-2 py-0.5 rounded text-[11px] font-bold transition-colors cursor-pointer border-0"
+                          >
+                            去重做
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setSelectedExamForResult({
+                                title: hw.name,
+                                score: 45,
+                                startTime: hw.time,
+                                attempts: 1
+                              });
+                              setIsViewingExamResult(true);
+                            }}
+                            className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-semibold cursor-pointer bg-transparent border-0"
+                          >
+                            预览
+                          </button>
+                        </div>
                       ) : hw.score !== null ? (
-                        <button
-                          onClick={() => showToast('正在为您拉起作业作对明细页...')}
+                        <button 
+                          onClick={() => {
+                            setSelectedExamForResult({
+                              title: hw.name,
+                              score: hw.score,
+                              startTime: hw.time,
+                              attempts: 1
+                            });
+                            setIsViewingExamResult(true);
+                          }}
                           className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-semibold cursor-pointer bg-transparent border-0"
                         >
-                          查看明细
+                          预览
                         </button>
                       ) : (
                         <span className="text-neutral-300">--</span>
