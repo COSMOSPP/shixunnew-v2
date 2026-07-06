@@ -468,7 +468,7 @@ export default function MyLearning() {
 
     return (
       <div className="space-y-6 animation-fade-in text-left">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
             <Award className="w-5 h-5 text-[#fa541c]" />
             学习成绩与作业看板
@@ -588,28 +588,12 @@ export default function MyLearning() {
                     </td>
                     <td className="p-4 text-center">
                       {hw.canRedo ? (
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
-                          <button
-                            onClick={() => showToast('正在进入作业重做环境，请按要求提交作业')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-2 py-0.5 rounded text-[11px] font-bold transition-colors cursor-pointer border-0"
-                          >
-                            去重做
-                          </button>
-                          <button 
-                            onClick={() => {
-                              setSelectedExamForResult({
-                                title: hw.name,
-                                score: 45,
-                                startTime: hw.time,
-                                attempts: 1
-                              });
-                              setIsViewingExamResult(true);
-                            }}
-                            className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-semibold cursor-pointer bg-transparent border-0"
-                          >
-                            预览
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => showToast('正在进入作业重做环境，请按要求提交作业')}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer border-0"
+                        >
+                          去重做
+                        </button>
                       ) : hw.score !== null ? (
                         <button 
                           onClick={() => {
