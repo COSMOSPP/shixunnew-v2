@@ -197,7 +197,6 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
                 <thead>
                   <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
                     <th className="p-4 font-medium">提交次数</th>
-                    <th className="p-4 font-medium">题型</th>
                     <th className="p-4 font-medium">提交时间</th>
                     <th className="p-4 font-medium text-right">操作</th>
                   </tr>
@@ -206,7 +205,6 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
                   {attemptRows.map((row) => (
                     <tr key={row.attemptNumber} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
                       <td className="p-4 text-neutral-800 font-bold">第 {row.attemptNumber} 次提交</td>
-                      <td className="p-4 text-neutral-600 font-medium">{row.types}</td>
                       <td className="p-4 text-neutral-500">{row.time}</td>
                       <td className="p-4 text-right">
                         <button 
