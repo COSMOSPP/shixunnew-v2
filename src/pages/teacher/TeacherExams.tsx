@@ -1795,7 +1795,7 @@ export default function TeacherExams({ embedded = false }) {
                   </div>
                 </div>
               ) : (
-                detailsType !== 'students' && (
+                detailsType !== 'students' && detailsType !== 'invigilation' && (
                   <div className="bg-orange-50/20 rounded-xl p-4 border border-orange-100/60 space-y-2">
                     <div className="text-[14px] font-bold text-neutral-800">场次名称：{detailsSession.name}</div>
                     <div className="grid grid-cols-2 gap-y-1.5 text-xs text-neutral-600">
@@ -2193,7 +2193,7 @@ export default function TeacherExams({ embedded = false }) {
               {detailsType === 'invigilation' && (
                 <div className="space-y-5 flex flex-col h-full -mt-2">
                   {/* Tabs Header */}
-                  <div className="flex border-b border-neutral-150 gap-6 select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20">
+                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20">
                     {[
                       { key: 'overview', name: '考试总览' },
                       { key: 'content', name: '考试内容' },
@@ -2203,10 +2203,10 @@ export default function TeacherExams({ embedded = false }) {
                         key={tab.key}
                         onClick={() => setInvigilationTab(tab.key as any)}
                         className={cn(
-                          "pb-2.5 font-bold border-b-2 whitespace-nowrap text-[13px] bg-transparent border-0 cursor-pointer transition-all",
+                          "pb-2 text-[13px] font-medium transition-all relative whitespace-nowrap cursor-pointer -mb-[1px] border-b-2 bg-transparent border-0",
                           invigilationTab === tab.key 
-                            ? "text-[#fa541c] border-[#fa541c]" 
-                            : "text-neutral-500 border-transparent hover:text-[#fa541c]"
+                            ? "text-[#fa541c] font-bold border-[#fa541c]" 
+                            : "text-neutral-500 hover:text-neutral-800 border-transparent"
                         )}
                       >
                         {tab.name}
