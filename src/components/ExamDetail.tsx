@@ -12,23 +12,6 @@ interface ExamDetailProps {
 export default function ExamDetail({ exam, onBack, onStart, onViewResult }: ExamDetailProps) {
   const [timeLeft, setTimeLeft] = useState("");
 
-  const submitRecords = Array.from({ length: exam.attempts || 0 }).map((_, idx) => {
-    const dateObj = new Date(exam.startTime ? exam.startTime.replace(/-/g, "/") : "2026-07-02 09:00");
-    dateObj.setMinutes(dateObj.getMinutes() + 45 + idx * 10);
-    const formattedTime = dateObj.getFullYear() + "-" + 
-      String(dateObj.getMonth() + 1).padStart(2, '0') + "-" + 
-      String(dateObj.getDate()).padStart(2, '0') + " " + 
-      String(dateObj.getHours()).padStart(2, '0') + ":" + 
-      String(dateObj.getMinutes()).padStart(2, '0') + ":" +
-      String(dateObj.getSeconds()).padStart(2, '0');
-
-    return {
-      count: `第 ${idx + 1} 次`,
-      type: exam.type || "认证考试",
-      time: formattedTime
-    };
-  });
-
   useEffect(() => {
     if (exam.status !== "未开始") return;
     
@@ -202,45 +185,27 @@ export default function ExamDetail({ exam, onBack, onStart, onViewResult }: Exam
 
       <div className="max-w-6xl mx-auto w-full py-8 text-neutral-title">
         <h2 className="text-[18px] font-bold mb-6 flex items-center gap-2">
-           <FileText className="w-5 h-5 text-[#fa541c]" /> 提交记录列表
+           <AlertCircle className="w-5 h-5 text-[#fa541c]" /> 考试规则与须知
         </h2>
-        <div className="bg-white border border-neutral-border rounded-[12px] overflow-hidden">
-          <table className="w-full border-collapse text-left text-[14px]">
-            <thead>
-              <tr className="bg-neutral-50 border-b border-neutral-150 text-neutral-caption font-bold">
-                <th className="py-4 px-6 font-semibold text-[13px]">提交次数</th>
-                <th className="py-4 px-6 font-semibold text-[13px]">题型</th>
-                <th className="py-4 px-6 font-semibold text-[13px]">提交时间</th>
-                <th className="py-4 px-6 font-semibold text-[13px] text-right">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {submitRecords.length > 0 ? (
-                submitRecords.map((record, i) => (
-                  <tr key={i} className="hover:bg-neutral-50/50 transition-colors">
-                    <td className="py-4 px-6 font-medium text-neutral-title">{record.count}</td>
-                    <td className="py-4 px-6 text-neutral-body">
-                      <span className="px-2.5 py-1 bg-orange-50 text-[#fa541c] text-[12px] font-medium rounded-[4px] border border-orange-100">
-                        {record.type}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-neutral-body font-mono text-[13px]">{record.time}</td>
-                    <td className="py-4 px-6 text-right">
-                      <button className="text-[#fa541c] hover:text-[#d4380d] bg-transparent border-0 font-bold cursor-pointer transition-colors text-[13px] hover:underline">
-                        预览
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="py-12 px-6 text-center text-neutral-caption">
-                    暂无提交记录，您还有 <span className="font-bold text-[#fa541c]">{exam.maxAttempts}</span> 次考试机会。
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="bg-white border border-neutral-border rounded-[12px] shadow-sm p-8 space-y-6">
+           <div>
+             <h3 className="font-bold text-[15px] mb-2 border-l-4 border-[#fa541c] pl-3">1. 考试纪律与作答时间</h3>
+             <p className="text-[14px] text-neutral-body leading-relaxed pl-4">
+               一旦点击开始考试或继续考试，倒计时将无法暂停。如遇断网等突发情况，系统具有自动保存功能，请在时长允许范围内重新刷新页面即可恢复作答。考试页面严禁切屏，切屏超过 3 次将会强制收卷。
+             </p>
+           </div>
+           <div>
+             <h3 className="font-bold text-[15px] mb-2 border-l-4 border-[#fa541c] pl-3">2. 成绩规则与客观题</h3>
+             <p className="text-[14px] text-neutral-body leading-relaxed pl-4">
+               客观题（选择题、判断题）交卷后由系统自动判分，主观题和实操题可能需要导师复审。最终成绩取系统展示的综合平切或最高分（若包含多场次管理机制）。
+             </p>
+           </div>
+           <div>
+             <h3 className="font-bold text-[15px] mb-2 border-l-4 border-[#fa541c] pl-3">3. 多场次管理细则</h3>
+             <p className="text-[14px] text-neutral-body leading-relaxed pl-4">
+               对于“多场次”展示类型的考试，您可以根据自身时间选择某一场次参加。报名后不可随意退赛，开考后无论您是否点击开始系统都会开始倒计时。
+             </p>
+           </div>
         </div>
       </div>
     </div>

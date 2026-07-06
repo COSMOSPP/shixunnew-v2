@@ -307,7 +307,7 @@ export default function UserExams() {
                           "w-full h-9 text-[13px] rounded-[6px] transition-all gap-1.5 font-medium flex items-center justify-center",
                           (exam.candidateStatus !== "已交卷" && exam.sessionStatus !== "已结束")
                             ? "bg-neutral-50 border border-neutral-200 text-neutral-300 cursor-not-allowed"
-                            : "border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c]"
+                            : "border-neutral-border text-neutral-body hover:text-[#fa541c] hover:border-[#fa541c] hover:bg-[#fff2e8]"
                         )}
                       >
                         <FileText className="w-4 h-4" />

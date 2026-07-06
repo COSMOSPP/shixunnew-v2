@@ -4635,10 +4635,14 @@ export default function TeacherCourseManage() {
                                     key={item.id}
                                     onClick={() => setCurrentQuestionIndex(item.originalIndex)}
                                     className={cn(
-                                      "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative border border-transparent",
+                                      "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative border",
                                       item.score > 0
-                                        ? (isActive ? "bg-emerald-500 text-white shadow-[0_4px_8px_rgba(16,185,129,0.4)] scale-[1.02]" : "bg-emerald-500 text-white")
-                                        : (isActive ? "bg-red-500 text-white shadow-[0_4px_8px_rgba(239,68,68,0.4)] scale-[1.02]" : "bg-red-500 text-white")
+                                        ? (isActive 
+                                            ? "bg-emerald-500 text-white border-transparent" 
+                                            : "bg-emerald-500/[0.08] border-emerald-500 text-emerald-600 hover:bg-emerald-500/[0.15]")
+                                        : (isActive 
+                                            ? "bg-red-500 text-white border-transparent" 
+                                            : "bg-red-500/[0.08] border-red-500 text-red-600 hover:bg-red-500/[0.15]")
                                     )}
                                   >
                                     {item.originalIndex + 1}

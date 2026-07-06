@@ -215,22 +215,11 @@ export default function TeacherAssignmentPreview() {
 
   const renderQuestionCircle = (idx: number, displayNum: number) => {
     const isCurrent = currentQuestionIdx === idx;
-    const qItem = questions[idx];
-    const isPractical = qItem?.type === 'practical';
-    
     let circleColorClass = "";
-    if (isPractical) {
-      if (isCurrent) {
-        circleColorClass = "bg-[#52c41a] border-[#52c41a] text-white font-bold animate-scale-up";
-      } else {
-        circleColorClass = "border-[#52c41a]/30 bg-[#52c41a]/5 text-[#389e0d] hover:bg-[#52c41a]/10 hover:border-[#52c41a]/50";
-      }
+    if (isCurrent) {
+      circleColorClass = "border-2 border-[#fa541c] text-[#fa541c] bg-white font-bold shadow-xs";
     } else {
-      if (isCurrent) {
-        circleColorClass = "bg-[#fa541c] border-[#fa541c] text-white font-bold animate-scale-up";
-      } else {
-        circleColorClass = "border-[#fa541c]/30 bg-[#fa541c]/5 text-[#fa541c] hover:bg-[#fa541c]/10 hover:border-[#fa541c]/50";
-      }
+      circleColorClass = "border-neutral-300 text-neutral-600 bg-white hover:border-[#fa541c] hover:text-[#fa541c]";
     }
 
     return (

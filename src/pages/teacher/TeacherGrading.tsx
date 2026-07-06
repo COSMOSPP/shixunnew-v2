@@ -501,112 +501,132 @@ export default function TeacherGrading() {
                 {/* Sidebar navigations for all types */}
                 <div className="space-y-5 pt-4">
                   {/* Single Choice Nav */}
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">单选题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {mockPreviewQuestions.单选题.map((_, index) => {
-                        const isActive = previewQuestionType === '单选题' && previewQuestionIdx === index;
-                        return (
-                          <div 
-                            key={index}
-                            onClick={() => {
-                              setPreviewQuestionType('单选题');
-                              setPreviewQuestionIdx(index);
-                            }}
-                            className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
-                              isActive
-                                ? "bg-[#00b578] text-white border border-[#00b578] font-bold shadow-none"
-                                : "border border-[#00b578] text-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20"
-                            )}
-                          >
-                            {index + 1}
-                          </div>
-                        );
-                      })}
+                  {previewQuestionType === '单选题' && (
+                    <div>
+                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">单选题</h3>
+                      <div className="grid grid-cols-5 gap-3">
+                        {mockPreviewQuestions.单选题.map((_, index) => {
+                          const isActive = previewQuestionType === '单选题' && previewQuestionIdx === index;
+                          const hasAnswer = !!previewAnswers[`preview-s-${index + 1}`];
+                          return (
+                            <div 
+                              key={index}
+                              onClick={() => {
+                                setPreviewQuestionType('单选题');
+                                setPreviewQuestionIdx(index);
+                              }}
+                              className={cn(
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                isActive
+                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
+                                  : hasAnswer
+                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
+                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                              )}
+                            >
+                              {index + 1}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Multiple Choice Nav */}
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">多选题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {mockPreviewQuestions.多选题.map((_, index) => {
-                        const isActive = previewQuestionType === '多选题' && previewQuestionIdx === index;
-                        return (
-                          <div 
-                            key={index}
-                            onClick={() => {
-                              setPreviewQuestionType('多选题');
-                              setPreviewQuestionIdx(index);
-                            }}
-                            className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
-                              isActive
-                                ? "bg-[#00b578] text-white border border-[#00b578] font-bold shadow-none"
-                                : "border border-[#00b578] text-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20"
-                            )}
-                          >
-                            {index + 3}
-                          </div>
-                        );
-                      })}
+                  {previewQuestionType === '多选题' && (
+                    <div>
+                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">多选题</h3>
+                      <div className="grid grid-cols-5 gap-3">
+                        {mockPreviewQuestions.多选题.map((_, index) => {
+                          const isActive = previewQuestionType === '多选题' && previewQuestionIdx === index;
+                          const hasAnswer = (previewAnswers[`preview-m-${index + 1}`] as string[])?.length > 0;
+                          return (
+                            <div 
+                              key={index}
+                              onClick={() => {
+                                setPreviewQuestionType('多选题');
+                                setPreviewQuestionIdx(index);
+                              }}
+                              className={cn(
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                isActive
+                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
+                                  : hasAnswer
+                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
+                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                              )}
+                            >
+                              {index + 1}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Short Essay Nav */}
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">简答题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {mockPreviewQuestions.简答题.map((_, index) => {
-                        const isActive = previewQuestionType === '简答题' && previewQuestionIdx === index;
-                        return (
-                          <div 
-                            key={index}
-                            onClick={() => {
-                              setPreviewQuestionType('简答题');
-                              setPreviewQuestionIdx(index);
-                            }}
-                            className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
-                              isActive
-                                ? "bg-[#00b578] text-white border border-[#00b578] font-bold shadow-none"
-                                : "border border-[#00b578] text-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20"
-                            )}
-                          >
-                            {index + 5}
-                          </div>
-                        );
-                      })}
+                  {previewQuestionType === '简答题' && (
+                    <div>
+                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">简答题</h3>
+                      <div className="grid grid-cols-5 gap-3">
+                        {mockPreviewQuestions.简答题.map((_, index) => {
+                          const isActive = previewQuestionType === '简答题' && previewQuestionIdx === index;
+                          const hasAnswer = !!previewAnswers[`preview-e-${index + 1}`];
+                          return (
+                            <div 
+                              key={index}
+                              onClick={() => {
+                                setPreviewQuestionType('简答题');
+                                setPreviewQuestionIdx(index);
+                              }}
+                              className={cn(
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                isActive
+                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
+                                  : hasAnswer
+                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
+                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                              )}
+                            >
+                              {index + 1}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Coding Nav */}
-                  <div>
-                    <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">实训题</h3>
-                    <div className="grid grid-cols-5 gap-3">
-                      {mockPreviewQuestions.实训编程题.map((_, index) => {
-                        const isActive = previewQuestionType === '实训编程题' && previewQuestionIdx === index;
-                        return (
-                          <div 
-                            key={index}
-                            onClick={() => {
-                              setPreviewQuestionType('实训编程题');
-                              setPreviewQuestionIdx(index);
-                            }}
-                            className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative",
-                              isActive
-                                ? "bg-[#00b578] text-white border border-[#00b578] font-bold shadow-none"
-                                : "border border-[#00b578] text-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20"
-                            )}
-                          >
-                            {index + 6}
-                          </div>
-                        );
-                      })}
+                  {previewQuestionType === '实训编程题' && (
+                    <div>
+                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">实训编程题</h3>
+                      <div className="grid grid-cols-5 gap-3">
+                        {mockPreviewQuestions.实训编程题.map((_, index) => {
+                          const isActive = previewQuestionType === '实训编程题' && previewQuestionIdx === index;
+                          const hasAnswer = !!previewAnswers[`preview-c-${index + 1}`];
+                          return (
+                            <div 
+                              key={index}
+                              onClick={() => {
+                                setPreviewQuestionType('实训编程题');
+                                setPreviewQuestionIdx(index);
+                              }}
+                              className={cn(
+                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
+                                isActive
+                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
+                                  : hasAnswer
+                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
+                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                              )}
+                            >
+                              {index + 1}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
