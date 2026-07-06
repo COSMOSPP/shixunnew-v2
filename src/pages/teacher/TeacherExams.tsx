@@ -2193,7 +2193,7 @@ export default function TeacherExams({ embedded = false }) {
               {detailsType === 'invigilation' && (
                 <div className="space-y-5 flex flex-col h-full -mt-2">
                   {/* Tabs Header */}
-                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20 mb-5">
+                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20">
                     {[
                       { key: 'overview', name: '考试总览' },
                       { key: 'content', name: '考试内容' },
@@ -2203,7 +2203,7 @@ export default function TeacherExams({ embedded = false }) {
                         key={tab.key}
                         onClick={() => setInvigilationTab(tab.key as any)}
                         className={cn(
-                          "pb-2 text-[13px] font-medium transition-all relative whitespace-nowrap cursor-pointer -mb-[1px] border-b-2 bg-transparent border-0",
+                          "pb-2 text-[13px] font-medium transition-all relative whitespace-nowrap cursor-pointer -mb-[1px] border-b-2 bg-transparent border-t-0 border-x-0",
                           invigilationTab === tab.key 
                             ? "text-[#fa541c] font-bold border-[#fa541c]" 
                             : "text-neutral-500 hover:text-neutral-800 border-transparent"
@@ -2216,7 +2216,7 @@ export default function TeacherExams({ embedded = false }) {
 
                   {/* Tab Contents */}
                   {invigilationTab === 'overview' && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-5">
                       {/* Top Info Cards */}
                       <div className="grid grid-cols-2 gap-5 select-none text-[13px]">
                         {/* Left Card: 考试信息 */}
@@ -2453,7 +2453,7 @@ export default function TeacherExams({ embedded = false }) {
                   )}
 
                   {invigilationTab === 'content' && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-5">
                       <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white p-4 shadow-sm">
                         <h3 className="font-bold text-neutral-800 text-[14px] mb-3">机器学习基础测试卷 (总分 100 分)</h3>
                         <div className="space-y-3.5 divide-y divide-neutral-100 text-xs">
@@ -2484,7 +2484,7 @@ export default function TeacherExams({ embedded = false }) {
                   )}
 
                   {invigilationTab === 'notice' && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-5">
                       <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white shadow-sm">
                         <div className="bg-neutral-50/50 p-4 border-b border-neutral-150 font-bold text-neutral-800 text-[14px]">
                           考试纪律与规范要求
