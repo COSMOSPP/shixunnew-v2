@@ -4,7 +4,7 @@ import {
   Code, PenTool, CheckCircle, BrainCircuit,
   Calendar, Clock, User,
   Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Link2, Maximize2, FileText,
-  Users, Award, Trophy, ShieldCheck, RotateCw
+  Users, Award, Trophy, ShieldCheck, RotateCw, Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -198,7 +198,7 @@ export default function TeacherExams({ embedded = false }) {
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
     title: string;
-    message: string;
+    message: React.ReactNode;
     showCancel: boolean;
     onConfirm: () => void;
   }>({
@@ -635,8 +635,12 @@ export default function TeacherExams({ embedded = false }) {
   const handleSessionPublish = (session: any) => {
     setConfirmModal({
       show: true,
-      title: '公布成绩确认',
-      message: `确定要向所有参考考生公布场次「${session.name}」的最终成绩吗？公布后学生将能查看到各个小题的得分明细与教师批语。`,
+      title: '公布成绩',
+      message: (
+        <span>
+          确定公布考试<span className="text-[#fa541c] font-semibold">{session.name}</span>成绩？
+        </span>
+      ),
       showCancel: true,
       onConfirm: () => {
         showToast('成绩已成功公布！');
@@ -2054,44 +2058,85 @@ export default function TeacherExams({ embedded = false }) {
                     </div>
                   </div>
 
+                  {/* 表格上方添加按钮:刷新、导出、团队成绩导出 */}
+                  <div className="flex justify-end items-center gap-2 select-none">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => showToast('已成功刷新成绩数据', 'success')}
+                      className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 w-8 h-8 p-0 flex items-center justify-center rounded-[4px] cursor-pointer bg-white"
+                      title="刷新"
+                    >
+                      <RotateCw className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => showToast('正在导出成绩表格...', 'success')}
+                      className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                    >
+                      导出
+                    </Button>
+                    <Button 
+                      onClick={() => showToast('正在导出团队成绩表格...', 'success')}
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer shadow-sm border-0 transition-colors"
+                    >
+                      团队成绩导出
+                    </Button>
+                  </div>
+
                   <div className="border border-neutral-200 rounded overflow-hidden">
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
                           <th className="p-3">姓名</th>
+                          <th className="p-3">账号</th>
+                          <th className="p-3">手机号</th>
+                          <th className="p-3">用户组</th>
                           <th className="p-3">考卷得分</th>
-                          <th className="p-3">客观题/主观题</th>
-                          <th className="p-3 text-center">结论</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-100 text-xs text-neutral-700">
                         {[
-                          { name: '李四', score: 98, sub: '50 / 48', pass: '优秀' },
-                          { name: '张三', score: 95, sub: '50 / 45', pass: '优秀' },
-                          { name: '王五', score: 92, sub: '48 / 44', pass: '优秀' },
-                          { name: '赵六', score: 89, sub: '45 / 44', pass: '良好' },
-                          { name: '周七', score: 88, sub: '46 / 42', pass: '良好' },
-                          { name: '钱八', score: 75, sub: '40 / 35', pass: '合格' },
-                          { name: '孙九', score: 60, sub: '35 / 25', pass: '合格' },
+                          { name: '李四', score: 98, account: 'lisi01', phone: '13812345678', userGroup: '2026级AI一班' },
+                          { name: '张三', score: 95, account: 'zhangsan02', phone: '13987654321', userGroup: '2026级AI一班' },
+                          { name: '王五', score: 92, account: 'wangwu03', phone: '13700001111', userGroup: '2026级AI二班' },
+                          { name: '赵六', score: 89, account: 'zhaoliu04', phone: '13611112222', userGroup: '2026级软件二班' },
+                          { name: '周七', score: 88, account: 'zhouqi05', phone: '13522223333', userGroup: '2026级软件一班' },
+                          { name: '周十', score: 85, account: 'zhoushi08', phone: '13255556666', userGroup: '2026级软件二班' },
+                          { name: '吴十一', score: 79, account: 'wushiyi09', phone: '13166667777', userGroup: '2026级AI二班' },
+                          { name: '钱八', score: 75, account: 'qianba06', phone: '13433334444', userGroup: '2026级计算机三班' },
+                          { name: '郑十二', score: 68, account: 'zhengshier10', phone: '13077778888', userGroup: '2026级计算机一班' },
+                          { name: '孙九', score: 60, account: 'sunjiu07', phone: '13344445555', userGroup: '2026级计算机一班' },
                         ].map((stu, i) => (
                           <tr key={i} className="hover:bg-neutral-50/50">
                             <td className="p-3 font-semibold text-neutral-900">{stu.name}</td>
+                            <td className="p-3 text-neutral-500 font-mono">{stu.account}</td>
+                            <td className="p-3 text-neutral-500 font-mono">{stu.phone}</td>
+                            <td className="p-3 text-neutral-600">{stu.userGroup}</td>
                             <td className="p-3 font-bold text-[#fa541c]">{stu.score} 分</td>
-                            <td className="p-3 text-neutral-500 font-mono">{stu.sub}</td>
-                            <td className="p-3 text-center">
-                              <span className={cn(
-                                "px-1.5 py-0.5 rounded text-[10px] font-semibold",
-                                stu.pass === '优秀' && "bg-orange-50 text-[#fa541c]",
-                                stu.pass === '良好' && "bg-blue-50 text-blue-600",
-                                stu.pass === '合格' && "bg-green-50 text-green-600"
-                              )}>
-                                {stu.pass}
-                              </span>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Pagination Footer (Outside table, no border) */}
+                  <div className="flex items-center justify-end pt-2 gap-4 bg-transparent select-none">
+                    <span className="text-[13px] text-neutral-500">共 10 条</span>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&lt;</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm bg-[#fa541c] text-white border-[#fa541c]">1</Button>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-sm" disabled>&gt;</Button>
+                    </div>
+                    <div className="relative bg-white rounded-[6px]">
+                      <select className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm">
+                        <option className="bg-white">10 条/页</option>
+                        <option className="bg-white">20 条/页</option>
+                        <option className="bg-white">50 条/页</option>
+                      </select>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                        <ChevronDown className="w-3 h-3" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
