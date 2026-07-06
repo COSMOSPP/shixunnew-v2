@@ -20,6 +20,13 @@ export default function MyLearning() {
     setTimeout(() => setToastMsg(null), 2000);
   };
 
+  const [trendRange, setTrendRange] = useState<'week' | 'month'>('week');
+
+  const monthData = React.useMemo(() => Array.from({ length: 30 }).map((_, i) => {
+    const val = 2 + Math.sin(i / 3) * 1.5 + Math.random() * 1.5;
+    return { name: `4/${i + 1}`, hours: Number(val.toFixed(1)) };
+  }), []);
+
   if (isViewingExamResult && selectedExamForResult) {
     return (
       <ExamResult 
@@ -143,12 +150,6 @@ export default function MyLearning() {
     </div>
   );
 
-  const [trendRange, setTrendRange] = useState<'week' | 'month'>('week');
-
-  const monthData = React.useMemo(() => Array.from({ length: 30 }).map((_, i) => {
-    const val = 2 + Math.sin(i / 3) * 1.5 + Math.random() * 1.5;
-    return { name: `4/${i + 1}`, hours: Number(val.toFixed(1)) };
-  }), []);
 
   const renderDurationTab = () => {
     const weekData = [
