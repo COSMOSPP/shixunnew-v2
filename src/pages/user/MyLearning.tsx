@@ -13,6 +13,12 @@ export default function MyLearning() {
   const [activeTab, setActiveTab] = useState<'learning' | 'duration' | 'ai-path' | 'scores'>('learning');
   const [isViewingExamResult, setIsViewingExamResult] = useState(false);
   const [selectedExamForResult, setSelectedExamForResult] = useState<any>(null);
+  const [scoresSubTab, setScoresSubTab] = useState<'exam' | 'homework'>('exam');
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 2000);
+  };
 
   if (isViewingExamResult && selectedExamForResult) {
     return (
