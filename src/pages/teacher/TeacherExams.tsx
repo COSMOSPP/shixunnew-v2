@@ -4,7 +4,7 @@ import {
   Code, PenTool, CheckCircle, BrainCircuit,
   Calendar, Clock, User,
   Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Link2, Maximize2, FileText,
-  Users, Award, Trophy, ShieldCheck, RotateCw, Download
+  Users, Award, Trophy, ShieldCheck, RotateCw, Download, Trash2, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -2218,45 +2218,59 @@ export default function TeacherExams({ embedded = false }) {
                   {invigilationTab === 'overview' && (
                     <div className="space-y-4">
                       {/* Top Info Cards */}
-                      <div className="grid grid-cols-2 gap-5 select-none">
+                      <div className="grid grid-cols-2 gap-5 select-none text-[13px]">
                         {/* Left Card: 考试信息 */}
-                        <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white shadow-sm">
-                          <div className="bg-neutral-50/50 px-4 py-2.5 border-b border-neutral-150 font-bold text-neutral-800 text-[13px]">
-                            考试信息
+                        <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between">
+                          <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
+                            <Calendar className="w-4 h-4 text-blue-500" />
+                            考试及场次安排
                           </div>
-                          <div className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
-                            <div className="px-4 py-2.5 flex items-center">
-                              <span className="w-20 text-neutral-500">考试名称：</span>
-                              <span className="text-neutral-800 font-medium">545212</span>
+                          <div className="p-4 grid grid-cols-2 gap-3.5 text-neutral-700 flex-1">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] text-neutral-400 font-medium">考试名称</span>
+                              <span className="text-neutral-800 font-semibold truncate" title={detailsSession?.examName || '未指定考试'}>
+                                {detailsSession?.examName || '未指定考试'}
+                              </span>
                             </div>
-                            <div className="px-4 py-2.5 flex items-center">
-                              <span className="w-20 text-neutral-500">场次名称：</span>
-                              <span className="text-neutral-800 font-medium">1223</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] text-neutral-400 font-medium">场次名称</span>
+                              <span className="text-neutral-800 font-semibold">
+                                {detailsSession?.name || '未指定场次'}
+                              </span>
                             </div>
-                            <div className="px-4 py-2.5 flex items-center">
-                              <span className="w-20 text-neutral-500">考场：</span>
-                              <span className="text-neutral-800 font-medium">--</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] text-neutral-400 font-medium">考试考场</span>
+                              <span className="text-neutral-800 font-semibold">
+                                {detailsSession?.location || '默认考场 (302室)'}
+                              </span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[11px] text-neutral-400 font-medium">监考老师</span>
+                              <span className="text-neutral-800 font-semibold">
+                                {detailsSession?.invigilator || '系统管理员'}
+                              </span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Right Card: 考生信息 */}
-                        <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white shadow-sm">
-                          <div className="bg-neutral-50/50 px-4 py-2.5 border-b border-neutral-150 font-bold text-neutral-800 text-[13px]">
-                            考生信息
+                        {/* Right Card: 考生在线及答卷监控 */}
+                        <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between">
+                          <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
+                            <Users className="w-4 h-4 text-[#fa541c]" />
+                            考生在线及答卷监控
                           </div>
-                          <div className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
-                            <div className="px-4 py-2.5 flex items-center">
-                              <span className="w-28 text-neutral-500">未登录人数：</span>
-                              <span className="text-neutral-800 font-bold font-mono">1</span>
+                          <div className="p-4 grid grid-cols-3 gap-3 flex-1 items-center">
+                            <div className="bg-emerald-50/45 border border-emerald-100 rounded-lg p-3 text-center flex flex-col justify-between h-full">
+                              <span className="text-[10px] text-emerald-600 font-bold">已交卷</span>
+                              <span className="text-2xl font-bold text-emerald-600 font-mono mt-1">1 <span className="text-[11px] font-normal text-emerald-500">人</span></span>
                             </div>
-                            <div className="px-4 py-2.5 flex items-center">
-                              <span className="w-28 text-neutral-500">已登录人数：</span>
-                              <span className="text-neutral-800 font-bold font-mono">1</span>
+                            <div className="bg-blue-50/45 border border-blue-100 rounded-lg p-3 text-center flex flex-col justify-between h-full">
+                              <span className="text-[10px] text-blue-600 font-bold">考试中</span>
+                              <span className="text-2xl font-bold text-blue-600 font-mono mt-1">2 <span className="text-[11px] font-normal text-blue-500">人</span></span>
                             </div>
-                            <div className="px-4 py-2.5 flex items-center">
-                              <span className="w-28 text-neutral-500">已交卷人数：</span>
-                              <span className="text-neutral-800 font-bold font-mono">1</span>
+                            <div className="bg-neutral-50/60 border border-neutral-200/60 rounded-lg p-3 text-center flex flex-col justify-between h-full">
+                              <span className="text-[10px] text-neutral-400 font-bold">未登录</span>
+                              <span className="text-2xl font-bold text-neutral-500 font-mono mt-1">1 <span className="text-[11px] font-normal text-neutral-400">人</span></span>
                             </div>
                           </div>
                         </div>
@@ -2265,53 +2279,57 @@ export default function TeacherExams({ embedded = false }) {
                       {/* Filter & Action Toolbar */}
                       <div className="flex items-center justify-between gap-3 mt-4 select-none">
                         {/* Left search */}
-                        <div className="flex items-center gap-2">
+                        <div className="relative flex items-center">
+                          <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 pointer-events-none" />
                           <input
                             type="text"
                             value={invigilationSearchQuery}
                             onChange={(e) => setInvigilationSearchQuery(e.target.value)}
-                            placeholder="请输入账号/姓名"
-                            className="w-48 px-3 py-1.5 text-xs border border-neutral-200 rounded-[4px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 transition-all text-neutral-800 bg-white h-8"
+                            placeholder="输入姓名或账号搜索"
+                            className="w-48 pl-8 pr-3 py-1.5 text-xs border border-neutral-200 rounded-[4px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-neutral-800 bg-white h-8"
                           />
-                          <Button
-                            onClick={() => showToast('正在执行查询...', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
-                          >
-                            查询
-                          </Button>
                         </div>
 
                         {/* Right action buttons */}
                         <div className="flex items-center gap-2">
                           <Button
+                            variant="outline"
                             onClick={() => showToast('已成功初始化试卷', 'success')}
-                            className="bg-[#ffbb96] hover:bg-[#ff9c6e] text-white font-bold h-8 px-3.5 rounded-[4px] text-xs border-0 cursor-pointer"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
                           >
+                            <FileText className="w-3.5 h-3.5" />
                             初始化试卷
                           </Button>
                           <Button
-                            onClick={() => showToast('正在统分中...', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
-                          >
-                            统分
-                          </Button>
-                          <Button
+                            variant="outline"
                             onClick={() => showToast('环境已开始初始化', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                            className="border-neutral-200 text-neutral-600 hover:text-blue-650 hover:border-blue-200 hover:bg-blue-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
                           >
+                            <RefreshCw className="w-3.5 h-3.5" />
                             初始化环境
                           </Button>
                           <Button
+                            variant="outline"
                             onClick={() => showToast('环境清理已开始', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                            className="border-neutral-200 text-neutral-600 hover:text-red-650 hover:border-red-200 hover:bg-red-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
                           >
+                            <Trash2 className="w-3.5 h-3.5" />
                             清理环境
                           </Button>
                           <Button
+                            variant="outline"
                             onClick={() => showToast('数据导出成功，正在开始下载', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-xs border-0 cursor-pointer shadow-sm"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white flex items-center gap-1"
                           >
-                            导出
+                            <Download className="w-3.5 h-3.5" />
+                            导出数据
+                          </Button>
+                          <Button
+                            onClick={() => showToast('正在统分中...', 'success')}
+                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-4 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm flex items-center gap-1.5 transition-colors"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            统分
                           </Button>
                         </div>
                       </div>
@@ -2339,8 +2357,10 @@ export default function TeacherExams({ embedded = false }) {
                           </thead>
                           <tbody className="divide-y divide-neutral-100 text-[13px]">
                             {[
-                              { id: 2001, account: 'df0003', name: 'df0003', paperStatus: '已出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '未登录' },
-                              { id: 2002, account: 'df0002', name: 'df0002', paperStatus: '已出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '已交卷' }
+                              { id: 2001, account: 'df0003', name: '王小明', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
+                              { id: 2002, account: 'df0002', name: '张小强', paperStatus: '已出卷', envStatus: '已关闭', avEnv: '1/1', invStatus: '正常', loginStatus: '已交卷' },
+                              { id: 2003, account: 'df0001', name: '李华', paperStatus: '未出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '未登录' },
+                              { id: 2004, account: 'df0004', name: '赵大山', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '异常 (切换屏幕)', loginStatus: '考试中' }
                             ].filter(s => {
                               const query = invigilationSearchQuery.toLowerCase().trim();
                               if (!query) return true;
@@ -2353,26 +2373,56 @@ export default function TeacherExams({ embedded = false }) {
                                     className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
                                   />
                                 </td>
-                                <td className="p-3 font-medium text-neutral-900 font-mono">{student.account}</td>
-                                <td className="p-3">{student.name}</td>
+                                <td className="p-3 font-semibold text-neutral-600 font-mono">{student.account}</td>
+                                <td className="p-3 font-medium text-neutral-800">{student.name}</td>
                                 <td className="p-3">
-                                  <span className="text-[#fa541c] bg-[#fff2e8] border border-[#ffd8bf] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                    {student.paperStatus}
-                                  </span>
+                                  {student.paperStatus === '已出卷' ? (
+                                    <span className="text-[#fa541c] bg-[#fff2e8] border border-[#ffd8bf] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                      已出卷
+                                    </span>
+                                  ) : (
+                                    <span className="text-neutral-500 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                      未出卷
+                                    </span>
+                                  )}
                                 </td>
                                 <td className="p-3">
-                                  <span className="text-[#8c8c8c] bg-[#f5f5f5] border border-[#d9d9d9] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                    {student.envStatus}
-                                  </span>
+                                  {student.envStatus === '运行中' && (
+                                    <span className="text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                      运行中
+                                    </span>
+                                  )}
+                                  {student.envStatus === '已关闭' && (
+                                    <span className="text-neutral-400 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                      已关闭
+                                    </span>
+                                  )}
+                                  {student.envStatus === '未开始' && (
+                                    <span className="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                      未开始
+                                    </span>
+                                  )}
                                 </td>
-                                <td className="p-3 font-mono">{student.avEnv}</td>
-                                <td className="p-3">{student.invStatus}</td>
+                                <td className="p-3 font-mono text-neutral-700">{student.avEnv}</td>
+                                <td className="p-3">
+                                  {student.invStatus === '正常' ? (
+                                    <span className="flex items-center gap-1.5 text-green-600 font-semibold">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                      正常
+                                    </span>
+                                  ) : (
+                                    <span className="flex items-center gap-1.5 text-red-650 font-bold">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                      {student.invStatus}
+                                    </span>
+                                  )}
+                                </td>
                                 <td className="p-3">
                                   <span className={cn(
                                     "px-2 py-0.5 rounded text-[11px] font-medium inline-block border",
-                                    student.loginStatus === '已交卷'
-                                      ? "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]"
-                                      : "text-[#8c8c8c] bg-[#f5f5f5] border-[#d9d9d9]"
+                                    student.loginStatus === '已交卷' && "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]",
+                                    student.loginStatus === '考试中' && "text-blue-600 bg-blue-50 border-blue-200",
+                                    student.loginStatus === '未登录' && "text-[#8c8c8c] bg-[#f5f5f5] border-[#d9d9d9]"
                                   )}>
                                     {student.loginStatus}
                                   </span>
@@ -2381,14 +2431,14 @@ export default function TeacherExams({ embedded = false }) {
                                   <div className="flex items-center justify-center gap-2 text-xs">
                                     <button
                                       onClick={() => showToast('正在查询环境详情...', 'info')}
-                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors"
+                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
                                     >
                                       环境详情
                                     </button>
                                     <span className="text-neutral-300">|</span>
                                     <button
                                       onClick={() => showToast('正在加载学生答卷...', 'info')}
-                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors"
+                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
                                     >
                                       查看试卷
                                     </button>
