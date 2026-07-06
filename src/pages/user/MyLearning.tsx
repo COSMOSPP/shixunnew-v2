@@ -150,7 +150,6 @@ export default function MyLearning() {
     </div>
   );
 
-
   const renderDurationTab = () => {
     const weekData = [
       { name: '05-01', hours: 2.5 },
