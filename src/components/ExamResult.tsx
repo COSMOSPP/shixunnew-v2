@@ -6,10 +6,11 @@ import { cn } from '@/lib/utils';
 interface ExamResultProps {
   exam: any;
   onBack: () => void;
+  directPreview?: boolean;
 }
 
-export default function ExamResult({ exam, onBack }: ExamResultProps) {
-  const [showReviewPreview, setShowReviewPreview] = useState(false);
+export default function ExamResult({ exam, onBack, directPreview = false }: ExamResultProps) {
+  const [showReviewPreview, setShowReviewPreview] = useState(directPreview);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const attemptRows = Array.from({ length: Math.max(1, exam.attempts || 1) }).map((_, idx) => ({
@@ -234,7 +235,13 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
             {/* Header Bar */}
             <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex items-center shrink-0 text-left select-none">
               <button 
-                onClick={() => setShowReviewPreview(false)}
+                onClick={() => {
+                  if (directPreview) {
+                    onBack();
+                  } else {
+                    setShowReviewPreview(false);
+                  }
+                }}
                 className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px]"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -421,7 +428,13 @@ export default function ExamResult({ exam, onBack }: ExamResultProps) {
                     {/* Exit Preview Button below the navigations */}
                     <div className="pt-6 border-t border-neutral-200 mt-6 select-none shrink-0">
                       <Button 
-                        onClick={() => setShowReviewPreview(false)}
+                        onClick={() => {
+                          if (directPreview) {
+                            onBack();
+                          } else {
+                            setShowReviewPreview(false);
+                          }
+                        }}
                         className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white border-0 font-bold h-9.5 text-[13px] rounded-[4px] cursor-pointer transition-colors shadow-sm"
                       >
                         退出预览

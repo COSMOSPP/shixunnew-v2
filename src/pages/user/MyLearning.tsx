@@ -31,6 +31,7 @@ export default function MyLearning() {
     return (
       <ExamResult 
         exam={selectedExamForResult} 
+        directPreview={true}
         onBack={() => {
           setIsViewingExamResult(false);
           setSelectedExamForResult(null);
