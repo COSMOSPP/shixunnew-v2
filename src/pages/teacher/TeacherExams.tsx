@@ -1822,7 +1822,7 @@ export default function TeacherExams({ embedded = false }) {
                   </div>
                 </div>
               ) : (
-                detailsType !== 'students' && detailsType !== 'invigilation' && (
+                detailsType !== 'students' && detailsType !== 'invigilation' && detailsType !== 'scores' && (
                   <div className="bg-orange-50/20 rounded-xl p-4 border border-orange-100/60 space-y-2">
                     <div className="text-[14px] font-bold text-neutral-800">场次名称：{detailsSession.name}</div>
                     <div className="grid grid-cols-2 gap-y-1.5 text-xs text-neutral-600">
@@ -2066,24 +2066,6 @@ export default function TeacherExams({ embedded = false }) {
 
               {detailsType === 'scores' && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-neutral-50/50 p-3 rounded-lg border border-neutral-100 text-center">
-                      <div className="text-neutral-500 text-[10px]">参考人数</div>
-                      <div className="text-lg font-bold text-neutral-800 mt-0.5">21人</div>
-                    </div>
-                    <div className="bg-neutral-50/50 p-3 rounded-lg border border-neutral-100 text-center">
-                      <div className="text-neutral-500 text-[10px]">平均分</div>
-                      <div className="text-lg font-bold text-[#fa541c] mt-0.5">82.4</div>
-                    </div>
-                    <div className="bg-neutral-50/50 p-3 rounded-lg border border-neutral-100 text-center">
-                      <div className="text-neutral-500 text-[10px]">及格率</div>
-                      <div className="text-lg font-bold text-green-600 mt-0.5">95%</div>
-                    </div>
-                    <div className="bg-neutral-50/50 p-3 rounded-lg border border-neutral-100 text-center">
-                      <div className="text-neutral-500 text-[10px]">最高分</div>
-                      <div className="text-lg font-bold text-indigo-600 mt-0.5">98分</div>
-                    </div>
-                  </div>
 
                   {/* 表格上方添加按钮:刷新、导出、团队成绩导出 */}
                   <div className="flex justify-end items-center gap-2 select-none">
