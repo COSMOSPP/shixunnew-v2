@@ -231,7 +231,7 @@ export default function ExamResult({ exam, onBack, directPreview = false }: Exam
         const questions = getDynamicPreviewQuestions(exam.score || 80);
         const q = questions[currentQuestionIndex];
         return (
-          <div className="fixed inset-0 z-[200] bg-[#f5f5f5] flex flex-col font-sans text-neutral-800 animate-fade-in text-[13px]">
+          <div className="fixed inset-x-0 bottom-0 top-[64px] z-[200] bg-[#f5f5f5] flex flex-col font-sans text-neutral-800 animate-fade-in text-[13px]">
             {/* Header Bar */}
             <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex items-center shrink-0 text-left select-none">
               <button 
