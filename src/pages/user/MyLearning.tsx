@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   ChevronRight, MonitorPlay, FolderKanban, Database, Plus, Play, Download, Search,
-  BookOpen, Clock, Bot, TrendingUp, Calendar as CalendarIcon, Target, Flame, Trash2, ArrowRight, ChevronLeft, Sparkles
+  BookOpen, Clock, Bot, TrendingUp, Calendar as CalendarIcon, Target, Flame, Trash2, ArrowRight, ChevronLeft, Sparkles,
+  Award
 } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell } from "recharts";
 import { cn } from "@/lib/utils";
 
 export default function MyLearning() {
-  const [activeTab, setActiveTab] = useState<'learning' | 'duration' | 'ai-path'>('learning');
+  const [activeTab, setActiveTab] = useState<'learning' | 'duration' | 'ai-path' | 'scores'>('learning');
 
   const renderLearningTab = () => (
     <div className="space-y-8 animation-fade-in">
@@ -430,8 +431,197 @@ export default function MyLearning() {
     );
   };
 
+  const [scoresSubTab, setScoresSubTab] = useState<'exam' | 'homework'>('exam');
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 2000);
+  };
+
+  const renderScoresTab = () => {
+    const mockExams = [
+      { name: 'Python高级数据处理与可视化期末考', time: '2026-05-04 10:00', score: 95, pass: '优秀', action: '查看解析' },
+      { name: '电商用户行为预测实战考评', time: '2026-04-28 14:00', score: 88, pass: '良好', action: '查看解析' },
+      { name: '机器学习基础期中测试', time: '2026-04-15 09:00', score: 55, pass: '不及格', action: '重新补考' },
+    ];
+
+    const mockHomeworks = [
+      { name: 'Pandas高级清洗与过滤作业', time: '2026-05-05 18:20', score: 92, status: '合格', feedback: '数据清洗逻辑非常清晰，Lambda 函数应用得很好！', canRedo: false },
+      { name: 'Matplotlib 数据流可视化设计', time: '2026-05-02 14:30', score: 45, status: '打回重做', feedback: '图表未添加图例且X轴标签重叠。作业不合格，已被打回，请按要求修改后重做。', canRedo: true },
+      { name: '基础线性回归模型搭建', time: '2026-04-20 11:15', score: 80, status: '合格', feedback: '基础指标计算正确，Loss 收敛正常。', canRedo: false },
+      { name: '神经网络前向传播手写实现', time: '2026-05-06 09:40', score: null, status: '待批改', feedback: '暂无评语，请等待老师批阅。', canRedo: false }
+    ];
+
+    return (
+      <div className="space-y-6 animation-fade-in text-left">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+            <Award className="w-5 h-5 text-[#fa541c]" />
+            学习成绩与作业看板
+          </h2>
+        </div>
+
+        {/* Sub tabs selector */}
+        <div className="flex bg-neutral-200/50 p-0.5 rounded-lg w-max mb-4">
+          <button
+            onClick={() => setScoresSubTab('exam')}
+            className={cn(
+              "px-5 py-1.5 text-xs font-bold rounded-[6px] transition-all cursor-pointer border-0",
+              scoresSubTab === 'exam' 
+                ? "bg-white text-neutral-800 shadow-sm" 
+                : "text-neutral-500 hover:text-neutral-800 bg-transparent"
+            )}
+          >
+            考试成绩
+          </button>
+          <button
+            onClick={() => setScoresSubTab('homework')}
+            className={cn(
+              "px-5 py-1.5 text-xs font-bold rounded-[6px] transition-all cursor-pointer border-0",
+              scoresSubTab === 'homework' 
+                ? "bg-white text-neutral-800 shadow-sm" 
+                : "text-neutral-500 hover:text-neutral-800 bg-transparent"
+            )}
+          >
+            作业成绩
+          </button>
+        </div>
+
+        {scoresSubTab === 'exam' ? (
+          <div className="border border-neutral-200 rounded-[12px] overflow-hidden bg-white shadow-sm">
+            <table className="w-full text-left border-collapse text-xs select-none">
+              <thead>
+                <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 font-semibold text-[13px]">
+                  <th className="p-4">考试名称</th>
+                  <th className="p-4">考试时间</th>
+                  <th className="p-4">及格标准</th>
+                  <th className="p-4">考卷得分</th>
+                  <th className="p-4">评级</th>
+                  <th className="p-4 text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                {mockExams.map((exam, index) => (
+                  <tr key={index} className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="p-4 font-bold text-neutral-900">{exam.name}</td>
+                    <td className="p-4 text-neutral-500 font-mono">{exam.time}</td>
+                    <td className="p-4 text-neutral-500">60分 / 100分</td>
+                    <td className={cn(
+                      "p-4 font-extrabold font-mono text-[15px]",
+                      exam.score >= 60 ? "text-[#fa541c]" : "text-red-500"
+                    )}>
+                      {exam.score} 分
+                    </td>
+                    <td className="p-4">
+                      <span className={cn(
+                        "px-2 py-0.5 rounded text-[11px] font-bold inline-block border",
+                        exam.pass === '优秀' && "text-emerald-600 bg-emerald-50 border-emerald-100",
+                        exam.pass === '良好' && "text-blue-600 bg-blue-50 border-blue-100",
+                        exam.pass === '不及格' && "text-red-600 bg-red-50 border-red-100"
+                      )}>
+                        {exam.pass}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      {exam.action === '重新补考' ? (
+                        <button
+                          onClick={() => showToast('正在拉起补考环境，请稍候...')}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer border-0"
+                        >
+                          重新补考
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => showToast('正在加载试卷答卷明细...')}
+                          className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold cursor-pointer bg-transparent border-0"
+                        >
+                          查看解析
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="border border-neutral-200 rounded-[12px] overflow-hidden bg-white shadow-sm">
+            <table className="w-full text-left border-collapse text-xs select-none">
+              <thead>
+                <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 font-semibold text-[13px]">
+                  <th className="p-4 w-[240px]">作业名称</th>
+                  <th className="p-4 w-[140px]">提交时间</th>
+                  <th className="p-4 w-[100px]">批阅得分</th>
+                  <th className="p-4 w-[140px]">作业状态</th>
+                  <th className="p-4">老师评语</th>
+                  <th className="p-4 text-center w-[100px]">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                {mockHomeworks.map((hw, index) => (
+                  <tr key={index} className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="p-4 font-bold text-neutral-900">{hw.name}</td>
+                    <td className="p-4 text-neutral-500 font-mono">{hw.time}</td>
+                    <td className="p-4 font-extrabold font-mono text-[14px]">
+                      {hw.score !== null ? (
+                        <span className={hw.score >= 60 ? "text-[#fa541c]" : "text-red-500"}>
+                          {hw.score} <span className="text-[11px] font-normal text-neutral-400">分</span>
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400 font-normal">--</span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {hw.status === '合格' && (
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold inline-block border text-emerald-600 bg-emerald-50 border-emerald-100">
+                          合格
+                        </span>
+                      )}
+                      {hw.status === '待批改' && (
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold inline-block border text-neutral-500 bg-neutral-50 border-neutral-200">
+                          待批改
+                        </span>
+                      )}
+                      {hw.status === '打回重做' && (
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold inline-block border text-red-650 bg-red-50 border-red-150 animate-pulse">
+                          ⚠️ 打回重做中
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-neutral-500 leading-relaxed text-[12px]">
+                      {hw.feedback}
+                    </td>
+                    <td className="p-4 text-center">
+                      {hw.canRedo ? (
+                        <button
+                          onClick={() => showToast('正在进入作业重做环境，请按要求提交作业')}
+                          className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer border-0 animate-bounce"
+                        >
+                          去重做
+                        </button>
+                      ) : hw.score !== null ? (
+                        <button
+                          onClick={() => showToast('正在为您拉起作业作对明细页...')}
+                          className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-semibold cursor-pointer bg-transparent border-0"
+                        >
+                          查看明细
+                        </button>
+                      ) : (
+                        <span className="text-neutral-300">--</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="flex h-full w-full bg-white overflow-hidden shadow-sm font-sans">
+    <div className="flex h-full w-full bg-white overflow-hidden shadow-sm font-sans relative">
       {/* Left Sidebar */}
       <div className="w-[200px] border-r border-neutral-200 flex-shrink-0 flex flex-col bg-white">
         <div className="p-5 border-b border-neutral-200">
@@ -476,6 +666,19 @@ export default function MyLearning() {
             <Bot className="w-5 h-5" />
             AI学习路径记录
           </button>
+
+          <button 
+            onClick={() => setActiveTab('scores')}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-colors text-left",
+              activeTab === 'scores' 
+                ? "bg-[#fff2e8] text-[#fa541c]" 
+                : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+            )}
+          >
+            <Award className="w-5 h-5" />
+            查看成绩
+          </button>
         </nav>
       </div>
 
@@ -484,13 +687,26 @@ export default function MyLearning() {
         <div className="flex items-center text-sm text-neutral-500 mb-6 shrink-0">
           <Link to="/user" className="hover:text-[#fa541c] transition-colors">首页</Link>
           <ChevronRight className="w-4 h-4 mx-1" />
-          <span className="text-neutral-900 font-bold">我的学习</span>
+          <span className="text-neutral-900 font-bold">
+            {activeTab === 'scores' ? '查看成绩' : '我的学习'}
+          </span>
         </div>
         
         {activeTab === 'learning' && renderLearningTab()}
         {activeTab === 'duration' && renderDurationTab()}
         {activeTab === 'ai-path' && renderAIPathTab()}
+        {activeTab === 'scores' && renderScoresTab()}
       </div>
+
+      {/* Toast alert notification */}
+      {toastMsg && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[300] animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="bg-white px-6 py-3 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-100 flex items-center gap-2">
+            <Award className="w-5 h-5 text-[#fa541c] shrink-0" />
+            <span className="text-sm font-bold text-neutral-800">{toastMsg}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
