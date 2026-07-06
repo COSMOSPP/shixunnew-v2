@@ -2193,7 +2193,7 @@ export default function TeacherExams({ embedded = false }) {
               {detailsType === 'invigilation' && (
                 <div className="space-y-5 flex flex-col h-full -mt-2">
                   {/* Tabs Header */}
-                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20">
+                  <div className="border-b border-neutral-200 flex gap-5 overflow-x-auto no-scrollbar select-none bg-white -mt-4 -mx-6 px-6 pb-0 shrink-0 sticky top-0 z-20 mb-5">
                     {[
                       { key: 'overview', name: '考试总览' },
                       { key: 'content', name: '考试内容' },
