@@ -281,6 +281,12 @@ export default function TeacherExams({ embedded = false }) {
   const [addCandidatesPage, setAddCandidatesPage] = useState(1);
   const [invigilationTab, setInvigilationTab] = useState<'overview' | 'content' | 'notice'>('overview');
   const [invigilationSearchQuery, setInvigilationSearchQuery] = useState('');
+  const [selectedCheckpointQuestion, setSelectedCheckpointQuestion] = useState<any>(null);
+  const [contentCurrentPage, setContentCurrentPage] = useState(1);
+  const [contentPageSize, setContentPageSize] = useState(5);
+  const [overviewCurrentPage, setOverviewCurrentPage] = useState(1);
+  const [overviewPageSize, setOverviewPageSize] = useState(5);
+
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -2510,7 +2516,7 @@ export default function TeacherExams({ embedded = false }) {
                       {/* Top Info Cards */}
                       <div className="grid grid-cols-2 gap-5 select-none text-[13px]">
                         {/* Left Card: 考试信息 */}
-                        <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between">
+                        <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between overflow-hidden">
                           <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
                             <Calendar className="w-4 h-4 text-blue-500" />
                             考试及场次安排
@@ -2544,7 +2550,7 @@ export default function TeacherExams({ embedded = false }) {
                         </div>
 
                         {/* Right Card: 考生在线及答卷监控 */}
-                        <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between">
+                        <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between overflow-hidden">
                           <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
                             <Users className="w-4 h-4 text-[#fa541c]" />
                             考生在线及答卷监控
@@ -2620,153 +2626,433 @@ export default function TeacherExams({ embedded = false }) {
                       </div>
 
                       {/* Candidates Table */}
-                      <div className="w-full overflow-y-auto border border-neutral-150 rounded-[8px] bg-white custom-scrollbar max-h-[350px]">
-                        <table className="w-full text-left border-collapse text-xs select-none">
-                          <thead>
-                            <tr className="border-b border-neutral-100 text-neutral-600 font-semibold sticky top-0 z-10 text-[13px] bg-neutral-50">
-                              <th className="p-3 w-10 text-center bg-neutral-50">
-                                <input
-                                  type="checkbox"
-                                  className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
-                                />
-                              </th>
-                              <th className="p-3 text-left bg-neutral-50">账号</th>
-                              <th className="p-3 text-left bg-neutral-50">姓名</th>
-                              <th className="p-3 text-left bg-neutral-50">试卷状态</th>
-                              <th className="p-3 text-left bg-neutral-50">环境状态</th>
-                              <th className="p-3 text-left bg-neutral-50">可用环境</th>
-                              <th className="p-3 text-left bg-neutral-50">监考状态</th>
-                              <th className="p-3 text-left bg-neutral-50">状态</th>
-                              <th className="p-3 text-center bg-neutral-50">操作</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-neutral-100 text-[13px]">
-                            {[
-                              { id: 2001, account: 'df0003', name: '王小明', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
-                              { id: 2002, account: 'df0002', name: '张小强', paperStatus: '已出卷', envStatus: '已关闭', avEnv: '1/1', invStatus: '正常', loginStatus: '已交卷' },
-                              { id: 2003, account: 'df0001', name: '李华', paperStatus: '未出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '未登录' },
-                              { id: 2004, account: 'df0004', name: '赵大山', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '异常 (切换屏幕)', loginStatus: '考试中' }
-                            ].filter(s => {
-                              const query = invigilationSearchQuery.toLowerCase().trim();
-                              if (!query) return true;
-                              return s.account.toLowerCase().includes(query) || s.name.toLowerCase().includes(query);
-                            }).map((student) => (
-                              <tr key={student.id} className="hover:bg-neutral-50/40 text-neutral-700 bg-white transition-colors">
-                                <td className="p-3 text-center">
-                                  <input
-                                    type="checkbox"
-                                    className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
-                                  />
-                                </td>
-                                <td className="p-3 font-semibold text-neutral-600 font-mono">{student.account}</td>
-                                <td className="p-3 font-medium text-neutral-800">{student.name}</td>
-                                <td className="p-3">
-                                  {student.paperStatus === '已出卷' ? (
-                                    <span className="text-[#fa541c] bg-[#fff2e8] border border-[#ffd8bf] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                      已出卷
-                                    </span>
-                                  ) : (
-                                    <span className="text-neutral-500 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                      未出卷
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  {student.envStatus === '运行中' && (
-                                    <span className="text-green-600 bg-green-50 border border-green-100 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                      运行中
-                                    </span>
-                                  )}
-                                  {student.envStatus === '已关闭' && (
-                                    <span className="text-neutral-400 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                      已关闭
-                                    </span>
-                                  )}
-                                  {student.envStatus === '未开始' && (
-                                    <span className="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
-                                      未开始
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-3 font-mono text-neutral-700">{student.avEnv}</td>
-                                <td className="p-3">
-                                  {student.invStatus === '正常' ? (
-                                    <span className="flex items-center gap-1.5 text-green-600 font-semibold">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                                      正常
-                                    </span>
-                                  ) : (
-                                    <span className="flex items-center gap-1.5 text-red-650 font-bold">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                      {student.invStatus}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  <span className={cn(
-                                    "px-2 py-0.5 rounded text-[11px] font-medium inline-block border",
-                                    student.loginStatus === '已交卷' && "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]",
-                                    student.loginStatus === '考试中' && "text-blue-600 bg-blue-50 border-blue-200",
-                                    student.loginStatus === '未登录' && "text-[#8c8c8c] bg-[#f5f5f5] border-[#d9d9d9]"
-                                  )}>
-                                    {student.loginStatus}
-                                  </span>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <div className="flex items-center justify-center gap-2 text-xs">
-                                    <button
-                                      onClick={() => showToast('正在查询环境详情...', 'info')}
-                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
+                      {(() => {
+                        const allStudents = [
+                          { id: 2001, account: 'df0003', name: '王小明', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
+                          { id: 2002, account: 'df0002', name: '张小强', paperStatus: '已出卷', envStatus: '已关闭', avEnv: '1/1', invStatus: '正常', loginStatus: '已交卷' },
+                          { id: 2003, account: 'df0001', name: '李华', paperStatus: '未出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '未登录' },
+                          { id: 2004, account: 'df0004', name: '赵大山', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '异常 (切换屏幕)', loginStatus: '考试中' },
+                          { id: 2005, account: 'df0005', name: '钱思琪', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
+                          { id: 2006, account: 'df0006', name: '孙志坚', paperStatus: '已出卷', envStatus: '已关闭', avEnv: '1/1', invStatus: '正常', loginStatus: '已交卷' },
+                          { id: 2007, account: 'df0007', name: '周明', paperStatus: '未出卷', envStatus: '未开始', avEnv: '0/0', invStatus: '正常', loginStatus: '未登录' },
+                          { id: 2008, account: 'df0008', name: '吴秀英', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
+                          { id: 2009, account: 'df0009', name: '郑国庆', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
+                          { id: 2010, account: 'df0010', name: '冯志新', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '已交卷' },
+                          { id: 2011, account: 'df0011', name: '陈建国', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' },
+                          { id: 2012, account: 'df0012', name: '卫红旗', paperStatus: '已出卷', envStatus: '运行中', avEnv: '1/1', invStatus: '正常', loginStatus: '考试中' }
+                        ];
+
+                        const filteredStudents = allStudents.filter(s => {
+                          const query = invigilationSearchQuery.toLowerCase().trim();
+                          if (!query) return true;
+                          return s.account.toLowerCase().includes(query) || s.name.toLowerCase().includes(query);
+                        });
+
+                        const totalStudents = filteredStudents.length;
+                        const totalOverviewPages = Math.ceil(totalStudents / overviewPageSize);
+                        const activeOverviewPage = Math.min(overviewCurrentPage, Math.max(1, totalOverviewPages));
+
+                        const currentStudents = filteredStudents.slice(
+                          (activeOverviewPage - 1) * overviewPageSize,
+                          activeOverviewPage * overviewPageSize
+                        );
+
+                        return (
+                          <>
+                            <div className="border border-neutral-200 rounded overflow-hidden">
+                              <table className="w-full text-left border-collapse text-xs select-none">
+                                <thead>
+                                  <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                                    <th className="p-3 w-10 text-center">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                                      />
+                                    </th>
+                                    <th className="p-3 text-left">账号</th>
+                                    <th className="p-3 text-left">姓名</th>
+                                    <th className="p-3 text-left">试卷状态</th>
+                                    <th className="p-3 text-left">环境状态</th>
+                                    <th className="p-3 text-left">可用环境</th>
+                                    <th className="p-3 text-left">监考状态</th>
+                                    <th className="p-3 text-left">状态</th>
+                                    <th className="p-3 text-center">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                                  {currentStudents.map((student) => (
+                                    <tr key={student.id} className="hover:bg-neutral-50/50">
+                                      <td className="p-3 text-center">
+                                        <input
+                                          type="checkbox"
+                                          className="w-4 h-4 text-[#fa541c] border-neutral-350 rounded cursor-pointer accent-[#fa541c] mx-auto"
+                                        />
+                                      </td>
+                                      <td className="p-3 font-semibold text-neutral-600 font-mono">{student.account}</td>
+                                      <td className="p-3 font-medium text-neutral-800">{student.name}</td>
+                                      <td className="p-3">
+                                        {student.paperStatus === '已出卷' ? (
+                                          <span className="text-[#fa541c] bg-[#fff2e8] border border-[#ffd8bf] px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                            已出卷
+                                          </span>
+                                        ) : (
+                                          <span className="text-neutral-500 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                            未出卷
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="p-3">
+                                        {student.envStatus === '运行中' && (
+                                          <span className="text-green-600 bg-green-50 border border-green-100 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                            运行中
+                                          </span>
+                                        )}
+                                        {student.envStatus === '已关闭' && (
+                                          <span className="text-neutral-400 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                            已关闭
+                                          </span>
+                                        )}
+                                        {student.envStatus === '未开始' && (
+                                          <span className="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium inline-block">
+                                            未开始
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="p-3 font-mono text-neutral-700">{student.avEnv}</td>
+                                      <td className="p-3">
+                                        {student.invStatus === '正常' ? (
+                                          <span className="flex items-center gap-1.5 text-green-600 font-semibold">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                            正常
+                                          </span>
+                                        ) : (
+                                          <span className="flex items-center gap-1.5 text-red-650 font-bold">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                            {student.invStatus}
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="p-3">
+                                        <span className={cn(
+                                          "px-2 py-0.5 rounded text-[11px] font-medium inline-block border",
+                                          student.loginStatus === '已交卷' && "text-[#52c41a] bg-[#f6ffed] border-[#d9f7be]",
+                                          student.loginStatus === '考试中' && "text-blue-600 bg-blue-50 border-blue-200",
+                                          student.loginStatus === '未登录' && "text-[#8c8c8c] bg-[#f5f5f5] border-[#d9d9d9]"
+                                        )}>
+                                          {student.loginStatus}
+                                        </span>
+                                      </td>
+                                      <td className="p-3 text-center">
+                                        <div className="flex items-center justify-center gap-2 text-xs">
+                                          <button
+                                            onClick={() => showToast('正在查询环境详情...', 'info')}
+                                            className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
+                                          >
+                                            环境详情
+                                          </button>
+                                          <span className="text-neutral-300">|</span>
+                                          <button
+                                            onClick={() => showToast('正在加载学生答卷...', 'info')}
+                                            className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
+                                          >
+                                            查看试卷
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Pagination Footer */}
+                            <div className="flex items-center justify-end pt-2 gap-4 bg-transparent select-none">
+                              <span className="text-[13px] text-neutral-500">共 {totalStudents} 条</span>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={activeOverviewPage === 1}
+                                  onClick={() => setOverviewCurrentPage(prev => Math.max(prev - 1, 1))}
+                                  className="h-7 w-7 p-0 rounded-sm cursor-pointer"
+                                >
+                                  &lt;
+                                </Button>
+                                {Array.from({ length: totalOverviewPages }).map((_, index) => {
+                                  const p = index + 1;
+                                  const isActive = activeOverviewPage === p;
+                                  return (
+                                    <Button
+                                      key={p}
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setOverviewCurrentPage(p)}
+                                      className={`h-7 w-7 p-0 rounded-sm cursor-pointer ${
+                                        isActive
+                                          ? 'bg-[#fa541c] text-white border-[#fa541c]'
+                                          : 'bg-white text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200'
+                                      }`}
                                     >
-                                      环境详情
-                                    </button>
-                                    <span className="text-neutral-300">|</span>
-                                    <button
-                                      onClick={() => showToast('正在加载学生答卷...', 'info')}
-                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
-                                    >
-                                      查看试卷
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                                      {p}
+                                    </Button>
+                                  );
+                                })}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={activeOverviewPage === totalOverviewPages}
+                                  onClick={() => setOverviewCurrentPage(prev => Math.min(prev + 1, totalOverviewPages))}
+                                  className="h-7 w-7 p-0 rounded-sm cursor-pointer"
+                                >
+                                  &gt;
+                                </Button>
+                              </div>
+                              <div className="relative bg-white rounded-[6px]">
+                                <select
+                                  value={`${overviewPageSize}`}
+                                  onChange={(e) => {
+                                    const size = parseInt(e.target.value);
+                                    setOverviewPageSize(size);
+                                    setOverviewCurrentPage(1);
+                                  }}
+                                  className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm"
+                                >
+                                  <option className="bg-white" value="5">5 条/页</option>
+                                  <option className="bg-white" value="10">10 条/页</option>
+                                  <option className="bg-white" value="20">20 条/页</option>
+                                </select>
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                                  <ChevronDown className="w-3 h-3" />
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
 
-                  {invigilationTab === 'content' && (
-                    <div className="space-y-4 mt-5">
-                      <div className="border border-neutral-150 rounded-[8px] overflow-hidden bg-white p-4 shadow-sm">
-                        <h3 className="font-bold text-neutral-800 text-[14px] mb-3">机器学习基础测试卷 (总分 100 分)</h3>
-                        <div className="space-y-3.5 divide-y divide-neutral-100 text-xs">
-                          <div className="pt-3 first:pt-0">
-                            <div className="flex items-center justify-between text-neutral-800 font-semibold">
-                              <span>一、单选题 (共 10 题，共 30 分)</span>
-                              <span className="text-neutral-500 font-mono">已启用</span>
-                            </div>
-                            <p className="text-neutral-500 mt-1 text-[11px]">包含线性回归、正则化、过拟合等核心概念选择。</p>
+                  {invigilationTab === 'content' && (() => {
+                    const allQuestions = [
+                      {
+                        id: 10001,
+                        name: '简答题试题题干',
+                        type: '简答题',
+                        library: 'test_lw',
+                        score: 3,
+                        checkpoints: [
+                          { name: '答案完整性', content: '检查回答字数与核心结构', description: '回答包含核心简答要求', scoreRatio: 40 },
+                          { name: '关键字匹配', content: '匹配简答关键知识点', description: '包含指定关键字或核心定义', scoreRatio: 60 }
+                        ]
+                      },
+                      {
+                        id: 10002,
+                        name: '机器学习技术在图像识别中的卷积过程分析与前向计算',
+                        type: '编程题',
+                        library: 'ml_image_lib',
+                        score: 15,
+                        checkpoints: []
+                      },
+                      {
+                        id: 10003,
+                        name: '分类与回归算法的特征选择原则及信息熵推导简答',
+                        type: '简答题',
+                        library: 'ml_theory',
+                        score: 10,
+                        checkpoints: [
+                          { name: '公式正确性', content: '检查信息熵计算公式是否完整', description: '包含H(X) = -sum(P(xi)logP(xi))', scoreRatio: 50 },
+                          { name: '对比说明', content: '分类与回归的选择原则对比', description: '清晰对比连续与离散变量', scoreRatio: 50 }
+                        ]
+                      },
+                      {
+                        id: 10004,
+                        name: '单项选择：支持向量机中核函数的主要作用是什么？',
+                        type: '单选题',
+                        library: 'ml_theory',
+                        score: 2,
+                        checkpoints: []
+                      },
+                      {
+                        id: 10005,
+                        name: '多项选择：深度学习模型训练中防止过拟合的策略有哪些？',
+                        type: '多选题',
+                        library: 'dl_adv',
+                        score: 5,
+                        checkpoints: []
+                      },
+                      {
+                        id: 10006,
+                        name: '简答题：请简述梯度消失与梯度爆炸的成因及常见的解决方法',
+                        type: '简答题',
+                        library: 'dl_adv',
+                        score: 8,
+                        checkpoints: [
+                          { name: '成因分析', content: '指出网络层数、激活函数与链式法则的关系', description: '包含Sigmoid饱和区或链式连乘', scoreRatio: 50 },
+                          { name: '解决方案', content: '列举常见的解决方案如ResNet, BN, ReLU', description: '列出至少3种有效方案', scoreRatio: 50 }
+                        ]
+                      },
+                      {
+                        id: 10007,
+                        name: '填空题：在模型评估指标中，F1-Score是_____和_____的调和平均数。',
+                        type: '填空题',
+                        library: 'ml_theory',
+                        score: 4,
+                        checkpoints: []
+                      },
+                      {
+                        id: 10008,
+                        name: '判断题：L1正则化倾向于产生稀疏权重，而L2正则化倾向于使权重均等且接近零。',
+                        type: '判断题',
+                        library: 'ml_theory',
+                        score: 2,
+                        checkpoints: []
+                      },
+                      {
+                        id: 10009,
+                        name: '简答题：简要陈述主成分分析（PCA）的数学步骤与物理意义',
+                        type: '简答题',
+                        library: 'math_ml',
+                        score: 8,
+                        checkpoints: [
+                          { name: '数学步骤', content: '中心化、协方差矩阵、特征值分解、投影', description: '包含完整数学步骤', scoreRatio: 60 },
+                          { name: '物理意义', content: '最大方差理论或最小重建误差理论', description: '明确最大方差解释', scoreRatio: 40 }
+                        ]
+                      },
+                      {
+                        id: 10010,
+                        name: '编程题：使用Python and NumPy手动实现支持向量机SVM的硬间隔推导算法',
+                        type: '编程题',
+                        library: 'math_ml',
+                        score: 20,
+                        checkpoints: []
+                      }
+                    ];
+
+                    const totalQuestions = allQuestions.length;
+                    const totalScore = allQuestions.reduce((sum, q) => sum + q.score, 0);
+                    const totalPages = Math.ceil(totalQuestions / contentPageSize);
+                    const currentQuestions = allQuestions.slice(
+                      (contentCurrentPage - 1) * contentPageSize,
+                      contentCurrentPage * contentPageSize
+                    );
+
+                    return (
+                      <div className="space-y-4 mt-5 select-none animate-in fade-in slide-in-from-bottom-3 duration-300">
+                        {/* 试题信息 Card */}
+                        <div className="w-[320px] border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between overflow-hidden">
+                          <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 text-[13px] flex items-center gap-1.5 shrink-0">
+                            试题信息
                           </div>
-                          <div className="pt-3">
-                            <div className="flex items-center justify-between text-neutral-800 font-semibold">
-                              <span>二、编程简答题 (共 2 题，共 30 分)</span>
-                              <span className="text-neutral-500 font-mono">已启用</span>
-                            </div>
-                            <p className="text-neutral-500 mt-1 text-[11px]">手写梯度下降核心逻辑，说明 Transformer 架构组件作用。</p>
+                          <div className="p-4 text-[13px] text-neutral-700">
+                            试题总分：{totalScore}
                           </div>
-                          <div className="pt-3">
-                            <div className="flex items-center justify-between text-neutral-800 font-semibold">
-                              <span>三、综合实训题 (共 1 题，共 40 分)</span>
-                              <span className="text-neutral-500 font-mono">已启用</span>
+                        </div>
+
+                        {/* 试题列表 Table */}
+                        <div className="border border-neutral-200 rounded overflow-hidden">
+                          <table className="w-full text-left border-collapse text-xs select-none">
+                            <thead>
+                              <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                                <th className="p-3 pl-4 w-[42%]">题目名称</th>
+                                <th className="p-3 w-[13%]">题型</th>
+                                <th className="p-3 w-[20%]">资源库</th>
+                                <th className="p-3 w-[12%]">分值</th>
+                                <th className="p-3 text-center w-[13%]">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                              {currentQuestions.map((question) => (
+                                <tr key={question.id} className="hover:bg-neutral-50/50">
+                                  <td className="p-3 pl-4 font-semibold text-neutral-900 truncate max-w-[200px]" title={question.name}>{question.name}</td>
+                                  <td className="p-3 text-neutral-600">{question.type}</td>
+                                  <td className="p-3 font-mono text-neutral-500">{question.library}</td>
+                                  <td className="p-3 font-mono text-neutral-800 font-semibold">{question.score}</td>
+                                  <td className="p-3 text-center">
+                                    <div className="flex items-center justify-center gap-2 text-xs">
+                                      {question.type === '简答题' ? (
+                                        <button
+                                          onClick={() => setSelectedCheckpointQuestion(question)}
+                                          className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer p-0 font-semibold transition-colors hover:underline"
+                                        >
+                                          检查项
+                                        </button>
+                                      ) : (
+                                        <span className="text-neutral-400 cursor-not-allowed font-semibold select-none">
+                                          检查项
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Pagination Footer */}
+                        <div className="flex items-center justify-end pt-2 gap-4 bg-transparent select-none">
+                          <span className="text-[13px] text-neutral-500">共 {totalQuestions} 条</span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={contentCurrentPage === 1}
+                              onClick={() => setContentCurrentPage(prev => Math.max(prev - 1, 1))}
+                              className="h-7 w-7 p-0 rounded-sm cursor-pointer"
+                            >
+                              &lt;
+                            </Button>
+                            {Array.from({ length: totalPages }).map((_, index) => {
+                              const p = index + 1;
+                              const isActive = contentCurrentPage === p;
+                              return (
+                                <Button
+                                  key={p}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setContentCurrentPage(p)}
+                                  className={`h-7 w-7 p-0 rounded-sm cursor-pointer ${
+                                    isActive
+                                      ? 'bg-[#fa541c] text-white border-[#fa541c]'
+                                      : 'bg-white text-neutral-600 border-neutral-200 hover:text-[#fa541c] hover:border-orange-200'
+                                  }`}
+                                >
+                                  {p}
+                                </Button>
+                              );
+                            })}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={contentCurrentPage === totalPages}
+                              onClick={() => setContentCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                              className="h-7 w-7 p-0 rounded-sm cursor-pointer"
+                            >
+                              &gt;
+                            </Button>
+                          </div>
+                          <div className="relative bg-white rounded-[6px]">
+                            <select
+                              value={`${contentPageSize}`}
+                              onChange={(e) => {
+                                const size = parseInt(e.target.value);
+                                setContentPageSize(size);
+                                setContentCurrentPage(1);
+                              }}
+                              className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm"
+                            >
+                              <option className="bg-white" value="5">5 条/页</option>
+                              <option className="bg-white" value="10">10 条/页</option>
+                              <option className="bg-white" value="20">20 条/页</option>
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                              <ChevronDown className="w-3 h-3" />
                             </div>
-                            <p className="text-neutral-500 mt-1 text-[11px]">搭建深度神经网络进行图像分类，并在云端完成模型部署。</p>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {invigilationTab === 'notice' && (
                     <div className="space-y-4 mt-5">
@@ -3216,6 +3502,72 @@ export default function TeacherExams({ embedded = false }) {
           </div>
         );
       })()}
+
+      {/* 实训题检查项 Modal */}
+      {selectedCheckpointQuestion && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-[1px] flex items-center justify-center animate-fade-in text-left"
+          onClick={() => setSelectedCheckpointQuestion(null)}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl w-full max-w-2xl border border-neutral-100 flex flex-col p-6 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center pb-3.5 border-b border-neutral-150">
+              <h3 className="text-base font-bold text-neutral-850 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#fa541c]" />
+                实训题检查项配置 — {selectedCheckpointQuestion.name}
+              </h3>
+              <button
+                onClick={() => setSelectedCheckpointQuestion(null)}
+                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-50 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="py-4 overflow-y-auto max-h-[350px]">
+              <table className="w-full text-left border-collapse text-xs select-none">
+                <thead>
+                  <tr className="border-b border-neutral-100 bg-neutral-50 text-neutral-600 font-semibold text-[13px]">
+                    <th className="p-3">检查项名称</th>
+                    <th className="p-3">检查项内容</th>
+                    <th className="p-3">检查项描述</th>
+                    <th className="p-3 w-24 text-center">得分比例</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
+                  {selectedCheckpointQuestion.checkpoints && selectedCheckpointQuestion.checkpoints.length > 0 ? (
+                    selectedCheckpointQuestion.checkpoints.map((cp: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-neutral-50/40 transition-colors">
+                        <td className="p-3 font-semibold text-neutral-850">{cp.name}</td>
+                        <td className="p-3 text-neutral-500 font-mono">{cp.content}</td>
+                        <td className="p-3 text-neutral-500">{cp.description}</td>
+                        <td className="p-3 text-center font-bold text-neutral-800">{cp.scoreRatio}%</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-neutral-400">
+                        暂无检查项
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-neutral-150">
+              <Button
+                onClick={() => setSelectedCheckpointQuestion(null)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-5 py-1.5 rounded-[4px] text-xs font-semibold cursor-pointer border-0 shadow-sm transition-colors"
+              >
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

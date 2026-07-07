@@ -581,7 +581,7 @@ export default function TeacherHome() {
                               更多 <ChevronDown className="w-3 h-3" />
                             </button>
                             {activeCourseDropdownId === course.id && (
-                              <div className="absolute right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg py-1 z-30 min-w-[100px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                              <div className="absolute right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg py-1 z-30 min-w-[120px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
                                 {course.status === '草稿' ? (
                                   <button 
                                     onClick={() => {
@@ -592,7 +592,7 @@ export default function TeacherHome() {
                                         onConfirm: () => handlePublishCourse(course.id)
                                       });
                                     }} 
-                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                    className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                   >
                                     发布
                                   </button>
@@ -606,7 +606,7 @@ export default function TeacherHome() {
                                         onConfirm: () => handleCancelPublishCourse(course.id)
                                       });
                                     }} 
-                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                    className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                   >
                                     取消发布
                                   </button>
@@ -619,14 +619,14 @@ export default function TeacherHome() {
                                       setApplyRange('租户');
                                       setIsApplyPublicModalOpen(true);
                                     }} 
-                                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                    className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                   >
                                     申请公开
                                   </button>
                                 )}
                                 <button 
                                   onClick={() => handleCopyCourse(course)}
-                                  className="w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] text-neutral-750 bg-transparent border-0 cursor-pointer block transition-colors"
+                                  className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                 >
                                   复制
                                 </button>
@@ -643,10 +643,10 @@ export default function TeacherHome() {
                                   }}
                                   disabled={course.scope === '租户' || course.scope === '平台'}
                                   className={cn(
-                                    "w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 block font-medium transition-colors cursor-pointer",
+                                    "w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 block transition-all cursor-pointer font-medium",
                                     (course.scope === '租户' || course.scope === '平台') 
-                                      ? "text-neutral-350 cursor-not-allowed hover:bg-transparent" 
-                                      : "text-[#fa541c] hover:bg-orange-50/50 hover:text-[#e84a15]"
+                                      ? "text-neutral-400 cursor-not-allowed hover:bg-transparent" 
+                                      : "text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                   )}
                                 >
                                   删除

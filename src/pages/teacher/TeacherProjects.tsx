@@ -1014,8 +1014,8 @@ export default function TeacherProjects({
                           >
                             更多 <ChevronDown className="w-3 h-3" />
                           </button>
-                          {activeDropdownId === proj.id && (
-                            <div className="absolute right-0 top-full mt-1.5 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[100px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                           {activeDropdownId === proj.id && (
+                            <div className="absolute right-0 top-full mt-1.5 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[120px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
                               {secondaryActions.map((act, actIdx) => (
                                 <button 
                                   key={actIdx}
@@ -1023,12 +1023,7 @@ export default function TeacherProjects({
                                     setActiveDropdownId(null);
                                     act.onClick();
                                   }}
-                                  className={cn(
-                                    "w-full text-left px-3 py-1.5 hover:bg-neutral-50 text-[12px] bg-transparent border-0 cursor-pointer block transition-colors",
-                                    act.isDanger 
-                                      ? "hover:bg-orange-50/50 text-[#fa541c] font-medium" 
-                                      : "text-neutral-750"
-                                  )}
+                                  className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                 >
                                   {act.label}
                                 </button>
