@@ -3100,9 +3100,13 @@ export default function TeacherExams({ embedded = false }) {
                                           检查项
                                         </button>
                                       ) : (
-                                        <span className="text-neutral-400 cursor-not-allowed font-semibold select-none">
+                                        <button
+                                          disabled
+                                          className="text-[#ff8d60] bg-transparent border-0 cursor-not-allowed p-0 font-semibold transition-colors"
+                                          title="仅简答题支持设置检查项"
+                                        >
                                           检查项
-                                        </span>
+                                        </button>
                                       )}
                                     </div>
                                   </td>
