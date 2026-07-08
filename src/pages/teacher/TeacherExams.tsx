@@ -1943,25 +1943,26 @@ export default function TeacherExams({ embedded = false }) {
           >
             {/* Drawer Header */}
             {detailsType === 'scoring' ? (
-              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-white z-10 select-none">
-                <div className="flex items-center gap-3.5">
-                  <button 
-                    onClick={() => setIsDetailsDrawerOpen(false)}
-                    className="flex items-center gap-1.5 text-neutral-600 hover:text-[#fa541c] font-bold text-[14px] cursor-pointer border-0 bg-transparent"
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10 select-none">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[15px] font-bold text-neutral-850 flex items-center gap-2">
+                    <PenTool className="w-5 h-5 text-[#fa541c]" />
+                    批阅任务
+                  </h2>
+                  <button
+                    onClick={() => showToast('已成功刷新数据', 'success')}
+                    className="border border-neutral-200 text-neutral-500 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 w-7 h-7 rounded-[4px] flex items-center justify-center cursor-pointer transition-colors bg-white"
+                    title="刷新数据"
                   >
-                    <ArrowLeft className="w-4.5 h-4.5" />
-                    返回
+                    <RotateCw className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-neutral-300 font-light">|</span>
-                  <span className="text-[15px] font-extrabold text-neutral-850">批阅任务</span>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => showToast('已成功刷新数据', 'success')}
-                  className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                <button 
+                  onClick={() => setIsDetailsDrawerOpen(false)}
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
                 >
-                  刷新
-                </Button>
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             ) : (
               <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 z-10">
@@ -2334,50 +2335,80 @@ export default function TeacherExams({ embedded = false }) {
 
               {detailsType === 'scoring' && (
                 <div className="space-y-5 flex flex-col h-full select-none text-[13px]">
-                  {/* Top Info Card: 批阅信息 */}
-                  <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between">
-                    <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
-                      批阅信息
-                    </div>
-                    <div className="p-4 grid grid-cols-2 gap-6 text-[13px] text-neutral-700 flex-1">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-neutral-450 font-medium">未参加考试(或未交卷)考生</span>
-                          <span className="text-neutral-850 font-bold font-mono bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">1</span>
+                  {/* Top Info Cards matching Invigilation Style */}
+                  <div className="grid grid-cols-2 gap-5 select-none text-[13px]">
+                    {/* Left Card: 批阅进度统计 */}
+                    <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between overflow-hidden">
+                      <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
+                        <Users className="w-4 h-4 text-blue-500" />
+                        批阅进度统计
+                      </div>
+                      <div className="p-4 grid grid-cols-3 gap-3 flex-1 items-center">
+                        <div className="bg-emerald-50/45 border border-emerald-100 rounded-lg p-3 text-center flex flex-col justify-between h-full">
+                          <span className="text-[10px] text-emerald-600 font-bold">已分配批阅</span>
+                          <span className="text-2xl font-bold text-emerald-600 font-mono mt-1">1 <span className="text-[11px] font-normal text-emerald-500">人</span></span>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-neutral-450 font-medium">已分配批阅任务考生</span>
-                          <span className="text-neutral-850 font-bold font-mono bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">1</span>
+                        <div className="bg-orange-50/45 border border-orange-100 rounded-lg p-3 text-center flex flex-col justify-between h-full">
+                          <span className="text-[10px] text-orange-600 font-bold">待分配批阅</span>
+                          <span className="text-2xl font-bold text-orange-600 font-mono mt-1">0 <span className="text-[11px] font-normal text-[#fa541c]">人</span></span>
+                        </div>
+                        <div className="bg-neutral-50/60 border border-neutral-200/60 rounded-lg p-3 text-center flex flex-col justify-between h-full">
+                          <span className="text-[10px] text-neutral-400 font-bold">未交卷/未参赛</span>
+                          <span className="text-2xl font-bold text-neutral-500 font-mono mt-1">1 <span className="text-[11px] font-normal text-neutral-400">人</span></span>
                         </div>
                       </div>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-neutral-450 font-medium">未分配批阅任务考生</span>
-                          <span className="text-neutral-850 font-bold font-mono bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">0</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-neutral-450 font-medium">批阅类型</span>
-                          <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-1.5 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="scoringType"
-                                checked={scoringType === 'anonymous'}
-                                onChange={() => setScoringType('anonymous')}
-                                className="accent-[#fa541c] w-4 h-4 cursor-pointer"
-                              />
-                              <span className={cn("text-[13px] font-bold", scoringType === 'anonymous' ? "text-[#fa541c]" : "text-neutral-500 hover:text-neutral-800")}>匿名</span>
-                            </label>
-                            <label className="flex items-center gap-1.5 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="scoringType"
-                                checked={scoringType === 'realname'}
-                                onChange={() => setScoringType('realname')}
-                                className="accent-[#fa541c] w-4 h-4 cursor-pointer"
-                              />
-                              <span className={cn("text-[13px] font-bold", scoringType === 'realname' ? "text-[#fa541c]" : "text-neutral-500 hover:text-neutral-800")}>实名</span>
-                            </label>
+                    </div>
+
+                    {/* Right Card: 批阅隐私设置 */}
+                    <div className="border border-neutral-200 rounded-[8px] bg-white shadow-sm flex flex-col justify-between overflow-hidden">
+                      <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 flex items-center gap-1.5 shrink-0">
+                        <ShieldCheck className="w-4 h-4 text-[#fa541c]" />
+                        批阅隐私设置
+                      </div>
+                      <div className="p-4 flex flex-col justify-center flex-1 space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Anonymous Toggle Option */}
+                          <div 
+                            onClick={() => setScoringType('anonymous')}
+                            className={cn(
+                              "border rounded-[6px] p-2.5 flex items-center gap-2.5 cursor-pointer transition-all hover:bg-neutral-50 select-none text-[12px] font-semibold text-left",
+                              scoringType === 'anonymous' 
+                                ? "border-[#fa541c] bg-orange-50/20 text-[#fa541c]" 
+                                : "border-neutral-200 text-neutral-500"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
+                              scoringType === 'anonymous' ? "border-[#fa541c] bg-[#fa541c] text-white" : "border-neutral-350"
+                            )}>
+                              {scoringType === 'anonymous' && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-bold">匿名批阅</span>
+                              <span className="text-[10px] text-neutral-400 font-normal">隐藏姓名和账号</span>
+                            </div>
+                          </div>
+
+                          {/* Real-name Toggle Option */}
+                          <div 
+                            onClick={() => setScoringType('realname')}
+                            className={cn(
+                              "border rounded-[6px] p-2.5 flex items-center gap-2.5 cursor-pointer transition-all hover:bg-neutral-50 select-none text-[12px] font-semibold text-left",
+                              scoringType === 'realname' 
+                                ? "border-[#fa541c] bg-orange-50/20 text-[#fa541c]" 
+                                : "border-neutral-200 text-neutral-500"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
+                              scoringType === 'realname' ? "border-[#fa541c] bg-[#fa541c] text-white" : "border-neutral-350"
+                            )}>
+                              {scoringType === 'realname' && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-bold">实名批阅</span>
+                              <span className="text-[10px] text-neutral-400 font-normal">显示姓名和账号</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -2386,32 +2417,37 @@ export default function TeacherExams({ embedded = false }) {
 
                   {/* Title & Action Toolbar */}
                   <div className="flex items-center justify-between gap-3 mt-4">
-                    <h3 className="text-base font-extrabold text-neutral-850">已分配的批阅任务</h3>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-base font-extrabold text-neutral-850">已分配的批阅任务</h3>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
+                      <button
                         onClick={() => showToast('已成功刷新批阅任务列表', 'success')}
-                        className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                        className="border border-neutral-200 text-neutral-500 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 w-8 h-8 rounded-[4px] flex items-center justify-center cursor-pointer transition-colors bg-white"
+                        title="刷新列表"
                       >
-                        刷新
-                      </Button>
+                        <RotateCw className="w-3.5 h-3.5" />
+                      </button>
                       <Button
                         onClick={() => showToast('正在执行批量移除批阅任务...', 'success')}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                        variant="outline"
+                        className="border-neutral-200 text-neutral-500 hover:text-red-655 hover:border-red-200 hover:bg-red-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all"
                       >
-                        移除批阅任务
-                      </Button>
-                      <Button
-                        onClick={() => showToast('正在拉起分配批阅任务弹窗...', 'success')}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
-                      >
-                        分配批阅任务
+                        批量移除
                       </Button>
                       <Button
                         onClick={() => showToast('正在拉起自动分配批阅设置...', 'success')}
-                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                        variant="outline"
+                        className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all"
                       >
-                        自动分配批阅设置
+                        自动分配设置
+                      </Button>
+                      <Button
+                        onClick={() => showToast('正在拉起分配批阅任务弹窗...', 'success')}
+                        className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        分配批阅任务
                       </Button>
                     </div>
                   </div>
@@ -2448,7 +2484,7 @@ export default function TeacherExams({ embedded = false }) {
                               <th className="p-3 text-left bg-neutral-50">批阅姓名</th>
                               <th className="p-3 text-left bg-neutral-50">分配人数</th>
                               <th className="p-3 text-left bg-neutral-50">批阅进度</th>
-                              <th className="p-3 text-center bg-neutral-50">操作</th>
+                              <th className="p-3 text-left bg-neutral-50 w-64">操作</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
@@ -2462,8 +2498,8 @@ export default function TeacherExams({ embedded = false }) {
                                 <td className="p-3 font-mono text-neutral-605">
                                   {row.done}/{row.count}
                                 </td>
-                                <td className="p-3 text-center">
-                                  <div className="flex items-center justify-center gap-3">
+                                <td className="p-3 text-left">
+                                  <div className="flex items-center justify-start gap-3">
                                     <button 
                                       onClick={() => showToast('正在更换批阅人...', 'info')}
                                       className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer p-0 text-xs"
@@ -2497,41 +2533,40 @@ export default function TeacherExams({ embedded = false }) {
                       {/* Candidate Perspective Filter Toolbar */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={scoringSearchInput}
-                            onChange={(e) => setScoringSearchInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') setScoringSearchQuery(scoringSearchInput);
-                            }}
-                            placeholder="请输入账号/姓名"
-                            className="pl-3 pr-3 py-1.5 text-xs border border-neutral-200 rounded-[4px] focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-neutral-850 bg-white w-48 h-8"
-                          />
-                          <Button
-                            onClick={() => setScoringSearchQuery(scoringSearchInput)}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-4 h-8 text-[12px] font-bold rounded-[4px] border-0 cursor-pointer shadow-sm transition-colors"
-                          >
-                            查询
-                          </Button>
+                          <div className="relative">
+                            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                            <input
+                              type="text"
+                              value={scoringSearchInput}
+                              onChange={(e) => {
+                                setScoringSearchInput(e.target.value);
+                                setScoringSearchQuery(e.target.value);
+                              }}
+                              placeholder="请输入账号/姓名"
+                              className="pl-9 pr-4 py-1.5 text-xs border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 transition-all text-neutral-850 bg-white w-48 h-8"
+                            />
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
-                            onClick={() => showToast('已成功批量提交最终成绩', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
-                          >
-                            批量提交最终分
-                          </Button>
-                          <Button
                             onClick={() => showToast('正在拉起导入最终成绩...', 'success')}
-                            className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
+                            variant="outline"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all flex items-center gap-1.5"
                           >
                             导入最终成绩
                           </Button>
                           <Button
                             onClick={() => showToast('已导出批阅成绩表格', 'success')}
+                            variant="outline"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all"
+                          >
+                            导出成绩
+                          </Button>
+                          <Button
+                            onClick={() => showToast('已成功批量提交最终成绩', 'success')}
                             className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors"
                           >
-                            导出批阅成绩
+                            批量提交最终分
                           </Button>
                         </div>
                       </div>
@@ -2552,7 +2587,7 @@ export default function TeacherExams({ embedded = false }) {
                               <th className="p-3 text-left bg-neutral-50">考号</th>
                               <th className="p-3 text-left bg-neutral-50">批阅分数1</th>
                               <th className="p-3 text-left bg-neutral-50">最终得分</th>
-                              <th className="p-3 text-center bg-neutral-50">操作</th>
+                              <th className="p-3 text-left bg-neutral-50 w-32">操作</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
@@ -2575,7 +2610,7 @@ export default function TeacherExams({ embedded = false }) {
                                 <td className="p-3 font-mono text-neutral-500">{student.examNo}</td>
                                 <td className="p-3 font-mono text-neutral-500">{student.score1}</td>
                                 <td className="p-3 font-mono text-neutral-500">{student.finalScore}</td>
-                                <td className="p-3 text-center">
+                                <td className="p-3 text-left">
                                   <button 
                                     onClick={() => showToast('正在加载批阅详情...', 'info')}
                                     className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer p-0 text-xs"
