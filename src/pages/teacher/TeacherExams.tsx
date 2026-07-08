@@ -2711,7 +2711,20 @@ export default function TeacherExams({ embedded = false }) {
                           </Button>
                           <Button
                             variant="outline"
-                            onClick={() => showToast('环境清理已开始', 'success')}
+                            onClick={() => {
+                              setConfirmModal({
+                                show: true,
+                                title: '清理环境',
+                                message: '确定要清理该实训题目对应的虚拟机环境吗？该操作将重置考生容器状态。',
+                                showCancel: true,
+                                onConfirm: () => {
+                                  showToast('正在清理环境...', 'info');
+                                  setTimeout(() => {
+                                    showToast('清理成功', 'success');
+                                  }, 1000);
+                                }
+                              });
+                            }}
                             className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
                             清理环境
