@@ -2774,14 +2774,14 @@ export default function TeacherExams({ embedded = false }) {
                           <Button
                             variant="outline"
                             onClick={() => showToast('环境已开始初始化', 'success')}
-                            className="border-neutral-200 text-neutral-600 hover:text-blue-650 hover:border-blue-200 hover:bg-blue-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
                             初始化环境
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => showToast('环境清理已开始', 'success')}
-                            className="border-neutral-200 text-neutral-600 hover:text-red-650 hover:border-red-200 hover:bg-red-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
+                            className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-3.5 h-8 text-[12px] font-bold rounded-[4px] cursor-pointer bg-white"
                           >
                             清理环境
                           </Button>
