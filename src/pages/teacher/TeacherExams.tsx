@@ -4017,37 +4017,27 @@ export default function TeacherExams({ embedded = false }) {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium select-none whitespace-nowrap">
-                      <th className="p-3 pl-4 w-12 whitespace-nowrap">序号</th>
-                      <th className="p-3">题型</th>
-                      <th className="p-3">题目数量</th>
-                      <th className="p-3">作业总分</th>
-                      <th className="p-3">作业得分</th>
+                      <th className="p-3 pl-4">提交次数</th>
                       <th className="p-3">提交时间</th>
+                      <th className="p-3">得分/总分</th>
                       <th className="p-3 text-center pr-4">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 text-neutral-700">
-                    {[
-                      { id: 'single', name: '单选题', count: 2, totalPoints: 20 },
-                      { id: 'multiple', name: '多选题', count: 2, totalPoints: 20 },
-                      { id: 'essay', name: '简答题', count: 1, totalPoints: 20 },
-                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 40 }
-                    ].map((sec, idx) => {
-                      const earnedScore = selectedStudentForPaper ? getEarnedScore(sec.id, selectedStudentForPaper.score) : 0;
+                    {(() => {
+                      const earnedScore = selectedStudentForPaper ? selectedStudentForPaper.score : 0;
                       const submitTime = selectedStudentForPaper?.loginStatus === '未登录' ? '--' : '2026-07-07 11:00:15';
+                      const submitCount = selectedStudentForPaper?.loginStatus === '未登录' ? '0次' : '1次';
                       return (
-                        <tr key={sec.id} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
-                          <td className="p-3 pl-4 font-mono text-neutral-500 whitespace-nowrap">{idx + 1}</td>
-                          <td className="p-3 font-semibold text-neutral-800">{sec.name}</td>
-                          <td className="p-3 text-neutral-600">{sec.count} 题</td>
-                          <td className="p-3 text-neutral-600">{sec.totalPoints} 分</td>
-                          <td className="p-3 font-bold text-neutral-850">{earnedScore} 分</td>
+                        <tr className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
+                          <td className="p-3 pl-4 font-medium text-neutral-800">{submitCount}</td>
                           <td className="p-3 text-neutral-500 font-mono">{submitTime}</td>
+                          <td className="p-3 font-bold text-neutral-855">{earnedScore}分 / 100分</td>
                           <td className="p-3 text-center pr-4">
                             <button
                               onClick={() => {
-                                setPreviewQuestionType(sec.name as any);
-                                setPreviewQuestionIdx(idx);
+                                setPreviewQuestionType('单选题');
+                                setPreviewQuestionIdx(0);
                                 setPreviewModeActive(true);
                                 setShowViewPaperModal(false);
                               }}
@@ -4058,7 +4048,7 @@ export default function TeacherExams({ embedded = false }) {
                           </td>
                         </tr>
                       );
-                    })}
+                    })()}
                   </tbody>
                 </table>
               </div>
