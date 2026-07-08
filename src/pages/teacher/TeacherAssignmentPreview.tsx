@@ -258,21 +258,6 @@ export default function TeacherAssignmentPreview() {
             {previewType === 'practical' ? "人工智能实操课作业 (预览)" : "人工智能客观题作业 (预览)"}
           </span>
         </div>
-
-        {/* Middle Side */}
-        <div className="hidden md:flex items-center gap-2 text-[#52c41a] font-medium text-xs">
-          <CheckCircle className="w-4 h-4" />
-          <span>系统已于 11:10:00 自动保存</span>
-        </div>
-
-        {/* Right Side */}
-        <div className="flex items-center gap-4">
-          {/* Timer Box */}
-          <div className="bg-neutral-50 border border-neutral-200 rounded px-3 py-1.5 flex items-center gap-2 font-mono text-[14px] font-bold text-neutral-700 select-none">
-            <span className="text-neutral-400 font-normal text-xs">⏱</span>
-            <span>{formatTime(timeLeft)}</span>
-          </div>
-        </div>
       </div>
 
       {/* Content Container */}

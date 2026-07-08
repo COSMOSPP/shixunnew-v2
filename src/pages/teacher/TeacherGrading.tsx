@@ -134,6 +134,142 @@ export default function TeacherGrading() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  const getMappedScore = (score: number | null) => {
+    if (score === null) return 80;
+    if (score === 4) return 100;
+    if (score === 3) return 80;
+    if (score === 2) return 56;
+    if (score === 1) return 11;
+    return 40;
+  };
+
+  const getEarnedScore = (secId: string, studentScore: number) => {
+    if (studentScore === 100) {
+      if (secId === 'single') return 20;
+      if (secId === 'multiple') return 20;
+      if (secId === 'essay') return 20;
+      if (secId === 'coding') return 40;
+    }
+    if (studentScore === 80) {
+      if (secId === 'single') return 20;
+      if (secId === 'multiple') return 20;
+      if (secId === 'essay') return 15;
+      if (secId === 'coding') return 25;
+    }
+    if (studentScore === 56) {
+      if (secId === 'single') return 10;
+      if (secId === 'multiple') return 10;
+      if (secId === 'essay') return 11;
+      if (secId === 'coding') return 25;
+    }
+    if (studentScore === 40) {
+      if (secId === 'single') return 10;
+      if (secId === 'multiple') return 10;
+      if (secId === 'essay') return 10;
+      if (secId === 'coding') return 10;
+    }
+    if (studentScore === 11) {
+      if (secId === 'single') return 10;
+      if (secId === 'multiple') return 0;
+      if (secId === 'essay') return 1;
+      if (secId === 'coding') return 0;
+    }
+    return 0;
+  };
+
+  const getDynamicPreviewQuestions = (studentScore: number) => {
+    return [
+      {
+        id: 1,
+        type: '单选题',
+        title: '下列哪个 Python 数据类型是不可变的？',
+        options: [
+          { key: 'A', value: 'List (列表)' },
+          { key: 'B', value: 'Dictionary (字典)' },
+          { key: 'C', value: 'Tuple (元组)' },
+          { key: 'D', value: 'Set (集合)' }
+        ],
+        answer: 'C',
+        studentAnswer: studentScore > 11 ? 'C' : 'A',
+        isCorrect: studentScore > 11,
+        score: studentScore > 11 ? 10 : 0,
+        maxScore: 10
+      },
+      {
+        id: 2,
+        type: '单选题',
+        title: '在 Python 中，下列哪个关键字用于定义匿名函数？',
+        options: [
+          { key: 'A', value: 'def' },
+          { key: 'B', value: 'lambda' },
+          { key: 'C', value: 'class' },
+          { key: 'D', value: 'func' }
+        ],
+        answer: 'B',
+        studentAnswer: studentScore >= 80 ? 'B' : 'A',
+        isCorrect: studentScore >= 80,
+        score: studentScore >= 80 ? 10 : 0,
+        maxScore: 10
+      },
+      {
+        id: 3,
+        type: '多选题',
+        title: '以下哪些属于 Python 中的内置修饰器 (Decorator)？',
+        options: [
+          { key: 'A', value: '@property' },
+          { key: 'B', value: '@staticmethod' },
+          { key: 'C', value: '@classmethod' },
+          { key: 'D', value: '@override' }
+        ],
+        answer: ['A', 'B', 'C'],
+        studentAnswer: studentScore === 100 || studentScore === 80 || studentScore === 56 ? ['A', 'B', 'C'] : (studentScore === 11 ? ['A', 'B'] : []),
+        isCorrect: studentScore === 100 || studentScore === 80 || studentScore === 56,
+        score: (studentScore === 100 || studentScore === 80 || studentScore === 56) ? 10 : (studentScore === 11 ? 5 : 0),
+        maxScore: 10
+      },
+      {
+        id: 4,
+        type: '多选题',
+        title: '下列关于 Python 列表 (List) 和元组 (Tuple) 的说法，正确的有？',
+        options: [
+          { key: 'A', value: '列表是可变对象，元组是不可变对象' },
+          { key: 'B', value: '列表和元组都支持切片操作' },
+          { key: 'C', value: '列表 and 元组都可以作为字典的键' },
+          { key: 'D', value: '元组的内存开销通常比列表小' }
+        ],
+        answer: ['A', 'B', 'D'],
+        studentAnswer: studentScore === 100 || studentScore === 80 ? ['A', 'B', 'D'] : ['A', 'C'],
+        isCorrect: studentScore === 100 || studentScore === 80,
+        score: studentScore === 100 || studentScore === 80 ? 10 : 0,
+        maxScore: 10
+      },
+      {
+        id: 5,
+        type: '简答题',
+        title: '请简述 Python 中 is 和 == 的区别。',
+        answerText: 'is 比较的是两个对象的物理内存地址是否相同（同一性），而 == 比较的是两个对象的值是否相等（相等性）。例如，a = [1, 2] 和 b = [1, 2]，a == b 为 True，但 a is b 为 False。',
+        studentAnswerText: studentScore > 40
+          ? 'is 比较的是两个对象的物理内存地址是否相同（同一性），而 == 比较的是两个对象的值是否相等（相等性）。例如，a = [1, 2] 和 b = [1, 2]，a == b 为 True，但 a is b 为 False。'
+          : (studentScore === 40 ? 'is比较地址，==比较内容。' : '未作答'),
+        isCorrect: studentScore > 40,
+        score: studentScore === 100 ? 20 : (studentScore === 80 ? 15 : (studentScore === 56 ? 11 : (studentScore === 40 ? 10 : (studentScore === 11 ? 1 : 0)))),
+        maxScore: 20
+      },
+      {
+        id: 6,
+        type: '实训编程题',
+        title: '请编写一个 Python 函数，计算斐波那契数列的第 n 项。要求输入正整数 n，返回对应的斐波那契数，时间复杂度控制在 O(n)。',
+        answerText: 'def fibonacci(n):\n    if n <= 0: return 0\n    if n == 1: return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b',
+        studentAnswerText: studentScore > 40
+          ? 'def fibonacci(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b'
+          : (studentScore === 40 ? 'def fibonacci(n):\n    # 递归法（时间复杂度较高）\n    if n <= 1: return n\n    return fibonacci(n-1) + fibonacci(n-2)' : '未作答'),
+        isCorrect: studentScore > 40,
+        score: studentScore === 100 ? 40 : (studentScore === 80 ? 25 : (studentScore === 56 ? 25 : (studentScore === 40 ? 10 : 0))),
+        maxScore: 40
+      }
+    ];
+  };
+
   // Preview timer countdown
   React.useEffect(() => {
     if (!previewModeActive) return;
@@ -322,76 +458,27 @@ export default function TeacherGrading() {
     setStatusModalStudent(null);
   };
 
-  if (previewModeActive) {
-    const curQuestions = mockPreviewQuestions[previewQuestionType];
-    const curQuestion = curQuestions[previewQuestionIdx];
-    const hasPrev = previewQuestionIdx > 0;
-    const hasNext = previewQuestionIdx < curQuestions.length - 1;
-
-    const handleOptionClick = (optionStr: string) => {
-      const questionId = curQuestion.id;
-      if (previewQuestionType === '单选题') {
-        setPreviewAnswers({ ...previewAnswers, [questionId]: optionStr });
-      } else {
-        const curSelections = (previewAnswers[questionId] as string[]) || [];
-        if (curSelections.includes(optionStr)) {
-          setPreviewAnswers({
-            ...previewAnswers,
-            [questionId]: curSelections.filter(o => o !== optionStr)
-          });
-        } else {
-          setPreviewAnswers({
-            ...previewAnswers,
-            [questionId]: [...curSelections, optionStr]
-          });
-        }
-      }
-    };
-
-    const isOptionSelected = (optionStr: string) => {
-      const questionId = curQuestion.id;
-      const ans = previewAnswers[questionId];
-      if (!ans) return false;
-      if (previewQuestionType === '单选题') {
-        return ans === optionStr;
-      } else {
-        return (ans as string[]).includes(optionStr);
-      }
-    };
+  if (previewModeActive && viewExamStudent) {
+    const questions = getDynamicPreviewQuestions(getMappedScore(viewExamStudent.score));
+    const q = questions[previewQuestionIdx];
 
     return (
       <div className="fixed inset-0 z-[300] bg-[#f5f5f5] flex flex-col font-sans text-neutral-800 animate-fade-in text-[13px]">
         {/* Header Bar */}
-        <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex justify-between items-center shrink-0 text-left">
-          {/* Left Side */}
-          <div className="flex items-center gap-4 select-none">
-            <button 
-              onClick={() => setPreviewModeActive(false)}
-              className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px]"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              退出
-            </button>
-            <div className="w-[1px] h-4 bg-neutral-200"></div>
-            <span className="font-bold text-neutral-800 text-[14px]">
-              {selectedTask?.examName || 'Python 编程进阶阶段测试'}
-            </span>
-          </div>
-
-          {/* Middle Side */}
-          <div className="hidden md:flex items-center gap-2 text-[#52c41a] font-medium text-xs">
-            <CheckCircle className="w-4 h-4" />
-            <span>系统已于 11:10:00 自动保存</span>
-          </div>
-
-          {/* Right Side */}
-          <div className="flex items-center gap-4">
-            {/* Timer Box */}
-            <div className="bg-neutral-50 border border-neutral-200 rounded px-3 py-1.5 flex items-center gap-2 font-mono text-[14px] font-bold text-neutral-700 select-none">
-              <span className="text-neutral-400 font-normal text-xs">⏱</span>
-              <span>{formatCountdown(countdownSeconds)}</span>
-            </div>
-          </div>
+        <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex items-center shrink-0 text-left select-none">
+          <button 
+            onClick={() => {
+              setPreviewModeActive(false);
+            }}
+            className="flex items-center gap-1.5 text-neutral-550 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px]"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            退出
+          </button>
+          <div className="w-[1px] h-4 bg-neutral-200 mx-4"></div>
+          <span className="font-bold text-neutral-800 text-[14px]">
+            {selectedTask?.examName || 'Python 基础 - 答卷预览'}
+          </span>
         </div>
 
         {/* Content Area */}
@@ -401,254 +488,189 @@ export default function TeacherGrading() {
             <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
               {/* Scrollable Question Content */}
               <div className="flex-1 overflow-y-auto px-10 pt-10 pb-4 text-left">
-
-
+                
                 {/* Question Type and Score */}
-                <div className="flex items-center justify-between mb-5">
-                  <div className="text-[15px] font-bold text-neutral-800">
-                    {previewQuestionIdx + 1}、{previewQuestionType} <span className="text-[13px] text-neutral-400 font-normal ml-1">({previewQuestionType === '单选题' ? '1' : previewQuestionType === '多选题' ? '2' : previewQuestionType === '简答题' ? '15' : '40'}分)</span>
+                <div className="flex items-center justify-between mb-5 select-none">
+                  <div className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
+                    <span>{previewQuestionIdx + 1}、{q.type}</span>
+                    <span className="text-[13px] text-neutral-400 font-normal">({q.maxScore}分)</span>
+                    <span className="text-[13px] text-[#fa541c] font-bold ml-2">（得分: {q.score}分）</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="px-2.5 py-1 bg-orange-50 text-[#fa541c] border border-orange-100/50 rounded-[4px] font-medium">
+                      该题 {q.maxScore}.0分
+                    </span>
+                    <span className="px-2.5 py-1 bg-orange-50 text-[#fa541c] border border-orange-100/50 rounded-[4px] font-bold">
+                      得 {q.score}分
+                    </span>
                   </div>
                 </div>
 
-                {/* Question Body */}
+                {/* Question Title */}
                 <div className="text-neutral-800 mb-6 text-[15px] font-bold leading-relaxed">
-                  {curQuestion.title}
+                  {q.title}
                 </div>
 
                 {/* Options / Textarea depending on question type */}
-                {curQuestion.options ? (
-                  <div className="space-y-3 max-w-[800px]">
-                    {curQuestion.options.map((opt, oIdx) => {
-                      return (
-                        <div
-                          key={oIdx}
-                          className="px-5 py-4 border border-neutral-200 rounded-[4px] bg-neutral-50/30 cursor-default select-none text-[14px] text-neutral-600 font-medium text-left"
-                        >
-                          {opt}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : previewQuestionType === '实训编程题' ? (
-                  <div className="space-y-4 max-w-[900px] text-left pt-2">
-                    <div className="border border-neutral-200 rounded-lg p-5 bg-white overflow-y-auto max-h-[48vh] text-[13px] leading-relaxed text-neutral-600 shadow-xs">
-                      <div className="whitespace-pre-wrap font-medium space-y-1">
-                        {curQuestion.content}
+                {q.options ? (
+                  <div className="space-y-6 max-w-[800px]">
+                    <div className="space-y-3">
+                      {q.options.map((opt) => {
+                        const isSelected = Array.isArray(q.studentAnswer) ? q.studentAnswer.includes(opt.key) : q.studentAnswer === opt.key;
+                        const isRight = Array.isArray(q.answer) ? q.answer.includes(opt.key) : q.answer === opt.key;
+                        
+                        let cardStyle = "border-neutral-200 bg-neutral-50/30 text-neutral-600";
+                        if (q.isCorrect) {
+                          if (isSelected) {
+                            cardStyle = "border-green-500 text-green-600 bg-green-50/10 font-bold";
+                          }
+                        } else {
+                          if (isSelected) {
+                            cardStyle = "border-red-500 text-red-600 bg-red-50/10 font-bold";
+                          } else if (isRight) {
+                            cardStyle = "border-green-500 text-green-600 bg-green-50/10 font-bold";
+                          }
+                        }
+
+                        return (
+                          <div 
+                            key={opt.key}
+                            className={cn(
+                              "px-5 py-4 border rounded-[4px] font-medium text-left flex items-center justify-between text-[14px]",
+                              cardStyle
+                            )}
+                          >
+                            <span>{opt.key}. {opt.value}</span>
+                            <div className="flex gap-2 text-xs shrink-0 select-none">
+                              {isSelected && (
+                                <span className={cn(
+                                  "px-2 py-0.5 rounded-[4px] text-[11px] font-bold",
+                                  q.isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                )}>学生作答</span>
+                              )}
+                              {isRight && !isSelected && (
+                                <span className="px-2 py-0.5 rounded-[4px] text-[11px] font-bold bg-green-100 text-green-700">正确答案</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Answer Details matching the mock image exactly */}
+                    <div className="pt-4 border-t border-neutral-100 flex flex-col gap-2.5 text-left text-[14px] select-none">
+                      <div className="flex items-center gap-1.5 font-bold text-neutral-650">
+                        <span>正确答案：</span>
+                        <span className="text-[#52c41a] font-mono">{Array.isArray(q.answer) ? q.answer.sort().join(', ') : q.answer}</span>
+                      </div>
+                      <div className="flex items-center gap-2 font-bold text-neutral-650">
+                        <span>学生答案：</span>
+                        <span className="text-neutral-700 font-mono">{Array.isArray(q.studentAnswer) ? q.studentAnswer.sort().join(', ') : q.studentAnswer}</span>
+                        {q.isCorrect ? (
+                          <span className="text-[#52c41a] font-sans font-bold text-[18px]">✓</span>
+                        ) : (
+                          <span className="text-[#f5222d] font-sans font-bold text-[18px]">✗</span>
+                        )}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2 pt-2 text-left max-w-[900px]">
-                    <span className="text-xs font-semibold text-neutral-500 block">您的回答：</span>
-                    <textarea
-                      value={(previewAnswers[curQuestion.id] as string) || ''}
-                      onChange={(e) => setPreviewAnswers({ ...previewAnswers, [curQuestion.id]: e.target.value })}
-                      placeholder="请输入您的回答..."
-                      className="w-full border border-neutral-200 rounded-md p-4 text-xs focus:outline-none focus:border-neutral-300 transition-all bg-white text-neutral-800 resize-none font-sans h-36"
-                    />
+                  <div className="space-y-6 max-w-[900px] text-left pt-2">
+                    {/* Student Answer */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-semibold text-neutral-500 block">学生作答：</span>
+                      <pre className="p-4 bg-neutral-50 border border-neutral-200 rounded-[4px] text-[13px] text-neutral-700 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                        {q.studentAnswerText}
+                      </pre>
+                    </div>
+
+                    {/* Standard Answer */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-semibold text-green-700 block">参考答案：</span>
+                      <pre className="p-4 bg-green-50/20 border border-green-200 rounded-[4px] text-[13px] text-green-800 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                        {q.answerText}
+                      </pre>
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Bottom Actions Row */}
-              <div className="flex items-center justify-between px-10 py-5 border-t border-neutral-100 bg-white shrink-0 shadow-[0_-4px_16px_rgba(0,0,0,0.02)] z-10">
+              <div className="flex items-center justify-between px-10 py-5 border-t border-neutral-100 bg-white shrink-0 shadow-[0_-4px_16px_rgba(0,0,0,0.02)] z-10 select-none">
                 <Button
                   variant="outline"
-                  disabled={!hasPrev}
+                  disabled={previewQuestionIdx === 0}
                   onClick={() => setPreviewQuestionIdx(idx => idx - 1)}
                   className="border-neutral-200 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 px-6 h-9.5 text-[13px] font-bold rounded-[4px]"
                 >
                   上一题
                 </Button>
                 
-                <div className="flex items-center gap-3">
-                  {previewQuestionType === '实训编程题' && (
-                    <Button 
-                      disabled
-                      variant="outline"
-                      className="border-neutral-200 text-neutral-400 bg-neutral-50 opacity-60 px-6 h-9.5 text-[13px] font-bold rounded-[4px] cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      开始答题
-                    </Button>
+                <Button 
+                  disabled={previewQuestionIdx === questions.length - 1}
+                  onClick={() => setPreviewQuestionIdx(idx => idx + 1)}
+                  className={cn(
+                    "px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1 cursor-pointer",
+                    previewQuestionIdx === questions.length - 1
+                      ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200 shadow-none"
+                      : "bg-[#fa541c] hover:bg-[#e84a15] text-white"
                   )}
-                  
-                  {hasNext && (
-                    <Button 
-                      onClick={() => setPreviewQuestionIdx(idx => idx + 1)}
-                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white px-6 h-9.5 text-[13px] font-bold shadow-sm rounded-[4px] transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      下一题
-                    </Button>
-                  )}
-                </div>
+                >
+                  下一题
+                </Button>
               </div>
             </div>
 
             {/* Right Sidebar navigation */}
-            <div className="w-80 border-l border-neutral-200 flex flex-col bg-white px-6 pt-8 pb-6 shrink-0 justify-between h-full text-left">
-              <div className="overflow-y-auto flex-1 no-scrollbar space-y-6">
-                {/* Teacher Mode Alert */}
-                <div className="bg-orange-50/50 rounded-lg p-4 border border-orange-100 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#fa541c]/10 flex items-center justify-center text-[#fa541c] font-bold shrink-0">
-                    <Eye className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-bold text-neutral-800">教师预览模式</div>
-                    <div className="text-[11px] text-neutral-400">正在参考学生答题界面</div>
-                  </div>
-                </div>
-
+            <div className="w-80 border-l border-neutral-200 flex flex-col bg-white px-6 pt-8 pb-6 shrink-0 justify-between h-full text-left select-none">
+              <div className="overflow-y-auto flex-1 no-scrollbar space-y-6 flex flex-col justify-between">
                 {/* Sidebar navigations for all types */}
-                <div className="space-y-5 pt-4">
-                  {/* Single Choice Nav */}
-                  {previewQuestionType === '单选题' && (
-                    <div>
-                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">单选题</h3>
-                      <div className="grid grid-cols-5 gap-3">
-                        {mockPreviewQuestions.单选题.map((_, index) => {
-                          const isActive = previewQuestionType === '单选题' && previewQuestionIdx === index;
-                          const hasAnswer = !!previewAnswers[`preview-s-${index + 1}`];
-                          return (
-                            <div 
-                              key={index}
-                              onClick={() => {
-                                setPreviewQuestionType('单选题');
-                                setPreviewQuestionIdx(index);
-                              }}
-                              className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
-                                isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
-                              )}
-                            >
-                              {index + 1}
-                            </div>
-                          );
-                        })}
+                <div className="space-y-6 pt-2">
+                  {['单选题', '多选题', '简答题', '实训编程题'].map((typeStr) => {
+                    const typeQuestions = questions.map((q, qIdx) => ({ ...q, originalIndex: qIdx })).filter(q => q.type === typeStr);
+                    if (typeQuestions.length === 0) return null;
+                    return (
+                      <div key={typeStr} className="space-y-3">
+                        <h3 className="text-[13px] font-bold text-neutral-800">{typeStr}</h3>
+                        <div className="grid grid-cols-5 gap-3">
+                          {typeQuestions.map((item) => {
+                            const isActive = item.originalIndex === previewQuestionIdx;
+                            return (
+                              <div 
+                                key={item.id}
+                                onClick={() => setPreviewQuestionIdx(item.originalIndex)}
+                                className={cn(
+                                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative border",
+                                  item.score > 0
+                                    ? (isActive 
+                                        ? "bg-emerald-500 text-white border-transparent" 
+                                        : "bg-emerald-500/[0.08] border-emerald-500 text-emerald-600 hover:bg-emerald-500/[0.15]")
+                                    : (isActive 
+                                        ? "bg-red-500 text-white border-transparent" 
+                                        : "bg-red-500/[0.08] border-red-500 text-red-600 hover:bg-red-500/[0.15]")
+                                )}
+                              >
+                                {item.originalIndex + 1}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Multiple Choice Nav */}
-                  {previewQuestionType === '多选题' && (
-                    <div>
-                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">多选题</h3>
-                      <div className="grid grid-cols-5 gap-3">
-                        {mockPreviewQuestions.多选题.map((_, index) => {
-                          const isActive = previewQuestionType === '多选题' && previewQuestionIdx === index;
-                          const hasAnswer = (previewAnswers[`preview-m-${index + 1}`] as string[])?.length > 0;
-                          return (
-                            <div 
-                              key={index}
-                              onClick={() => {
-                                setPreviewQuestionType('多选题');
-                                setPreviewQuestionIdx(index);
-                              }}
-                              className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
-                                isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
-                              )}
-                            >
-                              {index + 1}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Short Essay Nav */}
-                  {previewQuestionType === '简答题' && (
-                    <div>
-                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">简答题</h3>
-                      <div className="grid grid-cols-5 gap-3">
-                        {mockPreviewQuestions.简答题.map((_, index) => {
-                          const isActive = previewQuestionType === '简答题' && previewQuestionIdx === index;
-                          const hasAnswer = !!previewAnswers[`preview-e-${index + 1}`];
-                          return (
-                            <div 
-                              key={index}
-                              onClick={() => {
-                                setPreviewQuestionType('简答题');
-                                setPreviewQuestionIdx(index);
-                              }}
-                              className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
-                                isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
-                              )}
-                            >
-                              {index + 1}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Coding Nav */}
-                  {previewQuestionType === '实训编程题' && (
-                    <div>
-                      <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5">实训编程题</h3>
-                      <div className="grid grid-cols-5 gap-3">
-                        {mockPreviewQuestions.实训编程题.map((_, index) => {
-                          const isActive = previewQuestionType === '实训编程题' && previewQuestionIdx === index;
-                          const hasAnswer = !!previewAnswers[`preview-c-${index + 1}`];
-                          return (
-                            <div 
-                              key={index}
-                              onClick={() => {
-                                setPreviewQuestionType('实训编程题');
-                                setPreviewQuestionIdx(index);
-                              }}
-                              className={cn(
-                                "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold select-none cursor-pointer transition-all relative bg-white",
-                                isActive
-                                  ? "border-2 border-[#fa541c] text-[#fa541c] font-bold shadow-xs animate-scale-up"
-                                  : hasAnswer
-                                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/10 font-bold"
-                                    : "border-neutral-300 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
-                              )}
-                            >
-                              {index + 1}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Legend & Submission */}
-              <div className="border-t border-neutral-100 pt-5 mt-4">
-                <div className="flex items-center justify-around text-[12px] text-neutral-400 mb-5">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className="w-4.5 h-4.5 rounded-full border border-neutral-300 bg-white"></div>
-                    <span>未看</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className="w-4.5 h-4.5 rounded-full border-2 border-[#fa541c] bg-white ring-2 ring-[#fa541c]/15"></div>
-                    <span>当前</span>
-                  </div>
+                    );
+                  })}
                 </div>
 
-                <Button 
-                  onClick={() => setPreviewModeActive(false)}
-                  className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white py-3 font-bold shadow-lg shadow-orange-500/10 rounded-[4px] transition-all text-sm cursor-pointer border-0"
-                >
-                  退出预览
-                </Button>
+                {/* Exit Preview Button below the navigations */}
+                <div className="pt-6 border-t border-neutral-200 mt-6 select-none shrink-0">
+                  <Button 
+                    onClick={() => {
+                      setPreviewModeActive(false);
+                    }}
+                    className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white border-0 font-bold h-9.5 text-[13px] rounded-[4px] cursor-pointer transition-colors shadow-sm"
+                  >
+                    退出预览
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -1094,18 +1116,18 @@ export default function TeacherGrading() {
           onClick={() => setViewExamStudent(null)}
         >
           <div 
-            className="bg-white w-full max-w-[500px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-scale-up"
+            className="bg-white w-full max-w-[760px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
               <h3 className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-[#fa541c]" />
-                查看试卷 - {viewExamStudent.name}
+                评审作业 - {viewExamStudent.name}
               </h3>
               <button 
                 onClick={() => setViewExamStudent(null)} 
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1113,44 +1135,51 @@ export default function TeacherGrading() {
 
             {/* Modal Body */}
             <div className="p-6">
-              <div className="border border-neutral-100 rounded-md overflow-hidden bg-white">
+              <div className="border border-neutral-100 rounded-md overflow-hidden bg-white overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium select-none whitespace-nowrap">
-                      <th className="p-3 pl-4 w-16 whitespace-nowrap">序号</th>
+                      <th className="p-3 pl-4 w-12 whitespace-nowrap">序号</th>
                       <th className="p-3">题型</th>
                       <th className="p-3">题目数量</th>
-                      <th className="p-3">总分值</th>
+                      <th className="p-3">作业总分</th>
+                      <th className="p-3">作业得分</th>
+                      <th className="p-3">提交时间</th>
                       <th className="p-3 text-center pr-4">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 text-neutral-700">
                     {[
-                      { id: 'single', name: '单选题', count: 10, totalPoints: 10 },
-                      { id: 'multiple', name: '多选题', count: 5, totalPoints: 10 },
-                      { id: 'essay', name: '简答题', count: 2, totalPoints: 30 },
-                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 50 }
-                    ].map((sec, idx) => (
-                      <tr key={sec.id} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
-                        <td className="p-3 pl-4 font-mono text-neutral-500 whitespace-nowrap">{idx + 1}</td>
-                        <td className="p-3 font-semibold text-neutral-800">{sec.name}</td>
-                        <td className="p-3 text-neutral-600">{sec.count} 题</td>
-                        <td className="p-3 text-neutral-600">{sec.totalPoints} 分</td>
-                        <td className="p-3 text-center pr-4">
-                          <button
-                            onClick={() => {
-                              setPreviewQuestionType(sec.name as any);
-                              setPreviewQuestionIdx(0);
-                              setPreviewModeActive(true);
-                              setViewExamStudent(null);
-                            }}
-                            className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border border-[#fa541c]/30 hover:border-[#fa541c] bg-transparent px-2.5 py-1 rounded-[4px] cursor-pointer font-medium"
-                          >
-                            预览
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                      { id: 'single', name: '单选题', count: 2, totalPoints: 20 },
+                      { id: 'multiple', name: '多选题', count: 2, totalPoints: 20 },
+                      { id: 'essay', name: '简答题', count: 1, totalPoints: 20 },
+                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 40 }
+                    ].map((sec, idx) => {
+                      const earnedScore = viewExamStudent ? getEarnedScore(sec.id, getMappedScore(viewExamStudent.score)) : 0;
+                      const submitTime = '2026-07-07 11:00:15';
+                      return (
+                        <tr key={sec.id} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
+                          <td className="p-3 pl-4 font-mono text-neutral-500 whitespace-nowrap">{idx + 1}</td>
+                          <td className="p-3 font-semibold text-neutral-800">{sec.name}</td>
+                          <td className="p-3 text-neutral-600">{sec.count} 题</td>
+                          <td className="p-3 text-neutral-600">{sec.totalPoints} 分</td>
+                          <td className="p-3 font-bold text-neutral-850">{earnedScore} 分</td>
+                          <td className="p-3 text-neutral-500 font-mono">{submitTime}</td>
+                          <td className="p-3 text-center pr-4">
+                            <button
+                              onClick={() => {
+                                setPreviewQuestionType(sec.name as any);
+                                setPreviewQuestionIdx(idx);
+                                setPreviewModeActive(true);
+                              }}
+                              className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border border-[#fa541c]/30 hover:border-[#fa541c] bg-transparent px-2.5 py-1 rounded-[4px] cursor-pointer font-medium"
+                            >
+                              预览
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
