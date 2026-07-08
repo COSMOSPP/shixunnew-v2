@@ -4,7 +4,7 @@ import {
   Code, PenTool, CheckCircle, BrainCircuit,
   Calendar, Clock, User,
   Bold, Italic, Type, List, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Link2, Maximize2, FileText,
-  Users, Award, Trophy, ShieldCheck, RotateCw, Download, Trash2, RefreshCw, ArrowLeft, Eye
+  Users, Award, Trophy, ShieldCheck, RotateCw, Download, Trash2, RefreshCw, ArrowLeft, Eye, Info, XCircle, UploadCloud
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -241,6 +241,8 @@ export default function TeacherExams({ embedded = false }) {
     message: React.ReactNode;
     showCancel: boolean;
     onConfirm: () => void;
+    type?: 'warning' | 'danger' | 'info';
+    hideHeader?: boolean;
   }>({
     show: false,
     title: '',
@@ -301,6 +303,28 @@ export default function TeacherExams({ embedded = false }) {
   const [scoringTab, setScoringTab] = useState<'admin' | 'candidate'>('admin');
   const [scoringSearchInput, setScoringSearchInput] = useState('');
   const [scoringSearchQuery, setScoringSearchQuery] = useState('');
+
+  // Manual assign grading task modal state
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignCount, setAssignCount] = useState(1);
+  const [assignMarker, setAssignMarker] = useState('');
+  const [isAssignMarkerDropdownOpen, setIsAssignMarkerDropdownOpen] = useState(false);
+  const [selectedAssignCandidates, setSelectedAssignCandidates] = useState<string[]>([]);
+
+  // Auto assign grading task modal state
+  const [showAutoAssignModal, setShowAutoAssignModal] = useState(false);
+  const [autoAssignCount, setAutoAssignCount] = useState(1);
+  const [autoAssignMarker, setAutoAssignMarker] = useState('');
+  const [isAutoAssignMarkerDropdownOpen, setIsAutoAssignMarkerDropdownOpen] = useState(false);
+
+  // Grader management modal states
+  const [showChangeGraderModal, setShowChangeGraderModal] = useState(false);
+  const [graderValue, setGraderValue] = useState('MS.df (teacherDF@sz)');
+  const [graderDropdownOpen, setGraderDropdownOpen] = useState(false);
+  const [showStudentsModal, setShowStudentsModal] = useState(false);
+  const [showGradingDetailsModal, setShowGradingDetailsModal] = useState(false);
+  const [showImportScoresModal, setShowImportScoresModal] = useState(false);
+  const [showCandidateGradingDetailsModal, setShowCandidateGradingDetailsModal] = useState(false);
 
   // Candidates Drawer states
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
@@ -1727,28 +1751,34 @@ export default function TeacherExams({ embedded = false }) {
         <div className="fixed inset-0 z-[450] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
-              <h2 className="text-[16px] font-bold text-[#262626]">
-                {confirmModal.title}
-              </h2>
-              <button 
-                onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            {!confirmModal.hideHeader && (
+              <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626]">
+                  {confirmModal.title}
+                </h2>
+                <button 
+                  onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
+                  className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            )}
 
             {/* Body */}
-            <div className="p-6 bg-white flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
-              <div className="text-[14px] text-neutral-750 leading-normal whitespace-pre-wrap">
+            <div className={cn("p-6 bg-white flex items-start gap-3", confirmModal.hideHeader && "pt-8 pb-4")}>
+              {confirmModal.type === 'danger' ? (
+                <div className="w-5.5 h-5.5 rounded-full bg-[#ff5b60] text-white flex items-center justify-center font-bold text-[14px] shrink-0 select-none mt-0.5">!</div>
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              )}
+              <div className={cn("text-neutral-750 leading-normal whitespace-pre-wrap font-medium", confirmModal.hideHeader ? "text-[15px]" : "text-[14px]")}>
                 {confirmModal.message}
               </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+            <div className={cn("px-6 py-4 flex items-center justify-end gap-3 shrink-0", confirmModal.hideHeader ? "border-t-0 pt-2 pb-6 bg-white" : "border-t border-neutral-100 bg-neutral-50/50")}>
               {confirmModal.showCancel && (
                 <Button 
                   onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
@@ -2429,21 +2459,32 @@ export default function TeacherExams({ embedded = false }) {
                         <RotateCw className="w-3.5 h-3.5" />
                       </button>
                       <Button
-                        onClick={() => showToast('正在执行批量移除批阅任务...', 'success')}
-                        variant="outline"
-                        className="border-neutral-200 text-neutral-500 hover:text-red-655 hover:border-red-200 hover:bg-red-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all"
-                      >
-                        批量移除
-                      </Button>
-                      <Button
-                        onClick={() => showToast('正在拉起自动分配批阅设置...', 'success')}
+                        onClick={() => {
+                          setConfirmModal({
+                            show: true,
+                            title: '移除批阅任务',
+                            message: '确定移除批阅任务?',
+                            showCancel: true,
+                            type: 'danger',
+                            onConfirm: () => {
+                              showToast('正在执行移除批阅任务...', 'success');
+                            }
+                          });
+                        }}
                         variant="outline"
                         className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all"
                       >
-                        自动分配设置
+                        移除批阅任务
                       </Button>
                       <Button
-                        onClick={() => showToast('正在拉起分配批阅任务弹窗...', 'success')}
+                        onClick={() => setShowAutoAssignModal(true)}
+                        variant="outline"
+                        className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all"
+                      >
+                        自动分配批阅设置
+                      </Button>
+                      <Button
+                        onClick={() => setShowAssignModal(true)}
                         className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-3.5 rounded-[4px] text-[12px] border-0 cursor-pointer shadow-sm transition-colors flex items-center gap-1.5"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -2501,19 +2542,19 @@ export default function TeacherExams({ embedded = false }) {
                                 <td className="p-3 text-left">
                                   <div className="flex items-center justify-start gap-3">
                                     <button 
-                                      onClick={() => showToast('正在更换批阅人...', 'info')}
+                                      onClick={() => setShowChangeGraderModal(true)}
                                       className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer p-0 text-xs"
                                     >
                                       更换批阅人
                                     </button>
                                     <button 
-                                      onClick={() => showToast('正在查看考生名单...', 'info')}
+                                      onClick={() => setShowStudentsModal(true)}
                                       className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer p-0 text-xs"
                                     >
                                       考生名单
                                     </button>
                                     <button 
-                                      onClick={() => showToast('正在加载批阅详情...', 'info')}
+                                      onClick={() => setShowGradingDetailsModal(true)}
                                       className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer p-0 text-xs"
                                     >
                                       批阅详情
@@ -2549,7 +2590,7 @@ export default function TeacherExams({ embedded = false }) {
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
-                            onClick={() => showToast('正在拉起导入最终成绩...', 'success')}
+                            onClick={() => setShowImportScoresModal(true)}
                             variant="outline"
                             className="border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 font-bold h-8 px-3 rounded-[4px] text-[12px] cursor-pointer bg-white transition-all flex items-center gap-1.5"
                           >
@@ -2612,7 +2653,7 @@ export default function TeacherExams({ embedded = false }) {
                                 <td className="p-3 font-mono text-neutral-500">{student.finalScore}</td>
                                 <td className="p-3 text-left">
                                   <button 
-                                    onClick={() => showToast('正在加载批阅详情...', 'info')}
+                                    onClick={() => setShowCandidateGradingDetailsModal(true)}
                                     className="text-[#fa541c] hover:text-[#e84a15] hover:underline font-bold bg-transparent border-0 cursor-pointer p-0 text-xs"
                                   >
                                     批阅详情
@@ -4112,6 +4153,717 @@ export default function TeacherExams({ embedded = false }) {
                 className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
               >
                 关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 分配批阅任务 Modal */}
+      {showAssignModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => {
+            setShowAssignModal(false);
+            setIsAssignMarkerDropdownOpen(false);
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-neutral-100 flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 rounded-t-2xl">
+              <h3 className="text-base font-extrabold text-neutral-850">添加批阅老师</h3>
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setIsAssignMarkerDropdownOpen(false);
+                }}
+                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 overflow-visible">
+              <div className="grid grid-cols-[100px_1fr] items-start gap-y-5 gap-x-4">
+                <label className="text-[13px] font-bold text-neutral-400 select-none pt-2 flex items-center">
+                  单卷批阅次数 <span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <div>
+                  <div className="border border-neutral-200 rounded-[6px] overflow-hidden flex items-center bg-white h-9 w-[114px]">
+                    <button 
+                      onClick={() => setAssignCount(Math.max(1, assignCount - 1))} 
+                      className="w-9 h-full flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-r border-neutral-200 cursor-pointer text-base select-none disabled:opacity-40 disabled:cursor-not-allowed"
+                      disabled={assignCount <= 1}
+                    >
+                      —
+                    </button>
+                    <span className="w-14 text-center font-bold text-[14px] text-neutral-850 select-none">{assignCount}</span>
+                    <button 
+                      onClick={() => setAssignCount(assignCount + 1)} 
+                      className="w-9 h-full flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-l border-neutral-200 cursor-pointer text-base select-none"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <label className="text-[13px] font-bold text-neutral-400 select-none pt-2 flex items-center">
+                  批阅账号 <span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <div className="relative flex flex-col">
+                  <div 
+                    onClick={() => setIsAssignMarkerDropdownOpen(!isAssignMarkerDropdownOpen)}
+                    className={cn(
+                      "h-9 w-full border rounded-[6px] px-3.5 flex items-center justify-between transition-all duration-150 text-[13px] font-medium cursor-pointer text-left bg-white select-none",
+                      isAssignMarkerDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "hover:border-[#fa541c] border-neutral-200"
+                    )}
+                  >
+                    <span className={assignMarker ? "text-neutral-800" : "text-neutral-400"}>
+                      {assignMarker ? (assignMarker === 'sx_admin' ? 'sxAdmin (sx_admin)' : assignMarker === 'teacher_01' ? '张老师 (teacher_01)' : '李老师 (teacher_02)') : '请选择批阅账号'}
+                    </span>
+                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-200 text-neutral-400", isAssignMarkerDropdownOpen && "rotate-180")} />
+                  </div>
+
+                  {isAssignMarkerDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-lg border border-neutral-100 shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-[310] py-1 animate-in fade-in slide-in-from-top-1 duration-150 max-h-48 overflow-y-auto custom-scrollbar">
+                      {[
+                        { account: 'sx_admin', name: 'sxAdmin (sx_admin)' },
+                        { account: 'teacher_01', name: '张老师 (teacher_01)' },
+                        { account: 'teacher_02', name: '李老师 (teacher_02)' }
+                      ].map((m) => (
+                        <div
+                          key={m.account}
+                          onClick={() => {
+                            setAssignMarker(m.account);
+                            setIsAssignMarkerDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "px-4 py-2.5 text-[13px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer transition-colors text-left flex items-center justify-between",
+                            assignMarker === m.account && "bg-orange-50/40 text-[#fa541c] font-bold"
+                          )}
+                        >
+                          <span>{m.name}</span>
+                          {assignMarker === m.account && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <span className="text-[12px] text-neutral-400 mt-2 select-none">将所有考生平均分配至批阅账号</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 rounded-b-2xl">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setIsAssignMarkerDropdownOpen(false);
+                }}
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!assignMarker) {
+                    showToast('请选择批阅账号', 'error');
+                    return;
+                  }
+                  showToast('批阅任务分配成功', 'success');
+                  setShowAssignModal(false);
+                  setIsAssignMarkerDropdownOpen(false);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] text-xs cursor-pointer shadow-sm transition-colors border-0"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 自动分配批阅设置 Modal */}
+      {showAutoAssignModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => {
+            setShowAutoAssignModal(false);
+            setIsAutoAssignMarkerDropdownOpen(false);
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-neutral-100 flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 rounded-t-2xl">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-[#fa541c]" />
+                </div>
+                <h3 className="text-base font-extrabold text-neutral-850">自动分配批阅设置</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAutoAssignModal(false);
+                  setIsAutoAssignMarkerDropdownOpen(false);
+                }}
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 overflow-visible flex flex-col">
+              {/* Prompt Text */}
+              <div className="flex items-start gap-1.5 text-[12.5px] text-[#fa541c] font-semibold select-none leading-normal">
+                <Info className="w-4 h-4 text-[#fa541c] mt-0.5 shrink-0" />
+                <span>自动分配批阅设置仅在考试进行中对余量的未提交的试卷生效</span>
+              </div>
+
+              {/* Stepper Count Input */}
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-extrabold text-neutral-850 flex items-center gap-1 select-none">
+                  单卷批阅次数 <span className="text-red-500">*</span>
+                </label>
+                <div className="border border-neutral-200 rounded-[6px] overflow-hidden flex items-center bg-white h-9 w-[114px]">
+                  <button 
+                    onClick={() => setAutoAssignCount(Math.max(1, autoAssignCount - 1))} 
+                    className="w-9 h-full flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-r border-neutral-200 cursor-pointer text-base select-none disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled={autoAssignCount <= 1}
+                  >
+                    —
+                  </button>
+                  <span className="w-14 text-center font-bold text-[14px] text-neutral-850 select-none">{autoAssignCount}</span>
+                  <button 
+                    onClick={() => setAutoAssignCount(autoAssignCount + 1)} 
+                    className="w-9 h-full flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-l border-neutral-200 cursor-pointer text-base select-none"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Marker Account Select */}
+              <div className="space-y-1.5 relative flex flex-col">
+                <label className="text-[13px] font-extrabold text-neutral-850 flex items-center gap-1 select-none">
+                  批阅账号 <span className="text-red-500">*</span>
+                </label>
+                <div 
+                  onClick={() => setIsAutoAssignMarkerDropdownOpen(!isAutoAssignMarkerDropdownOpen)}
+                  className={cn(
+                    "h-9 w-full border rounded-[6px] px-3.5 flex items-center justify-between transition-all duration-150 text-[13px] font-medium cursor-pointer text-left bg-white select-none",
+                    isAutoAssignMarkerDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]/25 shadow-[0_0_0_2px_rgba(250,84,28,0.1)]" : "hover:border-[#fa541c] border-neutral-200"
+                  )}
+                >
+                  <span className={autoAssignMarker ? "text-neutral-800" : "text-neutral-400"}>
+                    {autoAssignMarker ? (autoAssignMarker === 'sx_admin' ? 'sxAdmin (sx_admin)' : autoAssignMarker === 'teacher_01' ? '张老师 (teacher_01)' : '李老师 (teacher_02)') : '请选择批阅账号'}
+                  </span>
+                  <ChevronDown className={cn("w-4 h-4 transition-transform duration-200 text-neutral-400", isAutoAssignMarkerDropdownOpen && "rotate-180")} />
+                </div>
+
+                {isAutoAssignMarkerDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-lg border border-neutral-100 shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-[310] py-1 animate-in fade-in slide-in-from-top-1 duration-150 max-h-48 overflow-y-auto custom-scrollbar">
+                    {[
+                      { account: 'sx_admin', name: 'sxAdmin (sx_admin)' },
+                      { account: 'teacher_01', name: '张老师 (teacher_01)' },
+                      { account: 'teacher_02', name: '李老师 (teacher_02)' }
+                    ].map((m) => (
+                      <div
+                        key={m.account}
+                        onClick={() => {
+                          setAutoAssignMarker(m.account);
+                          setIsAutoAssignMarkerDropdownOpen(false);
+                        }}
+                        className={cn(
+                          "px-4 py-2.5 text-[13px] font-medium text-neutral-700 hover:bg-neutral-50 hover:text-[#fa541c] cursor-pointer transition-colors text-left flex items-center justify-between",
+                          autoAssignMarker === m.account && "bg-orange-50/40 text-[#fa541c] font-bold"
+                        )}
+                      >
+                        <span>{m.name}</span>
+                        {autoAssignMarker === m.account && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <span className="text-[12px] text-neutral-400 mt-1 select-none">将所有考生平均分配至批阅账号</span>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 rounded-b-2xl">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAutoAssignModal(false);
+                  setIsAutoAssignMarkerDropdownOpen(false);
+                }}
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!autoAssignMarker) {
+                    showToast('请选择批阅账号', 'error');
+                    return;
+                  }
+                  showToast('自动分配设置成功', 'success');
+                  setShowAutoAssignModal(false);
+                  setIsAutoAssignMarkerDropdownOpen(false);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] text-xs cursor-pointer shadow-sm transition-colors border-0"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 编辑更换批阅人 Modal */}
+      {showChangeGraderModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => {
+            setShowChangeGraderModal(false);
+            setGraderDropdownOpen(false);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[450px] rounded-lg shadow-2xl flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0 rounded-t-lg">
+              <h3 className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-[#fa541c]" />
+                编辑更换批阅人
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowChangeGraderModal(false);
+                  setGraderDropdownOpen(false);
+                }} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 pb-8">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4 relative select-none">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  管理员 <span className="text-[#fa541c]">*</span>
+                </label>
+                
+                <div className="relative w-full">
+                  {/* Select Trigger Box */}
+                  <div 
+                    onClick={() => setGraderDropdownOpen(!graderDropdownOpen)}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none text-left text-xs",
+                      graderDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className={cn(graderValue ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                      {graderValue || '请选择'}
+                    </span>
+                    <ChevronDown 
+                      className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", graderDropdownOpen && "rotate-180")} 
+                    />
+                  </div>
+
+                  {/* Dropdown Options */}
+                  {graderDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150 text-xs">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                        {[
+                          { name: 'sxAdmin (sx_admin)', value: 'sx_admin' },
+                          { name: '张老师 (teacher_01)', value: 'teacher_01' },
+                          { name: '李老师 (teacher_02)', value: 'teacher_02' },
+                          { name: 'MS.df (teacherDF@sz)', value: 'teacherDF@sz' }
+                        ].map((option) => {
+                          const isSelected = graderValue === option.name;
+                          return (
+                            <div
+                              key={option.value}
+                              onClick={() => {
+                                setGraderValue(option.name);
+                                setGraderDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{option.name}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-3 shrink-0 rounded-b-lg">
+              <Button 
+                onClick={() => {
+                  setShowChangeGraderModal(false);
+                  setGraderDropdownOpen(false);
+                }} 
+                variant="outline"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-4 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!graderValue.trim()) {
+                    showToast('管理员不能为空', 'error');
+                    return;
+                  }
+                  showToast('更换批阅人成功', 'success');
+                  setShowChangeGraderModal(false);
+                  setGraderDropdownOpen(false);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 预览学生名单 Modal */}
+      {showStudentsModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => setShowStudentsModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-neutral-100 flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 rounded-t-2xl">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-[#fa541c]" />
+                </div>
+                <h3 className="text-base font-extrabold text-neutral-850">预览学生名单</h3>
+              </div>
+              <button
+                onClick={() => setShowStudentsModal(false)}
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+              {/* Table list */}
+              <div className="space-y-3">
+                <div className="border border-neutral-200 rounded">
+                  <table className="w-full text-left border-collapse text-xs select-none">
+                    <thead>
+                      <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                        <th className="p-3 pl-4">账号</th>
+                        <th className="p-3">姓名</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700 bg-white">
+                      <tr className="hover:bg-neutral-50/50 transition-colors h-11">
+                        <td className="p-3 pl-4 font-mono font-semibold text-neutral-850">2</td>
+                        <td className="p-3 text-neutral-700 font-medium">t01_liuwei</td>
+                      </tr>
+                      <tr className="hover:bg-neutral-50/50 transition-colors h-11">
+                        <td className="p-3 pl-4 font-mono font-semibold text-neutral-850">liuwei</td>
+                        <td className="p-3 text-neutral-700 font-medium">liuwei</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 rounded-b-2xl">
+              <Button
+                onClick={() => setShowStudentsModal(false)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] text-xs cursor-pointer shadow-sm transition-colors border-0"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批阅详情 Modal */}
+      {showGradingDetailsModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => setShowGradingDetailsModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-neutral-100 flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 rounded-t-2xl">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-[#fa541c]" />
+                </div>
+                <h3 className="text-base font-extrabold text-neutral-850">批阅详情</h3>
+              </div>
+              <button
+                onClick={() => setShowGradingDetailsModal(false)}
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+              {/* Table list */}
+              <div className="space-y-3">
+                <div className="border border-neutral-200 rounded">
+                  <table className="w-full text-left border-collapse text-xs select-none">
+                    <thead>
+                      <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                        <th className="p-3 pl-4 w-[25%]">账号</th>
+                        <th className="p-3 w-[25%]">姓名</th>
+                        <th className="p-3 w-[30%]">批阅状态</th>
+                        <th className="p-3 pl-4 text-left w-[20%]">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700 bg-white">
+                      <tr className="hover:bg-neutral-50/50 transition-colors h-11">
+                        <td className="p-3 pl-4 font-mono font-semibold text-neutral-850">2</td>
+                        <td className="p-3 text-neutral-700 font-medium">t01_liuwei</td>
+                        <td className="p-3 whitespace-nowrap">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium inline-block bg-orange-50 border border-orange-100 text-[#fa541c]">
+                            批阅中（后转入）
+                          </span>
+                        </td>
+                        <td className="p-3 pl-4 text-left">
+                          <button
+                            onClick={() => {
+                              setSelectedStudentForPaper({ id: 2, account: '2', name: 't01_liuwei', score: 85 });
+                              setPreviewModeActive(true);
+                              setPreviewQuestionIdx(0);
+                            }}
+                            className="text-[#fa541c] hover:text-[#e84a15] font-bold bg-transparent border-0 cursor-pointer p-0 text-xs hover:underline"
+                          >
+                            预览试卷
+                          </button>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-neutral-50/50 transition-colors h-11">
+                        <td className="p-3 pl-4 font-mono font-semibold text-neutral-850">liuwei</td>
+                        <td className="p-3 text-neutral-700 font-medium">liuwei</td>
+                        <td className="p-3 whitespace-nowrap">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium inline-block bg-neutral-100 border border-neutral-200 text-neutral-500">
+                            未批阅（后转入）
+                          </span>
+                        </td>
+                        <td className="p-3 pl-4 text-left">
+                          <button
+                            onClick={() => {
+                              setSelectedStudentForPaper({ id: 1, account: 'liuwei', name: 'liuwei', score: 70 });
+                              setPreviewModeActive(true);
+                              setPreviewQuestionIdx(0);
+                            }}
+                            className="text-[#fa541c] hover:text-[#e84a15] font-bold bg-transparent border-0 cursor-pointer p-0 text-xs hover:underline"
+                          >
+                            预览试卷
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-2.5 rounded-b-2xl">
+              <Button
+                onClick={() => setShowGradingDetailsModal(false)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] text-xs cursor-pointer shadow-sm transition-colors border-0"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 上传批阅 Modal */}
+      {showImportScoresModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => setShowImportScoresModal(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[450px] rounded-lg shadow-2xl flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0 rounded-t-lg">
+              <h3 className="text-[15px] font-bold text-neutral-850">
+                上传批阅
+              </h3>
+              <button 
+                onClick={() => setShowImportScoresModal(false)}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex flex-col items-center justify-center">
+              <div 
+                onClick={() => showToast('正在选择上传文件...', 'info')}
+                className="w-full border border-dashed border-[#ff9c6e]/70 bg-orange-50/[0.02] hover:bg-orange-50/[0.06] rounded-lg py-12 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 select-none"
+              >
+                <UploadCloud className="w-14 h-14 text-[#ff9c6e] mb-4 stroke-[1.25]" />
+                <span className="text-[#fa541c] font-medium text-[13px]">支持将文件拖拽至此区域</span>
+              </div>
+              
+              <div className="text-neutral-500 font-medium select-none text-[12.5px] mt-4 flex items-center justify-center gap-0.5">
+                <span>点此</span>
+                <span 
+                  onClick={() => showToast('正在下载导入模板...', 'success')}
+                  className="text-[#fa541c] hover:underline cursor-pointer font-bold"
+                >
+                  ↓下载
+                </span>
+                <span>模板</span>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-3 shrink-0 rounded-b-lg">
+              <Button 
+                onClick={() => setShowImportScoresModal(false)} 
+                variant="outline"
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-4 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  showToast('最终成绩导入成功', 'success');
+                  setShowImportScoresModal(false);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
+              >
+                确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 考生视角批阅详情 Modal */}
+      {showCandidateGradingDetailsModal && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-[3px] flex items-center justify-center animate-fade-in text-left text-[13px]"
+          onClick={() => setShowCandidateGradingDetailsModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-neutral-100 flex flex-col overflow-visible animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 rounded-t-2xl">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-[#fa541c]" />
+                </div>
+                <h3 className="text-base font-extrabold text-neutral-850">批阅详情</h3>
+              </div>
+              <button
+                onClick={() => setShowCandidateGradingDetailsModal(false)}
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+              {/* Table list */}
+              <div className="space-y-3">
+                <div className="border border-neutral-200 rounded">
+                  <table className="w-full text-left border-collapse text-xs select-none">
+                    <thead>
+                      <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                        <th className="p-3 pl-4 w-[25%]">账号</th>
+                        <th className="p-3 w-[25%]">姓名</th>
+                        <th className="p-3 w-[30%]">批阅状态</th>
+                        <th className="p-3 pl-4 text-left w-[20%]">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700 bg-white">
+                      <tr className="hover:bg-neutral-50/50 transition-colors h-11">
+                        <td className="p-3 pl-4 font-mono font-semibold text-neutral-850">sx_admin</td>
+                        <td className="p-3 text-neutral-700 font-medium">sxAdmin</td>
+                        <td className="p-3 whitespace-nowrap">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium inline-block bg-orange-50 border border-orange-100 text-[#fa541c]">
+                            批阅中
+                          </span>
+                        </td>
+                        <td className="p-3 pl-4 text-left">
+                          <button
+                            onClick={() => {
+                              setSelectedStudentForPaper({ id: 99, account: 'df0002', name: 'df0002', score: 85 });
+                              setPreviewModeActive(true);
+                              setPreviewQuestionIdx(0);
+                              setShowCandidateGradingDetailsModal(false);
+                            }}
+                            className="text-[#fa541c] hover:text-[#e84a15] font-bold bg-transparent border-0 cursor-pointer p-0 text-xs hover:underline"
+                          >
+                            预览试卷
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-[#fbfbfb] flex justify-end gap-2.5 rounded-b-2xl">
+              <Button
+                onClick={() => setShowCandidateGradingDetailsModal(false)}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 rounded-[4px] text-xs cursor-pointer shadow-sm transition-colors border-0"
+              >
+                确定
               </Button>
             </div>
           </div>
