@@ -4011,7 +4011,7 @@ export default function TeacherExams({ embedded = false }) {
             <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
               <h3 className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-[#fa541c]" />
-                评审作业 - {selectedStudentForPaper.name}
+                查看试卷 - {selectedStudentForPaper.name}
               </h3>
               <button 
                 onClick={() => {
