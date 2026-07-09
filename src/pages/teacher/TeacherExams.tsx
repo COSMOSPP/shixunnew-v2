@@ -3302,157 +3302,67 @@ export default function TeacherExams({ embedded = false }) {
                   { rank: 10, name: '楚天阔', id: '202674454210', class: '软件工程', classFull: '软件工程一班', score: 76, duration: '50m 30s', phone: '13866667777', submitTime: '2026/02/11 16:20', objScore: 36, subScore: 40, avatarText: '天阔' }
                 ];
 
-                const filteredRankList = rankList.filter(stu => 
-                  stu.name.includes(rankSearchQuery) || 
-                  stu.class.includes(rankSearchQuery) || 
-                  stu.id.includes(rankSearchQuery)
-                );
-
                 const topThree = rankList.slice(0, 3);
-                const listRanks = filteredRankList.filter(stu => stu.rank > 3);
+                const listRanks = rankList.filter(stu => stu.rank > 3);
 
                 return (
                   <div className="space-y-6 text-left">
                     {/* Top 3 Podium Area matching the reference style */}
-                    <div className="flex justify-center items-stretch gap-5 pt-4 pb-6 select-none">
+                    <div className="flex justify-center items-stretch gap-5 pt-4 pb-4 select-none">
                       
                       {/* 2nd Place Card (Left) */}
-                      <div className="flex-1 bg-[#f0f5ff]/60 border border-[#d6e4ff]/40 rounded-2xl p-5 flex flex-col items-center justify-between text-center relative shadow-sm hover:shadow-md transition-all duration-300">
+                      <div className="flex-1 bg-[#f0f5ff]/60 border border-[#d6e4ff]/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="flex flex-col items-center w-full">
-                          {/* Laurel Wreath with number */}
-                          <div className="flex flex-col items-center justify-center mb-2">
-                            <span className="text-[26px] font-black text-blue-500/80 leading-none select-none font-serif">🥈 2</span>
+                          {/* Rank Number */}
+                          <div className="flex flex-col items-center justify-center mb-3">
+                            <span className="text-[26px] font-black text-blue-500/80 leading-none select-none font-serif">2</span>
                           </div>
-                          
-                          {/* Avatar with circle boundary */}
-                          <div className="w-16 h-16 rounded-full border-2 border-blue-200 bg-white flex items-center justify-center font-bold text-blue-600 text-base shadow-sm font-sans mb-3">
-                            {topThree[1].avatarText}
-                          </div>
-
-                          {/* Category Tag */}
-                          <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[4px] mb-2 shadow-sm select-none">
-                            {topThree[1].class}
-                          </span>
 
                           {/* Name */}
                           <div className="text-[14px] font-bold text-neutral-800 leading-tight mb-1">{topThree[1].name}</div>
                           
                           {/* Score metrics */}
                           <div className="text-[#fa541c] font-black font-mono text-[14.5px]">{topThree[1].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
-                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">客观{topThree[1].objScore} | 主观{topThree[1].subScore}</div>
                         </div>
-
-                        {/* View Exam pill button */}
-                        <button 
-                          onClick={() => showToast(`正在查看 ${topThree[1].name} 的答卷...`, 'info')}
-                          className="mt-4 bg-[#f0f5ff] hover:bg-blue-100 text-blue-600 text-xs px-5 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer shadow-sm"
-                        >
-                          查看答卷
-                        </button>
                       </div>
 
                       {/* 1st Place Card (Center) - Slightly taller & scaled */}
-                      <div className="flex-1 bg-[#fffbe6]/75 border border-[#ffe58f]/40 rounded-2xl p-5 flex flex-col items-center justify-between text-center relative shadow-md scale-105 z-10 hover:shadow-lg transition-all duration-300">
+                      <div className="flex-1 bg-[#fffbe6]/75 border border-[#ffe58f]/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative shadow-md scale-105 z-10 hover:shadow-lg transition-all duration-300">
                         <div className="flex flex-col items-center w-full">
-                          {/* Laurel Wreath with number */}
-                          <div className="flex flex-col items-center justify-center mb-2">
-                            <span className="text-[30px] font-black text-amber-550 leading-none select-none font-serif">🥇 1</span>
+                          {/* Rank Number */}
+                          <div className="flex flex-col items-center justify-center mb-3">
+                            <span className="text-[30px] font-black text-amber-550 leading-none select-none font-serif">1</span>
                           </div>
-                          
-                          {/* Avatar with gold boundary */}
-                          <div className="w-18 h-18 rounded-full border-2 border-amber-300 bg-white flex items-center justify-center font-bold text-amber-600 text-lg shadow-[0_0_12px_rgba(251,192,45,0.15)] font-sans mb-3">
-                            {topThree[0].avatarText}
-                          </div>
-
-                          {/* Category Tag */}
-                          <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[4px] mb-2 shadow-sm select-none">
-                            {topThree[0].class}
-                          </span>
 
                           {/* Name */}
                           <div className="text-[14.5px] font-extrabold text-neutral-900 leading-tight mb-1">{topThree[0].name}</div>
                           
                           {/* Score metrics */}
                           <div className="text-[#fa541c] font-black font-mono text-[16px]">{topThree[0].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
-                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">客观{topThree[0].objScore} | 主观{topThree[0].subScore}</div>
                         </div>
-
-                        {/* View Exam pill button */}
-                        <button 
-                          onClick={() => showToast(`正在查看 ${topThree[0].name} 的答卷...`, 'info')}
-                          className="mt-4 bg-amber-100 hover:bg-amber-205 text-[#fa541c] text-xs px-6 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer shadow-sm"
-                        >
-                          查看答卷
-                        </button>
                       </div>
 
                       {/* 3rd Place Card (Right) */}
-                      <div className="flex-1 bg-[#fff1f0]/60 border border-[#ffa39e]/40 rounded-2xl p-5 flex flex-col items-center justify-between text-center relative shadow-sm hover:shadow-md transition-all duration-300">
+                      <div className="flex-1 bg-[#fff1f0]/60 border border-[#ffa39e]/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="flex flex-col items-center w-full">
-                          {/* Laurel Wreath with number */}
-                          <div className="flex flex-col items-center justify-center mb-2">
-                            <span className="text-[26px] font-black text-orange-600/85 leading-none select-none font-serif">🥉 3</span>
+                          {/* Rank Number */}
+                          <div className="flex flex-col items-center justify-center mb-3">
+                            <span className="text-[26px] font-black text-orange-600/85 leading-none select-none font-serif">3</span>
                           </div>
-                          
-                          {/* Avatar with circle boundary */}
-                          <div className="w-16 h-16 rounded-full border-2 border-orange-200 bg-white flex items-center justify-center font-bold text-orange-600 text-base shadow-sm font-sans mb-3">
-                            {topThree[2].avatarText}
-                          </div>
-
-                          {/* Category Tag */}
-                          <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[4px] mb-2 shadow-sm select-none">
-                            {topThree[2].class}
-                          </span>
 
                           {/* Name */}
                           <div className="text-[13px] font-bold text-neutral-800 leading-tight mb-1">{topThree[2].name}</div>
                           
                           {/* Score metrics */}
                           <div className="text-[#fa541c] font-black font-mono text-[14px]">{topThree[2].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
-                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">客观{topThree[2].objScore} | 主观{topThree[2].subScore}</div>
                         </div>
-
-                        {/* View Exam pill button */}
-                        <button 
-                          onClick={() => showToast(`正在查看 ${topThree[2].name} 的答卷...`, 'info')}
-                          className="mt-4 bg-red-100/50 hover:bg-red-100 text-red-650 text-xs px-5 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer shadow-sm"
-                        >
-                          查看答卷
-                        </button>
                       </div>
 
                     </div>
 
                     {/* Filter and Complete list Area */}
                     <div className="space-y-4 pt-4 border-t border-neutral-100">
-                      <div className="flex items-center justify-between select-none">
-                        <div className="text-[14px] font-bold text-neutral-800 flex items-center gap-1.5">
-                          <span className="inline-block w-1.5 h-3.5 bg-[#fa541c] rounded-full"></span>
-                          全部考生排名列表
-                        </div>
-                        
-                        {/* Search box */}
-                        <div className="relative w-56">
-                          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                          <input
-                            type="text"
-                            placeholder="搜索姓名 / 班级..."
-                            value={rankSearchQuery}
-                            onChange={(e) => setRankSearchQuery(e.target.value)}
-                            className="pl-8 pr-7 py-1 w-full bg-white border border-neutral-250 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-neutral-800 transition-all placeholder:text-neutral-400 h-8"
-                          />
-                          {rankSearchQuery && (
-                            <button
-                              onClick={() => setRankSearchQuery('')}
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 border-0 bg-transparent text-neutral-400 hover:text-neutral-600 cursor-pointer p-0 text-xs flex items-center justify-center"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Vertical Streamer list style */}
+                      {/* Vertical Streamer list style without Avatar, Action button, class tag, or student ID */}
                       <div className="space-y-3 pt-2">
                         {listRanks.map((stu) => (
                           <div 
@@ -3465,36 +3375,24 @@ export default function TeacherExams({ embedded = false }) {
                               <span className="text-[20px] font-black text-neutral-300 w-6 text-center select-none font-mono">
                                 {stu.rank}
                               </span>
-                              
-                              {/* Avatar circle */}
-                              <div className="w-12 h-12 rounded-full bg-neutral-50 border border-neutral-200/50 flex items-center justify-center font-bold text-neutral-600 text-sm shadow-inner shrink-0 font-sans select-none">
-                                {stu.avatarText}
-                              </div>
 
                               {/* Student Text info */}
                               <div className="flex flex-col text-left space-y-1">
                                 <div className="flex items-center">
                                   <span className="font-bold text-neutral-800 text-[14px]">{stu.name}</span>
-                                  <span className="bg-neutral-100 text-neutral-500 text-[9.5px] font-bold px-1.5 py-0.5 rounded ml-2 shadow-[inset_0_1px_1px_rgba(0,0,0,0.01)] uppercase select-none">
-                                    {stu.classFull}
-                                  </span>
                                 </div>
                                 <div className="text-[11px] text-neutral-400 font-mono select-none">
-                                  学号: {stu.id}
-                                </div>
-                                <div className="text-[11.5px] text-neutral-550 select-none">
-                                  最终得分: <span className="font-extrabold text-[#fa541c] font-mono text-[12.5px]">{stu.score} 分</span> (客观 {stu.objScore} + 主观 {stu.subScore}) <span className="text-neutral-300 mx-1.5">|</span> 用时: <span className="font-mono">{stu.duration}</span>
+                                  提交时间: {stu.submitTime}
                                 </div>
                               </div>
                             </div>
 
-                            {/* Right action button */}
-                            <button
-                              onClick={() => showToast(`正在查看 ${stu.name} 的答卷...`, 'info')}
-                              className="bg-[#fa541c]/5 hover:bg-[#fa541c]/10 text-[#fa541c] hover:text-[#e84a15] text-[12px] px-5 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer select-none"
-                            >
-                              查看答卷
-                            </button>
+                            {/* Right side: only final score */}
+                            <div className="text-right select-none pr-3">
+                              <span className="text-neutral-500 text-[12.5px] mr-1">最终得分:</span>
+                              <span className="font-extrabold text-[#fa541c] font-mono text-[14.5px]">{stu.score}</span>
+                              <span className="text-[10px] text-neutral-400 font-bold ml-0.5">分</span>
+                            </div>
                           </div>
                         ))}
                         {listRanks.length === 0 && (
