@@ -524,9 +524,6 @@ export default function TeacherGrading() {
           <span className="font-bold text-neutral-800 text-[14px]">
             {selectedTask?.examName || 'Python 基础 - 答卷预览'}
           </span>
-          <span className="ml-3 px-2.5 py-0.5 bg-[#fa541c]/10 text-[#fa541c] text-[11px] font-bold rounded">
-            最终得分：{totalScore} 分
-          </span>
         </div>
 
         {/* Content Area */}
