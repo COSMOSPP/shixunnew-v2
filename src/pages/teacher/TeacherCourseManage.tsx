@@ -4,7 +4,7 @@ import {
   ArrowLeft, BarChart2, BookOpen, Users, 
   Download, Plus, Search, FileText, CheckCircle, 
   Clock, MoreVertical, Settings, BarChart, Copy,
-  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info, HelpCircle, RotateCw, Eye
+  ChevronDown, ChevronUp, PlusCircle, Paperclip, MonitorPlay, Code, CheckSquare, Calendar, TrendingUp, PieChart, Edit, Award, ChevronRight, X, Trash2, Info, HelpCircle, RotateCw, Eye, Sparkles, Cpu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
@@ -392,6 +392,53 @@ export default function TeacherCourseManage() {
   const [reviewModalAssignment, setReviewModalAssignment] = useState<any>(null);
   const [showReviewPreview, setShowReviewPreview] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [reviewQuestions, setReviewQuestions] = useState<any[]>([]);
+
+  // Update grade for reviewed question
+  const handleReviewQuestionGradeChange = (questionId: number, newScore: number) => {
+    setReviewQuestions(prev => prev.map(q => 
+      q.id === questionId ? { ...q, score: newScore } : q
+    ));
+  };
+
+  // Update comment for reviewed question
+  const handleReviewQuestionCommentChange = (questionId: number, comment: string) => {
+    setReviewQuestions(prev => prev.map(q => 
+      q.id === questionId ? { ...q, comment } : q
+    ));
+  };
+
+  // Mock AI Evaluation
+  const handleReviewQuestionAIEvaluate = (questionId: number) => {
+    showToast('智能分析中，请稍候...', 'info');
+    setTimeout(() => {
+      setReviewQuestions(prev => prev.map(q => {
+        if (q.id === questionId) {
+          const mockAIFeedback = q.type === '简答题' 
+            ? `智能分析报告：\n1. 语义完全吻合：对比了 "is" 代表的内存地址一致性与 "==" 的值等价性，概念准确。\n2. 举例分析：a is b 与 a == b 的对象初始化案例正确无误。\n3. 评分建议：回答完美，建议打分 ${q.maxScore} 分。`
+            : `智能分析报告：\n1. 斐波那契求项逻辑正确，采用了线性时间复杂度 O(n) 的迭代解法。\n2. 边界输入处理合理（如小于等于 0、1 的特殊情况均有覆盖）。\n3. 评分建议：算法效率优秀，建议打分 ${q.maxScore} 分。`;
+          return { ...q, aiFeedback: mockAIFeedback };
+        }
+        return q;
+      }));
+      showToast('智能批改分析完成！', 'success');
+    }, 1000);
+  };
+
+  // Submit all scores
+  const handleReviewSubmitScore = () => {
+    const totalScore = reviewQuestions.reduce((sum, q) => sum + (q.score || 0), 0);
+    // Update student's score and change status to "已发布" (or similar)
+    if (reviewModalStudent) {
+      setGradingStudents(prev => prev.map(s => 
+        s.id === reviewModalStudent.id ? { ...s, score: totalScore, status: '已发布' } : s
+      ));
+      showToast(`已成功提交评分，总得分：${totalScore} 分`, 'success');
+    }
+    setShowReviewPreview(false);
+    setReviewModalStudent(null);
+    setReviewModalAssignment(null);
+  };
 
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [studentPage, setStudentPage] = useState(1);
@@ -2541,7 +2588,27 @@ export default function TeacherCourseManage() {
                                   onClick={() => {
                                     setReviewModalStudent(s);
                                     setReviewModalAssignment(selectedGradingAssignment);
-                                    setShowReviewModal(true);
+                                    const initialQs = getDynamicPreviewQuestions(s.score);
+                                    const mappedQs = initialQs.map(q => {
+                                      if (q.type === '简答题') {
+                                        return {
+                                          ...q,
+                                          comment: '概念对比清晰，举例说明到位。',
+                                          aiFeedback: '智能分析：学生准确区分了 is（同一性）与 ==（相等性）的区别，并给出了贴切的代码示例。语法和逻辑均无误。'
+                                        };
+                                      }
+                                      if (q.type === '实训编程题') {
+                                        return {
+                                          ...q,
+                                          comment: '斐波那契数列计算逻辑正确，时间复杂度符合 O(n) 要求。',
+                                          aiFeedback: '智能分析：斐波那契求项算法使用迭代法实现，避开了高复杂度的递归，时间复杂度为 O(n)，空间复杂度为 O(1)，满足所有指标要求。'
+                                        };
+                                      }
+                                      return q;
+                                    });
+                                    setReviewQuestions(mappedQs);
+                                    setShowReviewPreview(true);
+                                    setCurrentQuestionIndex(0);
                                   }}
                                   className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
                                 >
@@ -4563,8 +4630,8 @@ export default function TeacherCourseManage() {
 
       {/* Preview Review Assignment Workspace */}
       {showReviewPreview && reviewModalStudent && (() => {
-        const questions = getDynamicPreviewQuestions(reviewModalStudent.score);
-        const q = questions[currentQuestionIndex];
+        const questions = reviewQuestions;
+        const q = questions[currentQuestionIndex] || { type: '', title: '', maxScore: 0, score: 0 };
         return (
           <div className="fixed inset-0 z-[200] bg-[#f5f5f5] flex flex-col font-sans text-neutral-800 animate-fade-in text-[13px]">
             {/* Header Bar */}
@@ -4694,6 +4761,96 @@ export default function TeacherCourseManage() {
                         </div>
                       </div>
                     )}
+
+                    {/* 人工批改模块 (仅简答题和实训编程题显示) */}
+                    {(q.type === '简答题' || q.type === '实训编程题') && (
+                      <div className="mt-8 p-6 bg-[#fafafa] border border-neutral-200/80 rounded-xl flex flex-col gap-5 text-left max-w-[900px] select-none shadow-sm">
+                        <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                          <div className="flex items-center gap-2 font-bold text-neutral-800 text-[14px]">
+                            <Award className="w-5 h-5 text-[#fa541c]" />
+                            <span>人工批改</span>
+                          </div>
+                          <span className="text-[11px] text-neutral-400 font-bold">批改中</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Left: Score & Comment */}
+                          <div className="space-y-4">
+                            {/* Score Input */}
+                            <div className="flex items-center gap-3">
+                              <span className="text-[13px] text-neutral-600 font-bold">本题得分：</span>
+                              <div className="flex items-center border border-neutral-200 rounded overflow-hidden bg-white shadow-sm">
+                                <button 
+                                  onClick={() => {
+                                    handleReviewQuestionGradeChange(q.id, Math.max(0, (q.score || 0) - 1));
+                                  }}
+                                  className="px-3 py-1 bg-neutral-50 hover:bg-neutral-100 border-r border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
+                                >
+                                  -
+                                </button>
+                                <input 
+                                  type="number"
+                                  min={0}
+                                  max={q.maxScore}
+                                  value={q.score}
+                                  onChange={(e) => {
+                                    let val = Number(e.target.value);
+                                    if (val < 0) val = 0;
+                                    if (val > q.maxScore) val = q.maxScore;
+                                    handleReviewQuestionGradeChange(q.id, val);
+                                  }}
+                                  className="w-14 text-center border-0 font-bold text-neutral-800 focus:outline-none focus:ring-0 text-[13px] h-7.5"
+                                />
+                                <button 
+                                  onClick={() => {
+                                    handleReviewQuestionGradeChange(q.id, Math.min(q.maxScore, (q.score || 0) + 1));
+                                  }}
+                                  className="px-3 py-1 bg-neutral-50 hover:bg-neutral-100 border-l border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <span className="text-[13px] text-neutral-400 font-semibold">/ {q.maxScore} 分</span>
+                            </div>
+
+                            {/* Comment Textarea */}
+                            <div className="space-y-1.5">
+                              <label className="text-[12.5px] font-bold text-neutral-600">批改评语：</label>
+                              <textarea
+                                value={q.comment || ''}
+                                onChange={(e) => handleReviewQuestionCommentChange(q.id, e.target.value)}
+                                placeholder="请输入针对本题的个性化评语..."
+                                className="w-full min-h-[90px] p-3 border border-neutral-200 rounded-lg bg-white text-[13px] text-neutral-700 placeholder-neutral-400 focus:outline-none focus:border-[#fa541c]/50 focus:ring-1 focus:ring-[#fa541c]/20 transition-all resize-none shadow-sm"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Right: AI Intelligent Grading */}
+                          <div className="bg-[#fff7f2]/50 border border-orange-100/60 rounded-xl p-4 flex flex-col justify-between">
+                            <div className="space-y-2.5 text-left">
+                              <div className="flex items-center gap-1.5 text-[#fa541c] font-bold text-[13px] select-none">
+                                <Sparkles className="w-4 h-4" />
+                                <span>智能批改分析</span>
+                              </div>
+                              <p className="text-[12.5px] text-neutral-600 leading-relaxed font-sans bg-white/60 p-3 rounded-lg border border-orange-50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)] min-h-[100px] whitespace-pre-wrap">
+                                {q.aiFeedback || '正在进行智能语义分析...'}
+                              </p>
+                            </div>
+                            <div className="flex justify-end pt-3">
+                              <button
+                                onClick={() => {
+                                  handleReviewQuestionAIEvaluate(q.id);
+                                }}
+                                className="px-3.5 py-1.5 bg-gradient-to-r from-[#ff7a45] to-[#fa541c] text-white hover:opacity-95 font-bold rounded-lg text-xs cursor-pointer shadow-sm border-0 flex items-center gap-1"
+                              >
+                                <Cpu className="w-3.5 h-3.5" />
+                                重新智能分析
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Bottom Actions Row */}
@@ -4764,10 +4921,10 @@ export default function TeacherCourseManage() {
                     {/* Exit Preview Button below the navigations */}
                     <div className="pt-6 border-t border-neutral-200 mt-6 select-none shrink-0">
                       <Button 
-                        onClick={() => setShowReviewPreview(false)}
+                        onClick={handleReviewSubmitScore}
                         className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white border-0 font-bold h-9.5 text-[13px] rounded-[4px] cursor-pointer transition-colors shadow-sm"
                       >
-                        退出预览
+                        提交评分
                       </Button>
                     </div>
                   </div>
