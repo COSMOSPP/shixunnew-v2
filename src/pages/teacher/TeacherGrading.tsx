@@ -687,12 +687,6 @@ export default function TeacherGrading() {
                     
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => setTempQuestionScore(q.maxScore)}
-                        className="px-3 py-1 text-xs border border-[#fa541c]/30 rounded bg-[#fff2e8] hover:bg-[#ffe3d1] text-[#fa541c] transition-colors cursor-pointer font-bold"
-                      >
-                        {q.maxScore}分 (满分)
-                      </button>
-                      <button 
                         onClick={() => {
                           handleGradeChange(tempQuestionScore);
                           showToast(`已成功保存第 ${previewQuestionIdx + 1} 题的评分：${tempQuestionScore} 分`, 'success');
