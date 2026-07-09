@@ -1048,7 +1048,7 @@ export default function TeacherGrading() {
                                 onClick={() => handleViewExam(sub)}
                                 className="text-xs text-[#fa541c] hover:underline transition-colors border-0 bg-transparent p-0 cursor-pointer font-medium"
                               >
-                                评审试卷
+                                批阅试卷
                               </button>
                               <span className="mx-1.5 text-neutral-200">|</span>
                               <button
