@@ -1286,7 +1286,7 @@ export default function TeacherExams({ embedded = false }) {
               <h2 className="text-[15px] font-bold text-neutral-850">新增考试配置</h2>
               <button 
                 onClick={() => setIsCreateDrawerOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1540,7 +1540,7 @@ export default function TeacherExams({ embedded = false }) {
               </h2>
               <button 
                 onClick={() => setIsAddSessionDrawerOpen(false)}
-                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1758,7 +1758,7 @@ export default function TeacherExams({ embedded = false }) {
                 </h2>
                 <button 
                   onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} 
-                  className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                  className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
                 >
                   <X className="w-4.5 h-4.5" />
                 </button>
@@ -1989,7 +1989,7 @@ export default function TeacherExams({ embedded = false }) {
                 </div>
                 <button 
                   onClick={() => setIsDetailsDrawerOpen(false)}
-                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2011,7 +2011,7 @@ export default function TeacherExams({ embedded = false }) {
                 </h2>
                 <button 
                   onClick={() => setIsDetailsDrawerOpen(false)}
-                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -3736,7 +3736,7 @@ export default function TeacherExams({ embedded = false }) {
               </h3>
               <button
                 onClick={() => setSelectedCheckpointQuestion(null)}
-                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-50 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-50 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -3811,7 +3811,7 @@ export default function TeacherExams({ embedded = false }) {
                   setShowEnvDetailsModal(false);
                   setOpenMoreRow(null);
                 }}
-                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4.5 h-4.5" />
               </button>
@@ -4180,7 +4180,7 @@ export default function TeacherExams({ embedded = false }) {
                   setShowAssignModal(false);
                   setIsAssignMarkerDropdownOpen(false);
                 }}
-                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-450 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4.5 h-4.5" />
               </button>
@@ -4314,7 +4314,7 @@ export default function TeacherExams({ embedded = false }) {
                   setShowAutoAssignModal(false);
                   setIsAutoAssignMarkerDropdownOpen(false);
                 }}
-                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4.5 h-4.5" />
               </button>
@@ -4572,7 +4572,7 @@ export default function TeacherExams({ embedded = false }) {
               </div>
               <button
                 onClick={() => setShowStudentsModal(false)}
-                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4.5 h-4.5" />
               </button>
@@ -4638,7 +4638,7 @@ export default function TeacherExams({ embedded = false }) {
               </div>
               <button
                 onClick={() => setShowGradingDetailsModal(false)}
-                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4.5 h-4.5" />
               </button>
@@ -4808,7 +4808,7 @@ export default function TeacherExams({ embedded = false }) {
               </div>
               <button
                 onClick={() => setShowCandidateGradingDetailsModal(false)}
-                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors cursor-pointer border-0 bg-transparent"
+                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
               >
                 <X className="w-4.5 h-4.5" />
               </button>
