@@ -345,7 +345,7 @@ export default function TeacherCourseManage() {
 
   const getScoreBreakdown = (score: number) => {
     if (score === 100) {
-      return { multi: 20.0, single: 50.0, judge: 10.0, fill: 10.0, code: 0.0, think: 5.0, essay: 5.0 };
+      return { multi: 10.0, single: 50.0, judge: 10.0, fill: 10.0, code: 10.0, think: 5.0, essay: 5.0 };
     }
     if (score === 80) {
       return { multi: 10.0, single: 40.0, judge: 10.0, fill: 10.0, code: 0.0, think: 5.0, essay: 5.0 };
@@ -366,11 +366,12 @@ export default function TeacherCourseManage() {
     // General dynamic breakdown summing to score
     const essay = Math.min(5.0, score * 0.05);
     const think = Math.min(5.0, score * 0.05);
-    const code = 0.0;
     const fill = Math.min(10.0, score * 0.1);
     const judge = Math.min(10.0, score * 0.1);
-    const multi = Math.min(20.0, score * 0.2);
-    const single = Math.max(0, score - essay - think - fill - judge - multi);
+    const multi = Math.min(10.0, score * 0.1);
+    // Code part takes a portion of the score if it's high enough, otherwise 0
+    const code = score > 80 ? Math.min(10.0, score - 80) : 0;
+    const single = Math.max(0, score - essay - think - fill - judge - multi - code);
     return { multi, single, judge, fill, code, think, essay };
   };
 
@@ -4349,25 +4350,25 @@ export default function TeacherCourseManage() {
                       <span className="text-[13px] font-bold text-neutral-400 mb-6 uppercase tracking-wider select-none">作业最终成绩</span>
                       
                       {/* Interactive Circular Rating ring */}
-                      <div className="relative w-36 h-36 flex items-center justify-center mb-6">
+                      <div className="relative w-44 h-44 flex items-center justify-center mb-6">
                         <svg className="w-full h-full transform -rotate-90">
                           <circle
-                            cx="72"
-                            cy="72"
-                            r="62"
-                            stroke="#f5f5f5"
-                            strokeWidth="9"
+                            cx="88"
+                            cy="88"
+                            r="76"
+                            stroke="#f8fafc"
+                            strokeWidth="8"
                             fill="transparent"
                           />
                           <circle
-                            cx="72"
-                            cy="72"
-                            r="62"
+                            cx="88"
+                            cy="88"
+                            r="76"
                             stroke="url(#orangeRadialGrad)"
-                            strokeWidth="9"
+                            strokeWidth="8"
                             fill="transparent"
-                            strokeDasharray={2 * Math.PI * 62}
-                            strokeDashoffset={2 * Math.PI * 62 * (1 - displayScore / 100)}
+                            strokeDasharray={2 * Math.PI * 76}
+                            strokeDashoffset={2 * Math.PI * 76 * (1 - displayScore / 100)}
                             strokeLinecap="round"
                             className="transition-all duration-1000 ease-out"
                           />
@@ -4379,10 +4380,10 @@ export default function TeacherCourseManage() {
                           </defs>
                         </svg>
                         <div className="absolute flex flex-col items-center justify-center font-mono">
-                          <span className="text-[34px] font-extrabold text-neutral-800 leading-none">
+                          <span className="text-[36px] font-extrabold text-neutral-800 leading-none">
                             {displayScore.toFixed(1)}
                           </span>
-                          <span className="text-[12px] text-neutral-400 font-bold mt-1.5">/ 100 分</span>
+                          <span className="text-[11px] text-neutral-400 font-bold tracking-wider mt-2 select-none">/ 100 分</span>
                         </div>
                       </div>
 
