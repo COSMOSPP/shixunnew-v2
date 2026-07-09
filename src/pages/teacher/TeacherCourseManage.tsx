@@ -316,11 +316,11 @@ export default function TeacherCourseManage() {
   const [selectedGradingAssignment, setSelectedGradingAssignment] = useState<any>(null);
   const [gradingSearchQuery, setGradingSearchQuery] = useState('');
   const [gradingStudents, setGradingStudents] = useState([
-    { id: 1, name: '张三', phone: '18656686967', time: '2099/02/28 00:00', count: 2, status: '未提交', score: 100 },
-    { id: 2, name: '李四', phone: '13656686967', time: '2099/02/28 00:00', count: 3, status: '打分中', score: 40 },
-    { id: 3, name: '王五', phone: '13628399493', time: '2099/02/28 00:00', count: 4, status: '未发布', score: 80 },
-    { id: 4, name: '刘能', phone: '19628399493', time: '2099/02/28 00:00', count: 2, status: '已发布', score: 11 },
-    { id: 5, name: '刘能', phone: '19628399493', time: '2099/02/28 00:00', count: 1, status: '更新待发布', score: 56 },
+    { id: 1, name: '张三丰', phone: '18656686967', time: '2026/02/11 16:00:38', count: 2, status: '已发布', score: 84.8 },
+    { id: 2, name: '李四光', phone: '13656686967', time: '2099/02/28 00:00', count: 3, status: '打分中', score: 40 },
+    { id: 3, name: '王五常', phone: '13628399493', time: '2099/02/28 00:00', count: 4, status: '未发布', score: 80 },
+    { id: 4, name: '刘小能', phone: '19628399493', time: '2099/02/28 00:00', count: 2, status: '已发布', score: 11 },
+    { id: 5, name: '刘大能', phone: '19628399493', time: '2099/02/28 00:00', count: 1, status: '更新待发布', score: 56 },
   ]);
   const [selectedGradingStudentIds, setSelectedGradingStudentIds] = useState<number[]>([]);
   const [gradingPage, setGradingPage] = useState(1);
