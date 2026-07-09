@@ -124,6 +124,7 @@ export default function TeacherGrading() {
   const [previewModeActive, setPreviewModeActive] = useState(false);
   const [previewQuestionIdx, setPreviewQuestionIdx] = useState(0);
   const [gradedQuestions, setGradedQuestions] = useState<any[]>([]);
+  const [tempQuestionScore, setTempQuestionScore] = useState<number>(0);
   const [previewAnswers, setPreviewAnswers] = useState<Record<string, any>>({});
   const [countdownSeconds, setCountdownSeconds] = useState(7189); // 01:59:49
 
@@ -319,8 +320,19 @@ export default function TeacherGrading() {
       score: 0
     }));
     setGradedQuestions(qs);
+    setTempQuestionScore(0);
     setPreviewModeActive(true);
   };
+
+  // Sync temp score when active question index changes
+  React.useEffect(() => {
+    if (previewModeActive && viewExamStudent && gradedQuestions.length > 0) {
+      const q = gradedQuestions[previewQuestionIdx];
+      if (q) {
+        setTempQuestionScore(q.score || 0);
+      }
+    }
+  }, [previewQuestionIdx, previewModeActive, gradedQuestions.length]);
 
   // Grade change handler
   const handleGradeChange = (newScore: number) => {
@@ -642,8 +654,7 @@ export default function TeacherGrading() {
                       <div className="flex items-center border border-neutral-200 rounded overflow-hidden bg-white">
                         <button 
                           onClick={() => {
-                            const cur = q.score || 0;
-                            handleGradeChange(Math.max(0, cur - 1));
+                            setTempQuestionScore(cur => Math.max(0, cur - 1));
                           }}
                           className="px-2.5 py-1 bg-neutral-50 hover:bg-neutral-100 border-r border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
                         >
@@ -653,19 +664,18 @@ export default function TeacherGrading() {
                           type="number"
                           min={0}
                           max={q.maxScore}
-                          value={q.score}
+                          value={tempQuestionScore}
                           onChange={(e) => {
                             let val = Number(e.target.value);
                             if (val < 0) val = 0;
                             if (val > q.maxScore) val = q.maxScore;
-                            handleGradeChange(val);
+                            setTempQuestionScore(val);
                           }}
                           className="w-14 text-center border-0 font-bold text-neutral-800 focus:outline-none focus:ring-0 text-[13px] h-7"
                         />
                         <button 
                           onClick={() => {
-                            const cur = q.score || 0;
-                            handleGradeChange(Math.min(q.maxScore, cur + 1));
+                            setTempQuestionScore(cur => Math.min(q.maxScore, cur + 1));
                           }}
                           className="px-2.5 py-1 bg-neutral-50 hover:bg-neutral-100 border-l border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
                         >
@@ -677,10 +687,19 @@ export default function TeacherGrading() {
                     
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => handleGradeChange(q.maxScore)}
+                        onClick={() => setTempQuestionScore(q.maxScore)}
                         className="px-3 py-1 text-xs border border-[#fa541c]/30 rounded bg-[#fff2e8] hover:bg-[#ffe3d1] text-[#fa541c] transition-colors cursor-pointer font-bold"
                       >
                         {q.maxScore}分 (满分)
+                      </button>
+                      <button 
+                        onClick={() => {
+                          handleGradeChange(tempQuestionScore);
+                          showToast(`已成功保存第 ${previewQuestionIdx + 1} 题的评分：${tempQuestionScore} 分`, 'success');
+                        }}
+                        className="px-4 py-1 text-xs border-0 rounded bg-[#fa541c] hover:bg-[#e84a15] text-white transition-colors cursor-pointer font-bold shadow-sm"
+                      >
+                        保存
                       </button>
                     </div>
                   </div>
