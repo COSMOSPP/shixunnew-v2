@@ -341,6 +341,39 @@ export default function TeacherCourseManage() {
   // Score Modal States
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [scoreModalAssignment, setScoreModalAssignment] = useState<any>(null);
+  const [scoreModalStudent, setScoreModalStudent] = useState<any>(null);
+
+  const getScoreBreakdown = (score: number) => {
+    if (score === 100) {
+      return { multi: 20.0, single: 50.0, judge: 10.0, fill: 10.0, code: 0.0, think: 5.0, essay: 5.0 };
+    }
+    if (score === 80) {
+      return { multi: 10.0, single: 40.0, judge: 10.0, fill: 10.0, code: 0.0, think: 5.0, essay: 5.0 };
+    }
+    if (score === 56) {
+      return { multi: 10.0, single: 25.0, judge: 10.0, fill: 5.0, code: 0.0, think: 3.0, essay: 3.0 };
+    }
+    if (score === 40) {
+      return { multi: 5.0, single: 20.0, judge: 5.0, fill: 5.0, code: 0.0, think: 2.0, essay: 3.0 };
+    }
+    if (score === 11) {
+      return { multi: 0.0, single: 10.0, judge: 0.0, fill: 0.0, code: 0.0, think: 1.0, essay: 0.0 };
+    }
+    // Fallback matching 84.8
+    if (score === 84.8 || score === 85) {
+      return { multi: 10.0, single: 45.0, judge: 10.0, fill: 10.0, code: 0.0, think: 4.8, essay: 5.0 };
+    }
+    // General dynamic breakdown summing to score
+    const essay = Math.min(5.0, score * 0.05);
+    const think = Math.min(5.0, score * 0.05);
+    const code = 0.0;
+    const fill = Math.min(10.0, score * 0.1);
+    const judge = Math.min(10.0, score * 0.1);
+    const multi = Math.min(20.0, score * 0.2);
+    const single = Math.max(0, score - essay - think - fill - judge - multi);
+    return { multi, single, judge, fill, code, think, essay };
+  };
+
   const [scoreStudents, setScoreStudents] = useState([
     { id: 1, time: '2026/07/02 14:32:18', score: 100 },
     { id: 2, time: '2026/07/02 15:02:44', score: 80 },
@@ -2495,6 +2528,7 @@ export default function TeacherCourseManage() {
                               <div className="flex justify-center gap-3.5">
                                 <button
                                   onClick={() => {
+                                    setScoreModalStudent(s);
                                     setScoreModalAssignment(selectedGradingAssignment);
                                     setShowScoreModal(true);
                                   }}
@@ -4257,88 +4291,121 @@ export default function TeacherCourseManage() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white flex flex-col">
-              
-              {/* Action Toolbar */}
-              <div className="flex justify-end items-center mb-4 gap-2.5">
-                <Button
-                  onClick={() => {
-                    showToast('已刷新数据', 'success');
-                  }}
-                  variant="outline"
-                  className="border border-neutral-200 text-neutral-500 rounded-[4px] h-8 w-8 p-0 flex items-center justify-center bg-white hover:bg-neutral-50 cursor-pointer shrink-0"
-                  title="刷新"
-                >
-                  <RotateCw className="w-3.5 h-3.5" />
-                </Button>
-                <button
-                  onClick={() => {
-                    const headers = ['序号', '提交时间', '成绩'];
-                    const rows = sortedScoreStudents.map((s, idx) => [idx + 1, s.time, s.score]);
-                    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `成绩明细_${scoreModalAssignment?.title || '作业'}.csv`);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+            {(() => {
+              const studentName = scoreModalStudent?.name || '示例学生一';
+              const studentId = scoreModalStudent ? (scoreModalStudent.id === 1 ? '202674454201' : ('202674454' + (200 + scoreModalStudent.id))) : '202674454201';
+              // Check if score exists, otherwise fallback to 84.8
+              const hasScore = scoreModalStudent && scoreModalStudent.score !== undefined && scoreModalStudent.score !== null;
+              const displayScore = hasScore ? scoreModalStudent.score : 84.8;
+              const submissionTime = scoreModalStudent?.time || '2026/02/11 16:00:38';
+              const breakdown = getScoreBreakdown(displayScore);
 
-                    showToast('批量导出成功，文件已开始下载', 'success');
-                  }}
-                  className="px-4 py-1.5 bg-[#fa541c] text-white hover:bg-[#e84a15] rounded-[4px] font-medium transition-colors text-[13px] cursor-pointer shadow-sm border-0 flex items-center justify-center gap-1.5"
-                >
-                  导出
-                </button>
-              </div>
+              return (
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white flex flex-col space-y-6">
+                  {/* Basic Info Fields */}
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 shrink-0">
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[13px] font-semibold text-neutral-600 block">真实姓名：</label>
+                      <input 
+                        type="text" 
+                        readOnly 
+                        disabled 
+                        value={studentName}
+                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      />
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[13px] font-semibold text-neutral-600 block">学号：</label>
+                      <input 
+                        type="text" 
+                        readOnly 
+                        disabled 
+                        value={studentId}
+                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      />
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[13px] font-semibold text-neutral-600 block">客观题提交时间：</label>
+                      <input 
+                        type="text" 
+                        readOnly 
+                        disabled 
+                        value={submissionTime}
+                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      />
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[13px] font-semibold text-neutral-600 block">实训题提交时间：</label>
+                      <input 
+                        type="text" 
+                        readOnly 
+                        disabled 
+                        value="-"
+                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      />
+                    </div>
+                  </div>
 
-              {/* Table Container */}
-              <div className="bg-white rounded overflow-hidden border border-neutral-200">
-                <table className="w-full text-left border-collapse whitespace-nowrap">
-                  <thead>
-                    <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                      <th className="p-4 font-bold bg-neutral-50/50 w-[100px] text-center">序号</th>
-                      <th 
-                        className="p-4 font-bold bg-neutral-50/50 text-center cursor-pointer select-none hover:bg-neutral-100/70"
-                        onClick={() => {
-                          setScoreSortKey('time');
-                          setScoreSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
-                        }}
-                      >
-                        <div className="inline-flex items-center justify-center gap-1 w-full">
-                          提交时间
-                          {scoreSortKey === 'time' && (scoreSortOrder === 'asc' ? ' ↑' : ' ↓')}
-                        </div>
-                      </th>
-                      <th 
-                        className="p-4 font-bold bg-neutral-50/50 w-[150px] text-center cursor-pointer select-none hover:bg-neutral-100/70"
-                        onClick={() => {
-                          setScoreSortKey('score');
-                          setScoreSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
-                        }}
-                      >
-                        <div className="inline-flex items-center justify-center gap-1 w-full">
-                          成绩
-                          {scoreSortKey === 'score' && (scoreSortOrder === 'asc' ? ' ↑' : ' ↓')}
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100 text-neutral-700">
-                    {sortedScoreStudents.map((s, index) => (
-                      <tr key={index} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors text-[13px]">
-                        <td className="p-4 text-center text-neutral-500 font-mono">{index + 1}</td>
-                        <td className="p-4 text-center text-neutral-600 font-mono">{s.time}</td>
-                        <td className="p-4 text-center text-neutral-800 font-bold font-mono">{s.score}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  {/* Summary Table */}
+                  <div className="space-y-2 text-left shrink-0">
+                    <h3 className="text-[13px] font-bold text-neutral-600 uppercase tracking-wider">成绩总分情况：</h3>
+                    <div className="border border-neutral-200 rounded-[6px] overflow-hidden max-w-[600px] shadow-sm">
+                      <table className="w-full border-collapse text-[13px]">
+                        <tbody>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3.5 bg-neutral-50/80 font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">总分</td>
+                            <td className="p-3.5 text-center text-neutral-700 font-bold font-mono text-[14px]">{displayScore.toFixed(1)}</td>
+                          </tr>
+                          <tr>
+                            <td className="w-[180px] p-3.5 bg-neutral-50/80 font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">客观题</td>
+                            <td className="p-3.5 text-center text-neutral-700 font-bold font-mono text-[14px]">{displayScore.toFixed(1)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
-            </div>
+                  {/* Details Table */}
+                  <div className="space-y-2 text-left shrink-0">
+                    <h3 className="text-[13px] font-bold text-neutral-600 uppercase tracking-wider">得分详细情况：</h3>
+                    <div className="border border-neutral-200 rounded-[6px] overflow-hidden max-w-[600px] shadow-sm">
+                      <table className="w-full border-collapse text-[13px]">
+                        <tbody>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">多选题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.multi.toFixed(1)}</td>
+                          </tr>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">单选题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.single.toFixed(1)}</td>
+                          </tr>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">判断题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.judge.toFixed(1)}</td>
+                          </tr>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">填空题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.fill.toFixed(1)}</td>
+                          </tr>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">编程题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.code.toFixed(1)}</td>
+                          </tr>
+                          <tr className="border-b border-neutral-200">
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">思考题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.think.toFixed(1)}</td>
+                          </tr>
+                          <tr>
+                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">简答题</td>
+                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.essay.toFixed(1)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
