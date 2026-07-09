@@ -3290,16 +3290,16 @@ export default function TeacherExams({ embedded = false }) {
 
               {detailsType === 'rank' && (() => {
                 const rankList = [
-                  { rank: 1, name: '李四方', id: '202674454201', class: '数据科学二班', score: 98, duration: '42m 15s', phone: '13912345678', submitTime: '2026/02/11 16:15', objScore: 58, subScore: 40 },
-                  { rank: 2, name: '张三丰', id: '202674454202', class: '软件工程一班', score: 95, duration: '48m 32s', phone: '18656686967', submitTime: '2026/02/11 16:18', objScore: 55, subScore: 40 },
-                  { rank: 3, name: '王五常', id: '202674454203', class: '人工智能三班', score: 92, duration: '51m 10s', phone: '13512345678', submitTime: '2026/02/11 16:21', objScore: 52, subScore: 40 },
-                  { rank: 4, name: '赵六顺', id: '202674454204', class: '软件工程一班', score: 89, duration: '55m 40s', phone: '13788889999', submitTime: '2026/02/11 16:25', objScore: 49, subScore: 40 },
-                  { rank: 5, name: '周七弦', id: '202674454205', class: '软件工程一班', score: 88, duration: '58m 12s', phone: '13611112222', submitTime: '2026/02/11 16:28', objScore: 48, subScore: 40 },
-                  { rank: 6, name: '吴八极', id: '202674454206', class: '人工智能三班', score: 85, duration: '44m 20s', phone: '13822223333', submitTime: '2026/02/11 16:14', objScore: 45, subScore: 40 },
-                  { rank: 7, name: '郑九霄', id: '202674454207', class: '数据科学二班', score: 84, duration: '49m 05s', phone: '13933334444', submitTime: '2026/02/11 16:19', objScore: 44, subScore: 40 },
-                  { rank: 8, name: '冯十方', id: '202674454208', class: '人工智能三班', score: 82, duration: '53m 15s', phone: '13544445555', submitTime: '2026/02/11 16:23', objScore: 42, subScore: 40 },
-                  { rank: 9, name: '陈百川', id: '202674454209', class: '数据科学二班', score: 79, duration: '57m 50s', phone: '13755556666', submitTime: '2026/02/11 16:27', objScore: 39, subScore: 40 },
-                  { rank: 10, name: '楚天阔', id: '202674454210', class: '软件工程一班', score: 76, duration: '50m 30s', phone: '13866667777', submitTime: '2026/02/11 16:20', objScore: 36, subScore: 40 }
+                  { rank: 1, name: '李四方', id: '202674454201', class: '数据科学', classFull: '数据科学二班', score: 98, duration: '42m 15s', phone: '13912345678', submitTime: '2026/02/11 16:15', objScore: 58, subScore: 40, avatarText: '四方' },
+                  { rank: 2, name: '张三丰', id: '202674454202', class: '软件工程', classFull: '软件工程一班', score: 95, duration: '48m 32s', phone: '18656686967', submitTime: '2026/02/11 16:18', objScore: 55, subScore: 40, avatarText: '三丰' },
+                  { rank: 3, name: '王五常', id: '202674454203', class: '人工智能', classFull: '人工智能三班', score: 92, duration: '51m 10s', phone: '13512345678', submitTime: '2026/02/11 16:21', objScore: 52, subScore: 40, avatarText: '五常' },
+                  { rank: 4, name: '赵六顺', id: '202674454204', class: '软件工程', classFull: '软件工程一班', score: 89, duration: '55m 40s', phone: '13788889999', submitTime: '2026/02/11 16:25', objScore: 49, subScore: 40, avatarText: '六顺' },
+                  { rank: 5, name: '周七弦', id: '202674454205', class: '软件工程', classFull: '软件工程一班', score: 88, duration: '58m 12s', phone: '13611112222', submitTime: '2026/02/11 16:28', objScore: 48, subScore: 40, avatarText: '七弦' },
+                  { rank: 6, name: '吴八极', id: '202674454206', class: '人工智能', classFull: '人工智能三班', score: 85, duration: '44m 20s', phone: '13822223333', submitTime: '2026/02/11 16:14', objScore: 45, subScore: 40, avatarText: '八极' },
+                  { rank: 7, name: '郑九霄', id: '202674454207', class: '数据科学', classFull: '数据科学二班', score: 84, duration: '49m 05s', phone: '13933334444', submitTime: '2026/02/11 16:19', objScore: 44, subScore: 40, avatarText: '九霄' },
+                  { rank: 8, name: '冯十方', id: '202674454208', class: '人工智能', classFull: '人工智能三班', score: 82, duration: '53m 15s', phone: '13544445555', submitTime: '2026/02/11 16:23', objScore: 42, subScore: 40, avatarText: '十方' },
+                  { rank: 9, name: '陈百川', id: '202674454209', class: '数据科学', classFull: '数据科学二班', score: 79, duration: '57m 50s', phone: '13755556666', submitTime: '2026/02/11 16:27', objScore: 39, subScore: 40, avatarText: '百川' },
+                  { rank: 10, name: '楚天阔', id: '202674454210', class: '软件工程', classFull: '软件工程一班', score: 76, duration: '50m 30s', phone: '13866667777', submitTime: '2026/02/11 16:20', objScore: 36, subScore: 40, avatarText: '天阔' }
                 ];
 
                 const filteredRankList = rankList.filter(stu => 
@@ -3308,100 +3308,143 @@ export default function TeacherExams({ embedded = false }) {
                   stu.id.includes(rankSearchQuery)
                 );
 
+                const topThree = rankList.slice(0, 3);
+                const listRanks = filteredRankList.filter(stu => stu.rank > 3);
+
                 return (
                   <div className="space-y-6 text-left">
-                    {/* Honor Podium Area */}
-                    <div className="bg-gradient-to-b from-neutral-50/50 to-white border border-neutral-100 rounded-2xl p-6 shadow-sm select-none">
-                      <div className="text-[13px] font-bold text-neutral-700 mb-6 flex items-center gap-1.5">
-                        <span className="inline-block w-1.5 h-3.5 bg-[#fa541c] rounded-full"></span>
-                        学霸荣誉榜
-                      </div>
+                    {/* Top 3 Podium Area matching the reference style */}
+                    <div className="flex justify-center items-stretch gap-5 pt-4 pb-6 select-none">
                       
-                      <div className="flex justify-center items-end gap-8 pt-4 pb-2">
-                        {/* 2nd place */}
-                        <div className="flex flex-col items-center">
-                          <div className="relative group cursor-default">
-                            {/* Avatar container */}
-                            <div className="w-16 h-16 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center font-bold text-slate-600 text-base shadow-md font-sans">
-                              三丰
-                            </div>
-                            {/* Place Badge */}
-                            <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-100 border border-slate-300 text-[11px] font-extrabold text-slate-600 flex items-center justify-center shadow-sm">🥈</span>
+                      {/* 2nd Place Card (Left) */}
+                      <div className="flex-1 bg-[#f0f5ff]/60 border border-[#d6e4ff]/40 rounded-2xl p-5 flex flex-col items-center justify-between text-center relative shadow-sm hover:shadow-md transition-all duration-300">
+                        <div className="flex flex-col items-center w-full">
+                          {/* Laurel Wreath with number */}
+                          <div className="flex flex-col items-center justify-center mb-2">
+                            <span className="text-[26px] font-black text-blue-500/80 leading-none select-none font-serif">🥈 2</span>
                           </div>
-                          <div className="text-[13px] font-bold text-neutral-800 mt-2.5">张三丰</div>
-                          <div className="text-[11px] text-neutral-400 font-semibold">{rankList[1].class}</div>
-                          <div className="text-[#fa541c] font-black font-mono text-[14px] mt-0.5">{rankList[1].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
-                          <div className="text-[10px] text-neutral-400 mt-0.5 font-mono">客{rankList[1].objScore} + 主{rankList[1].subScore}</div>
                           
-                          {/* Podium Block */}
-                          <div className="h-24 w-20 bg-gradient-to-t from-slate-100 to-slate-200/40 border-t border-slate-200/50 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
-                            <span className="text-[28px] font-black text-slate-300 leading-none">2</span>
+                          {/* Avatar with circle boundary */}
+                          <div className="w-16 h-16 rounded-full border-2 border-blue-200 bg-white flex items-center justify-center font-bold text-blue-600 text-base shadow-sm font-sans mb-3">
+                            {topThree[1].avatarText}
                           </div>
+
+                          {/* Category Tag */}
+                          <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[4px] mb-2 shadow-sm select-none">
+                            {topThree[1].class}
+                          </span>
+
+                          {/* Name */}
+                          <div className="text-[14px] font-bold text-neutral-800 leading-tight mb-1">{topThree[1].name}</div>
+                          
+                          {/* Score metrics */}
+                          <div className="text-[#fa541c] font-black font-mono text-[14.5px]">{topThree[1].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
+                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">客观{topThree[1].objScore} | 主观{topThree[1].subScore}</div>
                         </div>
 
-                        {/* 1st place */}
-                        <div className="flex flex-col items-center scale-110 -translate-y-2">
-                          <div className="relative group cursor-default">
-                            {/* Avatar container with gold glow */}
-                            <div className="w-18 h-18 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center font-bold text-amber-605 text-lg shadow-[0_0_15px_rgba(251,192,45,0.15)] font-sans">
-                              四方
-                            </div>
-                            {/* Crown / Place Badge */}
-                            <span className="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-amber-50 border border-amber-300 text-[13px] font-extrabold text-amber-600 flex items-center justify-center shadow-sm">🥇</span>
-                          </div>
-                          <div className="text-[13.5px] font-extrabold text-neutral-900 mt-2.5">李四方</div>
-                          <div className="text-[10px] text-neutral-400 font-bold">{rankList[0].class}</div>
-                          <div className="text-[#fa541c] font-black font-mono text-[15.5px] mt-0.5">{rankList[0].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
-                          <div className="text-[10px] text-neutral-400 mt-0.5 font-mono">客{rankList[0].objScore} + 主{rankList[0].subScore}</div>
-                          
-                          {/* Podium Block */}
-                          <div className="h-32 w-24 bg-gradient-to-t from-amber-100/60 to-amber-200/30 border-t border-amber-350/30 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[0_4px_16px_rgba(245,108,108,0.03),inset_0_1px_0_rgba(255,255,255,0.8)]">
-                            <span className="text-[34px] font-black text-amber-400 leading-none">1</span>
-                          </div>
-                        </div>
-
-                        {/* 3rd place */}
-                        <div className="flex flex-col items-center">
-                          <div className="relative group cursor-default">
-                            {/* Avatar container */}
-                            <div className="w-16 h-16 rounded-full border-2 border-orange-200 bg-white flex items-center justify-center font-bold text-orange-600 text-base shadow-md font-sans">
-                              五常
-                            </div>
-                            {/* Place Badge */}
-                            <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-orange-50 border border-orange-200 text-[11px] font-extrabold text-orange-600 flex items-center justify-center shadow-sm">🥉</span>
-                          </div>
-                          <div className="text-[13px] font-bold text-neutral-800 mt-2.5">王五常</div>
-                          <div className="text-[11px] text-neutral-400 font-semibold">{rankList[2].class}</div>
-                          <div className="text-[#fa541c] font-black font-mono text-[14px] mt-0.5">{rankList[2].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
-                          <div className="text-[10px] text-neutral-400 mt-0.5 font-mono">客{rankList[2].objScore} + 主{rankList[2].subScore}</div>
-                          
-                          {/* Podium Block */}
-                          <div className="h-20 w-20 bg-gradient-to-t from-orange-100/30 to-orange-200/20 border-t border-orange-200/30 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
-                            <span className="text-[26px] font-black text-orange-300 leading-none">3</span>
-                          </div>
-                        </div>
+                        {/* View Exam pill button */}
+                        <button 
+                          onClick={() => showToast(`正在查看 ${topThree[1].name} 的答卷...`, 'info')}
+                          className="mt-4 bg-[#f0f5ff] hover:bg-blue-100 text-blue-600 text-xs px-5 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer shadow-sm"
+                        >
+                          查看答卷
+                        </button>
                       </div>
+
+                      {/* 1st Place Card (Center) - Slightly taller & scaled */}
+                      <div className="flex-1 bg-[#fffbe6]/75 border border-[#ffe58f]/40 rounded-2xl p-5 flex flex-col items-center justify-between text-center relative shadow-md scale-105 z-10 hover:shadow-lg transition-all duration-300">
+                        <div className="flex flex-col items-center w-full">
+                          {/* Laurel Wreath with number */}
+                          <div className="flex flex-col items-center justify-center mb-2">
+                            <span className="text-[30px] font-black text-amber-550 leading-none select-none font-serif">🥇 1</span>
+                          </div>
+                          
+                          {/* Avatar with gold boundary */}
+                          <div className="w-18 h-18 rounded-full border-2 border-amber-300 bg-white flex items-center justify-center font-bold text-amber-600 text-lg shadow-[0_0_12px_rgba(251,192,45,0.15)] font-sans mb-3">
+                            {topThree[0].avatarText}
+                          </div>
+
+                          {/* Category Tag */}
+                          <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[4px] mb-2 shadow-sm select-none">
+                            {topThree[0].class}
+                          </span>
+
+                          {/* Name */}
+                          <div className="text-[14.5px] font-extrabold text-neutral-900 leading-tight mb-1">{topThree[0].name}</div>
+                          
+                          {/* Score metrics */}
+                          <div className="text-[#fa541c] font-black font-mono text-[16px]">{topThree[0].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
+                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">客观{topThree[0].objScore} | 主观{topThree[0].subScore}</div>
+                        </div>
+
+                        {/* View Exam pill button */}
+                        <button 
+                          onClick={() => showToast(`正在查看 ${topThree[0].name} 的答卷...`, 'info')}
+                          className="mt-4 bg-amber-100 hover:bg-amber-205 text-[#fa541c] text-xs px-6 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer shadow-sm"
+                        >
+                          查看答卷
+                        </button>
+                      </div>
+
+                      {/* 3rd Place Card (Right) */}
+                      <div className="flex-1 bg-[#fff1f0]/60 border border-[#ffa39e]/40 rounded-2xl p-5 flex flex-col items-center justify-between text-center relative shadow-sm hover:shadow-md transition-all duration-300">
+                        <div className="flex flex-col items-center w-full">
+                          {/* Laurel Wreath with number */}
+                          <div className="flex flex-col items-center justify-center mb-2">
+                            <span className="text-[26px] font-black text-orange-600/85 leading-none select-none font-serif">🥉 3</span>
+                          </div>
+                          
+                          {/* Avatar with circle boundary */}
+                          <div className="w-16 h-16 rounded-full border-2 border-orange-200 bg-white flex items-center justify-center font-bold text-orange-600 text-base shadow-sm font-sans mb-3">
+                            {topThree[2].avatarText}
+                          </div>
+
+                          {/* Category Tag */}
+                          <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[4px] mb-2 shadow-sm select-none">
+                            {topThree[2].class}
+                          </span>
+
+                          {/* Name */}
+                          <div className="text-[13px] font-bold text-neutral-800 leading-tight mb-1">{topThree[2].name}</div>
+                          
+                          {/* Score metrics */}
+                          <div className="text-[#fa541c] font-black font-mono text-[14px]">{topThree[2].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
+                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">客观{topThree[2].objScore} | 主观{topThree[2].subScore}</div>
+                        </div>
+
+                        {/* View Exam pill button */}
+                        <button 
+                          onClick={() => showToast(`正在查看 ${topThree[2].name} 的答卷...`, 'info')}
+                          className="mt-4 bg-red-100/50 hover:bg-red-100 text-red-650 text-xs px-5 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer shadow-sm"
+                        >
+                          查看答卷
+                        </button>
+                      </div>
+
                     </div>
 
-                    {/* Filter and Complete Table list */}
-                    <div className="space-y-4 pt-2">
+                    {/* Filter and Complete list Area */}
+                    <div className="space-y-4 pt-4 border-t border-neutral-100">
                       <div className="flex items-center justify-between select-none">
-                        <div className="text-[13.5px] font-bold text-neutral-800">完整成绩排名 (10人)</div>
+                        <div className="text-[14px] font-bold text-neutral-800 flex items-center gap-1.5">
+                          <span className="inline-block w-1.5 h-3.5 bg-[#fa541c] rounded-full"></span>
+                          全部考生排名列表
+                        </div>
                         
-                        {/* Search box matching theme */}
-                        <div className="relative w-52">
+                        {/* Search box */}
+                        <div className="relative w-56">
                           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
                           <input
                             type="text"
-                            placeholder="搜索姓名 / 班级 / 学号..."
+                            placeholder="搜索姓名 / 班级..."
                             value={rankSearchQuery}
                             onChange={(e) => setRankSearchQuery(e.target.value)}
-                            className="pl-8 pr-7 py-1 w-full bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-neutral-800 transition-all placeholder:text-neutral-400 h-7.5"
+                            className="pl-8 pr-7 py-1 w-full bg-white border border-neutral-250 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-neutral-800 transition-all placeholder:text-neutral-400 h-8"
                           />
                           {rankSearchQuery && (
                             <button
                               onClick={() => setRankSearchQuery('')}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 border-0 bg-transparent text-neutral-400 hover:text-neutral-600 cursor-pointer p-0 text-xs flex items-center justify-center"
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 border-0 bg-transparent text-neutral-400 hover:text-neutral-600 cursor-pointer p-0 text-xs flex items-center justify-center"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -3409,84 +3452,56 @@ export default function TeacherExams({ embedded = false }) {
                         </div>
                       </div>
 
-                      {/* Full Rankings list */}
-                      <div className="border border-neutral-150 rounded-xl overflow-hidden shadow-sm bg-white overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left border-collapse text-[12.5px]">
-                          <thead>
-                            <tr className="bg-neutral-50/80 border-b border-neutral-200/50 text-neutral-500 font-semibold select-none whitespace-nowrap">
-                              <th className="p-3.5 pl-5 w-20 text-center">名次</th>
-                              <th className="p-3.5">考生</th>
-                              <th className="p-3.5">所属班级</th>
-                              <th className="p-3.5 text-center">答题用时</th>
-                              <th className="p-3.5 text-center">提交时间</th>
-                              <th className="p-3.5 text-center">客观 / 主观得分</th>
-                              <th className="p-3.5 text-right pr-5">成绩分布 / 最终得分</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-neutral-100 text-neutral-700">
-                            {filteredRankList.map((stu) => {
-                              const percentage = (stu.score / 100) * 100;
-                              return (
-                                <tr key={stu.rank} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
-                                  {/* Rank Column */}
-                                  <td className="p-3.5 pl-5 text-center font-bold whitespace-nowrap">
-                                    {stu.rank === 1 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-amber-100 text-amber-700 items-center justify-center text-[11px] shadow-sm">1</span>}
-                                    {stu.rank === 2 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-slate-100 text-slate-700 items-center justify-center text-[11px] shadow-sm">2</span>}
-                                    {stu.rank === 3 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-orange-100 text-orange-700 items-center justify-center text-[11px] shadow-sm">3</span>}
-                                    {stu.rank > 3 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-neutral-50 text-neutral-400 border border-neutral-100 items-center justify-center text-[11px] font-mono font-medium">{stu.rank}</span>}
-                                  </td>
+                      {/* Vertical Streamer list style */}
+                      <div className="space-y-3 pt-2">
+                        {listRanks.map((stu) => (
+                          <div 
+                            key={stu.rank} 
+                            className="flex items-center justify-between p-4 bg-white border border-neutral-100 rounded-xl hover:shadow-md hover:border-neutral-200/60 transition-all duration-200"
+                          >
+                            {/* Left details */}
+                            <div className="flex items-center gap-5">
+                              {/* Large rank number */}
+                              <span className="text-[20px] font-black text-neutral-300 w-6 text-center select-none font-mono">
+                                {stu.rank}
+                              </span>
+                              
+                              {/* Avatar circle */}
+                              <div className="w-12 h-12 rounded-full bg-neutral-50 border border-neutral-200/50 flex items-center justify-center font-bold text-neutral-600 text-sm shadow-inner shrink-0 font-sans select-none">
+                                {stu.avatarText}
+                              </div>
 
-                                  {/* Student Name / ID */}
-                                  <td className="p-3.5">
-                                    <div className="flex flex-col text-left">
-                                      <span className="font-semibold text-neutral-850">{stu.name}</span>
-                                      <span className="text-[10px] text-neutral-400 font-mono mt-0.5">{stu.id}</span>
-                                    </div>
-                                  </td>
+                              {/* Student Text info */}
+                              <div className="flex flex-col text-left space-y-1">
+                                <div className="flex items-center">
+                                  <span className="font-bold text-neutral-800 text-[14px]">{stu.name}</span>
+                                  <span className="bg-neutral-100 text-neutral-500 text-[9.5px] font-bold px-1.5 py-0.5 rounded ml-2 shadow-[inset_0_1px_1px_rgba(0,0,0,0.01)] uppercase select-none">
+                                    {stu.classFull}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-neutral-400 font-mono select-none">
+                                  学号: {stu.id}
+                                </div>
+                                <div className="text-[11.5px] text-neutral-550 select-none">
+                                  最终得分: <span className="font-extrabold text-[#fa541c] font-mono text-[12.5px]">{stu.score} 分</span> (客观 {stu.objScore} + 主观 {stu.subScore}) <span className="text-neutral-300 mx-1.5">|</span> 用时: <span className="font-mono">{stu.duration}</span>
+                                </div>
+                              </div>
+                            </div>
 
-                                  {/* Class */}
-                                  <td className="p-3.5 text-neutral-600">{stu.class}</td>
-
-                                  {/* Duration */}
-                                  <td className="p-3.5 text-center font-mono text-neutral-650">{stu.duration}</td>
-
-                                  {/* Submit Time */}
-                                  <td className="p-3.5 text-center font-mono text-neutral-450">{stu.submitTime}</td>
-
-                                  {/* Breakdown */}
-                                  <td className="p-3.5 text-center text-neutral-500 font-mono whitespace-nowrap">
-                                    {stu.objScore} + {stu.subScore}
-                                  </td>
-
-                                  {/* Final Score with Mini Progress bar */}
-                                  <td className="p-3.5 text-right pr-5">
-                                    <div className="flex items-center justify-end gap-3.5 select-none">
-                                      {/* Mini Progress Track */}
-                                      <div className="w-16 bg-neutral-100 h-1.5 rounded-full overflow-hidden shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] hidden sm:block">
-                                        <div 
-                                          className="bg-gradient-to-r from-orange-400 to-[#fa541c] h-full rounded-full transition-all duration-500"
-                                          style={{ width: `${percentage}%` }}
-                                        ></div>
-                                      </div>
-                                      
-                                      <div className="font-mono text-[13.5px]">
-                                        <span className="font-black text-[#fa541c]">{stu.score}</span>
-                                        <span className="text-[10px] text-neutral-400 font-bold ml-0.5">分</span>
-                                      </div>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                            {filteredRankList.length === 0 && (
-                              <tr>
-                                <td colSpan={7} className="py-10 text-center text-neutral-400">
-                                  暂无匹配的考试成绩数据
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
+                            {/* Right action button */}
+                            <button
+                              onClick={() => showToast(`正在查看 ${stu.name} 的答卷...`, 'info')}
+                              className="bg-[#fa541c]/5 hover:bg-[#fa541c]/10 text-[#fa541c] hover:text-[#e84a15] text-[12px] px-5 py-1.5 rounded-full font-bold transition-all border-0 cursor-pointer select-none"
+                            >
+                              查看答卷
+                            </button>
+                          </div>
+                        ))}
+                        {listRanks.length === 0 && (
+                          <div className="py-12 text-center text-neutral-400 bg-neutral-50/30 rounded-xl border border-dashed border-neutral-200">
+                            暂无匹配的考试成绩数据
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
