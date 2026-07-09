@@ -4294,114 +4294,152 @@ export default function TeacherCourseManage() {
             {(() => {
               const studentName = scoreModalStudent?.name || '示例学生一';
               const studentId = scoreModalStudent ? (scoreModalStudent.id === 1 ? '202674454201' : ('202674454' + (200 + scoreModalStudent.id))) : '202674454201';
-              // Check if score exists, otherwise fallback to 84.8
               const hasScore = scoreModalStudent && scoreModalStudent.score !== undefined && scoreModalStudent.score !== null;
               const displayScore = hasScore ? scoreModalStudent.score : 84.8;
               const submissionTime = scoreModalStudent?.time || '2026/02/11 16:00:38';
               const breakdown = getScoreBreakdown(displayScore);
 
+              const categories = [
+                { id: 'multi', label: '多选题', score: breakdown.multi, maxScore: 10.0 },
+                { id: 'single', label: '单选题', score: breakdown.single, maxScore: 50.0 },
+                { id: 'judge', label: '判断题', score: breakdown.judge, maxScore: 10.0 },
+                { id: 'fill', label: '填空题', score: breakdown.fill, maxScore: 10.0 },
+                { id: 'code', label: '编程题', score: breakdown.code, maxScore: 10.0 },
+                { id: 'think', label: '思考题', score: breakdown.think, maxScore: 5.0 },
+                { id: 'essay', label: '简答题', score: breakdown.essay, maxScore: 5.0 },
+              ];
+
               return (
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white flex flex-col space-y-6">
-                  {/* Basic Info Fields */}
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 shrink-0">
-                    <div className="space-y-1.5 text-left">
-                      <label className="text-[13px] font-semibold text-neutral-600 block">真实姓名：</label>
-                      <input 
-                        type="text" 
-                        readOnly 
-                        disabled 
-                        value={studentName}
-                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                      />
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#f8fafc] flex flex-col space-y-6">
+                  
+                  {/* Premium Profile Header Card */}
+                  <div className="bg-white rounded-xl border border-neutral-100 p-5 flex items-center gap-5 shadow-[0_2px_12px_rgba(0,0,0,0.015)] select-none">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ff7a45] to-[#fa541c] flex items-center justify-center text-white text-[18px] font-extrabold shadow-md shadow-orange-100 select-none shrink-0 font-sans">
+                      {studentName.slice(-2)}
                     </div>
-                    <div className="space-y-1.5 text-left">
-                      <label className="text-[13px] font-semibold text-neutral-600 block">学号：</label>
-                      <input 
-                        type="text" 
-                        readOnly 
-                        disabled 
-                        value={studentId}
-                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                      />
-                    </div>
-                    <div className="space-y-1.5 text-left">
-                      <label className="text-[13px] font-semibold text-neutral-600 block">客观题提交时间：</label>
-                      <input 
-                        type="text" 
-                        readOnly 
-                        disabled 
-                        value={submissionTime}
-                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                      />
-                    </div>
-                    <div className="space-y-1.5 text-left">
-                      <label className="text-[13px] font-semibold text-neutral-600 block">实训题提交时间：</label>
-                      <input 
-                        type="text" 
-                        readOnly 
-                        disabled 
-                        value="-"
-                        className="w-full bg-[#f5f5f5] border border-neutral-200 rounded px-3 py-2 text-[13.5px] text-neutral-800 cursor-not-allowed outline-none select-none font-medium h-[38px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                      />
+                    <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-neutral-50/50 px-4 py-2.5 rounded-lg border border-neutral-100/60 text-left">
+                        <span className="text-[11px] text-neutral-400 font-bold block mb-0.5">真实姓名</span>
+                        <span className="text-[13.5px] font-bold text-neutral-800">{studentName}</span>
+                      </div>
+                      <div className="bg-neutral-50/50 px-4 py-2.5 rounded-lg border border-neutral-100/60 text-left">
+                        <span className="text-[11px] text-neutral-400 font-bold block mb-0.5">学号</span>
+                        <span className="text-[13px] font-bold text-neutral-700 font-mono">{studentId}</span>
+                      </div>
+                      <div className="bg-neutral-50/50 px-4 py-2.5 rounded-lg border border-neutral-100/60 text-left">
+                        <span className="text-[11px] text-neutral-400 font-bold block mb-0.5">客观题提交时间</span>
+                        <span className="text-[12.5px] font-bold text-neutral-700 font-mono">{submissionTime}</span>
+                      </div>
+                      <div className="bg-neutral-50/50 px-4 py-2.5 rounded-lg border border-neutral-100/60 text-left">
+                        <span className="text-[11px] text-neutral-400 font-bold block mb-0.5">实训题提交时间</span>
+                        <span className="text-[13.5px] font-bold text-neutral-300 font-mono">-</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Summary Table */}
-                  <div className="space-y-2 text-left shrink-0">
-                    <h3 className="text-[13px] font-bold text-neutral-600 uppercase tracking-wider">成绩总分情况：</h3>
-                    <div className="border border-neutral-200 rounded-[6px] overflow-hidden max-w-[600px] shadow-sm">
-                      <table className="w-full border-collapse text-[13px]">
-                        <tbody>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3.5 bg-neutral-50/80 font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">总分</td>
-                            <td className="p-3.5 text-center text-neutral-700 font-bold font-mono text-[14px]">{displayScore.toFixed(1)}</td>
-                          </tr>
-                          <tr>
-                            <td className="w-[180px] p-3.5 bg-neutral-50/80 font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">客观题</td>
-                            <td className="p-3.5 text-center text-neutral-700 font-bold font-mono text-[14px]">{displayScore.toFixed(1)}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  {/* Dual Column Layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-10 gap-6 items-start">
+                    
+                    {/* Left Column: Grade KPI Indicator (span 4) */}
+                    <div className="md:col-span-4 bg-white p-6 rounded-xl border border-neutral-100 shadow-[0_2px_12px_rgba(0,0,0,0.015)] flex flex-col items-center justify-center relative overflow-hidden group min-h-[380px]">
+                      {/* Background design elements */}
+                      <div className="absolute -right-10 -top-10 w-28 h-28 bg-orange-100/20 rounded-full blur-xl group-hover:scale-125 transition-transform duration-700"></div>
+                      <div className="absolute -left-10 -bottom-10 w-28 h-28 bg-[#fa541c]/5 rounded-full blur-xl group-hover:scale-125 transition-transform duration-700"></div>
+                      
+                      <span className="text-[13px] font-bold text-neutral-400 mb-6 uppercase tracking-wider select-none">作业最终成绩</span>
+                      
+                      {/* Interactive Circular Rating ring */}
+                      <div className="relative w-36 h-36 flex items-center justify-center mb-6">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle
+                            cx="72"
+                            cy="72"
+                            r="62"
+                            stroke="#f5f5f5"
+                            strokeWidth="9"
+                            fill="transparent"
+                          />
+                          <circle
+                            cx="72"
+                            cy="72"
+                            r="62"
+                            stroke="url(#orangeRadialGrad)"
+                            strokeWidth="9"
+                            fill="transparent"
+                            strokeDasharray={2 * Math.PI * 62}
+                            strokeDashoffset={2 * Math.PI * 62 * (1 - displayScore / 100)}
+                            strokeLinecap="round"
+                            className="transition-all duration-1000 ease-out"
+                          />
+                          <defs>
+                            <linearGradient id="orangeRadialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#ff9c6e" />
+                              <stop offset="100%" stopColor="#fa541c" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div className="absolute flex flex-col items-center justify-center font-mono">
+                          <span className="text-[34px] font-extrabold text-neutral-800 leading-none">
+                            {displayScore.toFixed(1)}
+                          </span>
+                          <span className="text-[12px] text-neutral-400 font-bold mt-1.5">/ 100 分</span>
+                        </div>
+                      </div>
 
-                  {/* Details Table */}
-                  <div className="space-y-2 text-left shrink-0">
-                    <h3 className="text-[13px] font-bold text-neutral-600 uppercase tracking-wider">得分详细情况：</h3>
-                    <div className="border border-neutral-200 rounded-[6px] overflow-hidden max-w-[600px] shadow-sm">
-                      <table className="w-full border-collapse text-[13px]">
-                        <tbody>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">多选题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.multi.toFixed(1)}</td>
-                          </tr>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">单选题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.single.toFixed(1)}</td>
-                          </tr>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">判断题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.judge.toFixed(1)}</td>
-                          </tr>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">填空题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.fill.toFixed(1)}</td>
-                          </tr>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">编程题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.code.toFixed(1)}</td>
-                          </tr>
-                          <tr className="border-b border-neutral-200">
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">思考题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.think.toFixed(1)}</td>
-                          </tr>
-                          <tr>
-                            <td className="w-[180px] p-3 bg-[#fafafa] font-medium text-neutral-600 text-center border-r border-neutral-200 select-none">简答题</td>
-                            <td className="p-3 text-center text-neutral-700 font-medium font-mono text-[14px]">{breakdown.essay.toFixed(1)}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                      {/* Score KPI breakdown */}
+                      <div className="w-full grid grid-cols-2 gap-4 border-t border-neutral-100 pt-5 mt-4 select-none">
+                        <div className="text-center">
+                          <span className="text-[11px] text-neutral-400 font-bold block mb-1">客观题得分</span>
+                          <span className="text-[16px] font-extrabold text-[#fa541c] font-mono block">{displayScore.toFixed(1)}</span>
+                        </div>
+                        <div className="text-center border-l border-neutral-100">
+                          <span className="text-[11px] text-neutral-400 font-bold block mb-1">实训题得分</span>
+                          <span className="text-[16px] font-bold text-neutral-300 font-mono block">-</span>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Right Column: Score Progress Bars (span 6) */}
+                    <div className="md:col-span-6 bg-white p-6 rounded-xl border border-neutral-100 shadow-[0_2px_12px_rgba(0,0,0,0.015)] flex flex-col space-y-5">
+                      <div className="flex items-center justify-between pb-3 border-b border-neutral-100 select-none">
+                        <h3 className="text-[13.5px] font-bold text-[#262626] flex items-center gap-2">
+                          <FileText className="w-4.5 h-4.5 text-[#fa541c]" />
+                          <span>得分详细情况</span>
+                        </h3>
+                        <span className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">题型得分占比</span>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {categories.map((cat) => {
+                          const percentage = cat.maxScore > 0 ? (cat.score / cat.maxScore) * 100 : 0;
+                          return (
+                            <div key={cat.id} className="flex items-center gap-4 group/row py-0.5">
+                              {/* Type Label */}
+                              <div className="w-[75px] text-left shrink-0 select-none">
+                                <span className="text-[12.5px] font-bold text-neutral-500 group-hover/row:text-[#fa541c] transition-colors">
+                                  {cat.label}
+                                </span>
+                              </div>
+                              
+                              {/* Premium Progress Bar Track */}
+                              <div className="flex-1 bg-neutral-100 h-2 rounded-full overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
+                                <div 
+                                  className="bg-gradient-to-r from-orange-400 to-[#fa541c] h-full rounded-full transition-all duration-700 ease-out shadow-sm shadow-orange-100"
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                              
+                              {/* Score Fraction */}
+                              <div className="w-20 text-right shrink-0 font-mono select-none">
+                                <span className="text-[13px] font-bold text-neutral-800">{cat.score.toFixed(1)}</span>
+                                <span className="text-[11px] text-neutral-400 font-semibold"> / {cat.maxScore.toFixed(1)}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               );
