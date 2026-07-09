@@ -3310,48 +3310,6 @@ export default function TeacherExams({ embedded = false }) {
 
                 return (
                   <div className="space-y-6 text-left">
-                    {/* Header KPI cards */}
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Highest Score */}
-                      <div className="bg-[#fff7f2] border border-[#ffe8d6] rounded-xl p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(250,84,28,0.02)]">
-                        <div className="space-y-1">
-                          <span className="text-[12px] text-neutral-400 font-bold block select-none">最高得分</span>
-                          <span className="text-[20px] font-extrabold text-[#fa541c] font-mono leading-none">98.0 <span className="text-xs font-bold text-neutral-500">分</span></span>
-                          <span className="text-[11px] text-neutral-505 block font-semibold">首名考生: 李四方</span>
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-[#fa541c]/15 flex items-center justify-center text-[#fa541c] shrink-0">
-                          <Award className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {/* Average Score */}
-                      <div className="bg-[#f0f5ff] border border-[#d6e4ff] rounded-xl p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(24,144,255,0.02)]">
-                        <div className="space-y-1">
-                          <span className="text-[12px] text-neutral-400 font-bold block select-none">考试平均分</span>
-                          <span className="text-[20px] font-extrabold text-[#1890ff] font-mono leading-none">85.7 <span className="text-xs font-bold text-neutral-500">分</span></span>
-                          <span className="text-[11px] text-[#52c41a] block font-bold flex items-center gap-0.5">
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            较上期提升 +2.4 分
-                          </span>
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-[#1890ff]/15 flex items-center justify-center text-[#1890ff] shrink-0">
-                          <TrendingUp className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {/* Pass Rate */}
-                      <div className="bg-[#f6ffed] border border-[#d9f7be] rounded-xl p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(82,196,26,0.02)]">
-                        <div className="space-y-1">
-                          <span className="text-[12px] text-neutral-400 font-bold block select-none">考试及格率</span>
-                          <span className="text-[20px] font-extrabold text-[#52c41a] font-mono leading-none">100.0 <span className="text-xs font-bold text-neutral-500">%</span></span>
-                          <span className="text-[11px] text-neutral-505 block font-semibold">及格线 60 分 (共 10 人)</span>
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-[#52c41a]/15 flex items-center justify-center text-[#52c41a] shrink-0">
-                          <Users className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Honor Podium Area */}
                     <div className="bg-gradient-to-b from-neutral-50/50 to-white border border-neutral-100 rounded-2xl p-6 shadow-sm select-none">
                       <div className="text-[13px] font-bold text-neutral-700 mb-6 flex items-center gap-1.5">
