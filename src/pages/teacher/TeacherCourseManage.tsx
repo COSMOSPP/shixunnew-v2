@@ -317,7 +317,7 @@ export default function TeacherCourseManage() {
   const [gradingSearchQuery, setGradingSearchQuery] = useState('');
   const [gradingStudents, setGradingStudents] = useState([
     { id: 1, name: '张三丰', phone: '18656686967', time: '2026/02/11 16:00:38', count: 2, status: '已发布', score: 84.8 },
-    { id: 2, name: '李四光', phone: '13656686967', time: '2099/02/28 00:00', count: 3, status: '打分中', score: 40 },
+    { id: 2, name: '李四光', phone: '13656686967', time: '-', count: 0, status: '未提交', score: null },
     { id: 3, name: '王五常', phone: '13628399493', time: '2099/02/28 00:00', count: 4, status: '未发布', score: 80 },
     { id: 4, name: '刘小能', phone: '19628399493', time: '2099/02/28 00:00', count: 2, status: '已发布', score: 11 },
     { id: 5, name: '刘大能', phone: '19628399493', time: '2099/02/28 00:00', count: 1, status: '更新待发布', score: 56 },
@@ -2574,17 +2574,28 @@ export default function TeacherCourseManage() {
                             <td className="p-4 text-center font-bold text-neutral-800 font-mono">{s.score}</td>
                             <td className="p-4 text-center">
                               <div className="flex justify-center gap-3.5">
+                                {s.status === '未提交' ? (
+                                  <button
+                                    disabled
+                                    className="text-[#ff8d60] bg-transparent border-0 cursor-not-allowed p-0 font-semibold transition-colors text-[13px]"
+                                    title="未提交状态下无法查看成绩"
+                                  >
+                                    查看成绩
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setScoreModalStudent(s);
+                                      setScoreModalAssignment(selectedGradingAssignment);
+                                      setShowScoreModal(true);
+                                    }}
+                                    className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                  >
+                                    查看成绩
+                                  </button>
+                                )}
                                 <button
-                                  onClick={() => {
-                                    setScoreModalStudent(s);
-                                    setScoreModalAssignment(selectedGradingAssignment);
-                                    setShowScoreModal(true);
-                                  }}
-                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
-                                >
-                                  查看成绩
-                                </button>
-                                <button
+                                  disabled={s.status === '未提交'}
                                   onClick={() => {
                                     setReviewModalStudent(s);
                                     setReviewModalAssignment(selectedGradingAssignment);
@@ -2610,7 +2621,13 @@ export default function TeacherCourseManage() {
                                     setShowReviewPreview(true);
                                     setCurrentQuestionIndex(0);
                                   }}
-                                  className="text-[#fa541c] hover:text-[#e84a15] font-semibold transition-colors hover:underline cursor-pointer bg-transparent border-0 p-0 text-[13px]"
+                                  className={cn(
+                                    "font-semibold transition-colors text-[13px] border-0 bg-transparent p-0",
+                                    s.status === '未提交'
+                                      ? "text-[#ff8d60] cursor-not-allowed"
+                                      : "text-[#fa541c] hover:text-[#e84a15] hover:underline cursor-pointer"
+                                  )}
+                                  title={s.status === '未提交' ? '未提交状态下无法评审作业' : undefined}
                                 >
                                   评审作业
                                 </button>
