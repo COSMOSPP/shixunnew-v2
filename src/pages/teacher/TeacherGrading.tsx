@@ -13,7 +13,8 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
-  Eye
+  Eye,
+  Award
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -121,8 +122,8 @@ export default function TeacherGrading() {
 
   // Preview Mode states
   const [previewModeActive, setPreviewModeActive] = useState(false);
-  const [previewQuestionType, setPreviewQuestionType] = useState<'单选题' | '多选题' | '简答题' | '实训编程题'>('单选题');
   const [previewQuestionIdx, setPreviewQuestionIdx] = useState(0);
+  const [gradedQuestions, setGradedQuestions] = useState<any[]>([]);
   const [previewAnswers, setPreviewAnswers] = useState<Record<string, any>>({});
   const [countdownSeconds, setCountdownSeconds] = useState(7189); // 01:59:49
 
@@ -141,40 +142,6 @@ export default function TeacherGrading() {
     if (score === 2) return 56;
     if (score === 1) return 11;
     return 40;
-  };
-
-  const getEarnedScore = (secId: string, studentScore: number) => {
-    if (studentScore === 100) {
-      if (secId === 'single') return 20;
-      if (secId === 'multiple') return 20;
-      if (secId === 'essay') return 20;
-      if (secId === 'coding') return 40;
-    }
-    if (studentScore === 80) {
-      if (secId === 'single') return 20;
-      if (secId === 'multiple') return 20;
-      if (secId === 'essay') return 15;
-      if (secId === 'coding') return 25;
-    }
-    if (studentScore === 56) {
-      if (secId === 'single') return 10;
-      if (secId === 'multiple') return 10;
-      if (secId === 'essay') return 11;
-      if (secId === 'coding') return 25;
-    }
-    if (studentScore === 40) {
-      if (secId === 'single') return 10;
-      if (secId === 'multiple') return 10;
-      if (secId === 'essay') return 10;
-      if (secId === 'coding') return 10;
-    }
-    if (studentScore === 11) {
-      if (secId === 'single') return 10;
-      if (secId === 'multiple') return 0;
-      if (secId === 'essay') return 1;
-      if (secId === 'coding') return 0;
-    }
-    return 0;
   };
 
   const getDynamicPreviewQuestions = (studentScore: number) => {
@@ -346,6 +313,73 @@ export default function TeacherGrading() {
   // View exam handler
   const handleViewExam = (sub: StudentSubmission) => {
     setViewExamStudent(sub);
+    setPreviewQuestionIdx(0);
+    const qs = getDynamicPreviewQuestions(getMappedScore(sub.score)).map(q => ({
+      ...q,
+      score: 0
+    }));
+    setGradedQuestions(qs);
+    setPreviewModeActive(true);
+  };
+
+  // Grade change handler
+  const handleGradeChange = (newScore: number) => {
+    setGradedQuestions(prev => prev.map((item, idx) => 
+      idx === previewQuestionIdx ? { ...item, score: newScore } : item
+    ));
+  };
+
+  // Map 100-point total score back to 4-point scale
+  const getInverseMappedScore = (totalScore: number) => {
+    if (totalScore >= 100) return 4;
+    if (totalScore >= 80) return 3;
+    if (totalScore >= 56) return 2;
+    if (totalScore >= 11) return 1;
+    return 0;
+  };
+
+  // Exit preview mode and save results handler
+  const handleExitPreview = () => {
+    if (viewExamStudent) {
+      const totalScore = gradedQuestions.reduce((sum, item) => sum + (item.score || 0), 0);
+      const mapped4Score = getInverseMappedScore(totalScore);
+      const oldStatus = viewExamStudent.gradedStatus;
+      const newStatus = '已批阅' as const;
+
+      // Update submissions list
+      const updatedSubs = submissions.map(sub => 
+        sub.id === viewExamStudent.id 
+          ? { ...sub, gradedStatus: newStatus, score: mapped4Score } 
+          : sub
+      );
+      setSubmissions(updatedSubs);
+
+      // Update task list and selected task counters
+      if (selectedTask && oldStatus !== '已批阅') {
+        const gradedDiff = 1;
+        const pendingDiff = -1;
+
+        setTasksList(tasksList.map(t => 
+          t.id === selectedTask.id 
+            ? { 
+                ...t, 
+                gradedCount: t.gradedCount + gradedDiff,
+                pendingCount: Math.max(0, t.pendingCount + pendingDiff)
+              } 
+            : t
+        ));
+
+        setSelectedTask({
+          ...selectedTask,
+          gradedCount: selectedTask.gradedCount + gradedDiff,
+          pendingCount: Math.max(0, selectedTask.pendingCount + pendingDiff)
+        });
+      }
+
+      showToast(`已成功保存考生 ${viewExamStudent.name} 的批阅得分：${totalScore} 分 (换算等级分: ${mapped4Score}分)`, 'success');
+    }
+    setPreviewModeActive(false);
+    setViewExamStudent(null);
   };
 
   // Save single student score
@@ -459,17 +493,16 @@ export default function TeacherGrading() {
   };
 
   if (previewModeActive && viewExamStudent) {
-    const questions = getDynamicPreviewQuestions(getMappedScore(viewExamStudent.score));
+    const questions = gradedQuestions.length > 0 ? gradedQuestions : getDynamicPreviewQuestions(getMappedScore(viewExamStudent.score)).map(q => ({ ...q, score: 0 }));
     const q = questions[previewQuestionIdx];
+    const totalScore = questions.reduce((sum, item) => sum + (item.score || 0), 0);
 
     return (
       <div className="fixed inset-0 z-[300] bg-[#f5f5f5] flex flex-col font-sans text-neutral-800 animate-fade-in text-[13px]">
         {/* Header Bar */}
         <div className="h-[56px] bg-white border-b border-neutral-200/60 px-6 flex items-center shrink-0 text-left select-none">
           <button 
-            onClick={() => {
-              setPreviewModeActive(false);
-            }}
+            onClick={handleExitPreview}
             className="flex items-center gap-1.5 text-neutral-550 hover:text-neutral-800 font-medium transition-colors border-0 bg-transparent cursor-pointer p-0 text-[13px]"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -478,6 +511,9 @@ export default function TeacherGrading() {
           <div className="w-[1px] h-4 bg-neutral-200 mx-4"></div>
           <span className="font-bold text-neutral-800 text-[14px]">
             {selectedTask?.examName || 'Python 基础 - 答卷预览'}
+          </span>
+          <span className="ml-3 px-2.5 py-0.5 bg-[#fa541c]/10 text-[#fa541c] text-[11px] font-bold rounded">
+            最终得分：{totalScore} 分
           </span>
         </div>
 
@@ -593,6 +629,62 @@ export default function TeacherGrading() {
                     </div>
                   </div>
                 )}
+
+                {/* 判分模块 */}
+                <div className="mt-8 p-5 bg-[#fafafa] border border-neutral-200 rounded-lg flex flex-col gap-4 text-left max-w-[800px] select-none">
+                  <div className="flex items-center gap-2 font-bold text-neutral-800 text-[14px]">
+                    <Award className="w-4.5 h-4.5 text-[#fa541c]" />
+                    <span>人工判分</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-6">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[13px] text-neutral-600 font-medium">本题得分：</span>
+                      <div className="flex items-center border border-neutral-200 rounded overflow-hidden bg-white">
+                        <button 
+                          onClick={() => {
+                            const cur = q.score || 0;
+                            handleGradeChange(Math.max(0, cur - 1));
+                          }}
+                          className="px-2.5 py-1 bg-neutral-50 hover:bg-neutral-100 border-r border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
+                        >
+                          -
+                        </button>
+                        <input 
+                          type="number"
+                          min={0}
+                          max={q.maxScore}
+                          value={q.score}
+                          onChange={(e) => {
+                            let val = Number(e.target.value);
+                            if (val < 0) val = 0;
+                            if (val > q.maxScore) val = q.maxScore;
+                            handleGradeChange(val);
+                          }}
+                          className="w-14 text-center border-0 font-bold text-neutral-800 focus:outline-none focus:ring-0 text-[13px] h-7"
+                        />
+                        <button 
+                          onClick={() => {
+                            const cur = q.score || 0;
+                            handleGradeChange(Math.min(q.maxScore, cur + 1));
+                          }}
+                          className="px-2.5 py-1 bg-neutral-50 hover:bg-neutral-100 border-l border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <span className="text-[13px] text-neutral-500 font-semibold">/ {q.maxScore} 分</span>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleGradeChange(q.maxScore)}
+                        className="px-3 py-1 text-xs border border-[#fa541c]/30 rounded bg-[#fff2e8] hover:bg-[#ffe3d1] text-[#fa541c] transition-colors cursor-pointer font-bold"
+                      >
+                        {q.maxScore}分 (满分)
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Bottom Actions Row */}
@@ -624,6 +716,15 @@ export default function TeacherGrading() {
             {/* Right Sidebar navigation */}
             <div className="w-80 border-l border-neutral-200 flex flex-col bg-white px-6 pt-8 pb-6 shrink-0 justify-between h-full text-left select-none">
               <div className="overflow-y-auto flex-1 no-scrollbar space-y-6 flex flex-col justify-between">
+                {/* 最终得分展示 */}
+                <div className="p-4 bg-[#fff2e8] border border-[#fa541c]/20 rounded-lg text-center select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)]">
+                  <div className="text-[12px] text-neutral-500 font-semibold mb-0.5">考生：{viewExamStudent?.name}</div>
+                  <div className="text-[11px] text-neutral-400">试卷最终得分</div>
+                  <div className="text-[28px] font-extrabold text-[#fa541c] mt-1 flex items-baseline justify-center gap-1 font-mono">
+                    {totalScore} <span className="text-[13px] font-bold text-neutral-500">/ 100 分</span>
+                  </div>
+                </div>
+
                 {/* Sidebar navigations for all types */}
                 <div className="space-y-6 pt-2">
                   {['单选题', '多选题', '简答题', '实训编程题'].map((typeStr) => {
@@ -663,12 +764,10 @@ export default function TeacherGrading() {
                 {/* Exit Preview Button below the navigations */}
                 <div className="pt-6 border-t border-neutral-200 mt-6 select-none shrink-0">
                   <Button 
-                    onClick={() => {
-                      setPreviewModeActive(false);
-                    }}
+                    onClick={handleExitPreview}
                     className="w-full bg-[#fa541c] hover:bg-[#e84a15] text-white border-0 font-bold h-9.5 text-[13px] rounded-[4px] cursor-pointer transition-colors shadow-sm"
                   >
-                    退出预览
+                    保存成绩
                   </Button>
                 </div>
               </div>
@@ -939,7 +1038,7 @@ export default function TeacherGrading() {
                                 onClick={() => handleViewExam(sub)}
                                 className="text-xs text-[#fa541c] hover:underline transition-colors border-0 bg-transparent p-0 cursor-pointer font-medium"
                               >
-                                查看试卷
+                                评审试卷
                               </button>
                               <span className="mx-1.5 text-neutral-200">|</span>
                               <button
@@ -1109,94 +1208,7 @@ export default function TeacherGrading() {
         </div>
       )}
 
-      {/* View Exam Modal */}
-      {viewExamStudent && (
-        <div 
-          className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-[2px] flex items-center justify-center animate-fade-in p-4 text-[13px]"
-          onClick={() => setViewExamStudent(null)}
-        >
-          <div 
-            className="bg-white w-full max-w-[760px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-scale-up"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
-              <h3 className="text-[15px] font-bold text-neutral-800 flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-[#fa541c]" />
-                评审作业 - {viewExamStudent.name}
-              </h3>
-              <button 
-                onClick={() => setViewExamStudent(null)} 
-                className="text-neutral-455 hover:text-[#fa541c] hover:bg-neutral-100/80 p-1.5 rounded-full transition-colors border-0 bg-transparent cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Modal Body */}
-            <div className="p-6">
-              <div className="border border-neutral-100 rounded-md overflow-hidden bg-white overflow-x-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-neutral-100 bg-neutral-50/60 text-neutral-600 font-medium select-none whitespace-nowrap">
-                      <th className="p-3 pl-4 w-12 whitespace-nowrap">序号</th>
-                      <th className="p-3">题型</th>
-                      <th className="p-3">题目数量</th>
-                      <th className="p-3">作业总分</th>
-                      <th className="p-3">作业得分</th>
-                      <th className="p-3">提交时间</th>
-                      <th className="p-3 text-center pr-4">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100 text-neutral-700">
-                    {[
-                      { id: 'single', name: '单选题', count: 2, totalPoints: 20 },
-                      { id: 'multiple', name: '多选题', count: 2, totalPoints: 20 },
-                      { id: 'essay', name: '简答题', count: 1, totalPoints: 20 },
-                      { id: 'coding', name: '实训编程题', count: 1, totalPoints: 40 }
-                    ].map((sec, idx) => {
-                      const earnedScore = viewExamStudent ? getEarnedScore(sec.id, getMappedScore(viewExamStudent.score)) : 0;
-                      const submitTime = '2026-07-07 11:00:15';
-                      return (
-                        <tr key={sec.id} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
-                          <td className="p-3 pl-4 font-mono text-neutral-500 whitespace-nowrap">{idx + 1}</td>
-                          <td className="p-3 font-semibold text-neutral-800">{sec.name}</td>
-                          <td className="p-3 text-neutral-600">{sec.count} 题</td>
-                          <td className="p-3 text-neutral-600">{sec.totalPoints} 分</td>
-                          <td className="p-3 font-bold text-neutral-850">{earnedScore} 分</td>
-                          <td className="p-3 text-neutral-500 font-mono">{submitTime}</td>
-                          <td className="p-3 text-center pr-4">
-                            <button
-                              onClick={() => {
-                                setPreviewQuestionType(sec.name as any);
-                                setPreviewQuestionIdx(idx);
-                                setPreviewModeActive(true);
-                              }}
-                              className="text-xs text-[#fa541c] hover:text-[#e84a15] transition-colors border border-[#fa541c]/30 hover:border-[#fa541c] bg-transparent px-2.5 py-1 rounded-[4px] cursor-pointer font-medium"
-                            >
-                              预览
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end shrink-0">
-              <Button 
-                onClick={() => setViewExamStudent(null)} 
-                className="border-neutral-200 text-neutral-600 font-bold h-9 px-6 text-xs hover:bg-neutral-100 transition-all rounded-[4px] cursor-pointer bg-white"
-              >
-                关闭
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Change Grading Status Modal */}
       {statusModalStudent && (
