@@ -2035,7 +2035,7 @@ export default function TeacherExams({ embedded = false }) {
                   </div>
                 </div>
               ) : (
-                detailsType !== 'students' && detailsType !== 'invigilation' && detailsType !== 'scores' && detailsType !== 'scoring' && (
+                detailsType !== 'students' && detailsType !== 'invigilation' && detailsType !== 'scores' && detailsType !== 'scoring' && detailsType !== 'rank' && (
                   <div className="bg-orange-50/20 rounded-xl p-4 border border-orange-100/60 space-y-2">
                     <div className="text-[14px] font-bold text-neutral-800">场次名称：{detailsSession.name}</div>
                     <div className="grid grid-cols-2 gap-y-1.5 text-xs text-neutral-600">
@@ -3310,51 +3310,9 @@ export default function TeacherExams({ embedded = false }) {
 
                 return (
                   <div className="space-y-6 text-left">
-                    {/* Header KPI cards */}
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Highest Score */}
-                      <div className="bg-[#fff7f2] border border-[#ffe8d6] rounded-xl p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(250,84,28,0.02)]">
-                        <div className="space-y-1">
-                          <span className="text-[12px] text-neutral-400 font-bold block select-none">最高得分</span>
-                          <span className="text-[20px] font-extrabold text-[#fa541c] font-mono leading-none">98.0 <span className="text-xs font-bold text-neutral-500">分</span></span>
-                          <span className="text-[11px] text-neutral-505 block font-semibold">首名考生: 李四方</span>
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-[#fa541c]/15 flex items-center justify-center text-[#fa541c] shrink-0">
-                          <Award className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {/* Average Score */}
-                      <div className="bg-[#f0f5ff] border border-[#d6e4ff] rounded-xl p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(24,144,255,0.02)]">
-                        <div className="space-y-1">
-                          <span className="text-[12px] text-neutral-400 font-bold block select-none">考试平均分</span>
-                          <span className="text-[20px] font-extrabold text-[#1890ff] font-mono leading-none">85.7 <span className="text-xs font-bold text-neutral-500">分</span></span>
-                          <span className="text-[11px] text-[#52c41a] block font-bold flex items-center gap-0.5">
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            较上期提升 +2.4 分
-                          </span>
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-[#1890ff]/15 flex items-center justify-center text-[#1890ff] shrink-0">
-                          <TrendingUp className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {/* Pass Rate */}
-                      <div className="bg-[#f6ffed] border border-[#d9f7be] rounded-xl p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(82,196,26,0.02)]">
-                        <div className="space-y-1">
-                          <span className="text-[12px] text-neutral-400 font-bold block select-none">考试及格率</span>
-                          <span className="text-[20px] font-extrabold text-[#52c41a] font-mono leading-none">100.0 <span className="text-xs font-bold text-neutral-500">%</span></span>
-                          <span className="text-[11px] text-neutral-505 block font-semibold">及格线 60 分 (共 10 人)</span>
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-[#52c41a]/15 flex items-center justify-center text-[#52c41a] shrink-0">
-                          <Users className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Honor Podium Area */}
-                    <div className="bg-gradient-to-b from-neutral-50/50 to-white border border-neutral-100 rounded-2xl p-6 shadow-sm select-none">
-                      <div className="text-[13px] font-bold text-neutral-700 mb-6 flex items-center gap-1.5">
+                    <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm select-none">
+                      <div className="text-[13px] font-bold text-neutral-800 mb-6 flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-3.5 bg-[#fa541c] rounded-full"></span>
                         学霸荣誉榜
                       </div>
@@ -3376,7 +3334,7 @@ export default function TeacherExams({ embedded = false }) {
                           <div className="text-[10px] text-neutral-400 mt-0.5 font-mono">客{rankList[1].objScore} + 主{rankList[1].subScore}</div>
                           
                           {/* Podium Block */}
-                          <div className="h-24 w-20 bg-gradient-to-t from-slate-100 to-slate-200/40 border-t border-slate-200/50 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                          <div className="h-24 w-20 bg-gradient-to-t from-slate-50 to-slate-100/40 border-t border-slate-200/50 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
                             <span className="text-[28px] font-black text-slate-300 leading-none">2</span>
                           </div>
                         </div>
@@ -3397,7 +3355,7 @@ export default function TeacherExams({ embedded = false }) {
                           <div className="text-[10px] text-neutral-400 mt-0.5 font-mono">客{rankList[0].objScore} + 主{rankList[0].subScore}</div>
                           
                           {/* Podium Block */}
-                          <div className="h-32 w-24 bg-gradient-to-t from-amber-100/60 to-amber-200/30 border-t border-amber-350/30 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[0_4px_16px_rgba(245,108,108,0.03),inset_0_1px_0_rgba(255,255,255,0.8)]">
+                          <div className="h-32 w-24 bg-gradient-to-t from-amber-50/60 to-amber-100/30 border-t border-amber-250/30 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[0_4px_16px_rgba(245,108,108,0.03),inset_0_1px_0_rgba(255,255,255,0.8)]">
                             <span className="text-[34px] font-black text-amber-400 leading-none">1</span>
                           </div>
                         </div>
@@ -3418,7 +3376,7 @@ export default function TeacherExams({ embedded = false }) {
                           <div className="text-[10px] text-neutral-400 mt-0.5 font-mono">客{rankList[2].objScore} + 主{rankList[2].subScore}</div>
                           
                           {/* Podium Block */}
-                          <div className="h-20 w-20 bg-gradient-to-t from-orange-100/30 to-orange-200/20 border-t border-orange-200/30 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                          <div className="h-20 w-20 bg-gradient-to-t from-orange-50/30 to-orange-100/20 border-t border-orange-200/30 rounded-t-xl mt-4 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
                             <span className="text-[26px] font-black text-orange-300 leading-none">3</span>
                           </div>
                         </div>
@@ -3438,7 +3396,7 @@ export default function TeacherExams({ embedded = false }) {
                             placeholder="搜索姓名 / 班级 / 学号..."
                             value={rankSearchQuery}
                             onChange={(e) => setRankSearchQuery(e.target.value)}
-                            className="pl-8 pr-7 py-1 w-full bg-white border border-neutral-200 rounded-[4px] text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 text-neutral-800 transition-all placeholder:text-neutral-400 h-7.5"
+                            className="pl-8 pr-7 py-1 w-full bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/25 text-neutral-800 transition-all placeholder:text-neutral-400 h-7.5"
                           />
                           {rankSearchQuery && (
                             <button
@@ -3451,58 +3409,57 @@ export default function TeacherExams({ embedded = false }) {
                         </div>
                       </div>
 
-                      {/* Full Rankings list */}
-                      <div className="border border-neutral-150 rounded-xl overflow-hidden shadow-sm bg-white overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left border-collapse text-[12.5px]">
+                      {/* Full Rankings list - Styled matching Invigilation Table Style exactly */}
+                      <div className="border border-neutral-200 rounded overflow-hidden bg-white">
+                        <table className="w-full text-left border-collapse text-xs select-none">
                           <thead>
-                            <tr className="bg-neutral-50/80 border-b border-neutral-200/50 text-neutral-500 font-semibold select-none whitespace-nowrap">
-                              <th className="p-3.5 pl-5 w-20 text-center">名次</th>
-                              <th className="p-3.5">考生</th>
-                              <th className="p-3.5">所属班级</th>
-                              <th className="p-3.5 text-center">答题用时</th>
-                              <th className="p-3.5 text-center">提交时间</th>
-                              <th className="p-3.5 text-center">客观 / 主观得分</th>
-                              <th className="p-3.5 text-right pr-5">成绩分布 / 最终得分</th>
+                            <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                              <th className="p-3 w-16 text-center">排名</th>
+                              <th className="p-3 text-left">账号</th>
+                              <th className="p-3 text-left">姓名</th>
+                              <th className="p-3 text-left">所属班级</th>
+                              <th className="p-3 text-center">答题用时</th>
+                              <th className="p-3 text-center">提交时间</th>
+                              <th className="p-3 text-center">客观 / 主观得分</th>
+                              <th className="p-3 text-right pr-4">最终得分</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                          <tbody className="divide-y divide-neutral-100 text-[13px] text-neutral-700">
                             {filteredRankList.map((stu) => {
                               const percentage = (stu.score / 100) * 100;
                               return (
-                                <tr key={stu.rank} className="hover:bg-neutral-50/40 transition-colors whitespace-nowrap">
+                                <tr key={stu.rank} className="hover:bg-neutral-50/50">
                                   {/* Rank Column */}
-                                  <td className="p-3.5 pl-5 text-center font-bold whitespace-nowrap">
+                                  <td className="p-3 text-center font-bold">
                                     {stu.rank === 1 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-amber-100 text-amber-700 items-center justify-center text-[11px] shadow-sm">1</span>}
                                     {stu.rank === 2 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-slate-100 text-slate-700 items-center justify-center text-[11px] shadow-sm">2</span>}
                                     {stu.rank === 3 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-orange-100 text-orange-700 items-center justify-center text-[11px] shadow-sm">3</span>}
                                     {stu.rank > 3 && <span className="inline-flex w-5.5 h-5.5 rounded-full bg-neutral-50 text-neutral-400 border border-neutral-100 items-center justify-center text-[11px] font-mono font-medium">{stu.rank}</span>}
                                   </td>
 
-                                  {/* Student Name / ID */}
-                                  <td className="p-3.5">
-                                    <div className="flex flex-col text-left">
-                                      <span className="font-semibold text-neutral-850">{stu.name}</span>
-                                      <span className="text-[10px] text-neutral-400 font-mono mt-0.5">{stu.id}</span>
-                                    </div>
-                                  </td>
+                                  {/* Student ID / Account */}
+                                  <td className="p-3 font-semibold text-neutral-600 font-mono">{stu.id}</td>
+
+                                  {/* Student Name */}
+                                  <td className="p-3 font-medium text-neutral-800">{stu.name}</td>
 
                                   {/* Class */}
-                                  <td className="p-3.5 text-neutral-600">{stu.class}</td>
+                                  <td className="p-3 text-neutral-600">{stu.class}</td>
 
                                   {/* Duration */}
-                                  <td className="p-3.5 text-center font-mono text-neutral-650">{stu.duration}</td>
+                                  <td className="p-3 text-center font-mono text-neutral-650">{stu.duration}</td>
 
                                   {/* Submit Time */}
-                                  <td className="p-3.5 text-center font-mono text-neutral-450">{stu.submitTime}</td>
+                                  <td className="p-3 text-center font-mono text-neutral-450">{stu.submitTime}</td>
 
                                   {/* Breakdown */}
-                                  <td className="p-3.5 text-center text-neutral-500 font-mono whitespace-nowrap">
+                                  <td className="p-3 text-center text-neutral-500 font-mono whitespace-nowrap">
                                     {stu.objScore} + {stu.subScore}
                                   </td>
 
                                   {/* Final Score with Mini Progress bar */}
-                                  <td className="p-3.5 text-right pr-5">
-                                    <div className="flex items-center justify-end gap-3.5 select-none">
+                                  <td className="p-3 text-right pr-4">
+                                    <div className="flex items-center justify-end gap-3 select-none">
                                       {/* Mini Progress Track */}
                                       <div className="w-16 bg-neutral-100 h-1.5 rounded-full overflow-hidden shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] hidden sm:block">
                                         <div 
@@ -3522,7 +3479,7 @@ export default function TeacherExams({ embedded = false }) {
                             })}
                             {filteredRankList.length === 0 && (
                               <tr>
-                                <td colSpan={7} className="py-10 text-center text-neutral-400">
+                                <td colSpan={8} className="py-10 text-center text-neutral-400">
                                   暂无匹配的考试成绩数据
                                 </td>
                               </tr>
