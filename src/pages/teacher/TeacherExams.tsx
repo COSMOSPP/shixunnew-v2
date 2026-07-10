@@ -360,6 +360,8 @@ export default function TeacherExams({ embedded = false }) {
   const [overviewCurrentPage, setOverviewCurrentPage] = useState(1);
   const [overviewPageSize, setOverviewPageSize] = useState(5);
   const [rankSearchQuery, setRankSearchQuery] = useState('');
+  const [rankCurrentPage, setRankCurrentPage] = useState(1);
+  const [rankPageSize, setRankPageSize] = useState(9);
   const getEarnedScore = (secId: string, studentScore: number) => {
     if (studentScore === 100) {
       if (secId === 'single') return 20;
@@ -3299,107 +3301,230 @@ export default function TeacherExams({ embedded = false }) {
                   { rank: 7, name: '郑九霄', id: '202674454207', class: '数据科学', classFull: '数据科学二班', score: 84, duration: '49m 05s', phone: '13933334444', submitTime: '2026/02/11 16:19', objScore: 44, subScore: 40, avatarText: '九霄' },
                   { rank: 8, name: '冯十方', id: '202674454208', class: '人工智能', classFull: '人工智能三班', score: 82, duration: '53m 15s', phone: '13544445555', submitTime: '2026/02/11 16:23', objScore: 42, subScore: 40, avatarText: '十方' },
                   { rank: 9, name: '陈百川', id: '202674454209', class: '数据科学', classFull: '数据科学二班', score: 79, duration: '57m 50s', phone: '13755556666', submitTime: '2026/02/11 16:27', objScore: 39, subScore: 40, avatarText: '百川' },
-                  { rank: 10, name: '楚天阔', id: '202674454210', class: '软件工程', classFull: '软件工程一班', score: 76, duration: '50m 30s', phone: '13866667777', submitTime: '2026/02/11 16:20', objScore: 36, subScore: 40, avatarText: '天阔' }
+                  { rank: 10, name: '楚天阔', id: '202674454210', class: '软件工程', classFull: '软件工程一班', score: 76, duration: '50m 30s', phone: '13866667777', submitTime: '2026/02/11 16:20', objScore: 36, subScore: 40, avatarText: '天阔' },
+                  { rank: 11, name: '沈十一', id: '202674454211', class: '数据科学', classFull: '数据科学二班', score: 75, duration: '52m 10s', phone: '13977778888', submitTime: '2026/02/11 16:32', objScore: 35, subScore: 40, avatarText: '十一' },
+                  { rank: 12, name: '韩十二', id: '202674454212', class: '软件工程', classFull: '软件工程一班', score: 72, duration: '54m 30s', phone: '13899990000', submitTime: '2026/02/11 16:35', objScore: 32, subScore: 40, avatarText: '十二' },
+                  { rank: 13, name: '秦十三', id: '202674454213', class: '人工智能', classFull: '人工智能三班', score: 70, duration: '56m 15s', phone: '13511112222', submitTime: '2026/02/11 16:38', objScore: 30, subScore: 40, avatarText: '十三' },
+                  { rank: 14, name: '尤十四', id: '202674454214', class: '数据科学', classFull: '数据科学二班', score: 68, duration: '58m 05s', phone: '13633334444', submitTime: '2026/02/11 16:41', objScore: 28, subScore: 40, avatarText: '十四' }
                 ];
 
                 const topThree = rankList.slice(0, 3);
                 const listRanks = rankList.filter(stu => stu.rank > 3);
 
+                // Pagination logic
+                const totalListRanks = listRanks.length;
+                const totalPages = Math.ceil(totalListRanks / rankPageSize) || 1;
+                const activePage = Math.min(rankCurrentPage, totalPages);
+                const paginatedRanks = listRanks.slice(
+                  (activePage - 1) * rankPageSize,
+                  activePage * rankPageSize
+                );
+
+                // Wheat ears decorations for rank numbers (golden, silver-blue, bronze-orange)
+                const WheatDecor = ({ rank, strokeColor, fillColor }: { rank: number; strokeColor: string; fillColor: string }) => (
+                  <div className="flex items-center justify-center gap-1 select-none">
+                    {/* Left Wheat Ear */}
+                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M17 20C13 18 9 13 9 5" />
+                      <path d="M9.5 16C8 15 6.5 14 6.5 12C6.5 10 8 11 9.5 12" fill={fillColor} />
+                      <path d="M9 12C7.5 11 6 10 6 8C6 6 7.5 7 9 8" fill={fillColor} />
+                      <path d="M9 8C7.5 7 6 6 6 4C6 2 7.5 3 9 4" fill={fillColor} />
+                      <path d="M9 4C8.5 3.5 7.5 2 7.5 1" />
+                    </svg>
+                    
+                    <span className="text-[28px] font-black leading-none font-serif select-none" style={{ color: strokeColor }}>
+                      {rank}
+                    </span>
+
+                    {/* Right Wheat Ear */}
+                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M7 20C11 18 15 13 15 5" />
+                      <path d="M14.5 16C16 15 17.5 14 17.5 12C17.5 10 16 11 14.5 12" fill={fillColor} />
+                      <path d="M15 12C16.5 11 18 10 18 8C18 6 16.5 7 15 8" fill={fillColor} />
+                      <path d="M15 8C16.5 7 18 6 18 4C18 2 16.5 3 15 4" fill={fillColor} />
+                      <path d="M15 4C15.5 3.5 16.5 2 16.5 1" />
+                    </svg>
+                  </div>
+                );
+
                 return (
-                  <div className="space-y-6 text-left">
+                  <div className="space-y-3 text-left">
                     {/* Top 3 Podium Area matching the reference style */}
-                    <div className="flex justify-center items-stretch gap-5 pt-4 pb-4 select-none">
+                    <div className="flex justify-center items-end gap-5 pt-3 pb-0 select-none">
                       
                       {/* 2nd Place Card (Left) */}
-                      <div className="flex-1 bg-[#f0f5ff]/60 border border-[#d6e4ff]/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative shadow-sm hover:shadow-md transition-all duration-300">
-                        <div className="flex flex-col items-center w-full">
-                          {/* Rank Number */}
-                          <div className="flex flex-col items-center justify-center mb-3">
-                            <span className="text-[26px] font-black text-blue-500/80 leading-none select-none font-serif">2</span>
+                      <div className="flex-1 bg-gradient-to-b from-[#f0f5ff] to-transparent rounded-2xl p-5 flex flex-col items-center justify-center text-center relative hover:-translate-y-0.5 transition-all duration-300 h-[195px]">
+                        <div className="flex flex-col items-center w-full justify-between h-full">
+                          {/* Rank Number with Wheat Ear Decoration */}
+                          <WheatDecor rank={2} strokeColor="#2f54eb" fillColor="#d6e4ff" />
+
+                          {/* Avatar with circular frame */}
+                          <div className="my-2 relative">
+                            <div className="w-16 h-16 rounded-full border-2 border-white bg-gradient-to-tr from-[#597ef7] to-[#2f54eb] flex items-center justify-center select-none">
+                              <span className="text-white text-base font-bold">{topThree[1].avatarText}</span>
+                            </div>
                           </div>
 
                           {/* Name */}
-                          <div className="text-[14px] font-bold text-neutral-800 leading-tight mb-1">{topThree[1].name}</div>
+                          <div className="text-[14px] font-bold text-neutral-800 leading-tight mb-1 truncate w-full px-2" title={topThree[1].name}>
+                            {topThree[1].name}
+                          </div>
                           
                           {/* Score metrics */}
-                          <div className="text-[#fa541c] font-black font-mono text-[14.5px]">{topThree[1].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
+                          <div className="text-[#fa541c] font-black font-mono text-[14.5px]">
+                            {topThree[1].score}<span className="text-[10px] font-bold text-neutral-450 ml-0.5">分</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* 1st Place Card (Center) - Slightly taller & scaled */}
-                      <div className="flex-1 bg-[#fffbe6]/75 border border-[#ffe58f]/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative shadow-md scale-105 z-10 hover:shadow-lg transition-all duration-300">
-                        <div className="flex flex-col items-center w-full">
-                          {/* Rank Number */}
-                          <div className="flex flex-col items-center justify-center mb-3">
-                            <span className="text-[30px] font-black text-amber-550 leading-none select-none font-serif">1</span>
+                      <div className="flex-1 bg-gradient-to-b from-[#fffbe6] to-transparent rounded-2xl p-5 flex flex-col items-center justify-center text-center relative hover:-translate-y-1 transition-all duration-300 z-10 h-[220px] scale-105">
+                        <div className="flex flex-col items-center w-full justify-between h-full">
+                          {/* Rank Number with Wheat Ear Decoration */}
+                          <WheatDecor rank={1} strokeColor="#d4b106" fillColor="#fffbe6" />
+
+                          {/* Avatar with circular frame */}
+                          <div className="my-2 relative">
+                            <div className="w-18 h-18 rounded-full border-3 border-white bg-gradient-to-tr from-[#ffc53d] to-[#d4b106] flex items-center justify-center select-none">
+                              <span className="text-white text-lg font-black">{topThree[0].avatarText}</span>
+                            </div>
                           </div>
 
                           {/* Name */}
-                          <div className="text-[14.5px] font-extrabold text-neutral-900 leading-tight mb-1">{topThree[0].name}</div>
+                          <div className="text-[15.5px] font-extrabold text-neutral-900 leading-tight mb-1 truncate w-full px-2" title={topThree[0].name}>
+                            {topThree[0].name}
+                          </div>
                           
                           {/* Score metrics */}
-                          <div className="text-[#fa541c] font-black font-mono text-[16px]">{topThree[0].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
+                          <div className="text-[#fa541c] font-black font-mono text-[16px]">
+                            {topThree[0].score}<span className="text-[10px] font-bold text-neutral-450 ml-0.5">分</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* 3rd Place Card (Right) */}
-                      <div className="flex-1 bg-[#fff1f0]/60 border border-[#ffa39e]/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative shadow-sm hover:shadow-md transition-all duration-300">
-                        <div className="flex flex-col items-center w-full">
-                          {/* Rank Number */}
-                          <div className="flex flex-col items-center justify-center mb-3">
-                            <span className="text-[26px] font-black text-orange-600/85 leading-none select-none font-serif">3</span>
+                      <div className="flex-1 bg-gradient-to-b from-[#fff1f0] to-transparent rounded-2xl p-5 flex flex-col items-center justify-center text-center relative hover:-translate-y-0.5 transition-all duration-300 h-[195px]">
+                        <div className="flex flex-col items-center w-full justify-between h-full">
+                          {/* Rank Number with Wheat Ear Decoration */}
+                          <WheatDecor rank={3} strokeColor="#fa541c" fillColor="#ffe8e6" />
+
+                          {/* Avatar with circular frame */}
+                          <div className="my-2 relative">
+                            <div className="w-16 h-16 rounded-full border-2 border-white bg-gradient-to-tr from-[#ff7875] to-[#fa541c] flex items-center justify-center select-none">
+                              <span className="text-white text-base font-bold">{topThree[2].avatarText}</span>
+                            </div>
                           </div>
 
                           {/* Name */}
-                          <div className="text-[13px] font-bold text-neutral-800 leading-tight mb-1">{topThree[2].name}</div>
+                          <div className="text-[13px] font-bold text-neutral-800 leading-tight mb-1 truncate w-full px-2" title={topThree[2].name}>
+                            {topThree[2].name}
+                          </div>
                           
                           {/* Score metrics */}
-                          <div className="text-[#fa541c] font-black font-mono text-[14px]">{topThree[2].score}<span className="text-[10px] font-bold text-neutral-400 ml-0.5">分</span></div>
+                          <div className="text-[#fa541c] font-black font-mono text-[14px]">
+                            {topThree[2].score}<span className="text-[10px] font-bold text-neutral-455 ml-0.5">分</span>
+                          </div>
                         </div>
                       </div>
 
                     </div>
 
-                    {/* Filter and Complete list Area */}
-                    <div className="space-y-4 pt-4 border-t border-neutral-100">
-                      {/* Vertical Streamer list style without Avatar, Action button, class tag, or student ID */}
-                      <div className="space-y-3 pt-2">
-                        {listRanks.map((stu) => (
-                          <div 
-                            key={stu.rank} 
-                            className="flex items-center justify-between p-4 bg-white border border-neutral-100 rounded-xl hover:shadow-md hover:border-neutral-200/60 transition-all duration-200"
-                          >
-                            {/* Left details */}
-                            <div className="flex items-center gap-5">
-                              {/* Large rank number */}
-                              <span className="text-[20px] font-black text-neutral-300 w-6 text-center select-none font-mono">
-                                {stu.rank}
-                              </span>
-
-                              {/* Student Text info */}
-                              <div className="flex flex-col text-left space-y-1">
-                                <div className="flex items-center">
-                                  <span className="font-bold text-neutral-800 text-[14px]">{stu.name}</span>
-                                </div>
-                                <div className="text-[11px] text-neutral-400 font-mono select-none">
-                                  提交时间: {stu.submitTime}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Right side: only final score */}
-                            <div className="text-right select-none pr-3">
-                              <span className="text-neutral-500 text-[12.5px] mr-1">最终得分:</span>
-                              <span className="font-extrabold text-[#fa541c] font-mono text-[14.5px]">{stu.score}</span>
-                              <span className="text-[10px] text-neutral-400 font-bold ml-0.5">分</span>
-                            </div>
-                          </div>
-                        ))}
-                        {listRanks.length === 0 && (
-                          <div className="py-12 text-center text-neutral-400 bg-neutral-50/30 rounded-xl border border-dashed border-neutral-200">
-                            暂无匹配的考试成绩数据
+                    {/* Other Ranks Table */}
+                    <div className="pt-0 space-y-3">
+                      <div className="border border-neutral-200 rounded overflow-hidden">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold select-none">
+                              <th className="p-3 w-20 text-center">排名</th>
+                              <th className="p-3">姓名</th>
+                              <th className="p-3">最后提交时间</th>
+                              <th className="p-3 text-right pr-6">最终得分</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-neutral-100 text-xs text-neutral-700">
+                            {paginatedRanks.map((stu) => (
+                              <tr 
+                                key={stu.rank} 
+                                className="hover:bg-neutral-50/50"
+                              >
+                                <td className="p-3 text-center select-none font-mono font-bold text-neutral-500 w-20">
+                                  {stu.rank}
+                                </td>
+                                <td className="p-3 font-semibold text-neutral-900">
+                                  {stu.name}
+                                </td>
+                                <td className="p-3 text-neutral-500 font-mono">
+                                  {stu.submitTime}
+                                </td>
+                                <td className="p-3 text-right pr-6 font-bold text-[#fa541c] select-none font-mono">
+                                  {stu.score} 分
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {paginatedRanks.length === 0 && (
+                          <div className="py-12 text-center text-neutral-400 bg-neutral-50/30">
+                            暂无其他排名数据
                           </div>
                         )}
+                      </div>
+
+                      {/* Pagination Footer */}
+                      <div className="flex items-center justify-end pt-2 gap-4 bg-transparent select-none">
+                        <span className="text-[13px] text-neutral-500">共 {totalListRanks} 条</span>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 rounded-sm" 
+                            disabled={activePage === 1} 
+                            onClick={() => setRankCurrentPage(prev => Math.max(prev - 1, 1))}
+                          >
+                            &lt;
+                          </Button>
+                          {Array.from({ length: totalPages }).map((_, idx) => (
+                            <Button 
+                              key={idx}
+                              variant="outline" 
+                              size="sm" 
+                              className={cn(
+                                "h-7 w-7 p-0 rounded-sm",
+                                activePage === idx + 1 ? "bg-[#fa541c] text-white border-[#fa541c]" : ""
+                              )}
+                              onClick={() => setRankCurrentPage(idx + 1)}
+                            >
+                              {idx + 1}
+                            </Button>
+                          ))}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 rounded-sm" 
+                            disabled={activePage === totalPages} 
+                            onClick={() => setRankCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          >
+                            &gt;
+                          </Button>
+                        </div>
+                        <div className="relative bg-white rounded-[6px]">
+                          <select 
+                            value={rankPageSize}
+                            onChange={(e) => {
+                              const size = parseInt(e.target.value);
+                              setRankPageSize(size);
+                              setRankCurrentPage(1);
+                            }}
+                            className="appearance-none text-[13px] border border-neutral-200 hover:border-[#fa541c]/60 focus:border-[#fa541c] rounded-[6px] pl-3 pr-8 py-1 focus:outline-none text-neutral-600 bg-white cursor-pointer h-7 transition-colors min-w-[95px] shadow-sm"
+                          >
+                            <option className="bg-white" value={9}>9 条/页</option>
+                            <option className="bg-white" value={20}>20 条/页</option>
+                            <option className="bg-white" value={50}>50 条/页</option>
+                          </select>
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                            <ChevronDown className="w-3 h-3" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
