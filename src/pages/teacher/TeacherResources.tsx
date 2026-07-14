@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 interface QuotaItem {
   gpuHours: number;
@@ -108,13 +107,15 @@ export default function TeacherResources() {
   const [formPractices, setFormPractices] = useState(0);
   const [formAiAssistants, setFormAiAssistants] = useState(0);
   const [formTokens, setFormTokens] = useState(0);
-  const [formExpiry, setFormExpiry] = useState('');
 
   // Bulk configure states
   const [isBulkOpen, setIsBulkOpen] = useState(false);
-  const [bulkResourceKey, setBulkResourceKey] = useState<keyof QuotaItem>('gpuHours');
-  const [bulkAmount, setBulkAmount] = useState('1');
-  const [bulkExpiry, setBulkExpiry] = useState('2026-07-01');
+  const [bulkGpu, setBulkGpu] = useState(2);
+  const [bulkCpu, setBulkCpu] = useState(2);
+  const [bulkProjects, setBulkProjects] = useState(3);
+  const [bulkDatasets, setBulkDatasets] = useState(4);
+  const [bulkAiAssistants, setBulkAiAssistants] = useState(1);
+  const [bulkTokens, setBulkTokens] = useState(4);
 
   // Toast state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -158,7 +159,6 @@ export default function TeacherResources() {
     setFormPractices(user.quotas.practices);
     setFormAiAssistants(user.quotas.aiAssistants);
     setFormTokens(user.quotas.tokens);
-    setFormExpiry(user.expiryDate);
     setIsSingleAdjustOpen(true);
   };
 
@@ -168,7 +168,6 @@ export default function TeacherResources() {
 
     setUsers(users.map(u => u.id === targetUser.id ? {
       ...u,
-      expiryDate: formExpiry,
       quotas: {
         gpuHours: formGpu,
         cpuHours: formCpu,
@@ -185,13 +184,8 @@ export default function TeacherResources() {
   };
 
   // Execute bulk adjustment
-  const executeBulkAllocation = () => {
-    const valueNum = Number(bulkAmount);
-    if (isNaN(valueNum) || valueNum <= 0) {
-      showToast('请输入有效的增配数量', 'error');
-      return;
-    }
-
+  const executeBulkAllocation = (e: React.FormEvent) => {
+    e.preventDefault();
     const targets = selectedUserIds.length > 0 ? selectedUserIds : filteredUsers.map(u => u.id);
     if (targets.length === 0) {
       showToast('没有可操作的学生账号', 'error');
@@ -202,10 +196,14 @@ export default function TeacherResources() {
       if (targets.includes(u.id)) {
         return {
           ...u,
-          expiryDate: bulkExpiry,
           quotas: {
             ...u.quotas,
-            [bulkResourceKey]: u.quotas[bulkResourceKey] + valueNum
+            gpuHours: u.quotas.gpuHours + bulkGpu,
+            cpuHours: u.quotas.cpuHours + bulkCpu,
+            projects: u.quotas.projects + bulkProjects,
+            datasets: u.quotas.datasets + bulkDatasets,
+            aiAssistants: u.quotas.aiAssistants + bulkAiAssistants,
+            tokens: u.quotas.tokens + bulkTokens
           }
         };
       }
@@ -257,7 +255,15 @@ export default function TeacherResources() {
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
             <Button 
-              onClick={() => setIsBulkOpen(true)} 
+              onClick={() => {
+                setBulkGpu(2);
+                setBulkCpu(2);
+                setBulkProjects(3);
+                setBulkDatasets(4);
+                setBulkAiAssistants(1);
+                setBulkTokens(4);
+                setIsBulkOpen(true);
+              }} 
               className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1 shadow-sm h-9 px-4 rounded-[4px] text-xs font-semibold cursor-pointer border-0"
             >
               批量增配
@@ -384,30 +390,6 @@ export default function TeacherResources() {
             {/* Drawer Content - Form */}
             <form onSubmit={saveSingleAdjustment} className="flex-1 flex flex-col overflow-hidden text-left">
               <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-white custom-scrollbar">
-                
-                {/* Student Info Card in grid format */}
-                <div className="grid grid-cols-[100px_1fr] gap-4 items-start">
-                  <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">学生信息</label>
-                  <div className="p-4 bg-neutral-50 rounded border border-neutral-200 text-xs grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-neutral-400">学生姓名：</span>
-                      <span className="font-semibold text-neutral-800">{targetUser.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400">手机号：</span>
-                      <span className="font-mono text-neutral-800">{targetUser.phone}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400">归属学院：</span>
-                      <span className="text-neutral-800">{targetUser.college}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400">班级：</span>
-                      <span className="text-neutral-800">{targetUser.class}</span>
-                    </div>
-                  </div>
-                </div>
-
                 {/* GPU卡时 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
@@ -497,20 +479,6 @@ export default function TeacherResources() {
                     required
                   />
                 </div>
-
-                {/* Expiry setting */}
-                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                  <label className="text-[13px] font-bold text-[#262626] text-right">
-                    截止日期 <span className="text-[#fa541c]">*</span>
-                  </label>
-                  <DateTimePicker 
-                    value={formExpiry}
-                    onChange={(val) => setFormExpiry(val)}
-                    placeholder="请选择截止日期"
-                    className="text-[13px] w-full"
-                    showPresets={false}
-                  />
-                </div>
               </div>
 
               {/* Drawer Footer */}
@@ -560,82 +528,117 @@ export default function TeacherResources() {
             </div>
 
             {/* Body */}
-            <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-white custom-scrollbar">
-              {/* Info banner in grid format */}
-              <div className="grid grid-cols-[100px_1fr] gap-4 items-start">
-                <label className="text-[13px] font-bold text-[#262626] text-right pt-1.5">已选学生</label>
-                <div className="p-3 bg-[#fff2e8] border border-[#ffbb96] rounded text-xs text-[#fa541c] leading-relaxed">
-                  已选中 <strong>{selectedUserIds.length > 0 ? selectedUserIds.length : filteredUsers.length}</strong> 位学生的账号。
-                  {selectedUserIds.length === 0 && " (当前未勾选学生，默认对列表内所有学生生效)"}
+            <form onSubmit={executeBulkAllocation} className="flex-1 flex flex-col overflow-hidden text-left">
+              <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-white custom-scrollbar">
+                {/* GPU卡时 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    GPU卡时 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={bulkGpu}
+                    onChange={(e) => setBulkGpu(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* CPU时长 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    CPU时长 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={bulkCpu}
+                    onChange={(e) => setBulkCpu(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* 项目数 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    项目数 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={bulkProjects}
+                    onChange={(e) => setBulkProjects(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* 数据集数 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    数据集数 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={bulkDatasets}
+                    onChange={(e) => setBulkDatasets(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* 智能助手数 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    智能助手数 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={bulkAiAssistants}
+                    onChange={(e) => setBulkAiAssistants(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
+                </div>
+
+                {/* token余额 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    token余额 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    min="0"
+                    value={bulkTokens}
+                    onChange={(e) => setBulkTokens(Number(e.target.value))}
+                    className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white"
+                    required
+                  />
                 </div>
               </div>
 
-              {/* Resource key */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right">
-                  资源类型 <span className="text-[#fa541c]">*</span>
-                </label>
-                <select 
-                  value={bulkResourceKey}
-                  onChange={(e) => setBulkResourceKey(e.target.value as any)}
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-800 bg-white"
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+                <Button 
+                  type="button"
+                  onClick={() => setIsBulkOpen(false)} 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-600 font-semibold h-9 px-6 rounded-[4px] text-[13px] bg-white hover:bg-neutral-50 transition-colors"
                 >
-                  <option value="gpuHours">GPU卡时</option>
-                  <option value="cpuHours">CPU时长</option>
-                  <option value="projects">项目数</option>
-                  <option value="datasets">数据集数</option>
-                  <option value="aiAssistants">智能助手数</option>
-                  <option value="tokens">token余额</option>
-                </select>
+                  取消
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-[4px] shadow-sm text-[13px] cursor-pointer border-0 transition-colors"
+                >
+                  确认并立即增配
+                </Button>
               </div>
-
-              {/* Amount */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right">
-                  追加额度 <span className="text-[#fa541c]">*</span>
-                </label>
-                <input 
-                  type="number" 
-                  min="1"
-                  value={bulkAmount}
-                  onChange={(e) => setBulkAmount(e.target.value)}
-                  placeholder="请输入要追加的额度数值"
-                  className="w-full border border-neutral-200 rounded-[4px] px-3.5 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all placeholder:text-neutral-400 text-neutral-800 bg-white" 
-                  required
-                />
-              </div>
-
-              {/* Expiry */}
-              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-[#262626] text-right">
-                  截止日期 <span className="text-[#fa541c]">*</span>
-                </label>
-                <DateTimePicker 
-                  value={bulkExpiry}
-                  onChange={(val) => setBulkExpiry(val)}
-                  placeholder="请选择截止日期"
-                  className="text-[13px] w-full"
-                  showPresets={false}
-                />
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
-              <Button 
-                onClick={() => setIsBulkOpen(false)} 
-                variant="outline" 
-                className="border-neutral-200 text-neutral-600 font-semibold h-9 px-6 rounded-[4px] text-[13px] bg-white hover:bg-neutral-50 transition-colors"
-              >
-                取消
-              </Button>
-              <Button 
-                onClick={executeBulkAllocation}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 rounded-[4px] shadow-sm text-[13px] cursor-pointer border-0 transition-colors"
-              >
-                确认并立即增配
-              </Button>
-            </div>
+            </form>
           </div>
         </div>
       )}

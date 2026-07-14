@@ -203,6 +203,44 @@ const initialPools: ResourcePool[] = [
   { id: "pool-25", name: "VMware测试环境池", associatedPlugin: "私有云", createdAt: "2026-06-21 10:00", ak: "ak-vmware-test", sk: "sk-vmware-test" }
 ];
 
+interface ContainerImage {
+  id: string;
+  name: string;
+  description: string;
+  size: string;
+  createdAt: string;
+  uploadStatus: "已上传" | "上传中" | "未上传";
+  syncStatus: "同步成功" | "同步中" | "同步失败";
+}
+
+interface VmImage {
+  id: string;
+  name: string;
+  description: string;
+  resourceType: string;
+  os: string;
+  size: string;
+  createdAt: string;
+  uploadStatus: "已上传" | "上传中" | "未上传";
+  syncStatus: "同步成功" | "同步中" | "同步失败";
+}
+
+const initialContainerImages: ContainerImage[] = [
+  { id: "img-c1", name: "fzytest/test001:v1", description: "1", size: "13.9 MB", createdAt: "2025-05-27 17:08", uploadStatus: "已上传", syncStatus: "同步成功" },
+  { id: "img-c2", name: "test/test:12", description: "1", size: "13.9 MB", createdAt: "2025-05-27 15:04", uploadStatus: "已上传", syncStatus: "同步成功" },
+  { id: "img-c3", name: "bbb/aaa:1", description: "1", size: "13.9 MB", createdAt: "2025-05-27 14:49", uploadStatus: "已上传", syncStatus: "同步成功" },
+  { id: "img-c4", name: "12/test001:1", description: "1", size: "237 MB", createdAt: "2025-02-24 19:11", uploadStatus: "已上传", syncStatus: "同步中" },
+  { id: "img-c5", name: "traing/node-keeper-co...", description: "容器服务端", size: "237 MB", createdAt: "2024-12-26 17:10", uploadStatus: "已上传", syncStatus: "同步成功" },
+  { id: "img-c6", name: "traing/nodekeeper-age...", description: "采集器", size: "52.1 MB", createdAt: "2024-12-25 10:44", uploadStatus: "已上传", syncStatus: "同步失败" },
+  { id: "img-c7", name: "lxxxin/config-jsp-webs...", description: "webshell漏洞排查", size: "506 MB", createdAt: "2024-06-11 20:00", uploadStatus: "已上传", syncStatus: "同步成功" },
+  { id: "img-c8", name: "lxxxin/mysql-fix:v1", description: "慢SQL排查", size: "521 MB", createdAt: "2024-06-11 17:59", uploadStatus: "已上传", syncStatus: "同步成功" }
+];
+
+const initialVmImages: VmImage[] = [
+  { id: "img-v1", name: "linux", description: "无", resourceType: "云主机", os: "LINUX", size: "389 MB", createdAt: "2024-11-27 10:49", uploadStatus: "已上传", syncStatus: "同步中" },
+  { id: "img-v2", name: "debian", description: "无", resourceType: "云主机", os: "LINUX", size: "388 MB", createdAt: "2024-11-18 17:58", uploadStatus: "已上传", syncStatus: "同步失败" }
+];
+
 // 6 months monitor metrics datasets
 const initialTrends: Record<string, number[]> = {
   "CPU使用率": [25, 32, 45, 38, 52, 45],
@@ -218,6 +256,7 @@ const renderPlatformLogo = (platformType: string) => {
             <path d="M70,50 C70,39 61,30 50,30 C44,30 38,33 34,38 C30,35 25,33 20,33 C9,33 0,42 0,53 C0,64 9,73 20,73 L70,73 C78,73 85,66 85,58 C85,50 78,50 70,50 Z" />
             <path d="M90,40 C90,34 85,30 80,30 C78,30 76,31 75,32 C72,25 65,20 57,20 C50,20 44,24 41,30 C38,30 36,30 35,30 C27,30 20,37 20,45 C20,46 20,47 20,48 C23,47 26,46 30,46 C34,40 41,36 50,36 C61,36 71,44 72,55 C76,55 80,57 82,60 C87,58 90,53 90,47 C90,44 90,41 90,40 Z" opacity="0.6"/>
           </svg>
+
           <div className="flex flex-col text-[#e60012] text-left leading-none">
             <span className="font-bold text-xs tracking-wide">天翼云</span>
             <span className="text-[7px] font-sans scale-90 -ml-0.5 mt-0.5">State Cloud</span>
@@ -394,7 +433,7 @@ const renderPlatformLogo = (platformType: string) => {
 };
 
 export default function AdminSystemPage() {
-  const [activeTab, setActiveTab] = useState<"tags" | "roles" | "plugins" | "pools" | "monitor" | "logs">("tags");
+  const [activeTab, setActiveTab] = useState<"tags" | "roles" | "plugins" | "pools" | "monitor" | "logs" | "images">("tags");
 
   // --- Reactive Component State Database ---
   const [tags, setTags] = useState<PlatformTag[]>(initialTags);
@@ -402,6 +441,177 @@ export default function AdminSystemPage() {
   const [platforms, setPlatforms] = useState<CloudPlatform[]>(initialPlatforms);
   const [pools, setPools] = useState<ResourcePool[]>(initialPools);
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialLogs);
+
+  // --- Image Management State ---
+  const [containerImages, setContainerImages] = useState<ContainerImage[]>(initialContainerImages);
+  const [vmImages, setVmImages] = useState<VmImage[]>(initialVmImages);
+  const [imageSubTab, setImageSubTab] = useState<"container" | "vm">("container");
+  const [isRefreshingImages, setIsRefreshingImages] = useState(false);
+  const [imageSearchName, setImageSearchName] = useState("");
+  const [containerCurrentPage, setContainerCurrentPage] = useState(1);
+  const [vmCurrentPage, setVmCurrentPage] = useState(1);
+  const imagePageSize = 5;
+
+  // --- Image Upload Modal State ---
+  const [uploadImageModalOpen, setUploadImageModalOpen] = useState(false);
+  const [newImageName, setNewImageName] = useState("");
+  const [newImageDesc, setNewImageDesc] = useState("");
+  const [newImageSize, setNewImageSize] = useState("");
+  const [newImageOs, setNewImageOs] = useState("LINUX");
+  const [newImageResType, setNewImageResType] = useState("云主机");
+
+  // --- Image Edit Modal State ---
+  const [editImageModalOpen, setEditImageModalOpen] = useState(false);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const [editingImageName, setEditingImageName] = useState("");
+  const [editingImageDesc, setEditingImageDesc] = useState("");
+  const [editingImageSize, setEditingImageSize] = useState("");
+  const [editingImageOs, setEditingImageOs] = useState("");
+  const [editingImageResType, setEditingImageResType] = useState("");
+
+  // --- Image Sync Logs Modal State ---
+  const [imageLogsModalOpen, setImageLogsModalOpen] = useState(false);
+  const [selectedImageNameForLogs, setSelectedImageNameForLogs] = useState("");
+  const [imageLogs, setImageLogs] = useState<string[]>([]);
+
+  // --- Image Management Actions ---
+  const handleRefreshImages = () => {
+    setIsRefreshingImages(true);
+    triggerToast("🔄 正在从云平台刷新镜像数据...");
+    setTimeout(() => {
+      setIsRefreshingImages(false);
+      triggerToast("✅ 镜像数据刷新成功！");
+    }, 1000);
+  };
+
+  const handleSyncImage = (id: string, type: "container" | "vm") => {
+    triggerToast("🚀 正在发起镜像同步指令...");
+    if (type === "container") {
+      setContainerImages(prev => prev.map(img => img.id === id ? { ...img, syncStatus: "同步中" } : img));
+      setTimeout(() => {
+        setContainerImages(prev => prev.map(img => img.id === id ? { ...img, syncStatus: "同步成功" } : img));
+        triggerToast("✅ 容器镜像同步成功！");
+      }, 2000);
+    } else {
+      setVmImages(prev => prev.map(img => img.id === id ? { ...img, syncStatus: "同步中" } : img));
+      setTimeout(() => {
+        setVmImages(prev => prev.map(img => img.id === id ? { ...img, syncStatus: "同步成功" } : img));
+        triggerToast("✅ 虚拟机镜像同步成功！");
+      }, 2000);
+    }
+  };
+
+  const handleDeleteImage = (id: string, name: string, type: "container" | "vm") => {
+    setDeleteConfirm({
+      show: true,
+      title: "删除镜像",
+      message: `您确定要永久删除镜像「${name}」吗？删除后此操作不可撤销。`,
+      onConfirm: () => {
+        if (type === "container") {
+          setContainerImages(prev => prev.filter(img => img.id !== id));
+        } else {
+          setVmImages(prev => prev.filter(img => img.id !== id));
+        }
+        triggerToast(`🗑️ 已成功删除镜像「${name}」！`);
+      }
+    });
+  };
+
+  const handleSaveUploadedImage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newImageName) return;
+
+    const sizeFormatted = newImageSize ? `${newImageSize} MB` : "100 MB";
+    const currentTime = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+    if (imageSubTab === "container") {
+      const newImg: ContainerImage = {
+        id: `img-c-${Date.now()}`,
+        name: newImageName,
+        description: newImageDesc || "无",
+        size: sizeFormatted,
+        createdAt: currentTime,
+        uploadStatus: "已上传",
+        syncStatus: "同步成功"
+      };
+      setContainerImages([newImg, ...containerImages]);
+    } else {
+      const newImg: VmImage = {
+        id: `img-v-${Date.now()}`,
+        name: newImageName,
+        description: newImageDesc || "无",
+        resourceType: newImageResType,
+        os: newImageOs,
+        size: sizeFormatted,
+        createdAt: currentTime,
+        uploadStatus: "已上传",
+        syncStatus: "同步成功"
+      };
+      setVmImages([newImg, ...vmImages]);
+    }
+
+    setUploadImageModalOpen(false);
+    setNewImageName("");
+    setNewImageDesc("");
+    setNewImageSize("");
+    triggerToast(`🎉 成功上传新镜像: ${newImageName}`);
+  };
+
+  const handleOpenEditImage = (img: ContainerImage | VmImage) => {
+    setEditingImageId(img.id);
+    setEditingImageName(img.name);
+    setEditingImageDesc(img.description);
+    setEditingImageSize(img.size.replace(" MB", ""));
+    if ("os" in img) {
+      setEditingImageOs(img.os);
+      setEditingImageResType(img.resourceType);
+    }
+    setEditImageModalOpen(true);
+  };
+
+  const handleSaveEditImage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingImageId) return;
+
+    const sizeFormatted = editingImageSize ? `${editingImageSize} MB` : "100 MB";
+
+    if (imageSubTab === "container") {
+      setContainerImages(prev => prev.map(img => img.id === editingImageId ? {
+        ...img,
+        name: editingImageName,
+        description: editingImageDesc,
+        size: sizeFormatted
+      } : img));
+    } else {
+      setVmImages(prev => prev.map(img => img.id === editingImageId ? {
+        ...img,
+        name: editingImageName,
+        description: editingImageDesc,
+        size: sizeFormatted,
+        os: editingImageOs,
+        resourceType: editingImageResType
+      } : img));
+    }
+
+    setEditImageModalOpen(false);
+    setEditingImageId(null);
+    triggerToast(`✏️ 镜像修改成功！`);
+  };
+
+  const handleOpenImageLogs = (name: string) => {
+    setSelectedImageNameForLogs(name);
+    setImageLogs([
+      `[2026-07-14 10:15:22] [INFO] 开始同步镜像 ${name} 到所有物理节点...`,
+      `[2026-07-14 10:15:24] [INFO] 节点 Node-A-01 连接成功, 镜像层大小 13.9 MB`,
+      `[2026-07-14 10:15:27] [INFO] 镜像层分发中 (15%)...`,
+      `[2026-07-14 10:15:32] [INFO] 镜像层分发中 (45%)...`,
+      `[2026-07-14 10:15:40] [INFO] 镜像层分发中 (80%)...`,
+      `[2026-07-14 10:15:45] [INFO] 节点 Node-A-01 下载镜像完毕`,
+      `[2026-07-14 10:15:47] [INFO] 开始向集群底册分发缓存元数据...`,
+      `[2026-07-14 10:15:50] [SUCCESS] 镜像 ${name} 同步成功。`
+    ]);
+    setImageLogsModalOpen(true);
+  };
 
   // --- Dynamic Toast Notifier ---
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -417,6 +627,7 @@ export default function AdminSystemPage() {
     message: "",
     onConfirm: () => {}
   });
+
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -949,6 +1160,7 @@ export default function AdminSystemPage() {
             { id: "roles", title: "运营角色权限", icon: Key },
             { id: "plugins", title: "云服务插件", icon: Cloud },
             { id: "pools", title: "资源池管理", icon: Server },
+            { id: "images", title: "镜像管理", icon: Database },
             { id: "monitor", title: "平台级监控", icon: Activity, badge: activeAlerts.length },
             { id: "logs", title: "审计操作日志", icon: FileText }
           ].map((tab) => {
@@ -967,6 +1179,7 @@ export default function AdminSystemPage() {
                 <div className="flex items-center gap-3">
                   <tab.icon className="w-4.5 h-4.5 shrink-0" />
                   <span>{tab.title}</span>
+
                 </div>
                 {tab.badge !== undefined && tab.badge > 0 && (
                   <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold scale-90">
@@ -2809,6 +3022,310 @@ export default function AdminSystemPage() {
           </div>
         )}
 
+        {/* ==================== 7. 镜像管理 ==================== */}
+        {activeTab === "images" && (() => {
+          const filteredContainers = containerImages.filter(img => 
+            img.name.toLowerCase().includes(imageSearchName.toLowerCase()) ||
+            img.description.toLowerCase().includes(imageSearchName.toLowerCase())
+          );
+
+          const filteredVms = vmImages.filter(img => 
+            img.name.toLowerCase().includes(imageSearchName.toLowerCase()) ||
+            img.description.toLowerCase().includes(imageSearchName.toLowerCase())
+          );
+
+          return (
+            <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up text-left">
+              
+              {/* Top Title Section */}
+              <div className="flex flex-col gap-1 shrink-0">
+                <h1 className="text-xl font-bold text-neutral-900 leading-tight">镜像管理</h1>
+                <p className="text-xs text-neutral-500 font-medium">配置平台各类容器镜像与虚拟机镜像，用于实训环境部署与计算节点快速构建</p>
+              </div>
+
+              {/* Sub tabs switcher row - transparent background, border-b horizontal line */}
+              <div className="flex border-b border-neutral-200 mt-2 shrink-0 bg-transparent select-none">
+                <div className="flex items-center gap-6">
+                  {[
+                    { id: "container", title: "容器镜像" },
+                    { id: "vm", title: "虚拟机镜像" }
+                  ].map((sub) => {
+                    const isActive = imageSubTab === sub.id;
+                    return (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => {
+                          setImageSubTab(sub.id as any);
+                          setImageSearchName(""); // reset search
+                          setContainerCurrentPage(1);
+                          setVmCurrentPage(1);
+                        }}
+                        className={cn(
+                          "flex items-center gap-2 px-5 pb-3 text-sm font-bold border-b-2 bg-transparent transition-all cursor-pointer border-transparent -bottom-[1px] relative",
+                          isActive 
+                            ? "border-[#fa541c] text-[#fa541c]" 
+                            : "text-neutral-500 hover:text-[#fa541c]"
+                        )}
+                      >
+                        {sub.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Search Toolbar - Outside Card, transparent background */}
+              <div className="flex items-center justify-between gap-4 py-1 shrink-0 bg-transparent">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="请输入镜像名称或描述"
+                    value={imageSearchName}
+                    onChange={(e) => {
+                      setImageSearchName(e.target.value);
+                      setContainerCurrentPage(1);
+                      setVmCurrentPage(1);
+                    }}
+                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRefreshImages}
+                    disabled={isRefreshingImages}
+                    className="bg-white hover:bg-neutral-50 border border-neutral-200 text-neutral-body text-xs font-bold px-3.5 h-8.5 rounded-[4px] transition-colors cursor-pointer flex items-center gap-1.5 shadow-3xs"
+                  >
+                    <RefreshCw className={cn("w-3.5 h-3.5", isRefreshingImages && "animate-spin")} />
+                    <span>刷新</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUploadImageModalOpen(true)}
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-bold px-4 h-8.5 rounded-[4px] transition-colors cursor-pointer flex items-center gap-1.5 shadow-3xs border-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>上传镜像</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Table Card */}
+              <div className="bg-white rounded border border-neutral-border overflow-hidden flex flex-col flex-1 min-h-0">
+                
+                {/* Table Container */}
+                <div className="flex-1 overflow-auto custom-scrollbar">
+                  {imageSubTab === "container" ? (
+                    /* CONTAINER IMAGES TABLE */
+                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                      <thead>
+                        <tr className="border-b border-neutral-border/50 bg-[#fafafa] text-[13px] text-neutral-600 select-none">
+                          <th className="pl-6 pr-3 py-3 font-medium text-left">镜像名称</th>
+                          <th className="px-3 py-3 font-medium text-left">镜像描述</th>
+                          <th className="px-3 py-3 font-medium text-left">镜像大小</th>
+                          <th className="px-3 py-3 font-medium text-left">创建时间</th>
+                          <th className="px-3 py-3 font-medium text-left">上传状态</th>
+                          <th className="px-3 py-3 font-medium text-left">同步状态</th>
+                          <th className="pl-3 pr-6 py-3 font-medium text-left w-52">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-xs">
+                        {filteredContainers.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="px-6 py-12 text-center text-neutral-400">
+                              <AlertCircle className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
+                              <span>没有检索到与当前筛选条件匹配的容器镜像。</span>
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredContainers.map((img) => (
+                            <tr key={img.id} className="hover:bg-neutral-50/30 transition-colors border-b border-neutral-100 text-[13px]">
+                              <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800 font-mono">{img.name}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600">{img.description}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.size}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.createdAt}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600">
+                                <span className="bg-[#f6ffed] text-[#52c41a] text-[10px] font-bold px-2 py-0.5 rounded border border-[#b7eb8f]">
+                                  {img.uploadStatus}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-left text-neutral-600">
+                                <span className={cn(
+                                  "text-[10px] font-bold px-2 py-0.5 rounded border",
+                                  img.syncStatus === "同步成功" && "bg-[#f6ffed] text-[#52c41a] border-[#b7eb8f]",
+                                  img.syncStatus === "同步中" && "bg-[#fff7e6] text-[#fa8c16] border-[#ffd591]",
+                                  img.syncStatus === "同步失败" && "bg-[#fff1f0] text-[#f5222d] border-[#ffa39e]"
+                                )}>
+                                  {img.syncStatus}
+                                </span>
+                              </td>
+                              <td className="pl-3 pr-6 py-3 text-left font-semibold text-xs select-none">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditImage(img)}
+                                  disabled={img.syncStatus === "同步中"}
+                                  className={cn(
+                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
+                                  )}
+                                >
+                                  编辑
+                                </button>
+                                <span className="text-neutral-200 mx-2">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSyncImage(img.id, "container")}
+                                  disabled={img.syncStatus === "同步中" || img.syncStatus === "同步成功"}
+                                  className={cn(
+                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                    (img.syncStatus === "同步中" || img.syncStatus === "同步成功") && "text-neutral-300 pointer-events-none"
+                                  )}
+                                >
+                                  同步镜像
+                                </button>
+                                <span className="text-neutral-200 mx-2">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenImageLogs(img.name)}
+                                  className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0"
+                                >
+                                  日志
+                                </button>
+                                <span className="text-neutral-200 mx-2">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteImage(img.id, img.name, "container")}
+                                  disabled={img.syncStatus === "同步中"}
+                                  className={cn(
+                                    "text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
+                                  )}
+                                >
+                                  删除
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  ) : (
+                    /* VM IMAGES TABLE */
+                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                      <thead>
+                        <tr className="border-b border-neutral-border/50 bg-[#fafafa] text-[13px] text-neutral-600 select-none">
+                          <th className="pl-6 pr-3 py-3 font-medium text-left">镜像名称</th>
+                          <th className="px-3 py-3 font-medium text-left">镜像描述</th>
+                          <th className="px-3 py-3 font-medium text-left">资源类型</th>
+                          <th className="px-3 py-3 font-medium text-left">操作系统</th>
+                          <th className="px-3 py-3 font-medium text-left">镜像大小</th>
+                          <th className="px-3 py-3 font-medium text-left">创建时间</th>
+                          <th className="px-3 py-3 font-medium text-left">上传状态</th>
+                          <th className="px-3 py-3 font-medium text-left">同步状态</th>
+                          <th className="pl-3 pr-6 py-3 font-medium text-left w-52">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-xs">
+                        {filteredVms.length === 0 ? (
+                          <tr>
+                            <td colSpan={9} className="px-6 py-12 text-center text-neutral-400">
+                              <AlertCircle className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
+                              <span>没有检索到与当前筛选条件匹配的虚拟机镜像。</span>
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredVms.map((img) => (
+                            <tr key={img.id} className="hover:bg-neutral-50/30 transition-colors border-b border-neutral-100 text-[13px]">
+                              <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800 font-mono">{img.name}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600">{img.description}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600">
+                                <span className="bg-[#fff2e8] text-[#fa541c] text-[10px] font-bold px-2 py-0.5 rounded border border-[#ffbb96]">
+                                  {img.resourceType}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.os}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.size}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.createdAt}</td>
+                              <td className="px-3 py-3 text-left text-neutral-600">
+                                <span className="bg-[#f6ffed] text-[#52c41a] text-[10px] font-bold px-2 py-0.5 rounded border border-[#b7eb8f]">
+                                  {img.uploadStatus}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-left text-neutral-600">
+                                <span className={cn(
+                                  "text-[10px] font-bold px-2 py-0.5 rounded border",
+                                  img.syncStatus === "同步成功" && "bg-[#f6ffed] text-[#52c41a] border-[#b7eb8f]",
+                                  img.syncStatus === "同步中" && "bg-[#fff7e6] text-[#fa8c16] border-[#ffd591]",
+                                  img.syncStatus === "同步失败" && "bg-[#fff1f0] text-[#f5222d] border-[#ffa39e]"
+                                )}>
+                                  {img.syncStatus}
+                                </span>
+                              </td>
+                              <td className="pl-3 pr-6 py-3 text-left font-semibold text-xs select-none">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditImage(img)}
+                                  disabled={img.syncStatus === "同步中"}
+                                  className={cn(
+                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
+                                  )}
+                                >
+                                  编辑
+                                </button>
+                                <span className="text-neutral-200 mx-2">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSyncImage(img.id, "vm")}
+                                  disabled={img.syncStatus === "同步中" || img.syncStatus === "同步成功"}
+                                  className={cn(
+                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                    (img.syncStatus === "同步中" || img.syncStatus === "同步成功") && "text-neutral-300 pointer-events-none"
+                                  )}
+                                >
+                                  同步镜像
+                                </button>
+                                <span className="text-neutral-200 mx-2">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenImageLogs(img.name)}
+                                  className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0"
+                                >
+                                  日志
+                                </button>
+                                <span className="text-neutral-200 mx-2">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteImage(img.id, img.name, "vm")}
+                                  disabled={img.syncStatus === "同步中"}
+                                  className={cn(
+                                    "text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
+                                  )}
+                                >
+                                  删除
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+                
+                <div className="bg-neutral-50 px-6 py-3 flex justify-between items-center text-xs font-semibold text-neutral-body shrink-0 select-none">
+                  <span>总共登记镜像: {imageSubTab === "container" ? filteredContainers.length : filteredVms.length} 个</span>
+                  <span className="text-[10px] text-neutral-caption font-medium">提示：镜像同步状态反映了底层物理计算节点的元数据缓存拉取结果。</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* --- Delete Confirmation Modal --- */}
         {deleteConfirm.show && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
@@ -2826,6 +3343,7 @@ export default function AdminSystemPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
 
               {/* Body */}
               <div className="p-6 flex items-start gap-3 bg-white">
