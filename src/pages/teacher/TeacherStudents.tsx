@@ -333,15 +333,10 @@ export default function TeacherStudents() {
       )}
 
       {/* Header and Master Operations */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-neutral-900 flex items-center gap-2">
-            <div className="w-1.5 h-6 bg-[#fa541c] rounded-full"></div>
-            用户管理中心
-          </h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            支持完整学生增删改查、账号冻结、多维度信息检索，并提供基于标准模板的 Excel 增量双向导入导出
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
+        <div className="flex items-end gap-4">
+          <h1 className="text-xl font-bold text-neutral-900">用户管理</h1>
+          <p className="text-sm text-neutral-500 mb-0.5">支持完整学生/教师账号管理、算力配额调整与 Excel 双向导入导出</p>
         </div>
       </div>
 
@@ -373,111 +368,111 @@ export default function TeacherStudents() {
         </button>
       </div>
 
-      {/* Search and Filters Toolbar (Transparent flow style) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 py-1 bg-transparent w-full">
-        
-        {/* Left side: Merged search, status, and date filters */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Merged search input */}
-          <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input 
-              type="text" 
-              placeholder="搜索姓名、手机号..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] w-full bg-white transition-all text-neutral-700"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <div className="relative w-full sm:w-36">
-            <select 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
-            >
-              <option value="all">所有状态</option>
-              <option value="正常">正常正常</option>
-              <option value="禁用">禁用账号</option>
-            </select>
-            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-          </div>
-
-          {/* Date Filter */}
-          <div className="relative w-full sm:w-36">
-            <select 
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as any)}
-              className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
-            >
-              <option value="all">注册时间</option>
-              <option value="week">本周注册</option>
-              <option value="month">本月注册</option>
-              <option value="year">本学期注册</option>
-            </select>
-            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Right side: Bulk Action Indicator & Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5 ml-auto sm:ml-0">
-          {/* Bulk action selection - Shows only when checkboxes are ticked */}
-          {selectedUserIds.length > 0 && (
-            <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 animate-slide-up">
-              <span className="text-xs font-bold text-orange-700">已选中 {selectedUserIds.length} 个账号</span>
-              <div className="w-px h-4 bg-orange-200"></div>
-              <select
-                onChange={(e) => {
-                  const action = e.target.value as any;
-                  if(action) {
-                    setBulkActionType(action);
-                    setIsBulkActionOpen(true);
-                    e.target.value = '';
-                  }
-                }}
-                className="text-xs font-bold bg-transparent text-[#fa541c] focus:outline-none cursor-pointer"
-              >
-                <option value="">-- 选择批量操作 --</option>
-                <option value="status_enable">批量启用账号</option>
-                <option value="status_disable">批量禁用账号</option>
-                <option value="reset_pwd">批量重置密码</option>
-                <option value="adjust_quota">批量调整AI配额</option>
-                <option value="adjust_role">批量变更角色</option>
-              </select>
-            </div>
-          )}
-
-          <Button 
-            onClick={() => setIsImportOpen(true)}
-            variant="outline" 
-            className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-lg shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-3.5 cursor-pointer transition-colors"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" /> 批量导入
-          </Button>
-          <Button 
-            onClick={() => setIsExportOpen(true)}
-            variant="outline" 
-            className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-lg shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-bold px-3.5 cursor-pointer transition-colors"
-          >
-            <Download className="w-3.5 h-3.5" /> 批量导出
-          </Button>
-          <Button 
-            onClick={() => setIsAddUserOpen(true)}
-            className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded-lg text-xs font-bold px-3.5 cursor-pointer transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" /> 新建用户
-          </Button>
-        </div>
-      </div>
-
       {/* Main List Table (Question management flat card style) */}
-      <div className="bg-white rounded overflow-hidden shadow-sm border border-neutral-200/50">
+      <div className="bg-white rounded border border-neutral-200 overflow-hidden">
+        {/* Search and Filters Toolbar (Inside card container, matching TeacherQuestions) */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-200/50">
+          
+          {/* Left side: Merged search, status, and date filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Merged search input */}
+            <div className="relative w-72">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input 
+                type="text" 
+                placeholder="搜索姓名、手机号..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-2 w-full bg-white border border-neutral-200 rounded-full text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="relative w-36">
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
+              >
+                <option value="all">所有状态</option>
+                <option value="正常">正常正常</option>
+                <option value="禁用">禁用账号</option>
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+            </div>
+
+            {/* Date Filter */}
+            <div className="relative w-36">
+              <select 
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as any)}
+                className="w-full text-xs border border-neutral-200 rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#fa541c] appearance-none bg-white text-neutral-700 font-bold"
+              >
+                <option value="all">注册时间</option>
+                <option value="week">本周注册</option>
+                <option value="month">本月注册</option>
+                <option value="year">本学期注册</option>
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Right side: Bulk Action Indicator & Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
+            {/* Bulk action selection - Shows only when checkboxes are ticked */}
+            {selectedUserIds.length > 0 && (
+              <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 animate-slide-up">
+                <span className="text-xs font-bold text-orange-700">已选中 {selectedUserIds.length} 个账号</span>
+                <div className="w-px h-4 bg-orange-200"></div>
+                <select
+                  onChange={(e) => {
+                    const action = e.target.value as any;
+                    if(action) {
+                      setBulkActionType(action);
+                      setIsBulkActionOpen(true);
+                      e.target.value = '';
+                    }
+                  }}
+                  className="text-xs font-bold bg-transparent text-[#fa541c] focus:outline-none cursor-pointer"
+                >
+                  <option value="">-- 选择批量操作 --</option>
+                  <option value="status_enable">批量启用账号</option>
+                  <option value="status_disable">批量禁用账号</option>
+                  <option value="reset_pwd">批量重置密码</option>
+                  <option value="adjust_quota">批量调整AI配额</option>
+                  <option value="adjust_role">批量变更角色</option>
+                </select>
+              </div>
+            )}
+
+            <Button 
+              onClick={() => setIsImportOpen(true)}
+              variant="outline" 
+              className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-[4px] shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-medium px-3.5 cursor-pointer transition-colors"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" /> 批量导入
+            </Button>
+            <Button 
+              onClick={() => setIsExportOpen(true)}
+              variant="outline" 
+              className="flex items-center gap-1.5 h-9 bg-white border-neutral-200 text-neutral-600 rounded-[4px] shadow-sm hover:text-[#fa541c] hover:border-[#fa541c] text-xs font-medium px-3.5 cursor-pointer transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" /> 批量导出
+            </Button>
+            <Button 
+              onClick={() => setIsAddUserOpen(true)}
+              className="bg-[#fa541c] hover:bg-[#e84a15] text-white flex items-center gap-1.5 shadow-sm h-9 rounded-[4px] text-xs font-semibold cursor-pointer border-0 px-3.5 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> 新建用户
+            </Button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                <th className="p-4 w-12 text-center">
+              <tr className="border-b border-neutral-200 bg-neutral-50/50 text-[13px] text-neutral-600 font-semibold select-none">
+                <th className="pl-6 pr-3 py-3.5 font-medium w-12 text-left">
                   <button 
                     type="button"
                     onClick={() => toggleSelectAll(selectedUserIds.length !== filteredUsers.length || filteredUsers.length === 0)}
@@ -491,21 +486,21 @@ export default function TeacherStudents() {
                     {selectedUserIds.length === filteredUsers.length && filteredUsers.length > 0 && <span className="text-[10px] font-bold">✓</span>}
                   </button>
                 </th>
-                <th className="p-4">基本信息</th>
-                <th className="p-4">手机号</th>
-                <th className="p-4">邮箱</th>
-                <th className="p-4">角色类型</th>
-                <th className="p-4">状态</th>
-                <th className="p-4">最后登录时间</th>
-                <th className="p-4">综合学习时长</th>
-                <th className="p-4 text-left">操作入口</th>
+                <th className="px-3 py-3.5 font-medium text-left">基本信息</th>
+                <th className="px-3 py-3.5 font-medium text-left">手机号</th>
+                <th className="px-3 py-3.5 font-medium text-left">邮箱</th>
+                <th className="px-3 py-3.5 font-medium text-left">角色类型</th>
+                <th className="px-3 py-3.5 font-medium text-left">状态</th>
+                <th className="px-3 py-3.5 font-medium text-left">最后登录时间</th>
+                <th className="px-3 py-3.5 font-medium text-left">综合学习时长</th>
+                <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作入口</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
                 filteredUsers.map(u => (
                   <tr key={u.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                    <td className="p-4 text-center">
+                    <td className="pl-6 pr-3 py-3 text-left">
                       <button 
                         type="button"
                         onClick={() => toggleSelect(u.id)}
@@ -519,22 +514,22 @@ export default function TeacherStudents() {
                         {selectedUserIds.includes(u.id) && <span className="text-[10px] font-bold">✓</span>}
                       </button>
                     </td>
-                    <td className="p-4">
+                    <td className="px-3 py-3 text-left">
                       <div className="font-bold text-neutral-800 flex items-center gap-1.5">
                         {u.name}
                         {u.quota > 1000 && <span className="px-1.5 py-0.5 bg-purple-50 border border-purple-200 text-purple-600 rounded text-[9px] font-bold">高配额</span>}
                       </div>
                       <div className="text-[11px] text-neutral-400 font-mono mt-0.5">{u.id}</div>
                     </td>
-                    <td className="p-4 text-neutral-700 font-mono font-medium">{u.phone}</td>
-                    <td className="p-4 text-neutral-600 font-medium">{u.email}</td>
-                    <td className="p-4 text-neutral-800">
+                    <td className="px-3 py-3 text-left text-neutral-700 font-mono font-medium">{u.phone}</td>
+                    <td className="px-3 py-3 text-left text-neutral-600 font-medium">{u.email}</td>
+                    <td className="px-3 py-3 text-left text-neutral-800">
                       <span className="flex items-center gap-1">
                         <Shield className="w-3.5 h-3.5 text-neutral-400" />
                         {u.role}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="px-3 py-3 text-left">
                       <span className={cn(
                         "px-2 py-0.5 text-[11px] font-bold rounded border",
                         u.status === '正常' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200"
@@ -542,37 +537,37 @@ export default function TeacherStudents() {
                         {u.status}
                       </span>
                     </td>
-                    <td className="p-4 text-neutral-500 font-mono">{u.lastLogin}</td>
-                    <td className="p-4 text-neutral-700 font-bold font-mono">{u.duration} 小时</td>
-                    <td className="p-4 text-left">
+                    <td className="px-3 py-3 text-left text-neutral-500 font-mono">{u.lastLogin}</td>
+                    <td className="px-3 py-3 text-left text-neutral-700 font-bold font-mono">{u.duration} 小时</td>
+                    <td className="pl-3 pr-6 py-3 text-left">
                       <div className="flex items-center justify-start gap-3">
                         <button 
                           onClick={() => { setSelectedUser(u); setIsDetailUserOpen(true); }}
-                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer bg-transparent border-0 p-0"
                         >
                           查看
                         </button>
                         <button 
                           onClick={() => { setEditingUser(u); setIsEditUserOpen(true); }}
-                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer bg-transparent border-0 p-0"
                         >
                           编辑
                         </button>
                         <button 
                           onClick={() => { setQuotaUser(u); setSingleQuotaValue(u.quota); setIsQuotaOpen(true); }}
-                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer bg-transparent border-0 p-0"
                         >
                           调整配额
                         </button>
                         <button 
                           onClick={() => handleToggleSingleStatus(u.id, u.status)}
-                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer bg-transparent border-0 p-0"
                         >
                           {u.status === '正常' ? '禁用' : '启用'}
                         </button>
                         <button 
                           onClick={() => handleDeleteSingleUser(u.id, u.name)}
-                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer"
+                          className="text-[#fa541c] hover:text-[#e84a15] font-bold text-xs transition-colors cursor-pointer bg-transparent border-0 p-0"
                         >
                           删除
                         </button>
