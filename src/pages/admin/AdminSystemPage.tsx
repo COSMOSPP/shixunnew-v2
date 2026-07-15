@@ -455,6 +455,7 @@ export default function AdminSystemPage() {
 
   // --- Image Upload Modal State ---
   const [uploadImageModalOpen, setUploadImageModalOpen] = useState(false);
+  const [uploadImageType, setUploadImageType] = useState<"container" | "vm">("container");
   const [newImageName, setNewImageName] = useState("");
   const [newImageDesc, setNewImageDesc] = useState("");
   const [newImageSize, setNewImageSize] = useState("");
@@ -562,7 +563,7 @@ export default function AdminSystemPage() {
     e.preventDefault();
     if (!newImageName) return;
 
-    if (imageSubTab === "vm") {
+    if (uploadImageType === "vm") {
       if (!newImageOs) {
         triggerToast("⚠️ 请选择系统类型");
         return;
@@ -580,7 +581,7 @@ export default function AdminSystemPage() {
     const sizeFormatted = newImageSize ? `${newImageSize} MB` : "100 MB";
     const currentTime = new Date().toISOString().replace('T', ' ').substring(0, 16);
 
-    if (imageSubTab === "container") {
+    if (uploadImageType === "container") {
       const fullName = `${newImageNamespace ? `${newImageNamespace}/` : ''}${newImageName}${newImageVersion ? `:${newImageVersion}` : ''}`;
       const newImg: ContainerImage = {
         id: `img-c-${Date.now()}`,
@@ -609,6 +610,11 @@ export default function AdminSystemPage() {
     }
 
     setUploadImageModalOpen(false);
+    setImageSubTab(uploadImageType); // Switch tab automatically to show the uploaded image
+    setImageSearchName("");
+    setContainerCurrentPage(1);
+    setVmCurrentPage(1);
+    
     setNewImageName("");
     setNewImageDesc("");
     setNewImageSize("");
@@ -3128,7 +3134,7 @@ export default function AdminSystemPage() {
               </div>
 
               {/* Sub tabs switcher row - transparent background, border-b horizontal line */}
-              <div className="flex border-b border-neutral-200 mt-2 shrink-0 bg-transparent select-none">
+              <div className="flex items-center justify-between border-b border-neutral-200 mt-2 shrink-0 bg-transparent select-none">
                 <div className="flex items-center gap-6">
                   {[
                     { id: "container", title: "容器镜像" },
@@ -3157,13 +3163,8 @@ export default function AdminSystemPage() {
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Table Card */}
-              <div className="bg-white rounded border border-neutral-border overflow-hidden flex flex-col flex-1 min-h-0">
-                
-                {/* Search Toolbar - Inside Card, white background */}
-                <div className="flex items-center justify-end gap-2 px-6 py-3.5 bg-white border-b border-neutral-border/50 shrink-0 select-none">
+                <div className="flex items-center gap-2 pb-2">
                   <button
                     type="button"
                     onClick={handleRefreshImages}
@@ -3175,13 +3176,20 @@ export default function AdminSystemPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setUploadImageModalOpen(true)}
+                    onClick={() => {
+                      setUploadImageType(imageSubTab);
+                      setUploadImageModalOpen(true);
+                    }}
                     className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-bold px-4 h-8.5 rounded-[4px] transition-colors cursor-pointer flex items-center gap-1.5 shadow-3xs border-0"
                   >
                     <Plus className="w-4 h-4" />
                     <span>上传镜像</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Table Card */}
+              <div className="bg-white rounded border border-neutral-border overflow-hidden flex flex-col flex-1 min-h-0">
                 
                 {/* Table Container */}
                 <div className="flex-1 overflow-auto custom-scrollbar">
@@ -3588,7 +3596,7 @@ export default function AdminSystemPage() {
               <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
                 <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                   <Plus className="w-5 h-5 text-[#fa541c]" />
-                  <span>上传{imageSubTab === "container" ? "容器" : "虚拟机"}镜像</span>
+                  <span>上传镜像</span>
                 </h2>
                 <button 
                   type="button"
@@ -3601,6 +3609,7 @@ export default function AdminSystemPage() {
                     setNewImageVersion("");
                     setNewImageOs("");
                     setNewImageResType("");
+                    setNewImageArch("");
                     setDeleteProtection(false);
                     setSelectedFileName("");
                   }}
@@ -3613,6 +3622,46 @@ export default function AdminSystemPage() {
               {/* Drawer Content */}
               <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white">
                 
+                {/* 镜像类型 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    镜像类型 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="flex items-center gap-6 select-none text-[13px] font-medium">
+                    <div 
+                      onClick={() => setUploadImageType("container")}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      {uploadImageType === "container" ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-[#fa541c] flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-[#fa541c]" />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-neutral-300" />
+                      )}
+                      <span className={uploadImageType === "container" ? "text-[#fa541c] font-bold" : "text-neutral-700"}>
+                        容器镜像
+                      </span>
+                    </div>
+
+                    <div 
+                      onClick={() => setUploadImageType("vm")}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      {uploadImageType === "vm" ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-[#fa541c] flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-[#fa541c]" />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-neutral-300" />
+                      )}
+                      <span className={uploadImageType === "vm" ? "text-[#fa541c] font-bold" : "text-neutral-700"}>
+                        虚拟机镜像
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* 镜像名称 */}
                 <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                   <label className="text-[13px] font-bold text-[#262626] text-right">
@@ -3634,7 +3683,7 @@ export default function AdminSystemPage() {
                   </div>
                 </div>
 
-                {imageSubTab === "container" ? (
+                {uploadImageType === "container" ? (
                   <>
                     {/* 命名空间 */}
                     <div className="grid grid-cols-[100px_1fr] items-center gap-4">
@@ -3881,7 +3930,7 @@ export default function AdminSystemPage() {
                       type="file"
                       ref={fileInputRef}
                       className="hidden"
-                      accept={imageSubTab === "container" ? ".zip,.tgz,.tar,.tar.gz" : ".qcow2"}
+                      accept={uploadImageType === "container" ? ".zip,.tgz,.tar,.tar.gz" : ".qcow2"}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -3910,7 +3959,7 @@ export default function AdminSystemPage() {
                       </div>
                     ) : (
                       <span className="text-[11px] text-neutral-400 mt-2">
-                        {imageSubTab === "container" ? "只支持.zip/.tgz/.tar/.tar.gz等格式" : "只支持.qcow2格式"}
+                        {uploadImageType === "container" ? "只支持.zip/.tgz/.tar/.tar.gz等格式" : "只支持.qcow2格式"}
                       </span>
                     )}
                   </div>
@@ -3961,6 +4010,7 @@ export default function AdminSystemPage() {
                     setNewImageVersion("");
                     setNewImageOs("");
                     setNewImageResType("");
+                    setNewImageArch("");
                     setDeleteProtection(false);
                     setSelectedFileName("");
                   }}
