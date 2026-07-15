@@ -4,7 +4,7 @@ import {
   Plus, Edit, Trash2, Sliders, Play, TrendingUp, BarChart2, Download, 
   Filter, AlertCircle, Check, RefreshCw, X, ChevronRight, Cpu, 
   AlertTriangle, Server, Database, Terminal, ShieldAlert, Copy, RefreshCcw, CheckCircle,
-  ChevronDown, Eye, EyeOff, Info
+  ChevronDown, Eye, EyeOff, Info, RotateCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CustomSelect } from "../teacher/TeacherProjects";
@@ -219,6 +219,7 @@ interface VmImage {
   description: string;
   resourceType: string;
   os: string;
+  arch?: string;
   size: string;
   createdAt: string;
   uploadStatus: "已上传" | "上传中" | "未上传";
@@ -457,8 +458,39 @@ export default function AdminSystemPage() {
   const [newImageName, setNewImageName] = useState("");
   const [newImageDesc, setNewImageDesc] = useState("");
   const [newImageSize, setNewImageSize] = useState("");
-  const [newImageOs, setNewImageOs] = useState("LINUX");
-  const [newImageResType, setNewImageResType] = useState("云主机");
+  const [newImageOs, setNewImageOs] = useState("");
+  const [newImageResType, setNewImageResType] = useState("");
+  const [newImageArch, setNewImageArch] = useState("");
+  
+  const [newImageNamespace, setNewImageNamespace] = useState("");
+  const [newImageVersion, setNewImageVersion] = useState("");
+  const [deleteProtection, setDeleteProtection] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isOsDropdownOpen, setIsOsDropdownOpen] = useState(false);
+  const [isResTypeDropdownOpen, setIsResTypeDropdownOpen] = useState(false);
+  const [isArchDropdownOpen, setIsArchDropdownOpen] = useState(false);
+
+  const osDropdownRef = useRef<HTMLDivElement>(null);
+  const resTypeDropdownRef = useRef<HTMLDivElement>(null);
+  const archDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (osDropdownRef.current && !osDropdownRef.current.contains(e.target as Node)) {
+        setIsOsDropdownOpen(false);
+      }
+      if (resTypeDropdownRef.current && !resTypeDropdownRef.current.contains(e.target as Node)) {
+        setIsResTypeDropdownOpen(false);
+      }
+      if (archDropdownRef.current && !archDropdownRef.current.contains(e.target as Node)) {
+        setIsArchDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   // --- Image Edit Modal State ---
   const [editImageModalOpen, setEditImageModalOpen] = useState(false);
@@ -473,6 +505,15 @@ export default function AdminSystemPage() {
   const [imageLogsModalOpen, setImageLogsModalOpen] = useState(false);
   const [selectedImageNameForLogs, setSelectedImageNameForLogs] = useState("");
   const [imageLogs, setImageLogs] = useState<string[]>([]);
+  const [activeImageDropdownId, setActiveImageDropdownId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      setActiveImageDropdownId(null);
+    };
+    window.addEventListener("click", handleGlobalClick);
+    return () => window.removeEventListener("click", handleGlobalClick);
+  }, []);
 
   // --- Image Management Actions ---
   const handleRefreshImages = () => {
@@ -521,13 +562,29 @@ export default function AdminSystemPage() {
     e.preventDefault();
     if (!newImageName) return;
 
+    if (imageSubTab === "vm") {
+      if (!newImageOs) {
+        triggerToast("⚠️ 请选择系统类型");
+        return;
+      }
+      if (!newImageResType) {
+        triggerToast("⚠️ 请选择资源类型");
+        return;
+      }
+      if (!newImageArch) {
+        triggerToast("⚠️ 请选择系统架构");
+        return;
+      }
+    }
+
     const sizeFormatted = newImageSize ? `${newImageSize} MB` : "100 MB";
     const currentTime = new Date().toISOString().replace('T', ' ').substring(0, 16);
 
     if (imageSubTab === "container") {
+      const fullName = `${newImageNamespace ? `${newImageNamespace}/` : ''}${newImageName}${newImageVersion ? `:${newImageVersion}` : ''}`;
       const newImg: ContainerImage = {
         id: `img-c-${Date.now()}`,
-        name: newImageName,
+        name: fullName,
         description: newImageDesc || "无",
         size: sizeFormatted,
         createdAt: currentTime,
@@ -542,6 +599,7 @@ export default function AdminSystemPage() {
         description: newImageDesc || "无",
         resourceType: newImageResType,
         os: newImageOs,
+        arch: newImageArch,
         size: sizeFormatted,
         createdAt: currentTime,
         uploadStatus: "已上传",
@@ -554,6 +612,13 @@ export default function AdminSystemPage() {
     setNewImageName("");
     setNewImageDesc("");
     setNewImageSize("");
+    setNewImageNamespace("");
+    setNewImageVersion("");
+    setNewImageOs("");
+    setNewImageResType("");
+    setNewImageArch("");
+    setDeleteProtection(false);
+    setSelectedFileName("");
     triggerToast(`🎉 成功上传新镜像: ${newImageName}`);
   };
 
@@ -3034,6 +3099,25 @@ export default function AdminSystemPage() {
             img.description.toLowerCase().includes(imageSearchName.toLowerCase())
           );
 
+          const totalContainers = filteredContainers.length;
+          const totalVm = filteredVms.length;
+
+          const totalContainerPages = Math.ceil(totalContainers / imagePageSize);
+          const totalVmPages = Math.ceil(totalVm / imagePageSize);
+
+          const activeContainerPage = Math.min(containerCurrentPage, Math.max(1, totalContainerPages));
+          const activeVmPage = Math.min(vmCurrentPage, Math.max(1, totalVmPages));
+
+          const currentContainers = filteredContainers.slice(
+            (activeContainerPage - 1) * imagePageSize,
+            activeContainerPage * imagePageSize
+          );
+
+          const currentVms = filteredVms.slice(
+            (activeVmPage - 1) * imagePageSize,
+            activeVmPage * imagePageSize
+          );
+
           return (
             <div className="space-y-4 flex flex-col flex-1 min-h-0 animate-slide-up text-left">
               
@@ -3075,32 +3159,19 @@ export default function AdminSystemPage() {
                 </div>
               </div>
 
-              {/* Search Toolbar - Outside Card, transparent background */}
-              <div className="flex items-center justify-between gap-4 py-1 shrink-0 bg-transparent">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <input
-                    type="text"
-                    placeholder="请输入镜像名称或描述"
-                    value={imageSearchName}
-                    onChange={(e) => {
-                      setImageSearchName(e.target.value);
-                      setContainerCurrentPage(1);
-                      setVmCurrentPage(1);
-                    }}
-                    className="pl-9 pr-4 py-2 w-64 bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 placeholder-neutral-400 font-medium transition-all"
-                  />
-                </div>
+              {/* Table Card */}
+              <div className="bg-white rounded border border-neutral-border overflow-hidden flex flex-col flex-1 min-h-0">
                 
-                <div className="flex items-center gap-2">
+                {/* Search Toolbar - Inside Card, white background */}
+                <div className="flex items-center justify-end gap-2 px-6 py-3.5 bg-white border-b border-neutral-border/50 shrink-0 select-none">
                   <button
                     type="button"
                     onClick={handleRefreshImages}
                     disabled={isRefreshingImages}
-                    className="bg-white hover:bg-neutral-50 border border-neutral-200 text-neutral-body text-xs font-bold px-3.5 h-8.5 rounded-[4px] transition-colors cursor-pointer flex items-center gap-1.5 shadow-3xs"
+                    className="border border-neutral-200 text-neutral-600 hover:text-[#fa541c] hover:border-orange-200 hover:bg-orange-50/20 w-8.5 h-8.5 p-0 flex items-center justify-center rounded-[4px] cursor-pointer bg-white transition-all shadow-3xs"
+                    title="刷新"
                   >
-                    <RefreshCw className={cn("w-3.5 h-3.5", isRefreshingImages && "animate-spin")} />
-                    <span>刷新</span>
+                    <RotateCw className={cn("w-3.5 h-3.5", isRefreshingImages && "animate-spin")} />
                   </button>
                   <button
                     type="button"
@@ -3111,10 +3182,6 @@ export default function AdminSystemPage() {
                     <span>上传镜像</span>
                   </button>
                 </div>
-              </div>
-
-              {/* Table Card */}
-              <div className="bg-white rounded border border-neutral-border overflow-hidden flex flex-col flex-1 min-h-0">
                 
                 {/* Table Container */}
                 <div className="flex-1 overflow-auto custom-scrollbar">
@@ -3133,7 +3200,7 @@ export default function AdminSystemPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-xs">
-                        {filteredContainers.length === 0 ? (
+                        {currentContainers.length === 0 ? (
                           <tr>
                             <td colSpan={7} className="px-6 py-12 text-center text-neutral-400">
                               <AlertCircle className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
@@ -3141,71 +3208,99 @@ export default function AdminSystemPage() {
                             </td>
                           </tr>
                         ) : (
-                          filteredContainers.map((img) => (
-                            <tr key={img.id} className="hover:bg-neutral-50/30 transition-colors border-b border-neutral-100 text-[13px]">
+                          currentContainers.map((img, index) => (
+                            <tr key={img.id} className={cn("hover:bg-neutral-50/30 transition-colors border-b border-neutral-100 text-[13px]", activeImageDropdownId === img.id && "relative z-30 bg-neutral-50")}>
                               <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800 font-mono">{img.name}</td>
                               <td className="px-3 py-3 text-left text-neutral-600">{img.description}</td>
                               <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.size}</td>
                               <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.createdAt}</td>
                               <td className="px-3 py-3 text-left text-neutral-600">
-                                <span className="bg-[#f6ffed] text-[#52c41a] text-[10px] font-bold px-2 py-0.5 rounded border border-[#b7eb8f]">
+                                <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100">
                                   {img.uploadStatus}
                                 </span>
                               </td>
                               <td className="px-3 py-3 text-left text-neutral-600">
                                 <span className={cn(
                                   "text-[10px] font-bold px-2 py-0.5 rounded border",
-                                  img.syncStatus === "同步成功" && "bg-[#f6ffed] text-[#52c41a] border-[#b7eb8f]",
+                                  img.syncStatus === "同步成功" && "bg-green-50 text-green-600 border-green-100",
                                   img.syncStatus === "同步中" && "bg-[#fff7e6] text-[#fa8c16] border-[#ffd591]",
                                   img.syncStatus === "同步失败" && "bg-[#fff1f0] text-[#f5222d] border-[#ffa39e]"
                                 )}>
                                   {img.syncStatus}
                                 </span>
                               </td>
-                              <td className="pl-3 pr-6 py-3 text-left font-semibold text-xs select-none">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditImage(img)}
-                                  disabled={img.syncStatus === "同步中"}
-                                  className={cn(
-                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
-                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
-                                  )}
-                                >
-                                  编辑
-                                </button>
-                                <span className="text-neutral-200 mx-2">|</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSyncImage(img.id, "container")}
-                                  disabled={img.syncStatus === "同步中" || img.syncStatus === "同步成功"}
-                                  className={cn(
-                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
-                                    (img.syncStatus === "同步中" || img.syncStatus === "同步成功") && "text-neutral-300 pointer-events-none"
-                                  )}
-                                >
-                                  同步镜像
-                                </button>
-                                <span className="text-neutral-200 mx-2">|</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenImageLogs(img.name)}
-                                  className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0"
-                                >
-                                  日志
-                                </button>
-                                <span className="text-neutral-200 mx-2">|</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteImage(img.id, img.name, "container")}
-                                  disabled={img.syncStatus === "同步中"}
-                                  className={cn(
-                                    "text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
-                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
-                                  )}
-                                >
-                                  删除
-                                </button>
+                              <td className={cn("pl-3 pr-6 py-3 text-left font-semibold text-xs select-none", activeImageDropdownId === img.id && "relative z-30")}>
+                                <div className={cn("flex items-center gap-2 text-xs relative", activeImageDropdownId === img.id && "z-30")}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditImage(img)}
+                                    disabled={img.syncStatus === "同步中"}
+                                    className={cn(
+                                      "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                      img.syncStatus === "同步中" && "text-[#ff8d60] cursor-not-allowed"
+                                    )}
+                                  >
+                                    编辑
+                                  </button>
+                                  <span className="text-neutral-200">|</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSyncImage(img.id, "container")}
+                                    disabled={img.syncStatus === "同步中" || img.syncStatus === "同步成功"}
+                                    className={cn(
+                                      "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                      (img.syncStatus === "同步中" || img.syncStatus === "同步成功") && "text-[#ff8d60] cursor-not-allowed"
+                                    )}
+                                  >
+                                    同步镜像
+                                  </button>
+                                  <span className="text-neutral-200">|</span>
+                                  <div className="relative">
+                                    <button 
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveImageDropdownId(activeImageDropdownId === img.id ? null : img.id);
+                                      }}
+                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0 flex items-center gap-0.5"
+                                    >
+                                      更多 <ChevronDown className="w-3 h-3" />
+                                    </button>
+                                    {activeImageDropdownId === img.id && (
+                                      <div className={cn(
+                                        "absolute right-0 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[100px] text-left animate-in fade-in duration-150",
+                                        index < 3 ? "top-full mt-1.5 slide-in-from-top-1" : "bottom-full mb-1.5 slide-in-from-bottom-1"
+                                      )}>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveImageDropdownId(null);
+                                            handleOpenImageLogs(img.name);
+                                          }}
+                                          className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-700 hover:text-[#fa541c] hover:bg-orange-50/40 font-semibold"
+                                        >
+                                          日志
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveImageDropdownId(null);
+                                            handleDeleteImage(img.id, img.name, "container");
+                                          }}
+                                          disabled={img.syncStatus === "同步中"}
+                                          className={cn(
+                                            "w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all font-semibold",
+                                            img.syncStatus === "同步中" 
+                                              ? "text-neutral-300 cursor-not-allowed" 
+                                              : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50/60"
+                                          )}
+                                        >
+                                          删除
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </td>
                             </tr>
                           ))
@@ -3229,7 +3324,7 @@ export default function AdminSystemPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-100 font-sans text-neutral-700 text-xs">
-                        {filteredVms.length === 0 ? (
+                        {currentVms.length === 0 ? (
                           <tr>
                             <td colSpan={9} className="px-6 py-12 text-center text-neutral-400">
                               <AlertCircle className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
@@ -3237,8 +3332,8 @@ export default function AdminSystemPage() {
                             </td>
                           </tr>
                         ) : (
-                          filteredVms.map((img) => (
-                            <tr key={img.id} className="hover:bg-neutral-50/30 transition-colors border-b border-neutral-100 text-[13px]">
+                          currentVms.map((img, index) => (
+                            <tr key={img.id} className={cn("hover:bg-neutral-50/30 transition-colors border-b border-neutral-100 text-[13px]", activeImageDropdownId === img.id && "relative z-30 bg-neutral-50")}>
                               <td className="pl-6 pr-3 py-3 text-left font-semibold text-neutral-800 font-mono">{img.name}</td>
                               <td className="px-3 py-3 text-left text-neutral-600">{img.description}</td>
                               <td className="px-3 py-3 text-left text-neutral-600">
@@ -3250,64 +3345,92 @@ export default function AdminSystemPage() {
                               <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.size}</td>
                               <td className="px-3 py-3 text-left text-neutral-600 font-mono">{img.createdAt}</td>
                               <td className="px-3 py-3 text-left text-neutral-600">
-                                <span className="bg-[#f6ffed] text-[#52c41a] text-[10px] font-bold px-2 py-0.5 rounded border border-[#b7eb8f]">
+                                <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100">
                                   {img.uploadStatus}
                                 </span>
                               </td>
                               <td className="px-3 py-3 text-left text-neutral-600">
                                 <span className={cn(
                                   "text-[10px] font-bold px-2 py-0.5 rounded border",
-                                  img.syncStatus === "同步成功" && "bg-[#f6ffed] text-[#52c41a] border-[#b7eb8f]",
+                                  img.syncStatus === "同步成功" && "bg-green-50 text-green-600 border-green-100",
                                   img.syncStatus === "同步中" && "bg-[#fff7e6] text-[#fa8c16] border-[#ffd591]",
                                   img.syncStatus === "同步失败" && "bg-[#fff1f0] text-[#f5222d] border-[#ffa39e]"
                                 )}>
                                   {img.syncStatus}
                                 </span>
                               </td>
-                              <td className="pl-3 pr-6 py-3 text-left font-semibold text-xs select-none">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditImage(img)}
-                                  disabled={img.syncStatus === "同步中"}
-                                  className={cn(
-                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
-                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
-                                  )}
-                                >
-                                  编辑
-                                </button>
-                                <span className="text-neutral-200 mx-2">|</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSyncImage(img.id, "vm")}
-                                  disabled={img.syncStatus === "同步中" || img.syncStatus === "同步成功"}
-                                  className={cn(
-                                    "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
-                                    (img.syncStatus === "同步中" || img.syncStatus === "同步成功") && "text-neutral-300 pointer-events-none"
-                                  )}
-                                >
-                                  同步镜像
-                                </button>
-                                <span className="text-neutral-200 mx-2">|</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenImageLogs(img.name)}
-                                  className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0"
-                                >
-                                  日志
-                                </button>
-                                <span className="text-neutral-200 mx-2">|</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteImage(img.id, img.name, "vm")}
-                                  disabled={img.syncStatus === "同步中"}
-                                  className={cn(
-                                    "text-red-500 hover:text-red-600 bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
-                                    img.syncStatus === "同步中" && "text-neutral-300 pointer-events-none"
-                                  )}
-                                >
-                                  删除
-                                </button>
+                              <td className={cn("pl-3 pr-6 py-3 text-left font-semibold text-xs select-none", activeImageDropdownId === img.id && "relative z-30")}>
+                                <div className={cn("flex items-center gap-2 text-xs relative", activeImageDropdownId === img.id && "z-30")}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditImage(img)}
+                                    disabled={img.syncStatus === "同步中"}
+                                    className={cn(
+                                      "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                      img.syncStatus === "同步中" && "text-[#ff8d60] cursor-not-allowed"
+                                    )}
+                                  >
+                                    编辑
+                                  </button>
+                                  <span className="text-neutral-200">|</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSyncImage(img.id, "vm")}
+                                    disabled={img.syncStatus === "同步中" || img.syncStatus === "同步成功"}
+                                    className={cn(
+                                      "text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0",
+                                      (img.syncStatus === "同步中" || img.syncStatus === "同步成功") && "text-[#ff8d60] cursor-not-allowed"
+                                    )}
+                                  >
+                                    同步镜像
+                                  </button>
+                                  <span className="text-neutral-200">|</span>
+                                  <div className="relative">
+                                    <button 
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveImageDropdownId(activeImageDropdownId === img.id ? null : img.id);
+                                      }}
+                                      className="text-[#fa541c] hover:text-[#e84a15] bg-transparent border-0 cursor-pointer text-xs font-semibold p-0 flex items-center gap-0.5"
+                                    >
+                                      更多 <ChevronDown className="w-3 h-3" />
+                                    </button>
+                                    {activeImageDropdownId === img.id && (
+                                      <div className={cn(
+                                        "absolute right-0 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 min-w-[100px] text-left animate-in fade-in duration-150",
+                                        index < 3 ? "top-full mt-1.5 slide-in-from-top-1" : "bottom-full mb-1.5 slide-in-from-bottom-1"
+                                      )}>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveImageDropdownId(null);
+                                            handleOpenImageLogs(img.name);
+                                          }}
+                                          className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-700 hover:text-[#fa541c] hover:bg-orange-50/40 font-semibold"
+                                        >
+                                          日志
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveImageDropdownId(null);
+                                            handleDeleteImage(img.id, img.name, "vm");
+                                          }}
+                                          disabled={img.syncStatus === "同步中"}
+                                          className={cn(
+                                            "w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all font-semibold",
+                                            img.syncStatus === "同步中" 
+                                              ? "text-neutral-300 cursor-not-allowed" 
+                                              : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50/60"
+                                          )}
+                                        >
+                                          删除
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </td>
                             </tr>
                           ))
@@ -3317,10 +3440,72 @@ export default function AdminSystemPage() {
                   )}
                 </div>
                 
-                <div className="bg-neutral-50 px-6 py-3 flex justify-between items-center text-xs font-semibold text-neutral-body shrink-0 select-none">
-                  <span>总共登记镜像: {imageSubTab === "container" ? filteredContainers.length : filteredVms.length} 个</span>
-                  <span className="text-[10px] text-neutral-caption font-medium">提示：镜像同步状态反映了底层物理计算节点的元数据缓存拉取结果。</span>
+                {/* Pagination styled like Question Management */}
+                <div className="flex items-center justify-end px-6 py-4 gap-4 bg-white select-none shrink-0">
+                  <span className="text-[13px] text-neutral-500">共 {imageSubTab === "container" ? totalContainers : totalVm} 条</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      disabled={imageSubTab === "container" ? activeContainerPage === 1 : activeVmPage === 1}
+                      onClick={() => {
+                        if (imageSubTab === "container") {
+                          setContainerCurrentPage(activeContainerPage - 1);
+                        } else {
+                          setVmCurrentPage(activeVmPage - 1);
+                        }
+                      }}
+                      className={cn(
+                        "h-7 w-7 rounded-sm border border-neutral-200 flex items-center justify-center text-[12px] font-medium transition-colors bg-white hover:bg-neutral-50 cursor-pointer",
+                        (imageSubTab === "container" ? activeContainerPage === 1 : activeVmPage === 1) 
+                          ? "text-neutral-300 bg-neutral-50 cursor-not-allowed border-neutral-150 hover:bg-neutral-50" 
+                          : "text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                      )}
+                    >
+                      &lt;
+                    </button>
+                    {Array.from({ length: Math.max(1, imageSubTab === "container" ? totalContainerPages : totalVmPages) }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          if (imageSubTab === "container") {
+                            setContainerCurrentPage(p);
+                          } else {
+                            setVmCurrentPage(p);
+                          }
+                        }}
+                        className={cn(
+                          "h-7 w-7 rounded-sm border text-[12px] font-bold transition-colors cursor-pointer flex items-center justify-center",
+                          p === (imageSubTab === "container" ? activeContainerPage : activeVmPage) 
+                            ? "bg-[#fa541c] text-white border-[#fa541c]" 
+                            : "bg-white border-neutral-200 text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                        )}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button 
+                      disabled={imageSubTab === "container" ? activeContainerPage === totalContainerPages || totalContainerPages === 0 : activeVmPage === totalVmPages || totalVmPages === 0}
+                      onClick={() => {
+                        if (imageSubTab === "container") {
+                          setContainerCurrentPage(activeContainerPage + 1);
+                        } else {
+                          setVmCurrentPage(activeVmPage + 1);
+                        }
+                      }}
+                      className={cn(
+                        "h-7 w-7 rounded-sm border border-neutral-200 flex items-center justify-center text-[12px] font-medium transition-colors bg-white hover:bg-neutral-50 cursor-pointer",
+                        (imageSubTab === "container" ? activeContainerPage === totalContainerPages || totalContainerPages === 0 : activeVmPage === totalVmPages || totalVmPages === 0) 
+                          ? "text-neutral-300 bg-neutral-50 cursor-not-allowed border-neutral-150 hover:bg-neutral-50" 
+                          : "text-neutral-600 hover:border-[#fa541c] hover:text-[#fa541c]"
+                      )}
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                  <select className="text-[13px] border border-neutral-200 rounded-sm px-2 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white cursor-pointer h-7">
+                    <option>{imagePageSize} 条/页</option>
+                  </select>
                 </div>
+
               </div>
             </div>
           );
@@ -3374,6 +3559,423 @@ export default function AdminSystemPage() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* --- Upload Image Drawer (Style aligned with TeacherQuestions drawer) --- */}
+        {uploadImageModalOpen && (
+          <div 
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+            onClick={() => {
+              setUploadImageModalOpen(false);
+              setNewImageName("");
+              setNewImageDesc("");
+              setNewImageSize("");
+              setNewImageNamespace("");
+              setNewImageVersion("");
+              setNewImageOs("");
+              setNewImageResType("");
+              setDeleteProtection(false);
+              setSelectedFileName("");
+            }}
+          >
+            <form 
+              onSubmit={handleSaveUploadedImage}
+              className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drawer Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-[#fa541c]" />
+                  <span>上传{imageSubTab === "container" ? "容器" : "虚拟机"}镜像</span>
+                </h2>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setUploadImageModalOpen(false);
+                    setNewImageName("");
+                    setNewImageDesc("");
+                    setNewImageSize("");
+                    setNewImageNamespace("");
+                    setNewImageVersion("");
+                    setNewImageOs("");
+                    setNewImageResType("");
+                    setDeleteProtection(false);
+                    setSelectedFileName("");
+                  }}
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white">
+                
+                {/* 镜像名称 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    镜像名称 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      required
+                      maxLength={128}
+                      placeholder="请输入镜像名称"
+                      value={newImageName}
+                      onChange={(e) => setNewImageName(e.target.value)}
+                      className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                      {newImageName.length} / 128
+                    </span>
+                  </div>
+                </div>
+
+                {imageSubTab === "container" ? (
+                  <>
+                    {/* 命名空间 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        命名空间 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入命名空间"
+                          value={newImageNamespace}
+                          onChange={(e) => setNewImageNamespace(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {newImageNamespace.length} / 100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 版本号 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        版本号 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入版本号"
+                          value={newImageVersion}
+                          onChange={(e) => setNewImageVersion(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {newImageVersion.length} / 100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 镜像描述 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        镜像描述 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入镜像描述"
+                          value={newImageDesc}
+                          onChange={(e) => setNewImageDesc(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {newImageDesc.length} / 100
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* 镜像描述 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        镜像描述 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入镜像描述"
+                          value={newImageDesc}
+                          onChange={(e) => setNewImageDesc(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {newImageDesc.length} / 100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 系统类型 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        系统类型 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div ref={osDropdownRef} className="relative w-full text-xs">
+                        <div
+                          onClick={() => setIsOsDropdownOpen(!isOsDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            isOsDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className={cn(newImageOs ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                            {newImageOs || "请选择系统类型"}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isOsDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {isOsDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {[
+                                { value: "LINUX", label: "LINUX" },
+                                { value: "WINDOWS", label: "WINDOWS" }
+                              ].map((opt) => (
+                                <div
+                                  key={opt.value}
+                                  onClick={() => {
+                                    setNewImageOs(opt.value);
+                                    setIsOsDropdownOpen(false);
+                                  }}
+                                  className={cn(
+                                    "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-neutral-700 transition-colors text-[13px]",
+                                    newImageOs === opt.value && "text-[#fa541c] bg-orange-50/20 font-bold"
+                                  )}
+                                >
+                                  {opt.label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 资源类型 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        资源类型 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div ref={resTypeDropdownRef} className="relative w-full text-xs">
+                        <div
+                          onClick={() => setIsResTypeDropdownOpen(!isResTypeDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            isResTypeDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className={cn(newImageResType ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                            {newImageResType || "请选择资源类型"}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isResTypeDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {isResTypeDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {[
+                                { value: "云主机", label: "云主机" },
+                                { value: "GPU主机", label: "GPU主机" }
+                              ].map((opt) => (
+                                <div
+                                  key={opt.value}
+                                  onClick={() => {
+                                    setNewImageResType(opt.value);
+                                    setIsResTypeDropdownOpen(false);
+                                  }}
+                                  className={cn(
+                                    "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-neutral-700 transition-colors text-[13px]",
+                                    newImageResType === opt.value && "text-[#fa541c] bg-orange-50/20 font-bold"
+                                  )}
+                                >
+                                  {opt.label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 系统架构 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        系统架构 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div ref={archDropdownRef} className="relative w-full text-xs">
+                        <div
+                          onClick={() => setIsArchDropdownOpen(!isArchDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            isArchDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className={cn(newImageArch ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                            {newImageArch || "请选择系统架构"}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isArchDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {isArchDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {[
+                                { value: "x86_64", label: "x86_64" },
+                                { value: "aarch64", label: "aarch64" }
+                              ].map((opt) => (
+                                <div
+                                  key={opt.value}
+                                  onClick={() => {
+                                    setNewImageArch(opt.value);
+                                    setIsArchDropdownOpen(false);
+                                  }}
+                                  className={cn(
+                                    "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-neutral-700 transition-colors text-[13px]",
+                                    newImageArch === opt.value && "text-[#fa541c] bg-orange-50/20 font-bold"
+                                  )}
+                                >
+                                  {opt.label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* 镜像上传 */}
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right mt-1.5">
+                    镜像上传
+                  </label>
+                  <div className="flex flex-col items-start">
+                    <input 
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept={imageSubTab === "container" ? ".zip,.tgz,.tar,.tar.gz" : ".qcow2"}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setSelectedFileName(file.name);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-bold px-4 py-2 rounded-[4px] transition-colors cursor-pointer border-0 inline-flex items-center gap-1.5 shadow-3xs"
+                    >
+                      上传文件
+                    </button>
+                    {selectedFileName ? (
+                      <div className="flex items-center gap-2 mt-2 text-xs text-neutral-600 font-medium">
+                        <FileText className="w-4 h-4 text-[#fa541c]" />
+                        <span className="truncate max-w-xs">{selectedFileName}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedFileName("")} 
+                          className="text-red-500 hover:text-red-700 cursor-pointer border-0 bg-transparent p-0 flex items-center"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-neutral-400 mt-2">
+                        {imageSubTab === "container" ? "只支持.zip/.tgz/.tar/.tar.gz等格式" : "只支持.qcow2格式"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 删除保护 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    删除保护 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="flex items-center gap-3 select-none">
+                    <span className={cn("text-[13px] font-medium transition-colors", !deleteProtection ? "text-[#fa541c] font-bold" : "text-neutral-500")}>
+                      不限制
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteProtection(!deleteProtection)}
+                      className={cn(
+                        "w-11 h-6 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer border-0 flex items-center",
+                        deleteProtection ? "bg-[#fa541c]" : "bg-neutral-200"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200",
+                          deleteProtection ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                    <span className={cn("text-[13px] font-medium transition-colors", deleteProtection ? "text-[#fa541c] font-bold" : "text-neutral-500")}>
+                      限制删除
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0 select-none">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setUploadImageModalOpen(false);
+                    setNewImageName("");
+                    setNewImageDesc("");
+                    setNewImageSize("");
+                    setNewImageNamespace("");
+                    setNewImageVersion("");
+                    setNewImageOs("");
+                    setNewImageResType("");
+                    setDeleteProtection(false);
+                    setSelectedFileName("");
+                  }}
+                  className="border border-neutral-200 hover:bg-neutral-50 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded cursor-pointer bg-white"
+                >
+                  取消
+                </button>
+                <button 
+                  type="submit" 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-[13px] rounded transition-colors border-0 cursor-pointer"
+                >
+                  确定
+                </button>
+              </div>
+            </form>
           </div>
         )}
 
