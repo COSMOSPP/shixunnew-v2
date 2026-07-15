@@ -3675,7 +3675,7 @@ export default function AdminSystemPage() {
                       placeholder="请输入镜像名称"
                       value={newImageName}
                       onChange={(e) => setNewImageName(e.target.value)}
-                      className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                      className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
                       {newImageName.length} / 128
@@ -3698,7 +3698,7 @@ export default function AdminSystemPage() {
                           placeholder="请输入命名空间"
                           value={newImageNamespace}
                           onChange={(e) => setNewImageNamespace(e.target.value)}
-                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
                         />
                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
                           {newImageNamespace.length} / 100
@@ -3719,7 +3719,7 @@ export default function AdminSystemPage() {
                           placeholder="请输入版本号"
                           value={newImageVersion}
                           onChange={(e) => setNewImageVersion(e.target.value)}
-                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
                         />
                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
                           {newImageVersion.length} / 100
@@ -3740,7 +3740,7 @@ export default function AdminSystemPage() {
                           placeholder="请输入镜像描述"
                           value={newImageDesc}
                           onChange={(e) => setNewImageDesc(e.target.value)}
-                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
                         />
                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
                           {newImageDesc.length} / 100
@@ -3763,7 +3763,7 @@ export default function AdminSystemPage() {
                           placeholder="请输入镜像描述"
                           value={newImageDesc}
                           onChange={(e) => setNewImageDesc(e.target.value)}
-                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-medium transition-all"
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
                         />
                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
                           {newImageDesc.length} / 100
@@ -3797,23 +3797,28 @@ export default function AdminSystemPage() {
                           <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                             <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
                               {[
+                                { value: "", label: "请选择系统类型" },
                                 { value: "LINUX", label: "LINUX" },
                                 { value: "WINDOWS", label: "WINDOWS" }
-                              ].map((opt) => (
-                                <div
-                                  key={opt.value}
-                                  onClick={() => {
-                                    setNewImageOs(opt.value);
-                                    setIsOsDropdownOpen(false);
-                                  }}
-                                  className={cn(
-                                    "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-neutral-700 transition-colors text-[13px]",
-                                    newImageOs === opt.value && "text-[#fa541c] bg-orange-50/20 font-bold"
-                                  )}
-                                >
-                                  {opt.label}
-                                </div>
-                              ))}
+                              ].map((opt) => {
+                                const isSelected = newImageOs === opt.value;
+                                return (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setNewImageOs(opt.value);
+                                      setIsOsDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer transition-colors text-[13px] flex items-center justify-between",
+                                      isSelected ? "text-[#fa541c] bg-[#fff7e6] font-bold" : "text-neutral-700"
+                                    )}
+                                  >
+                                    <span>{opt.label}</span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -3846,23 +3851,28 @@ export default function AdminSystemPage() {
                           <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                             <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
                               {[
+                                { value: "", label: "请选择资源类型" },
                                 { value: "云主机", label: "云主机" },
                                 { value: "GPU主机", label: "GPU主机" }
-                              ].map((opt) => (
-                                <div
-                                  key={opt.value}
-                                  onClick={() => {
-                                    setNewImageResType(opt.value);
-                                    setIsResTypeDropdownOpen(false);
-                                  }}
-                                  className={cn(
-                                    "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-neutral-700 transition-colors text-[13px]",
-                                    newImageResType === opt.value && "text-[#fa541c] bg-orange-50/20 font-bold"
-                                  )}
-                                >
-                                  {opt.label}
-                                </div>
-                              ))}
+                              ].map((opt) => {
+                                const isSelected = newImageResType === opt.value;
+                                return (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setNewImageResType(opt.value);
+                                      setIsResTypeDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer transition-colors text-[13px] flex items-center justify-between",
+                                      isSelected ? "text-[#fa541c] bg-[#fff7e6] font-bold" : "text-[#262626]"
+                                    )}
+                                  >
+                                    <span>{opt.label}</span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -3895,23 +3905,28 @@ export default function AdminSystemPage() {
                           <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                             <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
                               {[
+                                { value: "", label: "请选择系统架构" },
                                 { value: "x86_64", label: "x86_64" },
                                 { value: "aarch64", label: "aarch64" }
-                              ].map((opt) => (
-                                <div
-                                  key={opt.value}
-                                  onClick={() => {
-                                    setNewImageArch(opt.value);
-                                    setIsArchDropdownOpen(false);
-                                  }}
-                                  className={cn(
-                                    "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer text-neutral-700 transition-colors text-[13px]",
-                                    newImageArch === opt.value && "text-[#fa541c] bg-orange-50/20 font-bold"
-                                  )}
-                                >
-                                  {opt.label}
-                                </div>
-                              ))}
+                              ].map((opt) => {
+                                const isSelected = newImageArch === opt.value;
+                                return (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setNewImageArch(opt.value);
+                                      setIsArchDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer transition-colors text-[13px] flex items-center justify-between",
+                                      isSelected ? "text-[#fa541c] bg-[#fff7e6] font-bold" : "text-[#262626]"
+                                    )}
+                                  >
+                                    <span>{opt.label}</span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
