@@ -211,6 +211,7 @@ interface ContainerImage {
   createdAt: string;
   uploadStatus: "已上传" | "上传中" | "未上传";
   syncStatus: "同步成功" | "同步中" | "同步失败";
+  deleteProtection?: boolean;
 }
 
 interface VmImage {
@@ -224,6 +225,7 @@ interface VmImage {
   createdAt: string;
   uploadStatus: "已上传" | "上传中" | "未上传";
   syncStatus: "同步成功" | "同步中" | "同步失败";
+  deleteProtection?: boolean;
 }
 
 const initialContainerImages: ContainerImage[] = [
@@ -477,6 +479,10 @@ export default function AdminSystemPage() {
   const resTypeDropdownRef = useRef<HTMLDivElement>(null);
   const archDropdownRef = useRef<HTMLDivElement>(null);
 
+  const editOsDropdownRef = useRef<HTMLDivElement>(null);
+  const editResTypeDropdownRef = useRef<HTMLDivElement>(null);
+  const editArchDropdownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (osDropdownRef.current && !osDropdownRef.current.contains(e.target as Node)) {
@@ -487,6 +493,15 @@ export default function AdminSystemPage() {
       }
       if (archDropdownRef.current && !archDropdownRef.current.contains(e.target as Node)) {
         setIsArchDropdownOpen(false);
+      }
+      if (editOsDropdownRef.current && !editOsDropdownRef.current.contains(e.target as Node)) {
+        setEditIsOsDropdownOpen(false);
+      }
+      if (editResTypeDropdownRef.current && !editResTypeDropdownRef.current.contains(e.target as Node)) {
+        setEditIsResTypeDropdownOpen(false);
+      }
+      if (editArchDropdownRef.current && !editArchDropdownRef.current.contains(e.target as Node)) {
+        setEditIsArchDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -501,9 +516,19 @@ export default function AdminSystemPage() {
   const [editingImageSize, setEditingImageSize] = useState("");
   const [editingImageOs, setEditingImageOs] = useState("");
   const [editingImageResType, setEditingImageResType] = useState("");
+  const [editingImageArch, setEditingImageArch] = useState("");
+  const [editingImageNamespace, setEditingImageNamespace] = useState("");
+  const [editingImageVersion, setEditingImageVersion] = useState("");
+  const [editingDeleteProtection, setEditingDeleteProtection] = useState(false);
+  const [editIsOsDropdownOpen, setEditIsOsDropdownOpen] = useState(false);
+  const [editIsResTypeDropdownOpen, setEditIsResTypeDropdownOpen] = useState(false);
+  const [editIsArchDropdownOpen, setEditIsArchDropdownOpen] = useState(false);
+  const [editSelectedFileName, setEditSelectedFileName] = useState("");
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   // --- Image Sync Logs Modal State ---
   const [imageLogsModalOpen, setImageLogsModalOpen] = useState(false);
+  const [selectedImageForLogs, setSelectedImageForLogs] = useState<ContainerImage | VmImage | null>(null);
   const [selectedImageNameForLogs, setSelectedImageNameForLogs] = useState("");
   const [imageLogs, setImageLogs] = useState<string[]>([]);
   const [activeImageDropdownId, setActiveImageDropdownId] = useState<string | null>(null);
@@ -544,6 +569,15 @@ export default function AdminSystemPage() {
   };
 
   const handleDeleteImage = (id: string, name: string, type: "container" | "vm") => {
+    const img = type === "container" 
+      ? containerImages.find(i => i.id === id)
+      : vmImages.find(i => i.id === id);
+
+    if (img && img.deleteProtection) {
+      triggerToast(`⚠️ 镜像「${name}」开启了删除保护，无法删除！`);
+      return;
+    }
+
     setDeleteConfirm({
       show: true,
       title: "删除镜像",
@@ -590,7 +624,8 @@ export default function AdminSystemPage() {
         size: sizeFormatted,
         createdAt: currentTime,
         uploadStatus: "已上传",
-        syncStatus: "同步成功"
+        syncStatus: "同步成功",
+        deleteProtection: deleteProtection
       };
       setContainerImages([newImg, ...containerImages]);
     } else {
@@ -604,7 +639,8 @@ export default function AdminSystemPage() {
         size: sizeFormatted,
         createdAt: currentTime,
         uploadStatus: "已上传",
-        syncStatus: "同步成功"
+        syncStatus: "同步成功",
+        deleteProtection: deleteProtection
       };
       setVmImages([newImg, ...vmImages]);
     }
@@ -630,12 +666,40 @@ export default function AdminSystemPage() {
 
   const handleOpenEditImage = (img: ContainerImage | VmImage) => {
     setEditingImageId(img.id);
-    setEditingImageName(img.name);
     setEditingImageDesc(img.description);
     setEditingImageSize(img.size.replace(" MB", ""));
+    setEditingDeleteProtection(img.deleteProtection || false);
+    setEditSelectedFileName("");
     if ("os" in img) {
+      setEditingImageName(img.name);
+      setEditingImageNamespace("");
+      setEditingImageVersion("");
       setEditingImageOs(img.os);
       setEditingImageResType(img.resourceType);
+      setEditingImageArch(img.arch || "x86_64");
+    } else {
+      // Container image: parse name, namespace, version from img.name
+      let namespace = "";
+      let shortName = img.name;
+      let version = "";
+
+      if (img.name.includes("/")) {
+        const parts = img.name.split("/");
+        namespace = parts[0];
+        shortName = parts.slice(1).join("/");
+      }
+      if (shortName.includes(":")) {
+        const parts = shortName.split(":");
+        shortName = parts[0];
+        version = parts.slice(1).join(":");
+      }
+
+      setEditingImageName(shortName);
+      setEditingImageNamespace(namespace);
+      setEditingImageVersion(version);
+      setEditingImageOs("");
+      setEditingImageResType("");
+      setEditingImageArch("");
     }
     setEditImageModalOpen(true);
   };
@@ -647,11 +711,13 @@ export default function AdminSystemPage() {
     const sizeFormatted = editingImageSize ? `${editingImageSize} MB` : "100 MB";
 
     if (imageSubTab === "container") {
+      const fullName = `${editingImageNamespace ? `${editingImageNamespace}/` : ''}${editingImageName}${editingImageVersion ? `:${editingImageVersion}` : ''}`;
       setContainerImages(prev => prev.map(img => img.id === editingImageId ? {
         ...img,
-        name: editingImageName,
+        name: fullName,
         description: editingImageDesc,
-        size: sizeFormatted
+        size: sizeFormatted,
+        deleteProtection: editingDeleteProtection
       } : img));
     } else {
       setVmImages(prev => prev.map(img => img.id === editingImageId ? {
@@ -660,26 +726,30 @@ export default function AdminSystemPage() {
         description: editingImageDesc,
         size: sizeFormatted,
         os: editingImageOs,
-        resourceType: editingImageResType
+        resourceType: editingImageResType,
+        arch: editingImageArch,
+        deleteProtection: editingDeleteProtection
       } : img));
     }
 
     setEditImageModalOpen(false);
     setEditingImageId(null);
+    setEditSelectedFileName("");
     triggerToast(`✏️ 镜像修改成功！`);
   };
 
-  const handleOpenImageLogs = (name: string) => {
-    setSelectedImageNameForLogs(name);
+  const handleOpenImageLogs = (img: ContainerImage | VmImage) => {
+    setSelectedImageForLogs(img);
+    setSelectedImageNameForLogs(img.name);
     setImageLogs([
-      `[2026-07-14 10:15:22] [INFO] 开始同步镜像 ${name} 到所有物理节点...`,
-      `[2026-07-14 10:15:24] [INFO] 节点 Node-A-01 连接成功, 镜像层大小 13.9 MB`,
+      `[2026-07-14 10:15:22] [INFO] 开始同步镜像 ${img.name} 到所有物理节点...`,
+      `[2026-07-14 10:15:24] [INFO] 节点 Node-A-01 连接成功, 镜像层 size 13.9 MB`,
       `[2026-07-14 10:15:27] [INFO] 镜像层分发中 (15%)...`,
       `[2026-07-14 10:15:32] [INFO] 镜像层分发中 (45%)...`,
       `[2026-07-14 10:15:40] [INFO] 镜像层分发中 (80%)...`,
       `[2026-07-14 10:15:45] [INFO] 节点 Node-A-01 下载镜像完毕`,
       `[2026-07-14 10:15:47] [INFO] 开始向集群底册分发缓存元数据...`,
-      `[2026-07-14 10:15:50] [SUCCESS] 镜像 ${name} 同步成功。`
+      `[2026-07-14 10:15:50] [SUCCESS] 镜像 ${img.name} 同步成功。`
     ]);
     setImageLogsModalOpen(true);
   };
@@ -3283,7 +3353,7 @@ export default function AdminSystemPage() {
                                           type="button"
                                           onClick={() => {
                                             setActiveImageDropdownId(null);
-                                            handleOpenImageLogs(img.name);
+                                            handleOpenImageLogs(img);
                                           }}
                                           className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-700 hover:text-[#fa541c] hover:bg-orange-50/40 font-semibold"
                                         >
@@ -3413,7 +3483,7 @@ export default function AdminSystemPage() {
                                           type="button"
                                           onClick={() => {
                                             setActiveImageDropdownId(null);
-                                            handleOpenImageLogs(img.name);
+                                            handleOpenImageLogs(img);
                                           }}
                                           className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-700 hover:text-[#fa541c] hover:bg-orange-50/40 font-semibold"
                                         >
@@ -3523,48 +3593,547 @@ export default function AdminSystemPage() {
         {deleteConfirm.show && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
-              {/* Header */}
-              <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
-                <h2 className="text-[16px] font-bold text-[#262626]">
-                  {deleteConfirm.title}
+              {/* Body */}
+              <div className="p-6 flex flex-col">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-1 h-5 bg-[#fa541c] rounded-full mt-1 shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-[18px] font-bold text-neutral-900">{deleteConfirm.title || "删除确认"}</h2>
+                      <button 
+                        onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))} 
+                        className="text-neutral-400 hover:text-[#fa541c] transition-colors rounded-[4px] border-0 bg-transparent cursor-pointer p-0"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <p className="text-[14px] text-neutral-600 mb-2 leading-relaxed">
+                      {deleteConfirm.message}
+                    </p>
+                    <p className="text-[13px] text-[#fa541c] font-medium">
+                      删除后此操作不可撤销
+                    </p>
+                  </div>
+                </div>
+                {/* Footer */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <button 
+                    onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))} 
+                    className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    onClick={() => {
+                      deleteConfirm.onConfirm();
+                      setDeleteConfirm(prev => ({ ...prev, show: false }));
+                    }} 
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] h-9 px-6 shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+                  >
+                    确定
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- Edit Image Drawer --- */}
+        {editImageModalOpen && (
+          <div 
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+            onClick={() => {
+              setEditImageModalOpen(false);
+              setEditingImageId(null);
+              setEditSelectedFileName("");
+            }}
+          >
+            <form 
+              onSubmit={handleSaveEditImage}
+              className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drawer Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-[#fa541c]" />
+                  <span>编辑镜像</span>
                 </h2>
                 <button 
                   type="button"
-                  onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))} 
+                  onClick={() => {
+                    setEditImageModalOpen(false);
+                    setEditingImageId(null);
+                    setEditSelectedFileName("");
+                  }}
                   className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-
-              {/* Body */}
-              <div className="p-6 flex items-start gap-3 bg-white">
-                <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
-                <div className="text-[14px] text-neutral-700 leading-normal font-medium">
-                  {deleteConfirm.message}
+              {/* Drawer Content */}
+              <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white">
+                
+                {/* 镜像类型 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    镜像类型
+                  </label>
+                  <div className="flex items-center gap-6 select-none text-[13px] font-medium text-neutral-400">
+                    <div className="flex items-center gap-2">
+                      {imageSubTab === "container" ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-neutral-300 flex items-center justify-center bg-neutral-100">
+                          <div className="w-2 h-2 rounded-full bg-neutral-400" />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-neutral-200" />
+                      )}
+                      <span>容器镜像</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {imageSubTab === "vm" ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-neutral-300 flex items-center justify-center bg-neutral-100">
+                          <div className="w-2 h-2 rounded-full bg-neutral-400" />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-neutral-200" />
+                      )}
+                      <span>虚拟机镜像</span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* 镜像名称 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    镜像名称 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      required
+                      maxLength={128}
+                      placeholder="请输入镜像名称"
+                      value={editingImageName}
+                      onChange={(e) => setEditingImageName(e.target.value)}
+                      className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                      {editingImageName.length} / 128
+                    </span>
+                  </div>
+                </div>
+
+                {imageSubTab === "container" ? (
+                  <>
+                    {/* 命名空间 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        命名空间 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入命名空间"
+                          value={editingImageNamespace}
+                          onChange={(e) => setEditingImageNamespace(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {editingImageNamespace.length} / 100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 版本号 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        版本号 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入版本号"
+                          value={editingImageVersion}
+                          onChange={(e) => setEditingImageVersion(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {editingImageVersion.length} / 100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 镜像描述 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        镜像描述 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入镜像描述"
+                          value={editingImageDesc}
+                          onChange={(e) => setEditingImageDesc(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {editingImageDesc.length} / 100
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* 镜像描述 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        镜像描述 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          required
+                          maxLength={100}
+                          placeholder="请输入镜像描述"
+                          value={editingImageDesc}
+                          onChange={(e) => setEditingImageDesc(e.target.value)}
+                          className="h-[36px] w-full border border-neutral-200 rounded px-3.5 pr-16 py-2 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-700 placeholder-neutral-400 font-normal transition-all"
+                        />
+                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 select-none">
+                          {editingImageDesc.length} / 100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 系统类型 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        系统类型 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div ref={editOsDropdownRef} className="relative w-full text-xs">
+                        <div
+                          onClick={() => setEditIsOsDropdownOpen(!editIsOsDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            editIsOsDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className={cn(editingImageOs ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                            {editingImageOs || "请选择系统类型"}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", editIsOsDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {editIsOsDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {[
+                                { value: "", label: "请选择系统类型" },
+                                { value: "LINUX", label: "LINUX" },
+                                { value: "WINDOWS", label: "WINDOWS" }
+                              ].map((opt) => {
+                                const isSelected = editingImageOs === opt.value;
+                                return (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setEditingImageOs(opt.value);
+                                      setEditIsOsDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer transition-colors text-[13px] flex items-center justify-between",
+                                      isSelected ? "text-[#fa541c] bg-[#fff7e6] font-bold" : "text-neutral-700"
+                                    )}
+                                  >
+                                    <span>{opt.label}</span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 资源类型 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        资源类型 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div ref={editResTypeDropdownRef} className="relative w-full text-xs">
+                        <div
+                          onClick={() => setEditIsResTypeDropdownOpen(!editIsResTypeDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            editIsResTypeDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className={cn(editingImageResType ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                            {editingImageResType || "请选择资源类型"}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", editIsResTypeDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {editIsResTypeDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {[
+                                { value: "", label: "请选择资源类型" },
+                                { value: "云主机", label: "云主机" },
+                                { value: "GPU主机", label: "GPU主机" }
+                              ].map((opt) => {
+                                const isSelected = editingImageResType === opt.value;
+                                return (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setEditingImageResType(opt.value);
+                                      setEditIsResTypeDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer transition-colors text-[13px] flex items-center justify-between",
+                                      isSelected ? "text-[#fa541c] bg-[#fff7e6] font-bold" : "text-[#262626]"
+                                    )}
+                                  >
+                                    <span>{opt.label}</span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 系统架构 */}
+                    <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                      <label className="text-[13px] font-bold text-[#262626] text-right">
+                        系统架构 <span className="text-[#fa541c]">*</span>
+                      </label>
+                      <div ref={editArchDropdownRef} className="relative w-full text-xs">
+                        <div
+                          onClick={() => setEditIsArchDropdownOpen(!editIsArchDropdownOpen)}
+                          className={cn(
+                            "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                            editIsArchDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                          )}
+                        >
+                          <span className={cn(editingImageArch ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                            {editingImageArch || "请选择系统架构"}
+                          </span>
+                          <ChevronDown 
+                            className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", editIsArchDropdownOpen && "rotate-180")} 
+                          />
+                        </div>
+
+                        {/* Dropdown Menu */}
+                        {editIsArchDropdownOpen && (
+                          <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                              {[
+                                { value: "", label: "请选择系统架构" },
+                                { value: "x86_64", label: "x86_64" },
+                                { value: "aarch64", label: "aarch64" }
+                              ].map((opt) => {
+                                const isSelected = editingImageArch === opt.value;
+                                return (
+                                  <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setEditingImageArch(opt.value);
+                                      setEditIsArchDropdownOpen(false);
+                                    }}
+                                    className={cn(
+                                      "px-3.5 py-2 hover:bg-neutral-50 cursor-pointer transition-colors text-[13px] flex items-center justify-between",
+                                      isSelected ? "text-[#fa541c] bg-[#fff7e6] font-bold" : "text-[#262626]"
+                                    )}
+                                  >
+                                    <span>{opt.label}</span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#fa541c]" />}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* 镜像上传 */}
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right mt-1.5">
+                    镜像上传
+                  </label>
+                  <div className="flex flex-col items-start">
+                    <input 
+                      type="file"
+                      ref={editFileInputRef}
+                      className="hidden"
+                      accept={imageSubTab === "container" ? ".zip,.tgz,.tar,.tar.gz" : ".qcow2"}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setEditSelectedFileName(file.name);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editFileInputRef.current?.click()}
+                      className="bg-[#fa541c] hover:bg-[#e84a15] text-white text-xs font-bold px-4 py-2 rounded-[4px] transition-colors cursor-pointer border-0 inline-flex items-center gap-1.5 shadow-3xs"
+                    >
+                      上传文件
+                    </button>
+                    {editSelectedFileName ? (
+                      <div className="flex items-center gap-2 mt-2 text-xs text-neutral-600 font-medium">
+                        <FileText className="w-4 h-4 text-[#fa541c]" />
+                        <span className="truncate max-w-xs">{editSelectedFileName}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setEditSelectedFileName("")} 
+                          className="text-red-500 hover:text-red-700 cursor-pointer border-0 bg-transparent p-0 flex items-center"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-neutral-400 mt-2">
+                        {imageSubTab === "container" ? "只支持.zip/.tgz/.tar/.tar.gz等格式" : "只支持.qcow2格式"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 删除保护 */}
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">
+                    删除保护 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="flex items-center gap-3 select-none">
+                    <span className={cn("text-[13px] font-medium transition-colors", !editingDeleteProtection ? "text-[#fa541c] font-bold" : "text-neutral-500")}>
+                      不限制
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setEditingDeleteProtection(!editingDeleteProtection)}
+                      className={cn(
+                        "w-11 h-6 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer border-0 flex items-center",
+                        editingDeleteProtection ? "bg-[#fa541c]" : "bg-neutral-200"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200",
+                          editingDeleteProtection ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                    <span className={cn("text-[13px] font-medium transition-colors", editingDeleteProtection ? "text-[#fa541c] font-bold" : "text-neutral-500")}>
+                      限制删除
+                    </span>
+                  </div>
+                </div>
+
               </div>
 
-              {/* Footer */}
-              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              {/* Drawer Footer */}
+              <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0 select-none">
                 <button 
                   type="button"
-                  onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))} 
-                  className="border border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer hover:bg-neutral-50"
+                  onClick={() => {
+                    setEditImageModalOpen(false);
+                    setEditingImageId(null);
+                    setEditSelectedFileName("");
+                  }}
+                  className="border border-neutral-200 hover:bg-neutral-50 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded cursor-pointer bg-white"
                 >
                   取消
                 </button>
                 <button 
-                  type="button"
-                  onClick={() => {
-                    deleteConfirm.onConfirm();
-                    setDeleteConfirm(prev => ({ ...prev, show: false }));
-                  }} 
-                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
+                  type="submit" 
+                  className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-[13px] rounded transition-colors border-0 cursor-pointer"
                 >
                   确定
                 </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* --- Image Sync Logs Drawer --- */}
+        {imageLogsModalOpen && (
+          <div 
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+            onClick={() => {
+              setImageLogsModalOpen(false);
+              setSelectedImageForLogs(null);
+            }}
+          >
+            <div 
+              className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drawer Header */}
+              <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-white shrink-0">
+                <h2 className="text-[16px] font-bold text-[#262626]">
+                  查看日志(仅显示最近一次的操作记录)
+                </h2>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setImageLogsModalOpen(false);
+                    setSelectedImageForLogs(null);
+                  }}
+                  className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div className="border border-neutral-200 rounded overflow-hidden">
+                  <table className="w-full text-left border-collapse whitespace-nowrap">
+                    <thead>
+                      <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 text-xs font-semibold">
+                        <th className="p-3">同步开始时间</th>
+                        <th className="p-3">同步结束时间</th>
+                        <th className="p-3">同步状态</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-xs text-neutral-700">
+                      <tr className="hover:bg-neutral-50/50">
+                        <td className="p-3 text-neutral-500 font-mono">
+                          {selectedImageForLogs?.createdAt || "2025-05-27 17:08"}
+                        </td>
+                        <td className="p-3 text-neutral-500 font-mono">
+                          {selectedImageForLogs?.createdAt || "2025-05-27 17:08"}
+                        </td>
+                        <td className="p-3 font-semibold text-neutral-700">
+                          {selectedImageForLogs?.syncStatus || "同步成功"}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
