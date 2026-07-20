@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2 } from 'lucide-react';
+import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CustomSelect } from './TeacherProjects';
@@ -480,6 +480,20 @@ export default function TeacherQuestions() {
     };
   }, []);
 
+  React.useEffect(() => {
+    function handleCopyBankClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedSingle = copyBankDropdownRef.current && copyBankDropdownRef.current.contains(target);
+      if (!clickedSingle) {
+        setIsCopyBankDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleCopyBankClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleCopyBankClickOutside);
+    };
+  }, []);
+
   // Question database states
   const [isBankListModalOpen, setIsBankListModalOpen] = useState(false);
   const [viewingBankDetail, setViewingBankDetail] = useState<any | null>(null);
@@ -606,6 +620,30 @@ export default function TeacherQuestions() {
 
     setQuestionsList([newQuestion, ...questionsList]);
     setImportedIndexes([...importedIndexes, msgIndex]);
+  };
+
+  const handleOpenCopyDrawer = (q: any) => {
+    setCopyingQuestion(q);
+    setCopyTargetBank(q.bank || '');
+    setIsCopyDrawerOpen(true);
+  };
+
+  const handleCopyQuestionSubmit = () => {
+    if (!copyTargetBank) {
+      alert('请选择目标题库');
+      return;
+    }
+    const newQuestion = {
+      ...copyingQuestion,
+      id: Date.now(),
+      bank: copyTargetBank,
+      name: `${copyingQuestion.name} (复制)`,
+      updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/-/g, '/'),
+    };
+    setQuestionsList([newQuestion, ...questionsList]);
+    setIsCopyDrawerOpen(false);
+    setCopyingQuestion(null);
+    setCopyTargetBank('');
   };
 
   // Modal form states
@@ -762,6 +800,13 @@ export default function TeacherQuestions() {
   const shixunResourcePoolDropdownRef = React.useRef<HTMLDivElement>(null);
   const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false);
   const moreActionsRef = React.useRef<HTMLDivElement>(null);
+
+  // Copy question states and refs
+  const [isCopyDrawerOpen, setIsCopyDrawerOpen] = useState(false);
+  const [copyingQuestion, setCopyingQuestion] = useState<any | null>(null);
+  const [copyTargetBank, setCopyTargetBank] = useState('');
+  const [isCopyBankDropdownOpen, setIsCopyBankDropdownOpen] = useState(false);
+  const copyBankDropdownRef = React.useRef<HTMLDivElement>(null);
 
   const [questionsList, setQuestionsList] = useState([
     {
@@ -1419,6 +1464,7 @@ export default function TeacherQuestions() {
                         <div className="flex items-center gap-2.5">
                           {(() => {
                             // Gather all available actions for this row
+                            const isLastFew = index >= filteredQuestions.length - 2 && index >= 1;
                             const rowActions = [
                               { label: '详情', onClick: () => setViewingQuestion(q), isDanger: false },
                               { label: '编辑', onClick: () => handleEditQuestion(q), isDanger: false },
@@ -1440,7 +1486,7 @@ export default function TeacherQuestions() {
                             
                             rowActions.push({ 
                               label: '复制', 
-                              onClick: () => alert(`复制试题: ${q.name}`), 
+                              onClick: () => handleOpenCopyDrawer(q), 
                               isDanger: false 
                             });
                             
@@ -1485,7 +1531,12 @@ export default function TeacherQuestions() {
                                     
                                     {activeDropdownId === q.id && (
                                       <div 
-                                        className="absolute right-0 mt-1.5 w-20 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[60] overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+                                        className={cn(
+                                          "absolute right-0 w-20 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[60] overflow-hidden py-1 animate-in fade-in duration-150",
+                                          isLastFew 
+                                            ? "bottom-full mb-1.5 slide-in-from-bottom-1" 
+                                            : "top-full mt-1.5 slide-in-from-top-1"
+                                        )}
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         {dropdownActions.map((act) => (
@@ -1496,12 +1547,7 @@ export default function TeacherQuestions() {
                                               act.onClick();
                                               setActiveDropdownId(null);
                                             }}
-                                            className={cn(
-                                              "w-full text-left px-3 py-1.5 text-xs transition-colors bg-transparent border-0 cursor-pointer block font-medium",
-                                              act.isDanger 
-                                                ? "text-red-500 hover:bg-red-50" 
-                                                : "text-neutral-700 hover:bg-orange-50/40 hover:text-[#fa541c]"
-                                            )}
+                                            className="w-full text-left px-3 py-1.5 text-xs transition-colors bg-transparent border-0 cursor-pointer block font-medium text-neutral-700 hover:bg-orange-50/40 hover:text-[#fa541c]"
                                           >
                                             {act.label}
                                           </button>
@@ -4929,6 +4975,136 @@ export default function TeacherQuestions() {
                 ) : (
                   '提交审核申请'
                 )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 复制试题 Drawer */}
+      {isCopyDrawerOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => {
+            setIsCopyDrawerOpen(false);
+            setCopyingQuestion(null);
+            setCopyTargetBank('');
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-[500px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Copy className="w-5 h-5 text-[#fa541c]" />
+                复制试题
+              </h2>
+              <button 
+                onClick={() => {
+                  setIsCopyDrawerOpen(false);
+                  setCopyingQuestion(null);
+                  setCopyTargetBank('');
+                }}
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Drawer Content */}
+            <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar flex-1 bg-white text-left">
+              {/* Target Bank Dropdown */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <label className="text-[13px] font-bold text-[#262626] text-right">
+                  选择题库 <span className="text-[#fa541c]">*</span>
+                </label>
+                <div ref={copyBankDropdownRef} className="relative w-full text-xs">
+                  <div
+                    onClick={() => setIsCopyBankDropdownOpen(!isCopyBankDropdownOpen)}
+                    className={cn(
+                      "h-[36px] w-full border border-neutral-200 rounded px-3.5 py-2 flex items-center justify-between transition-all bg-white cursor-pointer select-none",
+                      isCopyBankDropdownOpen ? "border-[#fa541c] ring-1 ring-[#fa541c]" : "hover:border-[#fa541c]"
+                    )}
+                  >
+                    <span className={cn(copyTargetBank ? "text-neutral-700 font-medium" : "text-neutral-400")}>
+                      {copyTargetBank || "请选择所属题库"}
+                    </span>
+                    <ChevronDown 
+                      className={cn("w-3.5 h-3.5 transition-transform duration-200 text-neutral-400", isCopyBankDropdownOpen && "rotate-180")} 
+                    />
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  {isCopyBankDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded shadow-lg z-[150] overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                        <div
+                          onClick={() => {
+                            setCopyTargetBank("");
+                            setIsCopyBankDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                            !copyTargetBank 
+                              ? "bg-orange-50 text-[#fa541c] font-bold"
+                              : "text-neutral-400 hover:bg-orange-50/40 hover:text-neutral-600"
+                          )}
+                        >
+                          <span>请选择所属题库</span>
+                          {!copyTargetBank && (
+                            <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                          )}
+                        </div>
+                        {banksList.map(bank => {
+                          const isSelected = copyTargetBank === bank.name;
+                          return (
+                            <div
+                              key={bank.id}
+                              onClick={() => {
+                                setCopyTargetBank(bank.name);
+                                setIsCopyBankDropdownOpen(false);
+                              }}
+                              className={cn(
+                                "px-4 py-2 text-left text-xs transition-colors cursor-pointer flex items-center justify-between",
+                                isSelected 
+                                  ? "bg-orange-50 text-[#fa541c] font-bold"
+                                  : "text-neutral-700 hover:bg-orange-50/40 hover:text-neutral-900"
+                              )}
+                            >
+                              <span>{bank.name}</span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-[#fa541c]" strokeWidth={2.5} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end gap-3 bg-neutral-50/50 shrink-0">
+              <Button 
+                onClick={() => {
+                  setIsCopyDrawerOpen(false);
+                  setCopyingQuestion(null);
+                  setCopyTargetBank('');
+                }}
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-xs hover:bg-neutral-100 transition-colors rounded-[4px] cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleCopyQuestionSubmit}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm cursor-pointer"
+              >
+                确定
               </Button>
             </div>
           </div>
