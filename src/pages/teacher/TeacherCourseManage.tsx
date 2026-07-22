@@ -209,6 +209,26 @@ const getPaperDetails = (paperName: string) => {
 export default function TeacherCourseManage() {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const currentCourse = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('zhiyun_courses');
+      if (saved) {
+        const list = JSON.parse(saved);
+        const found = list.find((c: any) => String(c.id) === String(id));
+        if (found) return found;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return {
+      id: id || '1',
+      name: '人工智能基础与实践',
+      code: 'AI-101-2026',
+      image: 'https://picsum.photos/seed/ai/400/200'
+    };
+  }, [id]);
+
   const [activeTab, setActiveTab] = useState('editor');
   const [perspective, setPerspective] = useState<'teacher' | 'student'>('teacher');
   const [showPerspectiveDropdown, setShowPerspectiveDropdown] = useState(false);
@@ -849,40 +869,28 @@ export default function TeacherCourseManage() {
             <div className="bg-gradient-to-r from-[#fff2e8] via-[#fff7f2] to-blue-50/50 h-[300px] w-full pt-10 px-6 lg:px-10">
               <div className="flex items-center gap-10 w-full">
                 {/* Course Cover Card */}
-                <div className="w-[360px] h-[200px] bg-gradient-to-br from-[#40a9ff] to-[#096dd9] rounded-xl shadow-lg relative overflow-hidden flex flex-col items-center justify-center group">
-                   {/* This makes the cover match the image reference (blue card), but we can make it orange if preferred. 
-                       The prompt says "主题色为橙色" (Theme color is orange), so let's make the card orange. */}
-                   <div className="absolute inset-0 bg-gradient-to-br from-[#fa541c] to-[#ff7a45]"></div>
+                <div className="w-[360px] h-[200px] bg-neutral-900 rounded-xl shadow-lg relative overflow-hidden flex flex-col items-center justify-center group border border-neutral-200/60">
+                   <img 
+                     src={currentCourse?.image || 'https://picsum.photos/seed/ai/400/200'} 
+                     alt={currentCourse?.name || '课程封面'} 
+                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                     referrerPolicy="no-referrer"
+                   />
                    
                    <div className="absolute top-0 right-0 bg-[#52c41a] text-white text-[11px] font-bold px-3 py-1.5 rounded-bl-xl shadow-sm z-20">
                      教学实训
                    </div>
-                   
-                   {/* decorative hexes background */}
-                   <div className="absolute right-[-30px] bottom-[-30px] opacity-20 z-10 group-hover:scale-110 transition-transform duration-700">
-                     <svg width="150" height="150" viewBox="0 0 100 100">
-                       <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill="none" stroke="white" strokeWidth="1.5"/>
-                       <polygon points="50 20 75 35 75 65 50 80 25 65 25 35" fill="none" stroke="white" strokeWidth="1"/>
-                     </svg>
-                   </div>
-                   <div className="absolute left-[-20px] top-[-20px] opacity-10 z-10">
-                     <svg width="100" height="100" viewBox="0 0 100 100">
-                       <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill="none" stroke="white" strokeWidth="2"/>
-                     </svg>
-                   </div>
-                   
-                   <h2 className="text-3xl font-bold text-white tracking-widest relative z-20 drop-shadow-md">人工智能基础与实践</h2>
                 </div>
                 
                 {/* Course Info */}
                 <div>
-                  <h1 className="text-3xl font-bold text-neutral-title mb-4">人工智能基础与实践</h1>
+                  <h1 className="text-3xl font-bold text-neutral-title mb-4">{currentCourse?.name || '人工智能基础与实践'}</h1>
                   <div className="flex items-center gap-3 text-[13px] text-neutral-500 mb-6 font-medium">
                     <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-full border border-white/40 shadow-sm text-neutral-600">
                       <BookOpen className="w-3.5 h-3.5 text-[#fa541c]"/> 4 章节 | 18 课节
                     </span>
                     <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-full border border-white/40 shadow-sm text-neutral-600">
-                      课程编号: AI20261014 <Copy className="w-3.5 h-3.5 ml-1 cursor-pointer hover:text-[#fa541c] transition-colors"/>
+                      课程编号: {currentCourse?.code || 'AI20261014'} <Copy className="w-3.5 h-3.5 ml-1 cursor-pointer hover:text-[#fa541c] transition-colors"/>
                     </span>
                   </div>
                 </div>
