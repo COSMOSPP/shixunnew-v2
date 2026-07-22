@@ -20,7 +20,8 @@ import {
   Info,
   Loader2,
   Edit,
-  Trash2
+  Trash2,
+  GripVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -49,6 +50,8 @@ export default function TeacherPapers() {
   const [selectedConfigQuestions, setSelectedConfigQuestions] = useState<number[]>([]);
   const [confirmedQuestions, setConfirmedQuestions] = useState<any[]>([]);
   const [isObjConfigured, setIsObjConfigured] = useState(false);
+  const [draggedQuestionId, setDraggedQuestionId] = useState<number | string | null>(null);
+  const [dragOverQuestionId, setDragOverQuestionId] = useState<number | string | null>(null);
 
   // New Paper form states
   const [paperName, setPaperName] = useState('');
@@ -345,7 +348,7 @@ export default function TeacherPapers() {
   // 手动选题计算逻辑
   const manualCount = confirmedQuestions.length;
   const manualScore = confirmedQuestions.reduce((sum, q) => {
-    const scoreStr = manualTypeScores[q.type] !== undefined ? manualTypeScores[q.type] : (q.type === '单选题' || q.type === '多选题' ? '3' : '');
+    const scoreStr = q.score !== undefined ? q.score : (manualTypeScores[q.type] !== undefined ? manualTypeScores[q.type] : (q.type === '单选题' || q.type === '多选题' ? '3' : '0'));
     return sum + (parseFloat(scoreStr) || 0);
   }, 0);
 
@@ -821,6 +824,37 @@ export default function TeacherPapers() {
       newOrder[idx + 1] = manualTypeOrder[idx];
       setManualTypeOrder(newOrder);
     }
+  };
+
+  const handleUpdateConfirmedQuestionScore = (questionId: number | string, newScore: any) => {
+    setConfirmedQuestions(prev => prev.map(item => {
+      if (item.id === questionId) {
+        return { ...item, score: newScore };
+      }
+      return item;
+    }));
+  };
+
+  const handleReorderQuestions = (sourceId: number | string, targetId: number | string) => {
+    if (!sourceId || !targetId || sourceId === targetId) return;
+
+    setConfirmedQuestions((prev) => {
+      const sourceIndex = prev.findIndex((item) => item.id === sourceId);
+      const targetIndex = prev.findIndex((item) => item.id === targetId);
+
+      if (sourceIndex === -1 || targetIndex === -1) return prev;
+
+      const updated = [...prev];
+      const [movedQuestion] = updated.splice(sourceIndex, 1);
+
+      const targetQuestion = prev[targetIndex];
+      if (targetQuestion && movedQuestion.type !== targetQuestion.type) {
+        movedQuestion.type = targetQuestion.type;
+      }
+
+      updated.splice(targetIndex, 0, movedQuestion);
+      return updated;
+    });
   };
 
   const handleBatchDelete = () => {
@@ -1767,51 +1801,48 @@ export default function TeacherPapers() {
                               <tbody>
                                 {rulesOfType.map((rule) => (
                                   <tr key={rule.id} className="border-b border-neutral-100 bg-white hover:bg-neutral-50/30 transition-colors text-[12px]">
-                                    {/* 抽取标签 */}
                                     <td className="p-3 w-44 text-neutral-700 font-medium">
                                       {rule.tag}
                                     </td>
-                                    {/* 难易程度 */}
                                     <td className="p-3 w-28 text-neutral-600">
                                       {rule.difficulty}
                                     </td>
-                                    {/* 抽取数量 */}
                                     <td className="p-3 w-24">
                                       <input 
-                                        type="number"
-                                        min={0}
+                                        type="text"
+                                        inputMode="numeric"
                                         value={rule.count === '' ? '' : rule.count}
                                         onChange={(e) => {
-                                          const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
-                                          handleUpdateRule(rule.id, 'count', val);
+                                          const val = e.target.value;
+                                          if (val === '' || /^\d*$/.test(val)) {
+                                            handleUpdateRule(rule.id, 'count', val);
+                                          }
                                         }}
                                         placeholder="0"
-                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
+                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center font-medium"
                                       />
                                     </td>
-                                    {/* 最多可抽 */}
                                     <td className="p-3 w-24 text-center text-neutral-700 font-bold font-mono">
                                       {rule.maxAvailable}
                                     </td>
-                                    {/* 分值 */}
                                     <td className="p-3 w-24">
                                       <input 
-                                        type="number"
-                                        min={0}
+                                        type="text"
+                                        inputMode="numeric"
                                         value={rule.score === '' ? '' : rule.score}
                                         onChange={(e) => {
-                                          const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
-                                          handleUpdateRule(rule.id, 'score', val);
+                                          const val = e.target.value;
+                                          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                            handleUpdateRule(rule.id, 'score', val);
+                                          }
                                         }}
                                         placeholder="0"
-                                        className="border border-neutral-200 rounded-[4px] px-2.5 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center"
+                                        className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-full text-center font-medium"
                                       />
                                     </td>
-                                    {/* 总分 */}
                                     <td className="p-3 w-20 text-center text-neutral-700 font-bold font-mono">
                                       {Number(rule.count) && Number(rule.score) ? Number(rule.count) * Number(rule.score) : 0}
                                     </td>
-                                    {/* 操作 - 移除 */}
                                     <td className="p-3 w-20 text-center">
                                       <button 
                                         type="button" 
@@ -1837,11 +1868,8 @@ export default function TeacherPapers() {
                       );
                     })}
 
-
-
                     {/* Bottom Summary */}
                     <div className="border border-neutral-200/80 rounded-[8px] p-5 mt-6 w-full max-w-[320px] text-left bg-white shadow-sm space-y-4">
-                      {/* Question Types List */}
                       <div className="space-y-3.5 w-full">
                         {typeOrder.map(type => {
                           const typeRules = drawRules.filter(r => r.type === type);
@@ -1857,11 +1885,7 @@ export default function TeacherPapers() {
                           );
                         })}
                       </div>
-
-                      {/* Divider Line */}
                       <div className="border-t border-neutral-100 w-full"></div>
-
-                      {/* Overall Totals */}
                       <div className="space-y-1">
                         <div className="text-[20px] font-black text-[#fa541c] leading-none">
                           试卷总分{displayScore.toFixed(1)}分
@@ -1876,7 +1900,6 @@ export default function TeacherPapers() {
               </>
               ) : (
                 <>
-                  {/* 试题配置 - 添加试题按钮 row */}
                   <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                     <label className="text-[13px] font-bold text-[#262626] text-right">
                       配置 <span className="text-[#fa541c]">*</span>
@@ -1938,14 +1961,14 @@ export default function TeacherPapers() {
                               </div>
 
                               {/* Table */}
-                              <div className="border border-neutral-200 rounded-[4px] relative">
-                                <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
+                              <div className="border border-neutral-200 rounded-[4px] relative overflow-hidden bg-white w-full">
+                                <table className="w-full text-left border-collapse text-[12px] table-fixed">
                                   <thead>
                                     <tr className="bg-neutral-50/70 border-b border-neutral-200 text-neutral-600 font-bold select-none">
                                       <th className="p-3">试题名称</th>
-                                      <th className="p-3 w-48">所属试题库</th>
-                                      <th className="p-3 w-32 text-center">分值</th>
-                                      <th className="p-3 w-24 text-center">操作</th>
+                                      <th className="p-3 w-40">所属试题库</th>
+                                      <th className="p-3 w-28 text-center">分值</th>
+                                      <th className="p-3 w-20 text-center">操作</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -1954,19 +1977,31 @@ export default function TeacherPapers() {
                                       return (
                                         <tr key={q.id} className="border-b border-neutral-100 bg-white hover:bg-neutral-50/30 transition-colors text-[12px]">
                                           {/* 试题名称 */}
-                                          <td className="p-3 text-neutral-700 font-medium max-w-[350px] truncate" title={q.name}>
-                                            {q.name}
+                                          <td className="p-3 text-neutral-700 font-medium truncate" title={q.name}>
+                                            <span className="truncate block">{q.name}</span>
                                           </td>
                                           {/* 所属试题库 */}
-                                          <td className="p-3 w-48 text-neutral-600 truncate" title={q.bank}>
-                                            {q.bank}
+                                          <td className="p-3 text-neutral-600 truncate" title={q.bank}>
+                                            <span className="truncate block">{q.bank}</span>
                                           </td>
                                           {/* 分值 */}
-                                          <td className="p-3 w-32 text-center text-neutral-700 font-medium">
-                                            {score || '0'}
+                                          <td className="p-3 text-center">
+                                            <input 
+                                              type="text"
+                                              inputMode="numeric"
+                                              value={q.score !== undefined ? q.score : score}
+                                              onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                  handleUpdateConfirmedQuestionScore(q.id, val);
+                                                }
+                                              }}
+                                              placeholder="0"
+                                              className="border border-neutral-200 rounded-[4px] px-2 py-1 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-800 w-16 text-center font-medium"
+                                            />
                                           </td>
                                           {/* 操作 - 移除 */}
-                                          <td className="p-3 w-24 text-center">
+                                          <td className="p-3 text-center">
                                             <button 
                                               type="button" 
                                               onClick={() => handleRemoveConfirmedQuestion(q.id)}

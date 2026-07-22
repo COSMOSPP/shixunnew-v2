@@ -648,37 +648,23 @@ export default function TeacherGrading() {
                   <div className="flex flex-wrap items-center gap-6">
                     <div className="flex items-center gap-2.5">
                       <span className="text-[13px] text-neutral-600 font-medium">本题得分：</span>
-                      <div className="flex items-center border border-neutral-200 rounded overflow-hidden bg-white">
-                        <button 
-                          onClick={() => {
-                            setTempQuestionScore(cur => Math.max(0, cur - 1));
-                          }}
-                          className="px-2.5 py-1 bg-neutral-50 hover:bg-neutral-100 border-r border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
-                        >
-                          -
-                        </button>
-                        <input 
-                          type="number"
-                          min={0}
-                          max={q.maxScore}
-                          value={tempQuestionScore}
-                          onChange={(e) => {
-                            let val = Number(e.target.value);
-                            if (val < 0) val = 0;
-                            if (val > q.maxScore) val = q.maxScore;
+                      <input 
+                        type="number"
+                        min={0}
+                        max={q.maxScore}
+                        value={tempQuestionScore === '' ? '' : tempQuestionScore}
+                        onChange={(e) => {
+                          const valStr = e.target.value;
+                          if (valStr === '') {
+                            setTempQuestionScore('' as any);
+                          } else {
+                            let val = Math.max(0, Math.min(q.maxScore, Number(valStr)));
                             setTempQuestionScore(val);
-                          }}
-                          className="w-14 text-center border-0 font-bold text-neutral-800 focus:outline-none focus:ring-0 text-[13px] h-7"
-                        />
-                        <button 
-                          onClick={() => {
-                            setTempQuestionScore(cur => Math.min(q.maxScore, cur + 1));
-                          }}
-                          className="px-2.5 py-1 bg-neutral-50 hover:bg-neutral-100 border-l border-neutral-200 text-neutral-600 font-bold transition-colors cursor-pointer text-sm"
-                        >
-                          +
-                        </button>
-                      </div>
+                          }
+                        }}
+                        placeholder="0"
+                        className="w-20 h-8 px-3 border border-neutral-200 rounded-[4px] bg-white text-xs font-bold text-neutral-800 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-center"
+                      />
                       <span className="text-[13px] text-neutral-500 font-semibold">/ {q.maxScore} 分</span>
                     </div>
                     

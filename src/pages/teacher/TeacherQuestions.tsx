@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2, Copy } from 'lucide-react';
+import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2, Copy, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CustomSelect } from './TeacherProjects';
@@ -669,12 +669,17 @@ export default function TeacherQuestions() {
   // Blanks and score items states for Fill-in-the-blank questions
   const [blanks, setBlanks] = useState<any[]>([
     { id: '1', name: '填空1', value: '', proportion: 50 },
-    { id: '2', name: '填空2', value: '', proportion: 50 }
+    { id: '2', name: '填空2', value: '', proportion: 50 },
+    { id: '3', name: '填空3', value: '', proportion: 0 },
+    { id: '4', name: '填空4', value: '', proportion: 0 }
   ]);
   const [scoreItems, setScoreItems] = useState<any[]>([
-    { id: '1', blankId: '1', keywords: '', ratio: 100 },
-    { id: '2', blankId: '2', keywords: '', ratio: 100 }
+    { id: '1', blankId: '1', keywords: ['13', 'hh'], ratio: 50 },
+    { id: '2', blankId: '1', keywords: ['2.13', '2月13'], ratio: 50 },
+    { id: '3', blankId: '3', keywords: [], ratio: 100 },
+    { id: '4', blankId: '4', keywords: ['123', '123'], ratio: 100 }
   ]);
+  const [draftKeywords, setDraftKeywords] = useState<{ [key: string]: string }>({});
 
   const [newQuestionAnalysis, setNewQuestionAnalysis] = useState('');
   const [newQuestionStatus, setNewQuestionStatus] = useState('启用');
@@ -924,8 +929,64 @@ export default function TeacherQuestions() {
     setBlanks([...blanks, newBlank]);
     setScoreItems([
       ...scoreItems,
-      { id: String(Date.now()), blankId: nextId, keywords: '', ratio: 100 }
+      { id: String(Date.now()), blankId: nextId, keywords: [], ratio: 100 }
     ]);
+  };
+
+  const handleAddKeywordTag = (itemId: string) => {
+    const text = (draftKeywords[itemId] || '').trim();
+    if (!text) return;
+    setScoreItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const currentKeywords = Array.isArray(item.keywords) 
+          ? item.keywords 
+          : (typeof item.keywords === 'string' && item.keywords.trim() ? item.keywords.split(',').map(s => s.trim()) : []);
+        return {
+          ...item,
+          keywords: [...currentKeywords, text]
+        };
+      }
+      return item;
+    }));
+    setDraftKeywords(prev => ({ ...prev, [itemId]: '' }));
+  };
+
+  const handleRemoveKeywordTag = (itemId: string, indexToRemove: number) => {
+    setScoreItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const currentKeywords = Array.isArray(item.keywords) 
+          ? item.keywords 
+          : (typeof item.keywords === 'string' && item.keywords.trim() ? item.keywords.split(',').map(s => s.trim()) : []);
+        return {
+          ...item,
+          keywords: currentKeywords.filter((_, idx) => idx !== indexToRemove)
+        };
+      }
+      return item;
+    }));
+  };
+
+  const handleAddScoreItem = () => {
+    const nextBlankNum = scoreItems.length + 1;
+    const targetBlankId = String(nextBlankNum);
+
+    if (!blanks.some(b => b.id === targetBlankId)) {
+      setBlanks(prev => [
+        ...prev,
+        { id: targetBlankId, name: `填空${targetBlankId}`, value: '', proportion: 0 }
+      ]);
+    }
+
+    setScoreItems(prev => [
+      ...prev,
+      { id: String(Date.now()), blankId: targetBlankId, keywords: [], ratio: 100 }
+    ]);
+  };
+
+  const handleDeleteScoreItem = (id: string) => {
+    if (scoreItems.length > 1) {
+      setScoreItems(prev => prev.filter(si => si.id !== id));
+    }
   };
 
   const handleDeleteBlank = (id: string) => {
@@ -1983,7 +2044,7 @@ export default function TeacherQuestions() {
           onClick={handleCloseCreateModal}
         >
           <div 
-            className="bg-white w-full max-w-[660px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            className="bg-white w-full max-w-[840px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
@@ -2356,13 +2417,6 @@ export default function TeacherQuestions() {
                           )}
                         </div>
                       ))}
-                      <button
-                        type="button"
-                        onClick={handleAddBlank}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-[4px] hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> 增加填空
-                      </button>
                     </div>
                   </div>
 
@@ -2371,97 +2425,146 @@ export default function TeacherQuestions() {
                     <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
                       得分关键词 <span className="text-[#fa541c]">*</span>
                     </label>
-                    <div className="space-y-3.5 w-full">
+                    <div className="space-y-3 w-full text-left">
                       <div className="border border-neutral-200 rounded overflow-hidden">
                         <table className="w-full text-left border-collapse text-xs">
                           <thead>
-                            <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-600 font-bold">
-                              <th className="px-3 py-2.5 w-1/4">对应填空</th>
-                              <th className="px-3 py-2.5 w-1/3">得分关键词</th>
-                              <th className="px-3 py-2.5 w-1/4">得分比例 (%)</th>
-                              <th className="px-3 py-2.5 w-12 text-center">操作</th>
+                            <tr className="bg-neutral-50/70 border-b border-neutral-200 text-neutral-600 font-bold">
+                              <th className="px-3 py-2.5 w-1/4">填空名称</th>
+                              <th className="px-3 py-2.5 w-1/2">得分关键词</th>
+                              <th className="px-3 py-2.5 w-1/4">得分比例</th>
+                              <th className="px-3 py-2.5 w-16 text-center">操作</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {scoreItems.map((item) => (
-                              <tr key={item.id} className="border-b border-neutral-100 hover:bg-neutral-50/50">
-                                <td className="px-3 py-2">
-                                  <select
-                                    value={item.blankId}
-                                    onChange={(e) => {
-                                      setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, blankId: e.target.value } : si));
-                                    }}
-                                    className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all bg-white text-neutral-700 cursor-pointer"
-                                  >
-                                    {blanks.map(b => (
-                                      <option key={b.id} value={b.id}>{b.name}</option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td className="px-3 py-2">
-                                  <input
-                                    type="text"
-                                    value={item.keywords}
-                                    onChange={(e) => {
-                                      setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, keywords: e.target.value } : si));
-                                    }}
-                                    placeholder="请输入关键词"
-                                    className="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] transition-all text-neutral-700 placeholder:text-neutral-400 bg-white"
-                                  />
-                                </td>
-                                <td className="px-3 py-2">
-                                  <div className="flex items-center gap-1 border border-neutral-200 rounded max-w-[120px] bg-white overflow-hidden">
+                            {scoreItems.map((item) => {
+                              const keywordsList: string[] = Array.isArray(item.keywords)
+                                ? item.keywords
+                                : (typeof item.keywords === 'string' && item.keywords.trim() ? item.keywords.split(',').map(s => s.trim()) : []);
+
+                              return (
+                                <tr key={item.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors">
+                                  {/* 填空名称 */}
+                                  <td className="px-3 py-2">
+                                    <div className="flex items-center border border-neutral-200 rounded px-2.5 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
+                                      <select
+                                        value={item.blankId}
+                                        onChange={(e) => {
+                                          setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, blankId: e.target.value } : si));
+                                        }}
+                                        className="w-full bg-transparent text-xs text-neutral-700 outline-none border-0 cursor-pointer"
+                                      >
+                                        {blanks.map(b => (
+                                          <option key={b.id} value={b.id}>{b.name}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  </td>
+
+                                  {/* 得分关键词 */}
+                                  <td className="px-3 py-2">
+                                    <div className="flex flex-wrap items-center gap-1.5 border border-neutral-200 rounded px-2.5 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all min-h-[34px]">
+                                      {keywordsList.map((kw, idx) => (
+                                        <span
+                                          key={idx}
+                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-100 border border-neutral-200 text-xs text-neutral-700 font-medium"
+                                        >
+                                          <span>{kw}</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveKeywordTag(item.id, idx)}
+                                            className="text-neutral-400 hover:text-red-500 border-0 bg-transparent p-0 cursor-pointer flex items-center justify-center"
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </span>
+                                      ))}
+                                      <div className="flex-1 flex items-center min-w-[170px]">
+                                        <input
+                                          type="text"
+                                          value={draftKeywords[item.id] || ''}
+                                          onChange={(e) => setDraftKeywords({ ...draftKeywords, [item.id]: e.target.value })}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault();
+                                              handleAddKeywordTag(item.id);
+                                            }
+                                          }}
+                                          onBlur={() => handleAddKeywordTag(item.id)}
+                                          placeholder="请输入内容，按回车或失去焦点添加"
+                                          className="w-full bg-transparent border-0 outline-none text-xs text-neutral-700 placeholder:text-neutral-400"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => setDraftKeywords({ ...draftKeywords, [item.id]: '' })}
+                                          className="text-neutral-400 hover:text-red-500 p-0.5 border-0 bg-transparent cursor-pointer shrink-0 ml-1"
+                                        >
+                                          <XCircle className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* 得分比例 */}
+                                  <td className="px-3 py-2">
+                                    <div className="flex items-center gap-1 border border-neutral-200 rounded bg-white overflow-hidden max-w-[130px] focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, ratio: Math.max(0, Number(si.ratio || 0) - 10) } : si));
+                                        }}
+                                        className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-r border-neutral-200 transition-colors cursor-pointer shrink-0"
+                                      >
+                                        -
+                                      </button>
+                                      <span className="flex-1 text-center font-bold text-xs select-none text-neutral-700">
+                                        {item.ratio}%
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, ratio: Math.min(100, Number(si.ratio || 0) + 10) } : si));
+                                        }}
+                                        className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-l border-neutral-200 transition-colors cursor-pointer shrink-0"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </td>
+
+                                  {/* 操作 */}
+                                  <td className="px-3 py-2 text-center">
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, ratio: Math.max(0, si.ratio - 10) } : si));
-                                      }}
-                                      className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-r border-neutral-200 transition-colors cursor-pointer"
-                                    >
-                                      -
-                                    </button>
-                                    <span className="flex-1 text-center font-semibold text-xs select-none">
-                                      {item.ratio}%
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setScoreItems(scoreItems.map(si => si.id === item.id ? { ...si, ratio: Math.min(100, si.ratio + 10) } : si));
-                                      }}
-                                      className="w-8 h-7 text-neutral-500 hover:bg-neutral-100 hover:text-[#fa541c] font-bold border-l border-neutral-200 transition-colors cursor-pointer"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2 text-center">
-                                  {scoreItems.length > 1 && (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setScoreItems(scoreItems.filter(si => si.id !== item.id));
-                                      }}
-                                      className="text-neutral-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors cursor-pointer"
-                                      title="删除"
+                                      onClick={() => handleDeleteScoreItem(item.id)}
+                                      className="text-neutral-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors cursor-pointer border-0 bg-transparent"
+                                      title="删除得分项"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setScoreItems([...scoreItems, { id: String(Date.now()), blankId: blanks[0]?.id || '1', keywords: '', ratio: 100 }]);
-                        }}
-                        className="h-8 px-4 border border-[#fa541c] text-[#fa541c] rounded-[4px] hover:bg-[#fff2e8] text-[11px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer bg-white"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> 增加得分关键词
-                      </button>
+
+                      {/* 下方提示文字 */}
+                      <div className="text-[12px] font-normal text-neutral-400 mt-2.5 leading-relaxed">
+                        单个得分项匹配到一个关键词即可按照得分比例得分，单个填空按照匹配到得分项按照得分比例累加得分
+                      </div>
+
+                      {/* 添加得分项 */}
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={handleAddScoreItem}
+                          className="text-[#fa541c] hover:text-[#e84a15] text-xs font-bold border-0 bg-transparent p-0 cursor-pointer transition-colors flex items-center gap-1"
+                        >
+                          添加得分项
+                        </button>
+                      </div>
                     </div>
                   </div>
 
