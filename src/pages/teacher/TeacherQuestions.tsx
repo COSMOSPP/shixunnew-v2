@@ -2480,7 +2480,7 @@ export default function TeacherQuestions() {
                                         </span>
                                       ))}
 
-                                      <div className="flex-1 min-w-[200px] flex items-center gap-1.5 border border-neutral-200 rounded-[6px] px-3 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
+                                      <div className="flex-1 min-w-[200px] flex items-center border border-neutral-200 rounded-[6px] px-3 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
                                         <input
                                           type="text"
                                           value={draftKeywords[item.id] || ''}
@@ -2495,14 +2495,6 @@ export default function TeacherQuestions() {
                                           placeholder="请输入内容，按回车"
                                           className="w-full bg-transparent border-0 outline-none text-xs text-neutral-700 placeholder:text-neutral-400"
                                         />
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAddKeywordTag(item.id)}
-                                          className="text-neutral-400 hover:text-[#fa541c] p-0.5 border-0 bg-transparent cursor-pointer shrink-0"
-                                          title="确认添加"
-                                        >
-                                          <CheckCircle2 className="w-4 h-4 text-neutral-300 hover:text-[#fa541c] transition-colors" />
-                                        </button>
                                       </div>
                                     </div>
                                   </td>
