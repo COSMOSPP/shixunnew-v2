@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2, Copy, XCircle } from 'lucide-react';
+import { Edit, Plus, Upload, Globe, Search, Brain, HelpCircle, ChevronDown, ChevronUp, Trash2, X, ChevronLeft, ArrowLeft, Send, MessageSquare, Database, Sparkles, Check, Info, Layers, Loader2, Copy, XCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CustomSelect } from './TeacherProjects';
@@ -2463,23 +2463,24 @@ export default function TeacherQuestions() {
 
                                   {/* 得分关键词 */}
                                   <td className="px-3 py-2">
-                                    <div className="flex flex-wrap items-center gap-1.5 border border-neutral-200 rounded px-2.5 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all min-h-[34px]">
+                                    <div className="flex flex-wrap items-center gap-2">
                                       {keywordsList.map((kw, idx) => (
                                         <span
                                           key={idx}
-                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-100 border border-neutral-200 text-xs text-neutral-700 font-medium"
+                                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#f0f2f5] text-xs text-neutral-700 font-medium shrink-0"
                                         >
                                           <span>{kw}</span>
                                           <button
                                             type="button"
                                             onClick={() => handleRemoveKeywordTag(item.id, idx)}
-                                            className="text-neutral-400 hover:text-red-500 border-0 bg-transparent p-0 cursor-pointer flex items-center justify-center"
+                                            className="text-[#fa541c] hover:opacity-80 border-0 bg-transparent p-0 cursor-pointer flex items-center justify-center ml-0.5"
                                           >
-                                            <X className="w-3 h-3" />
+                                            <X className="w-3.5 h-3.5 stroke-[2.5]" />
                                           </button>
                                         </span>
                                       ))}
-                                      <div className="flex-1 flex items-center min-w-[170px]">
+
+                                      <div className="flex-1 min-w-[200px] flex items-center gap-1.5 border border-neutral-200 rounded-[6px] px-3 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
                                         <input
                                           type="text"
                                           value={draftKeywords[item.id] || ''}
@@ -2491,15 +2492,16 @@ export default function TeacherQuestions() {
                                             }
                                           }}
                                           onBlur={() => handleAddKeywordTag(item.id)}
-                                          placeholder="请输入内容，按回车或失去焦点添加"
+                                          placeholder="请输入内容，按回车"
                                           className="w-full bg-transparent border-0 outline-none text-xs text-neutral-700 placeholder:text-neutral-400"
                                         />
                                         <button
                                           type="button"
-                                          onClick={() => setDraftKeywords({ ...draftKeywords, [item.id]: '' })}
-                                          className="text-neutral-400 hover:text-red-500 p-0.5 border-0 bg-transparent cursor-pointer shrink-0 ml-1"
+                                          onClick={() => handleAddKeywordTag(item.id)}
+                                          className="text-neutral-400 hover:text-[#fa541c] p-0.5 border-0 bg-transparent cursor-pointer shrink-0"
+                                          title="确认添加"
                                         >
-                                          <XCircle className="w-3.5 h-3.5" />
+                                          <CheckCircle2 className="w-4 h-4 text-neutral-300 hover:text-[#fa541c] transition-colors" />
                                         </button>
                                       </div>
                                     </div>
