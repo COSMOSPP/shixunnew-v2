@@ -2463,24 +2463,28 @@ export default function TeacherQuestions() {
 
                                   {/* 得分关键词 */}
                                   <td className="px-3 py-2">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      {keywordsList.map((kw, idx) => (
-                                        <span
-                                          key={idx}
-                                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#f0f2f5] text-xs text-neutral-700 font-medium shrink-0"
-                                        >
-                                          <span>{kw}</span>
-                                          <button
-                                            type="button"
-                                            onClick={() => handleRemoveKeywordTag(item.id, idx)}
-                                            className="text-[#fa541c] hover:opacity-80 border-0 bg-transparent p-0 cursor-pointer flex items-center justify-center ml-0.5"
-                                          >
-                                            <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                                          </button>
-                                        </span>
-                                      ))}
+                                    <div className="flex flex-col gap-2 py-1">
+                                      {keywordsList.length > 0 && (
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          {keywordsList.map((kw, idx) => (
+                                            <span
+                                              key={idx}
+                                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#f0f2f5] text-xs text-neutral-700 font-medium shrink-0"
+                                            >
+                                              <span>{kw}</span>
+                                              <button
+                                                type="button"
+                                                onClick={() => handleRemoveKeywordTag(item.id, idx)}
+                                                className="text-neutral-400 hover:text-[#fa541c] transition-colors border-0 bg-transparent p-0 cursor-pointer flex items-center justify-center ml-0.5 group"
+                                              >
+                                                <X className="w-3.5 h-3.5 stroke-[2.5] text-neutral-400 group-hover:text-[#fa541c] transition-colors" />
+                                              </button>
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
 
-                                      <div className="flex-1 min-w-[200px] flex items-center border border-neutral-200 rounded-[6px] px-3 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
+                                      <div className="w-full flex items-center border border-neutral-200 rounded-[6px] px-3 py-1 bg-white focus-within:border-[#fa541c] focus-within:ring-1 focus-within:ring-[#fa541c] transition-all">
                                         <input
                                           type="text"
                                           value={draftKeywords[item.id] || ''}
