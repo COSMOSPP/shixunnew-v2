@@ -649,17 +649,15 @@ export default function TeacherGrading() {
                     <div className="flex items-center gap-2.5">
                       <span className="text-[13px] text-neutral-600 font-medium">本题得分：</span>
                       <input 
-                        type="number"
-                        min={0}
-                        max={q.maxScore}
+                        type="text"
+                        inputMode="numeric"
                         value={tempQuestionScore === '' ? '' : tempQuestionScore}
                         onChange={(e) => {
                           const valStr = e.target.value;
                           if (valStr === '') {
                             setTempQuestionScore('' as any);
-                          } else {
-                            let val = Math.max(0, Math.min(q.maxScore, Number(valStr)));
-                            setTempQuestionScore(val);
+                          } else if (/^\d*\.?\d*$/.test(valStr)) {
+                            setTempQuestionScore(valStr);
                           }
                         }}
                         placeholder="0"

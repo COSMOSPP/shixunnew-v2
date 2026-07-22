@@ -4797,17 +4797,15 @@ export default function TeacherCourseManage() {
                             <div className="flex items-center gap-3">
                               <span className="text-[13px] text-neutral-600 font-bold">本题得分：</span>
                               <input 
-                                type="number"
-                                min={0}
-                                max={q.maxScore}
+                                type="text"
+                                inputMode="numeric"
                                 value={q.score === '' ? '' : q.score}
                                 onChange={(e) => {
                                   const valStr = e.target.value;
                                   if (valStr === '') {
                                     handleReviewQuestionGradeChange(q.id, '' as any);
-                                  } else {
-                                    let val = Math.max(0, Math.min(q.maxScore, Number(valStr)));
-                                    handleReviewQuestionGradeChange(q.id, val);
+                                  } else if (/^\d*\.?\d*$/.test(valStr)) {
+                                    handleReviewQuestionGradeChange(q.id, valStr);
                                   }
                                 }}
                                 placeholder="0"
