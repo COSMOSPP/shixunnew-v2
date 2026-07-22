@@ -1974,11 +1974,63 @@ export default function TeacherPapers() {
                                   <tbody>
                                     {questionsOfType.map((q) => {
                                       const score = manualTypeScores[q.type] !== undefined ? manualTypeScores[q.type] : (q.type === '单选题' || q.type === '多选题' ? '3' : '0');
+                                      const isDragging = draggedQuestionId === q.id;
+                                      const isDragOver = dragOverQuestionId === q.id;
+
                                       return (
-                                        <tr key={q.id} className="border-b border-neutral-100 bg-white hover:bg-neutral-50/30 transition-colors text-[12px]">
-                                          {/* 试题名称 */}
+                                        <tr 
+                                          key={q.id}
+                                          onDragOver={(e) => {
+                                            if (draggedQuestionId && draggedQuestionId !== q.id) {
+                                              e.preventDefault();
+                                              e.dataTransfer.dropEffect = 'move';
+                                              if (dragOverQuestionId !== q.id) {
+                                                setDragOverQuestionId(q.id);
+                                              }
+                                            }
+                                          }}
+                                          onDragLeave={() => {
+                                            if (dragOverQuestionId === q.id) {
+                                              setDragOverQuestionId(null);
+                                            }
+                                          }}
+                                          onDrop={(e) => {
+                                            e.preventDefault();
+                                            if (draggedQuestionId && draggedQuestionId !== q.id) {
+                                              handleReorderQuestions(draggedQuestionId, q.id);
+                                            }
+                                            setDraggedQuestionId(null);
+                                            setDragOverQuestionId(null);
+                                          }}
+                                          className={cn(
+                                            "border-b border-neutral-100 bg-white hover:bg-neutral-50/40 transition-all text-[12px]",
+                                            isDragging && "opacity-40 bg-orange-50/60 border-dashed",
+                                            isDragOver && "border-t-2 border-t-[#fa541c] bg-orange-50/30"
+                                          )}
+                                        >
+                                          {/* 试题名称 with Drag Handle */}
                                           <td className="p-3 text-neutral-700 font-medium truncate" title={q.name}>
-                                            <span className="truncate block">{q.name}</span>
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <button
+                                                type="button"
+                                                draggable
+                                                onDragStart={(e) => {
+                                                  e.stopPropagation();
+                                                  setDraggedQuestionId(q.id);
+                                                  e.dataTransfer.setData('text/plain', String(q.id));
+                                                  e.dataTransfer.effectAllowed = 'move';
+                                                }}
+                                                onDragEnd={() => {
+                                                  setDraggedQuestionId(null);
+                                                  setDragOverQuestionId(null);
+                                                }}
+                                                className="inline-flex items-center justify-center p-1 rounded text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 cursor-grab active:cursor-grabbing transition-colors shrink-0 border-0 bg-transparent"
+                                                title="按住拖动排序"
+                                              >
+                                                <GripVertical className="w-3.5 h-3.5" />
+                                              </button>
+                                              <span className="truncate flex-1 min-w-0">{q.name}</span>
+                                            </div>
                                           </td>
                                           {/* 所属试题库 */}
                                           <td className="p-3 text-neutral-600 truncate" title={q.bank}>
