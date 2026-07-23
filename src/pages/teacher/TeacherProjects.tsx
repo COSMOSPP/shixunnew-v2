@@ -408,6 +408,62 @@ export default function TeacherProjects({
   const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
   const [isApplying, setIsApplying] = useState(false);
 
+  // Off-Shelf State
+  const [isOffShelfModalOpen, setIsOffShelfModalOpen] = useState(false);
+  const [projectToOffShelf, setProjectToOffShelf] = useState<Project | null>(null);
+  const [offShelfReason, setOffShelfReason] = useState('');
+
+  // Action Confirmation Dialog State (Ref Course Module)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
+
+  const handleOffShelfProject = () => {
+    if (!offShelfReason.trim()) {
+      setToastMessage('请填写下架说明');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+    if (!projectToOffShelf) return;
+
+    setProjectsList(prev => prev.map(p => {
+      if (p.id === projectToOffShelf.id) {
+        return {
+          ...p,
+          status: '已下架',
+        };
+      }
+      return p;
+    }));
+    setToastMessage(`项目「${projectToOffShelf.name}」已成功下架`);
+    setTimeout(() => setToastMessage(null), 3000);
+    setIsOffShelfModalOpen(false);
+    setProjectToOffShelf(null);
+    setOffShelfReason('');
+  };
+
+  const handleReShelfProject = (proj: Project) => {
+    setProjectsList(prev => prev.map(p => {
+      if (p.id === proj.id) {
+        return {
+          ...p,
+          status: '已发布',
+        };
+      }
+      return p;
+    }));
+    setToastMessage(`项目「${proj.name}」已重新上架`);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   // Mock initial dataset with real courseId assignments and default premium covers
   const [projectsList, setProjectsList] = useState<Project[]>([
     {
@@ -972,9 +1028,39 @@ export default function TeacherProjects({
                         });
                       }
 
+                      if (proj.status === '已下架') {
+                        secondaryActions.push({
+                          label: '重新上架',
+                          onClick: () => {
+                            setConfirmDialog({
+                              show: true,
+                              title: '确认重新上架项目',
+                              message: `确定要重新上架项目 "${proj.name}" 吗？重新上架后选课学生将恢复可见。`,
+                              onConfirm: () => handleReShelfProject(proj)
+                            });
+                          }
+                        });
+                      } else {
+                        secondaryActions.push({
+                          label: '下架',
+                          onClick: () => {
+                            setProjectToOffShelf(proj);
+                            setOffShelfReason('');
+                            setIsOffShelfModalOpen(true);
+                          }
+                        });
+                      }
+
                       secondaryActions.push({
                         label: '复制',
-                        onClick: () => handleCopy(proj)
+                        onClick: () => {
+                          setConfirmDialog({
+                            show: true,
+                            title: '确认复制项目',
+                            message: `确定要复制项目 "${proj.name}" 吗？`,
+                            onConfirm: () => handleCopy(proj)
+                          });
+                        }
                       });
 
                       const showToggle = (proj.auditStatus !== '已审核' && proj.auditStatus !== '已通过');
@@ -982,12 +1068,26 @@ export default function TeacherProjects({
                         if (proj.isAvailable) {
                           secondaryActions.push({
                             label: '禁用',
-                            onClick: () => handleToggleAvailable(proj.id, false)
+                            onClick: () => {
+                              setConfirmDialog({
+                                show: true,
+                                title: '确认禁用项目',
+                                message: `确定要禁用项目 "${proj.name}" 吗？禁用后该项目将暂停服务。`,
+                                onConfirm: () => handleToggleAvailable(proj.id, false)
+                              });
+                            }
                           });
                         } else {
                           secondaryActions.push({
                             label: '启用',
-                            onClick: () => handleToggleAvailable(proj.id, true)
+                            onClick: () => {
+                              setConfirmDialog({
+                                show: true,
+                                title: '确认启用项目',
+                                message: `确定要启用项目 "${proj.name}" 吗？启用后项目将恢复正常使用。`,
+                                onConfirm: () => handleToggleAvailable(proj.id, true)
+                              });
+                            }
                           });
                         }
                       }
@@ -996,7 +1096,14 @@ export default function TeacherProjects({
                       if (showDelete) {
                         secondaryActions.push({
                           label: '删除',
-                          onClick: () => handleDelete(proj.id),
+                          onClick: () => {
+                            setConfirmDialog({
+                              show: true,
+                              title: '确认删除项目',
+                              message: `确定要删除项目 "${proj.name}" 吗？该操作不可撤销。`,
+                              onConfirm: () => handleDelete(proj.id)
+                            });
+                          },
                           isDanger: true
                         });
                       }
@@ -2321,6 +2428,137 @@ export default function TeacherProjects({
                 ) : (
                   '提交审核申请'
                 )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Off-Shelf Modal/Drawer */}
+      {isOffShelfModalOpen && projectToOffShelf && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => setIsOffShelfModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                下架实战项目
+              </h2>
+              <button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">下架后项目将暂不对学生及协同教师公开</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    下架项目后，该实战项目将从公共资源库和项目挑选列表中隐藏。已有实训班级的历史数据将予以保留，但无法基于该项目开启新的实训任务。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">项目名称</label>
+                  <input 
+                    type="text" 
+                    value={projectToOffShelf.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    下架说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={offShelfReason}
+                    onChange={(e) => setOffShelfReason(e.target.value)}
+                    placeholder="请描述该项目的下架原因及相关说明..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleOffShelfProject} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                确认下架
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action Confirmation Modal (Ref Course Module) */}
+      {confirmDialog.show && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
+                {confirmDialog.title}
+              </h2>
+              <button 
+                onClick={() => setConfirmDialog(prev => ({ ...prev, show: false }))} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex items-start gap-3 bg-white">
+              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              <div className="text-[14px] text-neutral-750 leading-normal">
+                {confirmDialog.message}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setConfirmDialog(prev => ({ ...prev, show: false }))} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(prev => ({ ...prev, show: false }));
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
+              >
+                确定
               </Button>
             </div>
           </div>

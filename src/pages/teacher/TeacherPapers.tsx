@@ -352,6 +352,51 @@ export default function TeacherPapers() {
     return sum + (parseFloat(scoreStr) || 0);
   }, 0);
 
+  // Off-Shelf State
+  const [isOffShelfModalOpen, setIsOffShelfModalOpen] = useState(false);
+  const [paperToOffShelf, setPaperToOffShelf] = useState<any | null>(null);
+  const [offShelfReason, setOffShelfReason] = useState('');
+
+  const handleOpenOffShelfPaper = (p: any) => {
+    setPaperToOffShelf(p);
+    setOffShelfReason('');
+    setIsOffShelfModalOpen(true);
+  };
+
+  const handleOffShelfPaper = () => {
+    if (!offShelfReason.trim()) {
+      alert('请填写下架说明！');
+      return;
+    }
+    if (!paperToOffShelf) return;
+    setPapersList(prev => prev.map(item => {
+      if (item.id === paperToOffShelf.id) {
+        return {
+          ...item,
+          status: '已下架'
+        };
+      }
+      return item;
+    }));
+    alert(`试卷 "${paperToOffShelf.name}" 已成功下架！`);
+    setIsOffShelfModalOpen(false);
+    setPaperToOffShelf(null);
+    setOffShelfReason('');
+  };
+
+  const handleReShelfPaper = (p: any) => {
+    setPapersList(prev => prev.map(item => {
+      if (item.id === p.id) {
+        return {
+          ...item,
+          status: '启用'
+        };
+      }
+      return item;
+    }));
+    alert(`试卷 "${p.name}" 已重新上架！`);
+  };
+
   const displayCount = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? drawRulesCount : manualCount;
   const displayScore = (paperSelectionMethod === '随机抽题' || paperSelectionMethod === '千人千卷') ? drawRulesScore : manualScore;
 
@@ -999,6 +1044,12 @@ export default function TeacherPapers() {
                                 rowActions.push({ label: '公开', onClick: () => handleOpenApplyPublic(p), isDanger: false });
                               }
                               
+                              if (p.status === '已下架') {
+                                rowActions.push({ label: '重新上架', onClick: () => handleReShelfPaper(p), isDanger: false });
+                              } else {
+                                rowActions.push({ label: '下架', onClick: () => handleOpenOffShelfPaper(p), isDanger: false });
+                              }
+                              
                               rowActions.push({ 
                                 label: p.status === '启用' ? '停用' : '启用', 
                                 onClick: () => togglePaperStatus(p.id), 
@@ -1052,7 +1103,7 @@ export default function TeacherPapers() {
                                       
                                       {activeDropdownId === p.id && (
                                         <div 
-                                          className="absolute right-0 mt-1.5 w-20 bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[60] overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+                                          className="absolute right-0 mt-1.5 min-w-[100px] bg-white border border-neutral-200 rounded-[4px] shadow-lg z-[60] overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-150 text-left"
                                           onClick={(e) => e.stopPropagation()}
                                         >
                                           {dropdownActions.map((act) => (
@@ -2771,6 +2822,88 @@ export default function TeacherPapers() {
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-8 px-5 text-xs transition-all rounded-[4px] shadow-sm border-0 cursor-pointer"
               >
                 确 定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 下架试卷 Drawer (参考首页课程模块的下架) */}
+      {isOffShelfModalOpen && paperToOffShelf && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => setIsOffShelfModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                下架试卷资源
+              </h2>
+              <button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px] text-left">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">下架后试卷将暂不对平台师生公开及发布考核</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    下架试卷后，该试卷资源将从公共试卷库和考核组卷列表中隐藏。历史已开展的考试成绩与答题记录予以保留，但无法发起新的考试与测试。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">试卷名称</label>
+                  <input 
+                    type="text" 
+                    value={paperToOffShelf.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-[4px] px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    下架说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={offShelfReason}
+                    onChange={(e) => setOffShelfReason(e.target.value)}
+                    placeholder="请简述下架该试卷的具体原因及后续安排..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleOffShelfPaper} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                确认下架
               </Button>
             </div>
           </div>

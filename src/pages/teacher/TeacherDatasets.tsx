@@ -14,7 +14,11 @@ import {
   Link as LinkIcon,
   UploadCloud,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Layers,
+  Info,
+  ArrowDownCircle,
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -31,6 +35,7 @@ interface Dataset {
   updateTime: string;
   courseId: number | null;
   courseName?: string;
+  status?: '已发布' | '已下架';
 }
 
 interface TeacherDatasetsProps {
@@ -92,11 +97,78 @@ export default function TeacherDatasets({
   const [tabFilter, setTabFilter] = useState<'all' | 'public' | 'my'>('all');
   const [courseFilter, setCourseFilter] = useState<string>(defaultCourseId ? String(defaultCourseId) : 'all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const filterDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setIsFilterDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Drawer / Modal states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentId, setCurrentId] = useState<number | null>(null);
+
+  // Off-shelf State
+  const [isOffShelfModalOpen, setIsOffShelfModalOpen] = useState(false);
+  const [datasetToOffShelf, setDatasetToOffShelf] = useState<Dataset | null>(null);
+  const [offShelfReason, setOffShelfReason] = useState('');
+
+  // Confirmation Modal State
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
+
+  const handleOffShelfDataset = () => {
+    if (!offShelfReason.trim()) {
+      showToast('请填写下架说明', 'error');
+      return;
+    }
+    if (!datasetToOffShelf) return;
+
+    setDatasets(prev => prev.map(d => {
+      if (d.id === datasetToOffShelf.id) {
+        return {
+          ...d,
+          status: '已下架',
+        };
+      }
+      return d;
+    }));
+    showToast(`数据集「${datasetToOffShelf.name}」已成功下架`);
+    setIsOffShelfModalOpen(false);
+    setDatasetToOffShelf(null);
+    setOffShelfReason('');
+  };
+
+  const handleReShelfDataset = (ds: Dataset) => {
+    setDatasets(prev => prev.map(d => {
+      if (d.id === ds.id) {
+        return {
+          ...d,
+          status: '已发布',
+        };
+      }
+      return d;
+    }));
+    showToast(`数据集「${ds.name}」已重新上架`);
+  };
 
   // Form states
   const [formName, setFormName] = useState('');
@@ -187,11 +259,16 @@ export default function TeacherDatasets({
     setIsDrawerOpen(false);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('确定要删除该数据集吗？删除后将无法恢复。')) {
-      setDatasets(datasets.filter(d => d.id !== id));
-      showToast('删除成功');
-    }
+  const handleDelete = (ds: Dataset) => {
+    setConfirmDialog({
+      show: true,
+      title: '确认删除数据集',
+      message: `确定要删除数据集 "${ds.name}" 吗？该操作不可撤销。`,
+      onConfirm: () => {
+        setDatasets(prev => prev.filter(d => d.id !== ds.id));
+        showToast('删除数据集成功');
+      }
+    });
   };
 
   const filteredData = datasets.filter(d => {
@@ -222,47 +299,7 @@ export default function TeacherDatasets({
 
       {/* Top Actions */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-5">
-          {/* Tab Filter */}
-          <div className="flex bg-neutral-100/80 rounded-full p-1 border border-neutral-200/60">
-            <button 
-              className={cn("px-5 py-1.5 text-[13px] rounded-full transition-all duration-200", tabFilter === 'all' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
-              onClick={() => setTabFilter('all')}
-            >
-              全部
-            </button>
-            <button 
-              className={cn("px-5 py-1.5 text-[13px] rounded-full transition-all duration-200", tabFilter === 'public' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
-              onClick={() => setTabFilter('public')}
-            >
-              平台公共
-            </button>
-            <button 
-              className={cn("px-5 py-1.5 text-[13px] rounded-full transition-all duration-200", tabFilter === 'my' ? "bg-white text-[#fa541c] font-bold shadow-sm" : "text-neutral-500 hover:text-neutral-800")}
-              onClick={() => setTabFilter('my')}
-            >
-              我的私有
-            </button>
-          </div>
-        </div>
-
         <div className="flex items-center gap-4">
-          {/* Course Filter */}
-          <div className="relative">
-            <select 
-              value={courseFilter}
-              onChange={(e) => setCourseFilter(e.target.value)}
-              className="appearance-none border border-neutral-200 rounded-full pl-4 pr-10 py-1.5 text-[13px] focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white cursor-pointer h-8"
-            >
-              <option value="all">所有课程</option>
-              <option value="1">人工智能基础与实践</option>
-              <option value="2">深度学习进阶</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </div>
-          </div>
-          
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input 
@@ -270,10 +307,51 @@ export default function TeacherDatasets({
               placeholder="搜索数据集名称" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 text-[13px] border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] w-64 transition-all h-8"
+              className="pl-9 pr-4 py-1.5 text-[13px] border border-neutral-200 rounded-full focus:outline-none focus:border-[#fa541c] w-64 transition-all h-9 bg-white"
             />
           </div>
-          <Button onClick={handleOpenCreate} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-full px-5 h-8 text-[13px] shadow-sm shrink-0">
+          
+          {/* Scope Dropdown - Exam Module More Dropdown Style */}
+          <div ref={filterDropdownRef} className="relative">
+            <button 
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className="w-[128px] border border-neutral-200 rounded-full px-3.5 h-9 flex items-center justify-between text-[13px] text-neutral-700 bg-white hover:border-[#fa541c] hover:text-[#fa541c] transition-colors cursor-pointer font-medium"
+            >
+              <span className="truncate">
+                {tabFilter === 'all' ? '全部' : tabFilter === 'public' ? '平台公共' : '我的私有'}
+              </span>
+              <ChevronDown className={cn("w-3.5 h-3.5 shrink-0 text-neutral-400 transition-transform duration-200", isFilterDropdownOpen && "rotate-180 text-[#fa541c]")} />
+            </button>
+            {isFilterDropdownOpen && (
+              <div className="absolute left-0 top-full mt-1.5 bg-white border border-neutral-200 rounded shadow-lg py-1 z-40 w-[128px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                {[
+                  { key: 'all', label: '全部' },
+                  { key: 'public', label: '平台公共' },
+                  { key: 'my', label: '我的私有' }
+                ].map(opt => (
+                  <button 
+                    key={opt.key}
+                    onClick={() => {
+                      setTabFilter(opt.key as any);
+                      setIsFilterDropdownOpen(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all font-medium",
+                      tabFilter === opt.key 
+                        ? "text-[#fa541c] bg-orange-50 font-bold" 
+                        : "text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Button onClick={handleOpenCreate} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-5 h-9 text-[13px] shadow-sm shrink-0 border-0 cursor-pointer font-bold flex items-center">
             <Plus className="w-4 h-4 mr-1" /> 新建数据集
           </Button>
         </div>
@@ -286,12 +364,19 @@ export default function TeacherDatasets({
             {filteredData.map(ds => (
               <div key={ds.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col hover:-translate-y-1">
                 <div className="p-6 flex-1 relative">
-                  {/* Public Tag */}
-                  {ds.scope === '平台公共' && (
-                    <div className="absolute top-0 right-0 bg-[#fff2e8] text-[#fa541c] text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                      公共资源
-                    </div>
-                  )}
+                  {/* Status Badges */}
+                  <div className="absolute top-0 right-0 flex gap-1">
+                    {ds.status === '已下架' && (
+                      <div className="bg-neutral-100 text-neutral-600 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                        已下架
+                      </div>
+                    )}
+                    {ds.scope === '平台公共' && (
+                      <div className="bg-[#fff2e8] text-[#fa541c] text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                        公共资源
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center flex-shrink-0">
@@ -331,18 +416,37 @@ export default function TeacherDatasets({
                 <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/40 flex items-center justify-between">
                   <div className="text-[12px] text-neutral-400">更新于 {ds.updateTime}</div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors" title="关联课程">
+                    <button className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="关联课程">
                       <LinkIcon className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleOpenEdit(ds)}
-                      className="p-1.5 text-neutral-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors" title="编辑"
+                      className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="编辑"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+                    {ds.status === '已下架' ? (
+                      <button 
+                        onClick={() => handleReShelfDataset(ds)}
+                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="重新上架"
+                      >
+                        <UploadCloud className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => {
+                          setDatasetToOffShelf(ds);
+                          setOffShelfReason('');
+                          setIsOffShelfModalOpen(true);
+                        }}
+                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="下架"
+                      >
+                        <ArrowDownCircle className="w-4 h-4" />
+                      </button>
+                    )}
                     <button 
-                      onClick={() => handleDelete(ds.id)}
-                      className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="删除"
+                      onClick={() => handleDelete(ds)}
+                      className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="删除"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -360,7 +464,7 @@ export default function TeacherDatasets({
             <p className="text-[13px] text-neutral-500 mb-6 max-w-sm">
               当前分类下暂无数据集记录。您可以新建数据集或调整过滤条件。
             </p>
-            <Button onClick={handleOpenCreate} className="bg-white border border-[#fa541c] text-[#fa541c] hover:bg-[#fff2e8] rounded-full px-6">
+            <Button onClick={handleOpenCreate} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-6 text-[13px] border-0 cursor-pointer">
               新建数据集
             </Button>
           </div>
@@ -524,6 +628,137 @@ export default function TeacherDatasets({
               </Button>
               <Button onClick={handleSave} className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-full shadow-sm text-[13px]">
                 保存并上传
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dataset Off-Shelf Modal/Drawer */}
+      {isOffShelfModalOpen && datasetToOffShelf && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => setIsOffShelfModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                下架数据集
+              </h2>
+              <button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">下架后数据集将暂不对平台师生公开</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    下架数据集后，该数据资源将从公共数据集列表与课程绑定中隐藏。历史关联的项目仍保留缓存数据，但无法发起新的数据下载或调用。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">数据集名称</label>
+                  <input 
+                    type="text" 
+                    value={datasetToOffShelf.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    下架说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={offShelfReason}
+                    onChange={(e) => setOffShelfReason(e.target.value)}
+                    placeholder="请简述下架该数据集的具体原因及后续安排..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleOffShelfDataset} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                确认下架
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action Confirmation Modal (Ref Course Module) */}
+      {confirmDialog.show && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626]">
+                {confirmDialog.title}
+              </h2>
+              <button 
+                onClick={() => setConfirmDialog(prev => ({ ...prev, show: false }))} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex items-start gap-3 bg-white">
+              <div className="w-5 h-5 rounded-full bg-[#fa541c] text-white flex items-center justify-center font-bold text-[13px] shrink-0 select-none mt-0.5">!</div>
+              <div className="text-[14px] text-neutral-750 leading-normal">
+                {confirmDialog.message}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setConfirmDialog(prev => ({ ...prev, show: false }))} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 font-bold h-9 px-5 text-[13px] rounded-[4px] transition-colors bg-white cursor-pointer"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(prev => ({ ...prev, show: false }));
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-5 text-[13px] rounded-[4px] shadow-sm transition-colors border-0 cursor-pointer"
+              >
+                确定
               </Button>
             </div>
           </div>

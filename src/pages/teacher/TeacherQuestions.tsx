@@ -391,6 +391,11 @@ export default function TeacherQuestions() {
   const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
   const [isBatchPublicOpen, setIsBatchPublicOpen] = useState(false);
 
+  // Off-shelf modal states
+  const [isOffShelfModalOpen, setIsOffShelfModalOpen] = useState(false);
+  const [questionToOffShelf, setQuestionToOffShelf] = useState<any | null>(null);
+  const [offShelfReason, setOffShelfReason] = useState('');
+
   // Click outside to close dropdowns
   React.useEffect(() => {
     const handleOutsideClick = () => {
@@ -1184,6 +1189,46 @@ export default function TeacherQuestions() {
     setIsApplyPublicModalOpen(true);
   };
 
+  const handleOpenOffShelfQuestion = (q: any) => {
+    setQuestionToOffShelf(q);
+    setOffShelfReason('');
+    setIsOffShelfModalOpen(true);
+  };
+
+  const handleOffShelfQuestion = () => {
+    if (!offShelfReason.trim()) {
+      alert('请填写下架说明！');
+      return;
+    }
+    if (!questionToOffShelf) return;
+    setQuestionsList(prev => prev.map(item => {
+      if (item.id === questionToOffShelf.id) {
+        return {
+          ...item,
+          status: '已下架'
+        };
+      }
+      return item;
+    }));
+    alert(`试题 "${questionToOffShelf.name}" 已成功下架！`);
+    setIsOffShelfModalOpen(false);
+    setQuestionToOffShelf(null);
+    setOffShelfReason('');
+  };
+
+  const handleReShelfQuestion = (q: any) => {
+    setQuestionsList(prev => prev.map(item => {
+      if (item.id === q.id) {
+        return {
+          ...item,
+          status: '启用'
+        };
+      }
+      return item;
+    }));
+    alert(`试题 "${q.name}" 已重新上架！`);
+  };
+
   const handleSubmitApplyPublic = () => {
     if (!applyPublicReason.trim()) {
       alert('请填写申请说明！');
@@ -1487,7 +1532,12 @@ export default function TeacherQuestions() {
                       </td>
                       <td className="px-3 py-3 text-neutral-800">{q.type}</td>
                       <td className="px-3 py-3">
-                        <span className={cn("px-2 py-0.5 text-[12px] rounded border", q.status === '启用' ? "bg-green-50 text-green-600 border-green-200" : "bg-neutral-50 text-neutral-500 border-neutral-200")}>
+                        <span className={cn(
+                          "px-2 py-0.5 text-[12px] rounded border font-medium", 
+                          q.status === '启用' ? "bg-green-50 text-green-600 border-green-200" : 
+                          q.status === '已下架' ? "bg-neutral-100 text-neutral-600 border-neutral-200" :
+                          "bg-neutral-50 text-neutral-500 border-neutral-200"
+                        )}>
                           {q.status}
                         </span>
                       </td>
@@ -1535,6 +1585,12 @@ export default function TeacherQuestions() {
                               rowActions.push({ label: '公开', onClick: () => handleOpenApplyPublic(q), isDanger: false });
                             }
                             
+                            if (q.status === '已下架') {
+                              rowActions.push({ label: '重新上架', onClick: () => handleReShelfQuestion(q), isDanger: false });
+                            } else {
+                              rowActions.push({ label: '下架', onClick: () => handleOpenOffShelfQuestion(q), isDanger: false });
+                            }
+
                             if (q.type === '实训题') {
                               rowActions.push({ label: '检查项', onClick: () => handleOpenCheckpoints(q), isDanger: false });
                             }
@@ -5206,6 +5262,89 @@ export default function TeacherQuestions() {
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white font-bold h-9 px-6 text-xs transition-colors rounded-[4px] shadow-sm cursor-pointer"
               >
                 确定
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 下架试题 Drawer (参考首页课程模块的下架) */}
+      {isOffShelfModalOpen && questionToOffShelf && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in"
+          onClick={() => setIsOffShelfModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                下架试题资源
+              </h2>
+              <button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px] text-left">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">下架后试题将暂不对平台师生公开组卷</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    下架试题后，该试题资源将从公共试题库和组卷候选列表中隐藏。已生成的历史试卷数据予以保留，但无法在新的作业或考试中引用该试题。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">试题名称</label>
+                  <input 
+                    type="text" 
+                    value={questionToOffShelf.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-[4px] px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    下架说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={offShelfReason}
+                    onChange={(e) => setOffShelfReason(e.target.value)}
+                    placeholder="请简述下架该试题的具体原因及后续安排..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleOffShelfQuestion} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                确认下架
               </Button>
             </div>
           </div>

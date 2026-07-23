@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { 
   BookOpen, FolderKanban, FileQuestion, Cpu, Building, CheckCircle, 
   Clock, Search, Filter, Check, Shield, AlertCircle, Sparkles, X, 
-  FileText, ClipboardCheck, ThumbsUp, User, ChevronRight, Database
+  FileText, ClipboardCheck, ThumbsUp, User, ChevronRight, Database,
+  ChevronDown, HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 // --- Mock Data ---
 
@@ -15,6 +17,7 @@ interface AuditResource {
   tenant: string;
   submitTime: string;
   status: "待审核" | "审核中" | "已通过" | "已驳回";
+  auditType?: "公开" | "下架";
   rejectionReason?: string;
   details: {
     meta: string; // e.g. "32课时 | 2学分"
@@ -32,6 +35,7 @@ const initialResources: Record<"course" | "project" | "question" | "ai_capacity"
       tenant: "北京大学信息学院",
       submitTime: "2026-05-26 11:30",
       status: "待审核",
+      auditType: "公开",
       details: {
         meta: "32 课时 | 2.0 学分 | RAG 与 LoRA 核心方向",
         content: "本课程专注大模型应用落地，涵盖 Prompt Engineering 最佳编写规范、语义向量数据库融合、RAG 混合召回系统搭建，以及利用 LoRA 算法针对垂直行业私有数据集进行高效微调部署。",
@@ -50,6 +54,7 @@ const initialResources: Record<"course" | "project" | "question" | "ai_capacity"
       tenant: "复旦大学软件学院",
       submitTime: "2026-05-25 10:15",
       status: "审核中",
+      auditType: "公开",
       details: {
         meta: "48 课时 | 3.0 学分 | 数据分析与建模方向",
         content: "实战向数据科学基石课，针对高校学生定制，主攻 Numpy 多维数值计算、Pandas 多维表格数据操作清洗、Matplotlib & Seaborn 数据智能分析呈现以及 Scikit-learn 基本经典算法训练。",
@@ -58,6 +63,242 @@ const initialResources: Record<"course" | "project" | "question" | "ai_capacity"
           "第二章: Numpy 矩阵操作与向量运算加速 (10课时)",
           "第三章: Pandas 高维数据清洗、聚合与时序操作 (16课时)",
           "第四章: 经典机器学习回归、分类及特征工程实战 (16课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-003",
+      name: "计算机视觉与OpenCV图像处理实践",
+      creator: "黄建华 教授",
+      tenant: "浙江大学计算机学院",
+      submitTime: "2026-05-27 09:10",
+      status: "待审核",
+      auditType: "下架",
+      details: {
+        meta: "36 课时 | 2.5 学分 | 图像算法方向",
+        content: "该课程由教师提请申请下架，因课程教材版本升级且部分依赖库已被淘汰，需暂时从公共目录中下架该课程资源。",
+        outline: [
+          "下架申请原因: 教学大纲与OpenCV 4.0标准不符合，课程技术栈过时需更新",
+          "后续安排: 预计下个学期完成新版大纲重构后再重新申请公开"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-004",
+      name: "深度学习原理与PyTorch神经网络实战",
+      creator: "李国强 副教授",
+      tenant: "上海交通大学电子信息学院",
+      submitTime: "2026-05-24 16:45",
+      status: "已通过",
+      auditType: "公开",
+      details: {
+        meta: "64 课时 | 4.0 学分 | 深度学习算法方向",
+        content: "从神经网络感知机模型推导开始，涵盖 CNN、RNN、LSTM 及 Attention 机制原理，并在 PyTorch 框架下完成图像分类与自动文本生成项目搭建。",
+        outline: [
+          "第一章: 前向传播与反向传播算法推导 (12课时)",
+          "第二章: 卷积神经网络 (CNN) 架构演进与 ImageNet 竞赛模型 (18课时)",
+          "第三章: 循环神经网络与 Sequence-to-Sequence 模型 (18课时)",
+          "第四章: PyTorch 模型分布式多卡训练实践 (16课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-005",
+      name: "商业智能分析与Spark大数据处理大纲",
+      creator: "王敏 讲师",
+      tenant: "南京大学管理学院",
+      submitTime: "2026-05-27 11:20",
+      status: "待审核",
+      auditType: "公开",
+      details: {
+        meta: "32 课时 | 2.0 学分 | 大数据处理方向",
+        content: "讲解 Spark 核心数据结构 RDD、DataFrame 及 Spark SQL 查询优化器原理，配套千亿级电商日志离线清洗与实时流计算实训任务。",
+        outline: [
+          "第一章: 大数据生态与 HDFS 分布式存储 (6课时)",
+          "第二章: Spark 算子转换与内存计算架构 (10课时)",
+          "第三章: Spark SQL 与数据仓库 Hive 整合实践 (10课时)",
+          "第四章: 实时流计算 Spark Streaming 项目实训 (6课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-006",
+      name: "强化学习与自动驾驶决策规划算法",
+      creator: "赵云 教授",
+      tenant: "同济大学汽车学院",
+      submitTime: "2026-05-23 14:00",
+      status: "已通过",
+      auditType: "下架",
+      details: {
+        meta: "40 课时 | 2.5 学分 | 智能驾驶方向",
+        content: "教师申请将老版 DQ-Network 课程下架，更新为 PPO 与 SAC 连续动作空间决策算法。",
+        outline: [
+          "下架申请原因: 旧版 DQN 算法例程无法接入 Carla 0.9.15 新版仿真引擎",
+          "后续安排: 替换为现代连续控制 SAC 策略梯度课程后重提交"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-007",
+      name: "企业级微服务架构与K8s容器化部署",
+      creator: "周建军 专家",
+      tenant: "东南大学软件学院",
+      submitTime: "2026-05-26 17:30",
+      status: "待审核",
+      auditType: "公开",
+      details: {
+        meta: "48 课时 | 3.0 学分 | 云原生方向",
+        content: "覆盖 Docker 容器化构建、Spring Cloud 微服务组件拆分、Istio 服务网格与 Kubernetes Horizontal Pod Autoscaler 弹性扩缩容部署。",
+        outline: [
+          "第一章: 容器化演进与 Dockerfile 最佳实践 (10课时)",
+          "第二章: Spring Cloud Alibaba 服务发现与配置中心 (14课时)",
+          "第三章: Kubernetes 资源调度与 Helm 编排实战 (16课时)",
+          "第四章: 云原生 DevOps 持续集成与发布 (8课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-008",
+      name: "前沿推荐系统算法与多路召回排序实践",
+      creator: "孙艺 助教",
+      tenant: "华中科技大学电信学院",
+      submitTime: "2026-05-22 08:30",
+      status: "已驳回",
+      auditType: "公开",
+      rejectionReason: "实验数据集中缺少脱敏处理说明，且第二章算法推理细则缺少配套练习答案。",
+      details: {
+        meta: "32 课时 | 2.0 学分 | 推荐算法方向",
+        content: "讲解协同过滤、FM 因子分解机、DeepFM 及向量化双塔召回算法，结合真实流媒体点播场景进行 CTCVR 多目标拟合。",
+        outline: [
+          "第一章: 协同过滤与矩阵分解 (8课时)",
+          "第二章: 深度学习推荐模型 DeepFM / DIN (10课时)",
+          "第三章: 多路召回与向量数据库近似最近邻检索 (8课时)",
+          "第四章: 多目标排序与重排策略 (6课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-009",
+      name: "嵌入式AI与Edge Impulse边缘计算实训",
+      creator: "宋华 教授",
+      tenant: "西安交通大学微电子学院",
+      submitTime: "2026-05-27 13:50",
+      status: "待审核",
+      auditType: "公开",
+      details: {
+        meta: "24 课时 | 1.5 学分 | 边缘计算方向",
+        content: "结合 STM32F4 / ESP32 硬件板卡，讲授轻量化神经网络剪枝、8-bit 定点量化，并在 MCU 资源受限微控制器上运行 TinyML 实时姿态识别。",
+        outline: [
+          "第一章: 边缘计算与 TinyML 架构概论 (4课时)",
+          "第二章: 神经网络参数剪枝与 INT8 量化算法 (8课时)",
+          "第三章: 在 STM32 目标板上部署 TensorFLow Lite for Microcontrollers (12课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-010",
+      name: "Web3智能合约开发与区块链安全审计",
+      creator: "徐洋 讲师",
+      tenant: "哈尔滨工业大学计算学部",
+      submitTime: "2026-05-25 19:10",
+      status: "待审核",
+      auditType: "下架",
+      details: {
+        meta: "32 课时 | 2.0 学分 | 区块链方向",
+        content: "申请下架包含已有重入攻击缺陷案例的实验项目，更新为 OpenZeppelin 5.0 安全库标准。",
+        outline: [
+          "下架申请原因: Solidity 0.8.20 语法更新，原以太坊硬分叉测试网 Goerli 已停用",
+          "后续安排: 升级至 Sepolia 测试网后重新提交公开审核"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-011",
+      name: "自然语言处理与BERT/GPT大模型理论",
+      creator: "钱峰 教授",
+      tenant: "中山大学计算机学院",
+      submitTime: "2026-05-21 15:20",
+      status: "已通过",
+      auditType: "公开",
+      details: {
+        meta: "40 课时 | 2.5 学分 | NLP 方向",
+        content: "从 Word2Vec 词向量表征、Seq2Seq 语法树解析，到 Transformer Encoder-Decoder 结构，系统剖析 BERT 预训练语言模型与 GPT 自回归生成模型原理。",
+        outline: [
+          "第一章: 传统文本表征与 N-gram 语言模型 (8课时)",
+          "第二章: BERT 掩码语言模型与下游任务微调 (14课时)",
+          "第三章: GPT 系列模型自回归解码策略 (18课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-012",
+      name: "工业级RAG检索增强生成与知识图谱融合",
+      creator: "韩梅 副教授",
+      tenant: "天津大学智能与计算学部",
+      submitTime: "2026-05-27 15:00",
+      status: "待审核",
+      auditType: "公开",
+      details: {
+        meta: "36 课时 | 2.5 学分 | 知识图谱方向",
+        content: "围绕企业私有知识库问答痛点，融合 Neo4j 图数据库实体关系检索与 Milvus 向量数据库相似度召回，实现 GraphRAG 混合增强系统。",
+        outline: [
+          "第一章: 知识图谱构建与实体关系抽取 (10课时)",
+          "第二章: 混合召回 RAG 架构与重排序 Rerank 模型 (12课时)",
+          "第三章: GraphRAG 工业级知识库系统搭建实训 (14课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-013",
+      name: "软件质量保证与自动化测试框架设计",
+      creator: "彭亮 助教",
+      tenant: "北京邮电大学软件学院",
+      submitTime: "2026-05-20 11:00",
+      status: "已驳回",
+      auditType: "下架",
+      rejectionReason: "下架申请理由阐述不清，且该课程尚在校内公开选课阶段，需先协调教务部门。",
+      details: {
+        meta: "32 课时 | 2.0 学分 | 软件测试方向",
+        content: "涵盖 JUnit 5 单元测试、Selenium 网页 UI 自动化测试、JMeter 性能压力测试及 CI/CD 测试管线搭建。",
+        outline: [
+          "申请说明: 申请下架老版测试大纲",
+          "驳回说明: 需提供教务处变更审批件"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-014",
+      name: "智能语音识别与Whisper模型落地实践",
+      creator: "郑浩 教授",
+      tenant: "电子科技大学信息与通信工程学院",
+      submitTime: "2026-05-27 16:30",
+      status: "待审核",
+      auditType: "公开",
+      details: {
+        meta: "24 课时 | 1.5 学分 | 语音处理方向",
+        content: "介绍梅尔倒谱系数 (MFCC) 提取、CTC 损失函数原理，并基于 OpenAI Whisper 开展长音频字幕时间戳自动对齐实训。",
+        outline: [
+          "第一章: 声学信号处理与梅尔频谱图转换 (6课时)",
+          "第二章: Whisper 语音模型架构与多语言转写 (10课时)",
+          "第三章: 实时流式语音识别 API 部署 (8课时)"
+        ]
+      }
+    },
+    {
+      id: "AUD-CRS-015",
+      name: "算法高阶推导与LeetCode百题通关指南",
+      creator: "马远 讲师",
+      tenant: "中国科学技术大学计算机学院",
+      submitTime: "2026-05-19 10:00",
+      status: "已通过",
+      auditType: "公开",
+      details: {
+        meta: "48 课时 | 3.0 学分 | 算法设计方向",
+        content: "主攻高阶数据结构与动态规划，包含线段树、并查集、单调栈、Dijkstra 最短路径及背包问题推导解析。",
+        outline: [
+          "第一章: 复杂数据结构高级应用 (12课时)",
+          "第二章: 图论算法与最短路径/最小生成树 (14课时)",
+          "第三章: 动态规划状态转移方程构建精讲 (22课时)"
         ]
       }
     }
@@ -201,6 +442,27 @@ export default function AdminAudit() {
   const [activeStatusFilter, setActiveStatusFilter] = useState<"全部" | "待审核" | "已通过" | "已驳回">("全部");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Selection states (Ref TeacherQuestions)
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
+
+  const toggleSelectAll = (selectAll: boolean) => {
+    if (selectAll) {
+      setSelectedItemIds(paginatedResources.map(r => r.id));
+    } else {
+      setSelectedItemIds([]);
+    }
+  };
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedItemIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
   const [resources, setResources] = useState<Record<string, AuditResource[]>>(initialResources);
   const activeList = resources[activeMenu] || [];
 
@@ -222,6 +484,7 @@ export default function AdminAudit() {
   };
 
   const handleApprove = (id: string) => {
+    const targetItem = activeList.find(item => item.id === id);
     const updated = activeList.map(item => {
       if (item.id === id) {
         return { ...item, status: "已通过" as const };
@@ -230,7 +493,11 @@ export default function AdminAudit() {
     });
     setResources({ ...resources, [activeMenu]: updated });
     setReviewingItem(null);
-    triggerToast("审核通过！资源已正式升级为平台公共资源，全网租户可见可用。");
+    if (targetItem?.auditType === "下架") {
+      triggerToast("审核通过！该资源已从平台公共目录成功下架。");
+    } else {
+      triggerToast("审核通过！资源已正式升级为平台公共资源，全网租户可见可用。");
+    }
   };
 
   const handleReject = (id: string) => {
@@ -259,10 +526,12 @@ export default function AdminAudit() {
   const filteredResources = activeList.filter(item => {
     const matchesStatus = activeStatusFilter === "全部" || item.status === activeStatusFilter;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.creator.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.tenant.toLowerCase().includes(searchQuery.toLowerCase());
+                          item.creator.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  const totalPages = Math.ceil(filteredResources.length / pageSize) || 1;
+  const paginatedResources = filteredResources.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="flex h-full w-full bg-white overflow-hidden text-neutral-800">
@@ -283,230 +552,334 @@ export default function AdminAudit() {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {/* Menu Item 1: Course */}
           <button 
-            onClick={() => { setActiveMenu("course"); setActiveStatusFilter("全部"); }}
+            onClick={() => { setActiveMenu("course"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "course" 
-                ? "bg-[#fff2e8] text-[#fa541c]" 
-                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+                ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
+                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             )}
           >
             <BookOpen className="w-4 h-4 shrink-0" />
-            <span>课程公开审核</span>
+            <span>课程审核</span>
           </button>
-
-          {/* Menu Item 2: Project */}
           <button 
-            onClick={() => { setActiveMenu("project"); setActiveStatusFilter("全部"); }}
+            onClick={() => { setActiveMenu("project"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "project" 
-                ? "bg-[#fff2e8] text-[#fa541c]" 
-                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+                ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
+                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             )}
           >
             <FolderKanban className="w-4 h-4 shrink-0" />
-            <span>项目公开审核</span>
+            <span>项目审核</span>
           </button>
-
-          {/* Menu Item 2.5: Practice */}
           <button 
-            onClick={() => { setActiveMenu("practice"); setActiveStatusFilter("全部"); }}
+            onClick={() => { setActiveMenu("practice"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "practice" 
-                ? "bg-[#fff2e8] text-[#fa541c]" 
-                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+                ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
+                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             )}
           >
             <ThumbsUp className="w-4 h-4 shrink-0" />
-            <span>最佳实践公开审核</span>
+            <span>最佳实践审核</span>
           </button>
-
-          {/* Menu Item 2.6: Dataset */}
           <button 
-            onClick={() => { setActiveMenu("dataset"); setActiveStatusFilter("全部"); }}
+            onClick={() => { setActiveMenu("dataset"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "dataset" 
-                ? "bg-[#fff2e8] text-[#fa541c]" 
-                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+                ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
+                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             )}
           >
             <Database className="w-4 h-4 shrink-0" />
-            <span>数据集公开审核</span>
+            <span>数据集审核</span>
           </button>
-
-          {/* Menu Item 3: Question */}
           <button 
-            onClick={() => { setActiveMenu("question"); setActiveStatusFilter("全部"); }}
+            onClick={() => { setActiveMenu("question"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "question" 
-                ? "bg-[#fff2e8] text-[#fa541c]" 
-                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+                ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
+                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             )}
           >
             <FileQuestion className="w-4 h-4 shrink-0" />
-            <span>试题公开审核</span>
+            <span>试题审核</span>
           </button>
-
-          {/* Menu Item 4: AI Capacity */}
           <button 
-            onClick={() => { setActiveMenu("ai_capacity"); setActiveStatusFilter("全部"); }}
+            onClick={() => { setActiveMenu("ai_capacity"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "ai_capacity" 
-                ? "bg-[#fff2e8] text-[#fa541c]" 
-                : "text-neutral-body hover:bg-neutral-bg hover:text-neutral-title"
+                ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
+                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             )}
           >
             <Cpu className="w-4 h-4 shrink-0" />
-            <span>AI能力公开审核</span>
+            <span>AI能力审核</span>
           </button>
         </nav>
       </div>
 
-      {/* Right Main Content */}
-      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-8 flex flex-col min-h-0">
-        
-        {/* Right Pane Title Header */}
-        <div className="mb-6 flex flex-col md:flex-row items-start justify-between gap-4 shrink-0">
-          <div>
-            <h1 className="text-xl font-bold text-neutral-title flex items-center gap-2">
-              {activeMenu === "course" && "课程公开审核"}
-              {activeMenu === "project" && "项目公开审核"}
-              {activeMenu === "question" && "试题公开审核"}
-              {activeMenu === "ai_capacity" && "AI能力公开审核"}
-              {activeMenu === "practice" && "最佳实践公开审核"}
-              {activeMenu === "dataset" && "数据集公开审核"}
+      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-8 flex flex-col min-h-0 space-y-4">
+        {/* Header Title Section (Styled exact matching TeacherQuestions) */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 shrink-0">
+          <div className="flex items-end gap-4">
+            <h1 className="text-xl font-bold text-neutral-900">
+              {activeMenu === "course" && "课程审核"}
+              {activeMenu === "project" && "项目审核"}
+              {activeMenu === "question" && "试题审核"}
+              {activeMenu === "ai_capacity" && "AI能力审核"}
+              {activeMenu === "practice" && "最佳实践审核"}
+              {activeMenu === "dataset" && "数据集审核"}
             </h1>
-            <p className="text-sm text-neutral-body mt-1 max-w-[680px]">
-              {activeMenu === "course" && "审核各高校教师提请公开的实训课程大纲与课时设计，审核通过后将合并至公共课程资源库。"}
-              {activeMenu === "project" && "评估企业级及学术性前沿实训项目案例，通过后在全网租户范围提供秒级沙箱环境部署。"}
-              {activeMenu === "question" && "严控试卷试题的知识点覆盖度、科学性及格式标准，确保高价值考核资源的入库品质。"}
-              {activeMenu === "ai_capacity" && "测试和校验教师研发定制的高性能AI大模型API接口、离线推理实例以及流畅度评测能力。"}
-              {activeMenu === "practice" && "审核教师及专家提请公开的优质企业级与学术前沿最佳实践方案，核准后上架公共目录。"}
-              {activeMenu === "dataset" && "严加甄别与审计共享数据集的合规度、隐私脱敏及标注规范性，确保高质量科学研究数据的开放安全。"}
+            <p className="text-sm text-neutral-500 mb-0.5">
+              {activeMenu === "course" && "审核各高校教师提请公开与下架的实训课程大纲，审核通过后同步更新公共课程资源库状态"}
+              {activeMenu === "project" && "评估企业级及学术性前沿实训项目案例，通过后在全网范围提供秒级沙箱环境部署"}
+              {activeMenu === "question" && "严控试卷试题的知识点覆盖度、科学性及格式标准，确保高价值考核资源的入库品质"}
+              {activeMenu === "ai_capacity" && "测试和校验教师研发定制的高性能AI大模型API接口、离线推理实例以及流畅度评测能力"}
+              {activeMenu === "practice" && "审核教师及专家提请公开的优质企业级与学术前沿最佳实践方案，核准后上架公共目录"}
+              {activeMenu === "dataset" && "严加甄别与审计共享数据集的合规度、隐私脱敏及标注规范性，确保高质量科学研究数据的开放安全"}
             </p>
           </div>
-          
-          {/* Quick Statistics Banner */}
-          <div className="flex gap-4 self-stretch md:self-auto justify-end">
-            <div className="bg-white px-4 py-2 rounded-xl border border-neutral-border shadow-xs flex flex-col min-w-[100px]">
-              <span className="text-[11px] text-neutral-caption font-medium">当前分类总数</span>
-              <span className="text-lg font-bold text-neutral-title mt-0.5">{activeList.length}</span>
+
+          {/* Quick Statistics Pill */}
+          <div className="flex items-center gap-3">
+            <div className="bg-white px-3 py-1.5 rounded border border-neutral-border text-xs flex items-center gap-2">
+              <span className="text-neutral-500 font-medium">总数:</span>
+              <span className="font-bold text-neutral-800">{activeList.length}</span>
             </div>
-            <div className="bg-white px-4 py-2 rounded-xl border border-neutral-border shadow-xs flex flex-col min-w-[100px]">
-              <span className="text-[11px] text-neutral-caption font-medium">待审核申请</span>
-              <span className="text-lg font-bold text-[#fa541c] mt-0.5">{getPendingCount(activeMenu)}</span>
+            <div className="bg-white px-3 py-1.5 rounded border border-neutral-border text-xs flex items-center gap-2">
+              <span className="text-neutral-500 font-medium">待审核:</span>
+              <span className="font-bold text-[#fa541c]">{getPendingCount(activeMenu)}</span>
             </div>
           </div>
         </div>
 
-        {/* Toolbar & Filters Card */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
-          {/* Status pill selectors */}
-          <div className="flex bg-neutral-100 rounded-full p-1 border border-neutral-200/50">
-            {(["全部", "待审核", "已通过", "已驳回"] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setActiveStatusFilter(f)}
-                className={cn(
-                  "px-4 py-1.5 text-[12px] font-medium rounded-full transition-all duration-200 cursor-pointer border-0 bg-transparent",
-                  activeStatusFilter === f 
-                    ? "bg-white text-[#fa541c] font-bold shadow-sm" 
-                    : "text-neutral-body hover:text-neutral-title"
-                )}
-              >
-                {f}
-              </button>
-            ))}
+        {/* Table and Toolbar Unified Module (Ref TeacherQuestions Style) */}
+        <div className="bg-white rounded border border-neutral-border overflow-hidden flex-1 flex flex-col">
+          {/* Integrated Toolbar Header Section */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-border/50 bg-white shrink-0">
+            {/* Search Input bar & Filter */}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative w-full md:w-72">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input 
+                  type="text"
+                  placeholder="请输入要搜索的内容"
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-9 pr-4 py-2 w-full bg-white border border-neutral-border rounded-full text-sm focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400"
+                />
+              </div>
+            </div>
+
+            {/* Right: Actions & Status Pill Selectors */}
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+              <div className="flex bg-neutral-100 rounded-full p-1 border border-neutral-200/50">
+                {(["全部", "待审核", "已通过", "已驳回"] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => { setActiveStatusFilter(f); setCurrentPage(1); setSelectedItemIds([]); }}
+                    className={cn(
+                      "px-4 py-1.5 text-[12px] font-medium rounded-full transition-all duration-200 cursor-pointer border-0 bg-transparent",
+                      activeStatusFilter === f 
+                        ? "bg-white text-[#fa541c] font-bold shadow-sm" 
+                        : "text-neutral-body hover:text-neutral-title"
+                    )}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+
+              {selectedItemIds.length > 0 && (
+                <Button 
+                  onClick={() => {
+                    triggerToast(`已为选中的 ${selectedItemIds.length} 项资源发起批量处理`);
+                    setSelectedItemIds([]);
+                  }}
+                  className="bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe8d6] border border-[#ffbb96]/50 h-8 px-3 rounded-[4px] text-xs font-semibold cursor-pointer shadow-2xs transition-all"
+                >
+                  批量审核 ({selectedItemIds.length})
+                </Button>
+              )}
+            </div>
           </div>
 
-          {/* Search Input bar */}
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-caption" />
-            <input 
-              type="text"
-              placeholder="搜索资源名称、提请人或所属单位"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 w-full text-xs border border-neutral-border rounded-full focus:outline-none focus:border-[#fa541c] bg-white text-neutral-title placeholder-neutral-caption transition-all duration-200"
-            />
-          </div>
-        </div>
-
-        {/* Table Card Display */}
-        <div className="bg-white border border-neutral-border rounded-xl shadow-xs overflow-hidden flex-1 flex flex-col min-h-[300px]">
-          <div className="overflow-x-auto flex-1 custom-scrollbar">
+          {/* Main Table Content - Natural height without vertical scrollbar */}
+          <div className="overflow-x-auto flex-1">
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
-                <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600">
-                  <th className="p-4 pl-6 font-medium">资源名称</th>
-                  <th className="p-4 font-medium">提请租户/所属单位</th>
-                  <th className="p-4 font-medium">提交教师</th>
-                  <th className="p-4 font-medium">申请时间</th>
-                  <th className="p-4 font-medium">状态</th>
-                  <th className="p-4 pr-6 font-medium text-right">审核操作</th>
+                <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
+                  <th className="pl-6 pr-3 py-3.5 font-medium w-12 text-left">
+                    <button 
+                      type="button"
+                      onClick={() => toggleSelectAll(selectedItemIds.length !== paginatedResources.length || paginatedResources.length === 0)}
+                      className={cn(
+                        "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
+                        selectedItemIds.length === paginatedResources.length && paginatedResources.length > 0
+                          ? "bg-[#fa541c] border-[#fa541c] text-white"
+                          : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                      )}
+                    >
+                      {selectedItemIds.length === paginatedResources.length && paginatedResources.length > 0 && <span className="text-[10px] font-bold">✓</span>}
+                    </button>
+                  </th>
+                  <th className="px-3 py-3.5 font-medium text-left">资源名称</th>
+                  <th className="px-3 py-3.5 font-medium text-left">
+                    <div className="flex items-center gap-1">类型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                  </th>
+                  <th className="px-3 py-3.5 font-medium text-left">提交教师</th>
+                  <th className="px-3 py-3.5 font-medium text-left">
+                    <div className="flex items-center gap-1">申请时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                  </th>
+                  <th className="px-3 py-3.5 font-medium text-left">
+                    <div className="flex items-center gap-1">审核状态 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                  </th>
+                  <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredResources.map(item => (
-                  <tr key={item.id} className="border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]">
-                    <td className="p-4 pl-6 text-neutral-800 font-medium whitespace-normal max-w-[260px] truncate" title={item.name}>{item.name}</td>
-                    <td className="p-4 text-neutral-600">
-                      <div className="flex items-center gap-1.5">
-                        <Building className="w-3.5 h-3.5 text-neutral-caption shrink-0" />
-                        <span>{item.tenant}</span>
-                      </div>
+                {paginatedResources.map((item, index) => (
+                  <tr key={item.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === paginatedResources.length - 1 && "border-b-0")}>
+                    <td className="pl-6 pr-3 py-3 text-left">
+                      <button 
+                        type="button"
+                        onClick={() => toggleSelectItem(item.id)}
+                        className={cn(
+                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
+                          selectedItemIds.includes(item.id)
+                            ? "bg-[#fa541c] border-[#fa541c] text-white"
+                            : "border-neutral-300 hover:border-[#fa541c] bg-white"
+                        )}
+                      >
+                        {selectedItemIds.includes(item.id) && <span className="text-[10px] font-bold">✓</span>}
+                      </button>
                     </td>
-                    <td className="p-4 text-neutral-600">
-                      <div className="flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-neutral-caption shrink-0" />
-                        <span>{item.creator}</span>
+                    <td className="px-3 py-3 text-left">
+                      <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer truncate max-w-[340px]" title={item.name}>
+                        {item.name}
                       </div>
+                      <div className="text-xs text-neutral-400 font-mono mt-0.5">{item.id}</div>
                     </td>
-                    <td className="p-4 text-neutral-caption">{item.submitTime}</td>
-                    <td className="p-4">
+                    <td className="px-3 py-3 text-left">
                       <span className={cn(
-                        "inline-flex items-center px-2 py-0.5 text-[12px] rounded border font-medium",
-                        item.status === "待审核" ? "bg-amber-50 text-amber-600 border-amber-200" :
-                        item.status === "审核中" ? "bg-blue-50 text-blue-600 border-blue-200" :
-                        item.status === "已通过" ? "bg-green-50 text-green-600 border-green-200" :
-                        "bg-rose-50 text-rose-600 border-rose-200"
+                        "inline-flex items-center px-2 py-0.5 text-[12px] rounded font-medium border",
+                        (item.auditType || "公开") === "公开" 
+                          ? "bg-blue-50 text-blue-600 border-blue-200" 
+                          : "bg-orange-50 text-[#fa541c] border-[#ffbb96]"
                       )}>
-                        {item.status}
+                        {item.auditType || "公开"}
                       </span>
                     </td>
-                    <td className="p-4 pr-6 text-right">
+                    <td className="px-3 py-3 text-left text-neutral-600">
+                      <div className="text-neutral-800 font-medium">{item.creator}</div>
+                      <div className="text-[11px] text-neutral-400 mt-0.5">{item.tenant}</div>
+                    </td>
+                    <td className="px-3 py-3 text-left text-neutral-500 font-mono">{item.submitTime}</td>
+                    <td className="px-3 py-3 text-left">
+                      {item.status === "已通过" && (
+                        <span className="text-emerald-600 font-medium">已通过</span>
+                      )}
+                      {item.status === "待审核" && (
+                        <span className="text-[#fa541c] font-medium">待审核</span>
+                      )}
+                      {item.status === "已驳回" && (
+                        <span className="text-rose-600 font-medium">已驳回</span>
+                      )}
+                      {item.status === "审核中" && (
+                        <span className="text-blue-600 font-medium">审核中</span>
+                      )}
+                    </td>
+                    <td className="pl-3 pr-6 py-3 text-left">
                       {item.status === "待审核" || item.status === "审核中" ? (
                         <button 
                           onClick={() => setReviewingItem(item)}
-                          className="bg-[#fff2e8] hover:bg-[#ffe8d6] text-[#fa541c] text-xs font-bold px-4 py-1.5 border border-[#ffbb96]/45 rounded-[6px] transition-all duration-200 cursor-pointer shadow-2xs"
+                          className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold"
                         >
-                          评估审核
+                          审核
                         </button>
                       ) : (
-                        <div className="flex items-center justify-end gap-1.5 text-neutral-caption italic text-[12px]">
-                          <span>审核已结案</span>
-                        </div>
+                        <button 
+                          onClick={() => setReviewingItem(item)}
+                          className="text-neutral-500 hover:text-[#fa541c] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-medium"
+                        >
+                          查看
+                        </button>
                       )}
                     </td>
                   </tr>
                 ))}
                 {filteredResources.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-16 text-center text-xs text-neutral-caption italic">
-                      无对应的提请申请记录。
+                    <td colSpan={7} className="p-16 text-center text-xs text-neutral-caption italic">
+                      暂无符合条件的审核记录
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-        </div>
 
+          {/* Pagination Component - Ref TeacherQuestions */}
+          <div className="flex items-center justify-end px-6 py-4 gap-4 border-t border-neutral-border/30 bg-white">
+            <span className="text-[13px] text-neutral-500">共 {filteredResources.length} 条</span>
+            <div className="flex items-center gap-2">
+              <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 w-7 p-0 rounded-sm cursor-pointer border-neutral-200 text-neutral-600 disabled:opacity-40" 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  &lt;
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <Button 
+                    key={page} 
+                    variant="outline" 
+                    size="sm" 
+                    className={cn(
+                      "h-7 w-7 p-0 rounded-sm text-xs font-semibold cursor-pointer transition-colors border",
+                      currentPage === page 
+                        ? "bg-[#fa541c] text-white border-[#fa541c] hover:bg-[#e84a15]" 
+                        : "bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50"
+                    )}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                ))}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 w-7 p-0 rounded-sm cursor-pointer border-neutral-200 text-neutral-600 disabled:opacity-40"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages || filteredResources.length === 0}
+                >
+                  &gt;
+                </Button>
+              </div>
+              <select 
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="text-[13px] border border-neutral-200 rounded-sm px-2.5 py-1 focus:outline-none focus:border-[#fa541c] text-neutral-600 bg-white cursor-pointer"
+              >
+                <option value={5}>5 条/页</option>
+                <option value={10}>10 条/页</option>
+                <option value={20}>20 条/页</option>
+              </select>
+          </div>
+        </div>
       </div>
 
       {/* Audit Evaluation Drawer Modal */}
@@ -518,7 +891,7 @@ export default function AdminAudit() {
             <div className="px-6 py-5 border-b border-neutral-border flex justify-between items-center bg-neutral-50/50 shrink-0">
               <h3 className="text-sm font-bold text-neutral-title flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#fa541c]" />
-                <span className="text-[15px]">公共资源准入合规度评估</span>
+                <span className="text-[15px]">审核</span>
               </h3>
               <button 
                 onClick={() => setReviewingItem(null)} 
@@ -533,22 +906,17 @@ export default function AdminAudit() {
               
               {/* Basic Details Box */}
               <div className="space-y-3 bg-[#fff2e8]/10 p-5 rounded-xl border border-[#ffbb96]/30">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-[#fa541c] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{reviewingItem.id}</span>
-                  <span className="text-[11px] font-semibold text-neutral-caption">{reviewingItem.tenant}</span>
-                </div>
                 <h4 className="text-[15px] font-bold text-neutral-title leading-snug">{reviewingItem.name}</h4>
                 <div className="h-[1px] bg-neutral-border/60"></div>
                 <p className="text-[12px] text-neutral-body flex flex-wrap gap-x-4 gap-y-1">
                   <span><strong>提请教师:</strong> {reviewingItem.creator}</span>
-                  <span><strong>规格属性:</strong> {reviewingItem.details.meta}</span>
                   <span><strong>提交时间:</strong> {reviewingItem.submitTime}</span>
                 </p>
               </div>
 
-              {/* Resource Core details */}
+              {/* Resource Core details / 说明 */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-neutral-caption uppercase tracking-wider block">资源内容正文详情</span>
+                <span className="text-[11px] font-bold text-neutral-caption uppercase tracking-wider block">说明</span>
                 <div className="p-5 border border-neutral-border rounded-xl bg-white space-y-4 shadow-3xs">
                   <p className="text-xs text-neutral-body leading-relaxed font-medium bg-neutral-50 p-3 rounded-lg border border-neutral-100">{reviewingItem.details.content}</p>
                   
@@ -562,62 +930,6 @@ export default function AdminAudit() {
                         <span className="leading-relaxed font-medium">{line}</span>
                       </div>
                     ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Dimensions Checkbox Scorecard */}
-              <div className="space-y-3 pt-2">
-                <span className="text-[11px] font-bold text-neutral-caption uppercase tracking-wider block">平台公共资源公开考核维度指标</span>
-                
-                {/* 1. 内容质量 */}
-                <div 
-                  onClick={() => setCheckQuality(!checkQuality)}
-                  className={cn(
-                    "p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5 bg-white shadow-3xs hover:border-[#fa541c]/50",
-                    checkQuality ? "border-[#fa541c] bg-[#fff2e8]/5" : "border-neutral-border"
-                  )}
-                >
-                  <button type="button" className={cn("w-4.5 h-4.5 rounded border flex items-center justify-center mt-0.5 shrink-0 transition-colors", checkQuality ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300 bg-white")}>
-                    {checkQuality && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                  </button>
-                  <div>
-                    <span className="text-xs font-bold text-neutral-title block">内容质量准入 (完整、准确、高价值)</span>
-                    <p className="text-[10px] text-neutral-caption mt-1 leading-normal">要求实验描述详尽完整，理论术语精准，对全平台各校师生有普适的应用价值。</p>
-                  </div>
-                </div>
-
-                {/* 2. 原创性 */}
-                <div 
-                  onClick={() => setCheckOriginality(!checkOriginality)}
-                  className={cn(
-                    "p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5 bg-white shadow-3xs hover:border-[#fa541c]/50",
-                    checkOriginality ? "border-[#fa541c] bg-[#fff2e8]/5" : "border-neutral-border"
-                  )}
-                >
-                  <button type="button" className={cn("w-4.5 h-4.5 rounded border flex items-center justify-center mt-0.5 shrink-0 transition-colors", checkOriginality ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300 bg-white")}>
-                    {checkOriginality && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                  </button>
-                  <div>
-                    <span className="text-xs font-bold text-neutral-title block">高度原创性 (非抄袭、无版权及泄密问题)</span>
-                    <p className="text-[10px] text-neutral-caption mt-1 leading-normal">无任何第三方版权限制或学术纠纷，不含有未脱敏的系统数据或高校内部机密数据。</p>
-                  </div>
-                </div>
-
-                {/* 3. 规范性 */}
-                <div 
-                  onClick={() => setCheckStandard(!checkStandard)}
-                  className={cn(
-                    "p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5 bg-white shadow-3xs hover:border-[#fa541c]/50",
-                    checkStandard ? "border-[#fa541c] bg-[#fff2e8]/5" : "border-neutral-border"
-                  )}
-                >
-                  <button type="button" className={cn("w-4.5 h-4.5 rounded border flex items-center justify-center mt-0.5 shrink-0 transition-colors", checkStandard ? "bg-[#fa541c] border-[#fa541c] text-white" : "border-neutral-300 bg-white")}>
-                    {checkStandard && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                  </button>
-                  <div>
-                    <span className="text-xs font-bold text-neutral-title block">格式规范性 (描述清晰、架构及排版统一)</span>
-                    <p className="text-[10px] text-neutral-caption mt-1 leading-normal">目录节点、代码格式及中英文排版分段完全契合智云实训平台公共素材库格式手册。</p>
                   </div>
                 </div>
               </div>
@@ -651,7 +963,9 @@ export default function AdminAudit() {
               ) : (
                 <>
                   <button onClick={() => setShowRejectForm(true)} className="px-4 py-2.5 border border-neutral-border text-neutral-body rounded-lg text-xs font-bold hover:bg-neutral-100 cursor-pointer transition-colors">驳回并通知</button>
-                  <button onClick={() => handleApprove(reviewingItem.id)} className="px-5 py-2.5 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm">评估通过并公开为公共资源</button>
+                  <button onClick={() => handleApprove(reviewingItem.id)} className="px-5 py-2.5 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm">
+                    审核通过
+                  </button>
                 </>
               )}
             </div>

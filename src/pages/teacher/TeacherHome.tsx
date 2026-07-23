@@ -90,6 +90,10 @@ export default function TeacherHome() {
   const [applyPublicCourse, setApplyPublicCourse] = useState<any>(null);
   const [applyReason, setApplyReason] = useState('');
   const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
+
+  const [isOffShelfModalOpen, setIsOffShelfModalOpen] = useState(false);
+  const [offShelfCourse, setOffShelfCourse] = useState<any>(null);
+  const [offShelfReason, setOffShelfReason] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean;
     title: string;
@@ -271,6 +275,30 @@ export default function TeacherHome() {
     localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
     showToast('提交申请成功，等待超管审核');
     setIsApplyPublicModalOpen(false);
+  };
+
+  const handleOffShelf = () => {
+    if (!offShelfReason.trim()) {
+      showToast('请填写下架说明', 'error');
+      return;
+    }
+    if (!offShelfCourse) return;
+    const updated = coursesList.map(c => {
+      if (c.id === offShelfCourse.id) {
+        return {
+          ...c,
+          status: '已下架',
+          offShelfReason
+        };
+      }
+      return c;
+    });
+    setCoursesList(updated);
+    localStorage.setItem('zhiyun_courses', JSON.stringify(updated));
+    showToast(`课程 "${offShelfCourse.name}" 已成功下架`);
+    setIsOffShelfModalOpen(false);
+    setOffShelfCourse(null);
+    setOffShelfReason('');
   };
 
   const filteredCourses = coursesList.filter(c => {
@@ -526,7 +554,12 @@ export default function TeacherHome() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-left">
-                        <span className={cn("px-2 py-0.5 text-[12px] rounded border font-medium", course.status === '已发布' ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-rose-50 text-rose-600 border-rose-200")}>
+                        <span className={cn(
+                          "px-2 py-0.5 text-[12px] rounded border font-medium", 
+                          course.status === '已发布' ? "bg-orange-50 text-orange-600 border-orange-200" : 
+                          course.status === '已下架' ? "bg-neutral-100 text-neutral-600 border-neutral-200" : 
+                          "bg-rose-50 text-rose-600 border-rose-200"
+                        )}>
                           {course.status}
                         </span>
                       </td>
@@ -622,6 +655,32 @@ export default function TeacherHome() {
                                     className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
                                   >
                                     申请公开
+                                  </button>
+                                )}
+                                {course.status === '已下架' ? (
+                                  <button 
+                                    onClick={() => {
+                                      setConfirmDialog({
+                                        show: true,
+                                        title: '确认重新上架课程',
+                                        message: `确定要重新上架课程 "${course.name}" 吗？重新上架后选课学生将恢复可见。`,
+                                        onConfirm: () => handlePublishCourse(course.id)
+                                      });
+                                    }} 
+                                    className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
+                                  >
+                                    重新上架
+                                  </button>
+                                ) : (
+                                  <button 
+                                    onClick={() => {
+                                      setOffShelfCourse(course);
+                                      setOffShelfReason('');
+                                      setIsOffShelfModalOpen(true);
+                                    }} 
+                                    className="w-full text-left px-3 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50"
+                                  >
+                                    下架
                                   </button>
                                 )}
                                 <button 
@@ -1040,6 +1099,89 @@ export default function TeacherHome() {
                 className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
               >
                 提交申请
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 下架课程 Drawer/Modal */}
+      {isOffShelfModalOpen && offShelfCourse && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => setIsOffShelfModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                下架课程资源
+              </h2>
+              <button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">下架后课程将暂不对选课师生公开</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    下架课程后，该课程资源将从公共课程库和选课列表中隐藏。已有选课记录的班级保留历史学习数据，但无法发起新的选课或创建班级。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">课程名称</label>
+                  <input 
+                    type="text" 
+                    value={offShelfCourse.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-[4px] px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    下架说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={offShelfReason}
+                    onChange={(e) => setOffShelfReason(e.target.value)}
+                    placeholder="请简述下架该课程的具体原因及后续安排..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsOffShelfModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleOffShelf} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                确认下架
               </Button>
             </div>
           </div>

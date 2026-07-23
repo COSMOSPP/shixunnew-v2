@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Bell, Database, Key, Shield, AlertCircle, CheckCircle, ChevronRight, Clock, Plus, Trash2, Edit, Activity, Copy, Eye, EyeOff, Laptop, Smartphone, FileText, Check, Settings, Globe, Mail, Phone, Building2, Hash, Calendar, X, Lock } from 'lucide-react';
+import { User, Bell, Database, Key, Shield, AlertCircle, CheckCircle, ChevronRight, Clock, Plus, Trash2, Edit, Activity, Copy, Eye, EyeOff, Laptop, Smartphone, FileText, Check, Settings, Globe, Mail, Phone, Building2, Hash, Calendar, X, Lock, Award, BookOpen, GraduationCap, Sparkles, Users, Share2, Camera, FolderKanban, Star, CheckCircle2, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -48,6 +48,27 @@ export default function TeacherCenter() {
     { id: 'security', label: '账号安全', icon: Shield },
   ];
 
+  // --- Profile State ---
+  const [profile, setProfile] = useState({
+    name: '张大伟',
+    title: '教授 / 博士生导师',
+    department: '计算机科学与技术学院',
+    lab: '大模型与智能计算实验室',
+    staffId: 'T20150982',
+    phone: '138****5678',
+    email: 'zhangdawei@university.edu.cn',
+    bio: '专注人工智能大模型微调、分布式高并发架构及深度学习实训教学。用代码点亮智慧，用AI赋能未来教学。',
+    specializations: ['大模型微调 & RAG', '微服务与高并发', 'Python数据分析', '计算机视觉实训'],
+    status: '在教 / 实验室负责人',
+    rating: '4.98',
+    totalStudents: '1,280',
+    totalCourses: '16',
+    totalProjects: '24',
+    totalQuestions: '456'
+  });
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({ ...profile, specializationsStr: profile.specializations.join(', ') });
+
   // --- Notification State ---
   const [notifications, setNotifications] = useState(mockNotifications);
   const [notiFilter, setNotiFilter] = useState('所有');
@@ -74,94 +95,432 @@ export default function TeacherCenter() {
   // --- Render Functions ---
 
   const renderProfile = () => (
-    <div className="animate-fade-in max-w-4xl space-y-8">
-      <div className="bg-white rounded-[24px] border border-neutral-200/80 shadow-sm overflow-hidden relative">
-        {/* Cover Banner */}
-        <div className="h-40 bg-gradient-to-r from-[#fa541c] via-orange-500 to-amber-400 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-          <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/20 rounded-full blur-3xl"></div>
-          <div className="absolute top-0 left-1/4 w-32 h-32 bg-yellow-300/30 rounded-full blur-2xl"></div>
+    <div className="animate-fade-in space-y-6 max-w-6xl pb-10">
+      {/* Profile Header Hero Card */}
+      <div className="bg-white rounded-2xl border border-neutral-border shadow-xs overflow-hidden relative">
+        {/* Top Gradient Banner with Mesh Pattern */}
+        <div className="h-44 bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#ff9c6e] relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-black/10"></div>
+          {/* Subtle Decorative Geometric Circles */}
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-yellow-300/20 rounded-full blur-xl"></div>
+          
+          {/* Header Badges */}
+          <div className="absolute top-4 right-6 flex items-center gap-2">
+            <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white rounded-full text-xs font-semibold flex items-center gap-1.5 border border-white/30">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" /> 国家级精品课程主讲教师
+            </span>
+            <span className="px-3 py-1 bg-black/20 backdrop-blur-md text-white rounded-full text-xs font-medium border border-white/20">
+              AI 教学团队负责人
+            </span>
+          </div>
         </div>
-        
-        {/* Profile Content */}
-        <div className="px-10 pb-10">
-          <div className="flex justify-between items-end -mt-14 mb-8 relative z-10">
-            <div className="flex items-end gap-6">
-              <div className="w-28 h-28 rounded-2xl bg-white p-1.5 shadow-lg border border-neutral-100">
-                <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-50 rounded-[10px] flex items-center justify-center text-[#fa541c] text-4xl font-black">
-                  张
+
+        {/* Hero User Info Section */}
+        <div className="px-8 pb-8 pt-0 relative">
+          <div className="flex flex-col md:flex-row md:items-end justify-between -mt-16 mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
+              {/* Avatar Box with Live Indicator & Camera Upload */}
+              <div className="relative group shrink-0">
+                <div className="w-28 h-28 rounded-2xl bg-white p-1 shadow-md border border-neutral-100 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[#fff2e8] to-[#ffd8bf] rounded-xl flex items-center justify-center text-[#fa541c] text-3xl font-black shadow-inner">
+                    {profile.name.substring(0, 1)}
+                  </div>
                 </div>
+                <button 
+                  onClick={() => showToast('已开启头像更换，请选择图片文件')}
+                  className="absolute inset-1 rounded-xl bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-medium gap-1"
+                >
+                  <Camera className="w-4 h-4" /> 更换
+                </button>
+                <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" title="在线 / 教学状态正常"></span>
               </div>
-              <div className="mb-2">
-                <h2 className="text-[28px] font-black text-neutral-900 tracking-tight leading-none mb-2">张老师</h2>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-orange-100 text-[#fa541c] rounded-md text-[13px] font-bold">高级讲师</span>
-                  <span className="px-3 py-1 bg-neutral-100 text-neutral-600 rounded-md text-[13px] font-bold">在职状态</span>
+
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                  <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">{profile.name}</h2>
+                  <span className="px-2.5 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded-md text-xs font-semibold border border-[#ffbb96]/60">
+                    {profile.title}
+                  </span>
+                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-xs font-medium border border-emerald-200/60">
+                    {profile.status}
+                  </span>
                 </div>
+                <p className="text-xs text-neutral-500 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
+                  <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-neutral-400" /> {profile.department}</span>
+                  <span className="text-neutral-300">|</span>
+                  <span>{profile.lab}</span>
+                </p>
               </div>
             </div>
-            <Button className="bg-neutral-900 hover:bg-neutral-800 text-white rounded-full px-6 font-bold shadow-sm h-11 mb-2 transition-all hover:shadow-md hover:-translate-y-0.5">
-              <Edit className="w-4 h-4 mr-2" /> 编辑资料
-            </Button>
+
+            {/* Top Action Buttons */}
+            <div className="flex items-center justify-center sm:justify-end gap-2.5">
+              <Button 
+                onClick={() => {
+                  setEditProfileForm({ ...profile, specializationsStr: profile.specializations.join(', ') });
+                  setIsEditProfileOpen(true);
+                }}
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg px-4 h-9 font-semibold text-xs shadow-xs cursor-pointer border-0 flex items-center gap-1.5"
+              >
+                <Edit className="w-3.5 h-3.5" /> 编辑资料
+              </Button>
+              <Button 
+                onClick={() => showToast('已成功复制个人名片链接至剪贴板！')}
+                variant="outline" 
+                className="border-neutral-border hover:bg-neutral-50 text-neutral-700 rounded-lg px-3 h-9 text-xs font-medium cursor-pointer flex items-center gap-1.5"
+              >
+                <Share2 className="w-3.5 h-3.5" /> 分享名片
+              </Button>
+            </div>
           </div>
 
-          <h3 className="text-[16px] font-bold text-neutral-900 mb-5 flex items-center gap-2 ml-1">
-            <FileText className="w-5 h-5 text-[#fa541c]" /> 基本信息
-          </h3>
-
-          <div className="grid grid-cols-2 gap-5">
-            <div className="bg-neutral-50/70 hover:bg-white transition-all duration-300 p-6 rounded-2xl border border-neutral-100/80 hover:border-blue-100 hover:shadow-md hover:shadow-blue-50/50 flex gap-5 items-center group">
-              <div className="w-14 h-14 rounded-[14px] bg-white border border-neutral-200/80 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-blue-500 group-hover:scale-110 group-hover:border-blue-200 transition-all duration-300">
-                <Hash className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-[12px] font-bold text-neutral-400 mb-1 uppercase tracking-wider">教工号 ID</div>
-                <div className="text-[16px] font-black text-neutral-800">T20150982</div>
-              </div>
-            </div>
-            
-            <div className="bg-neutral-50/70 hover:bg-white transition-all duration-300 p-6 rounded-2xl border border-neutral-100/80 hover:border-emerald-100 hover:shadow-md hover:shadow-emerald-50/50 flex gap-5 items-center group">
-              <div className="w-14 h-14 rounded-[14px] bg-white border border-neutral-200/80 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-emerald-500 group-hover:scale-110 group-hover:border-emerald-200 transition-all duration-300">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-[12px] font-bold text-neutral-400 mb-1 uppercase tracking-wider">所属院系</div>
-                <div className="text-[16px] font-black text-neutral-800">计算机科学与技术学院</div>
-              </div>
-            </div>
-            
-            <div className="bg-neutral-50/70 hover:bg-white transition-all duration-300 p-6 rounded-2xl border border-neutral-100/80 hover:border-orange-100 hover:shadow-md hover:shadow-orange-50/50 flex justify-between items-center group cursor-pointer">
-              <div className="flex gap-5 items-center">
-                <div className="w-14 h-14 rounded-[14px] bg-white border border-neutral-200/80 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-[#fa541c] group-hover:scale-110 group-hover:border-orange-200 transition-all duration-300">
-                  <Phone className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-[12px] font-bold text-neutral-400 mb-1 uppercase tracking-wider">手机号码</div>
-                  <div className="text-[16px] font-black text-neutral-800 tracking-wide">138****5678</div>
-                </div>
-              </div>
-              <div className="h-9 w-9 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:text-[#fa541c] group-hover:border-orange-200 transition-all duration-300 shadow-sm">
-                <Edit className="w-4 h-4" />
-              </div>
-            </div>
-            
-            <div className="bg-neutral-50/70 hover:bg-white transition-all duration-300 p-6 rounded-2xl border border-neutral-100/80 hover:border-purple-100 hover:shadow-md hover:shadow-purple-50/50 flex justify-between items-center group cursor-pointer">
-              <div className="flex gap-5 items-center">
-                <div className="w-14 h-14 rounded-[14px] bg-white border border-neutral-200/80 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-purple-500 group-hover:scale-110 group-hover:border-purple-200 transition-all duration-300">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-[12px] font-bold text-neutral-400 mb-1 uppercase tracking-wider">绑定邮箱</div>
-                  <div className="text-[16px] font-black text-neutral-800">zhang****@university.edu.cn</div>
-                </div>
-              </div>
-              <div className="h-9 w-9 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:text-purple-500 group-hover:border-purple-200 transition-all duration-300 shadow-sm">
-                <Edit className="w-4 h-4" />
-              </div>
-            </div>
+          {/* Bio Line */}
+          <div className="bg-neutral-50/80 p-3.5 rounded-xl border border-neutral-100/80 text-xs text-neutral-600 font-medium leading-relaxed flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-[#fa541c] shrink-0 mt-0.5" />
+            <p className="flex-1">{profile.bio}</p>
           </div>
         </div>
       </div>
+
+      {/* Teaching & Academic Stats Counter Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-orange-50 text-[#fa541c] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[11px] font-medium text-neutral-400">指导学生数</div>
+            <div className="text-lg font-bold text-neutral-900 mt-0.5">{profile.totalStudents} <span className="text-xs font-normal text-neutral-500">人</span></div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[11px] font-medium text-neutral-400">主讲课程</div>
+            <div className="text-lg font-bold text-neutral-900 mt-0.5">{profile.totalCourses} <span className="text-xs font-normal text-neutral-500">门</span></div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <FolderKanban className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[11px] font-medium text-neutral-400">实训案例</div>
+            <div className="text-lg font-bold text-neutral-900 mt-0.5">{profile.totalProjects} <span className="text-xs font-normal text-neutral-500">个</span></div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+          </div>
+          <div>
+            <div className="text-[11px] font-medium text-neutral-400">综合评价</div>
+            <div className="text-lg font-bold text-neutral-900 mt-0.5">{profile.rating} <span className="text-xs font-normal text-neutral-500">/ 5.0</span></div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2-Column Detailed Layout Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column (2 Cols wide on desktop): Detailed Profile Information & Specialties */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Detailed Info Card */}
+          <div className="bg-white rounded-xl border border-neutral-border p-6 shadow-2xs space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-border/50 pb-3.5">
+              <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#fa541c]" /> 详细档案与联系信息
+              </h3>
+              <span className="text-[11px] text-neutral-400">最后更新: 2026-05-20</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+                  <Hash className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[11px] text-neutral-400 font-medium">教工号 ID</div>
+                  <div className="text-xs font-bold text-neutral-800 font-mono mt-0.5 flex items-center gap-1.5">
+                    {profile.staffId}
+                    <button 
+                      onClick={() => showToast('教工号已复制')}
+                      className="text-neutral-400 hover:text-[#fa541c] cursor-pointer"
+                      title="复制"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[11px] text-neutral-400 font-medium">所属院系</div>
+                  <div className="text-xs font-bold text-neutral-800 mt-0.5">{profile.department}</div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+                    <Phone className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-neutral-400 font-medium">联系电话</div>
+                    <div className="text-xs font-bold text-neutral-800 mt-0.5 font-mono">{profile.phone}</div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsPhoneModalOpen(true)}
+                  className="text-xs text-[#fa541c] hover:underline cursor-pointer font-medium"
+                >
+                  修改
+                </button>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+                    <Mail className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="truncate max-w-[170px]">
+                    <div className="text-[11px] text-neutral-400 font-medium">官方邮箱</div>
+                    <div className="text-xs font-bold text-neutral-800 mt-0.5 truncate">{profile.email}</div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="text-xs text-[#fa541c] hover:underline cursor-pointer font-medium"
+                >
+                  修改
+                </button>
+              </div>
+            </div>
+
+            {/* Specializations Tags */}
+            <div className="pt-2">
+              <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block mb-2.5">主讲领域与教研方向</span>
+              <div className="flex flex-wrap gap-2">
+                {profile.specializations.map((spec, idx) => (
+                  <span 
+                    key={idx} 
+                    className="px-3 py-1 bg-neutral-100 hover:bg-[#fff2e8] hover:text-[#fa541c] transition-colors text-neutral-700 rounded-lg text-xs font-semibold border border-neutral-200/60 cursor-default flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3 h-3 text-[#fa541c]" /> {spec}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Teacher Academic Certifications & Honors */}
+          <div className="bg-white rounded-xl border border-neutral-border p-6 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-border/50 pb-3.5">
+              <Award className="w-4 h-4 text-[#fa541c]" /> 教师荣誉与学术资质
+            </h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="p-3.5 rounded-lg border border-neutral-200/80 bg-neutral-50/40 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 font-bold">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-neutral-900">2025年度全校十佳优秀教师标兵</div>
+                  <div className="text-[11px] text-neutral-500 mt-0.5">获颁单位: 清华大学计算机教务处</div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-lg border border-neutral-200/80 bg-neutral-50/40 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 font-bold">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-neutral-900">工信部大模型算法高级认证导师</div>
+                  <div className="text-[11px] text-neutral-500 mt-0.5">证书编号: IT-AI-2025-0892</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (1 Col wide): Ongoing Active Courses & Timeline */}
+        <div className="space-y-6">
+          
+          {/* Active Courses Card */}
+          <div className="bg-white rounded-xl border border-neutral-border p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-neutral-border/50 pb-3">
+              <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-[#fa541c]" /> 当前负责实训课程
+              </h3>
+              <span className="text-[11px] text-[#fa541c] font-semibold">2 门运行中</span>
+            </div>
+
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg border border-neutral-200/80 hover:border-[#fa541c]/40 transition-all bg-white">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-neutral-800">《大语言模型微调与 RAG 架构》</span>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">进行中</span>
+                </div>
+                <div className="text-[11px] text-neutral-500 flex justify-between">
+                  <span>选择学生: 320 人</span>
+                  <span>进度: 85%</span>
+                </div>
+                <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-[#fa541c] rounded-full" style={{ width: '85%' }}></div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg border border-neutral-200/80 hover:border-[#fa541c]/40 transition-all bg-white">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-neutral-800">《深度学习与 PyTorch 核心实践》</span>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">进行中</span>
+                </div>
+                <div className="text-[11px] text-neutral-500 flex justify-between">
+                  <span>选择学生: 450 人</span>
+                  <span>进度: 60%</span>
+                </div>
+                <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '60%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Teaching Activities */}
+          <div className="bg-white rounded-xl border border-neutral-border p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-border/50 pb-3">
+              <Activity className="w-4 h-4 text-[#fa541c]" /> 最近教学活动轨迹
+            </h3>
+            
+            <div className="space-y-3.5 relative pl-3 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-[2px] before:bg-neutral-100">
+              <div className="relative pl-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#fa541c] absolute -left-[4.5px] top-1 ring-4 ring-orange-50"></div>
+                <div className="text-xs font-bold text-neutral-800">上架《云原生微服务高并发项目》</div>
+                <div className="text-[11px] text-neutral-400 mt-0.5 font-mono">2026-05-20 14:30</div>
+              </div>
+
+              <div className="relative pl-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 absolute -left-[4.5px] top-1 ring-4 ring-blue-50"></div>
+                <div className="text-xs font-bold text-neutral-800">申请并获批 500 GPU 卡时配额</div>
+                <div className="text-[11px] text-neutral-400 mt-0.5 font-mono">2026-05-18 09:15</div>
+              </div>
+
+              <div className="relative pl-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -left-[4.5px] top-1 ring-4 ring-emerald-50"></div>
+                <div className="text-xs font-bold text-neutral-800">更新人工智能期中试题库 (120道)</div>
+                <div className="text-[11px] text-neutral-400 mt-0.5 font-mono">2026-05-12 16:40</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Edit Profile Modal */}
+      {isEditProfileOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 border border-neutral-200">
+            <div className="px-6 py-4 border-b border-neutral-border flex justify-between items-center bg-neutral-50/50">
+              <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+                <Edit className="w-4 h-4 text-[#fa541c]" /> 编辑教师个人资料
+              </h3>
+              <button onClick={() => setIsEditProfileOpen(false)} className="text-neutral-400 hover:text-neutral-600 cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">姓名 <span className="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  value={editProfileForm.name} 
+                  onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 mb-1.5">职称/头衔</label>
+                  <input 
+                    type="text" 
+                    value={editProfileForm.title} 
+                    onChange={e => setEditProfileForm({...editProfileForm, title: e.target.value})}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 mb-1.5">在职状态</label>
+                  <input 
+                    type="text" 
+                    value={editProfileForm.status} 
+                    onChange={e => setEditProfileForm({...editProfileForm, status: e.target.value})}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">所属院系</label>
+                <input 
+                  type="text" 
+                  value={editProfileForm.department} 
+                  onChange={e => setEditProfileForm({...editProfileForm, department: e.target.value})}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">个人研究签名 / 教学座右铭</label>
+                <textarea 
+                  rows={3} 
+                  value={editProfileForm.bio} 
+                  onChange={e => setEditProfileForm({...editProfileForm, bio: e.target.value})}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium resize-none" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">主讲领域 (用逗号分隔)</label>
+                <input 
+                  type="text" 
+                  value={editProfileForm.specializationsStr} 
+                  onChange={e => setEditProfileForm({...editProfileForm, specializationsStr: e.target.value})}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-3.5 bg-neutral-50 flex justify-end gap-2.5 border-t border-neutral-border">
+              <Button onClick={() => setIsEditProfileOpen(false)} variant="outline" className="rounded-lg px-4 text-xs font-semibold h-8 cursor-pointer">取消</Button>
+              <Button 
+                onClick={() => {
+                  const specs = editProfileForm.specializationsStr.split(',').map(s => s.trim()).filter(Boolean);
+                  setProfile({ ...editProfileForm, specializations: specs });
+                  setIsEditProfileOpen(false);
+                  showToast('个人资料已成功更新！');
+                }} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg px-5 text-xs font-semibold h-8 shadow-xs cursor-pointer border-0"
+              >
+                保存修改
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
