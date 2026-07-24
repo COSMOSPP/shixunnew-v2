@@ -95,16 +95,17 @@ export default function TeacherCenter() {
   // --- Render Functions ---
 
   const renderProfile = () => (
-    <div className="animate-fade-in space-y-6 max-w-6xl text-left pb-10">
+    <div className="animate-fade-in space-y-6 w-full text-left pb-10">
       {/* Hero Profile Header Card */}
       <div className="bg-white rounded-xl border border-neutral-200/80 shadow-xs overflow-hidden relative">
-        {/* Top Gradient Accent Banner */}
-        <div className="h-36 bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#ffa940] relative overflow-hidden">
+        
+        {/* Top Gradient Orange Header Banner with Name & Buttons INSIDE */}
+        <div className="bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#ffa940] p-6 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-black/10"></div>
           <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
-          
-          {/* Header Badges */}
-          <div className="absolute top-4 right-6 flex items-center gap-2">
+
+          {/* Top Right Honor Badges */}
+          <div className="flex items-center justify-end gap-2 mb-4">
             <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white rounded-full text-xs font-semibold flex items-center gap-1.5 border border-white/30">
               <Sparkles className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" /> 国家级精品课程主讲教师
             </span>
@@ -112,16 +113,14 @@ export default function TeacherCenter() {
               AI 教学团队负责人
             </span>
           </div>
-        </div>
 
-        {/* Hero User Info Section */}
-        <div className="px-6 pb-6 relative">
-          <div className="flex flex-col md:flex-row md:items-end justify-between -mt-12 mb-5 gap-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
+          {/* Name & Buttons Row Inside Orange Region */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+            <div className="flex items-center gap-4">
               {/* Avatar Box */}
               <div className="relative group shrink-0">
-                <div className="w-24 h-24 rounded-xl bg-white p-1 shadow-md border border-neutral-100 flex items-center justify-center">
-                  <div className="w-full h-full bg-gradient-to-br from-[#fff2e8] to-[#ffd8bf] rounded-lg flex items-center justify-center text-[#fa541c] text-3xl font-black shadow-inner">
+                <div className="w-20 h-20 rounded-xl bg-white p-1 shadow-md flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[#fff2e8] to-[#ffd8bf] rounded-lg flex items-center justify-center text-[#fa541c] text-2xl font-black shadow-inner">
                     {profile.name.substring(0, 1)}
                   </div>
                 </div>
@@ -129,54 +128,66 @@ export default function TeacherCenter() {
                   onClick={() => showToast('已开启头像更换，请选择图片文件')}
                   className="absolute inset-1 rounded-lg bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-medium gap-1"
                 >
-                  <Camera className="w-4 h-4" /> 更换
+                  <Camera className="w-3.5 h-3.5" /> 更换
                 </button>
-                <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="在教 / 正常"></span>
+                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="在教 / 正常"></span>
               </div>
 
-              <div className="space-y-1.5 pb-1">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                  <h2 className="text-xl font-bold text-neutral-900">{profile.name}</h2>
-                  <span className="px-2.5 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded-[4px] text-xs font-semibold border border-[#ffbb96]/60">
+              {/* Name & Badges */}
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h2 className="text-2xl font-bold text-white tracking-tight">{profile.name}</h2>
+                  <span className="px-2.5 py-0.5 bg-white/20 text-white rounded-[4px] text-xs font-semibold backdrop-blur-md border border-white/30">
                     {profile.title}
                   </span>
-                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-[4px] text-xs font-medium border border-emerald-200/60">
+                  <span className="px-2.5 py-0.5 bg-emerald-500/25 text-white rounded-[4px] text-xs font-medium border border-emerald-300/40 backdrop-blur-md">
                     {profile.status}
                   </span>
                 </div>
-                <p className="text-xs text-neutral-500 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
-                  <span className="flex items-center gap-1 font-mono"><Hash className="w-3.5 h-3.5 text-neutral-400" /> {profile.staffId}</span>
-                  <span className="text-neutral-300">|</span>
-                  <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-neutral-400" /> {profile.department}</span>
-                  <span className="text-neutral-300">|</span>
-                  <span>{profile.lab}</span>
-                </p>
               </div>
             </div>
 
-            {/* Top Action Buttons */}
-            <div className="flex items-center justify-center sm:justify-end gap-2.5 pb-1">
+            {/* Action Buttons inside Orange Area */}
+            <div className="flex items-center gap-2.5 shrink-0">
               <Button 
                 onClick={() => {
                   setEditProfileForm({ ...profile, specializationsStr: profile.specializations.join(', ') });
                   setIsEditProfileOpen(true);
                 }}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-4 h-9 font-semibold text-xs shadow-xs cursor-pointer border-0 flex items-center gap-1.5"
+                className="bg-white hover:bg-orange-50 text-[#fa541c] font-bold rounded-[4px] px-4 h-9 text-xs shadow-sm cursor-pointer border-0 flex items-center gap-1.5 transition-colors"
               >
                 <Edit className="w-3.5 h-3.5" /> 编辑资料
               </Button>
               <Button 
                 onClick={() => showToast('已成功复制个人名片链接至剪贴板！')}
                 variant="outline" 
-                className="border-neutral-200 hover:bg-neutral-50 text-neutral-700 rounded-[4px] px-3 h-9 text-xs font-medium cursor-pointer flex items-center gap-1.5 bg-white"
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-[4px] px-3.5 h-9 text-xs font-medium cursor-pointer flex items-center gap-1.5 backdrop-blur-md transition-colors"
               >
                 <Share2 className="w-3.5 h-3.5" /> 分享名片
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Lower White Area with Subtitle & Bio */}
+        <div className="p-6 bg-white space-y-4 text-left">
+          {/* Subtitle Info Line */}
+          <div className="text-xs text-neutral-600 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-medium border-b border-neutral-100 pb-3.5">
+            <span className="flex items-center gap-1.5 font-mono text-neutral-800">
+              <Hash className="w-3.5 h-3.5 text-[#fa541c]" /> 教工号: <span className="font-bold">{profile.staffId}</span>
+            </span>
+            <span className="text-neutral-300">|</span>
+            <span className="flex items-center gap-1.5 text-neutral-800">
+              <Building2 className="w-3.5 h-3.5 text-[#fa541c]" /> 院系: <span className="font-bold">{profile.department}</span>
+            </span>
+            <span className="text-neutral-300">|</span>
+            <span className="flex items-center gap-1.5 text-neutral-800">
+              <Briefcase className="w-3.5 h-3.5 text-[#fa541c]" /> 实验室: <span className="font-bold">{profile.lab}</span>
+            </span>
+          </div>
 
           {/* Bio Line */}
-          <div className="bg-neutral-50/80 p-3.5 rounded-[6px] border border-neutral-100/80 text-xs text-neutral-600 font-medium leading-relaxed flex items-start gap-2.5">
+          <div className="bg-neutral-50/80 p-3.5 rounded-[6px] border border-neutral-100 text-xs text-neutral-600 font-medium leading-relaxed flex items-start gap-2.5">
             <Sparkles className="w-4 h-4 text-[#fa541c] shrink-0 mt-0.5" />
             <p className="flex-1">{profile.bio}</p>
           </div>
