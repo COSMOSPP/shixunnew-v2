@@ -95,15 +95,13 @@ export default function TeacherCenter() {
   // --- Render Functions ---
 
   const renderProfile = () => (
-    <div className="animate-fade-in space-y-6 max-w-6xl pb-10">
-      {/* Profile Header Hero Card */}
-      <div className="bg-white rounded-2xl border border-neutral-border shadow-xs overflow-hidden relative">
-        {/* Top Gradient Banner with Mesh Pattern */}
-        <div className="h-44 bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#ff9c6e] relative overflow-hidden">
+    <div className="animate-fade-in space-y-6 max-w-6xl text-left pb-10">
+      {/* Hero Profile Header Card */}
+      <div className="bg-white rounded-xl border border-neutral-200/80 shadow-xs overflow-hidden relative">
+        {/* Top Gradient Accent Banner */}
+        <div className="h-36 bg-gradient-to-r from-[#fa541c] via-[#ff7a45] to-[#ffa940] relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-black/10"></div>
-          {/* Subtle Decorative Geometric Circles */}
           <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
-          <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-yellow-300/20 rounded-full blur-xl"></div>
           
           {/* Header Badges */}
           <div className="absolute top-4 right-6 flex items-center gap-2">
@@ -117,36 +115,38 @@ export default function TeacherCenter() {
         </div>
 
         {/* Hero User Info Section */}
-        <div className="px-8 pb-8 pt-0 relative">
-          <div className="flex flex-col md:flex-row md:items-end justify-between -mt-16 mb-6 gap-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
-              {/* Avatar Box with Live Indicator & Camera Upload */}
+        <div className="px-6 pb-6 relative">
+          <div className="flex flex-col md:flex-row md:items-end justify-between -mt-12 mb-5 gap-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
+              {/* Avatar Box */}
               <div className="relative group shrink-0">
-                <div className="w-28 h-28 rounded-2xl bg-white p-1 shadow-md border border-neutral-100 flex items-center justify-center">
-                  <div className="w-full h-full bg-gradient-to-br from-[#fff2e8] to-[#ffd8bf] rounded-xl flex items-center justify-center text-[#fa541c] text-3xl font-black shadow-inner">
+                <div className="w-24 h-24 rounded-xl bg-white p-1 shadow-md border border-neutral-100 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[#fff2e8] to-[#ffd8bf] rounded-lg flex items-center justify-center text-[#fa541c] text-3xl font-black shadow-inner">
                     {profile.name.substring(0, 1)}
                   </div>
                 </div>
                 <button 
                   onClick={() => showToast('已开启头像更换，请选择图片文件')}
-                  className="absolute inset-1 rounded-xl bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-medium gap-1"
+                  className="absolute inset-1 rounded-lg bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-medium gap-1"
                 >
                   <Camera className="w-4 h-4" /> 更换
                 </button>
-                <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" title="在线 / 教学状态正常"></span>
+                <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="在教 / 正常"></span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 pb-1">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                  <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">{profile.name}</h2>
-                  <span className="px-2.5 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded-md text-xs font-semibold border border-[#ffbb96]/60">
+                  <h2 className="text-xl font-bold text-neutral-900">{profile.name}</h2>
+                  <span className="px-2.5 py-0.5 bg-[#fff2e8] text-[#fa541c] rounded-[4px] text-xs font-semibold border border-[#ffbb96]/60">
                     {profile.title}
                   </span>
-                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-xs font-medium border border-emerald-200/60">
+                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-[4px] text-xs font-medium border border-emerald-200/60">
                     {profile.status}
                   </span>
                 </div>
                 <p className="text-xs text-neutral-500 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
+                  <span className="flex items-center gap-1 font-mono"><Hash className="w-3.5 h-3.5 text-neutral-400" /> {profile.staffId}</span>
+                  <span className="text-neutral-300">|</span>
                   <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-neutral-400" /> {profile.department}</span>
                   <span className="text-neutral-300">|</span>
                   <span>{profile.lab}</span>
@@ -155,20 +155,20 @@ export default function TeacherCenter() {
             </div>
 
             {/* Top Action Buttons */}
-            <div className="flex items-center justify-center sm:justify-end gap-2.5">
+            <div className="flex items-center justify-center sm:justify-end gap-2.5 pb-1">
               <Button 
                 onClick={() => {
                   setEditProfileForm({ ...profile, specializationsStr: profile.specializations.join(', ') });
                   setIsEditProfileOpen(true);
                 }}
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg px-4 h-9 font-semibold text-xs shadow-xs cursor-pointer border-0 flex items-center gap-1.5"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-4 h-9 font-semibold text-xs shadow-xs cursor-pointer border-0 flex items-center gap-1.5"
               >
                 <Edit className="w-3.5 h-3.5" /> 编辑资料
               </Button>
               <Button 
                 onClick={() => showToast('已成功复制个人名片链接至剪贴板！')}
                 variant="outline" 
-                className="border-neutral-border hover:bg-neutral-50 text-neutral-700 rounded-lg px-3 h-9 text-xs font-medium cursor-pointer flex items-center gap-1.5"
+                className="border-neutral-200 hover:bg-neutral-50 text-neutral-700 rounded-[4px] px-3 h-9 text-xs font-medium cursor-pointer flex items-center gap-1.5 bg-white"
               >
                 <Share2 className="w-3.5 h-3.5" /> 分享名片
               </Button>
@@ -176,7 +176,7 @@ export default function TeacherCenter() {
           </div>
 
           {/* Bio Line */}
-          <div className="bg-neutral-50/80 p-3.5 rounded-xl border border-neutral-100/80 text-xs text-neutral-600 font-medium leading-relaxed flex items-start gap-2.5">
+          <div className="bg-neutral-50/80 p-3.5 rounded-[6px] border border-neutral-100/80 text-xs text-neutral-600 font-medium leading-relaxed flex items-start gap-2.5">
             <Sparkles className="w-4 h-4 text-[#fa541c] shrink-0 mt-0.5" />
             <p className="flex-1">{profile.bio}</p>
           </div>
@@ -185,8 +185,8 @@ export default function TeacherCenter() {
 
       {/* Teaching & Academic Stats Counter Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
-          <div className="w-11 h-11 rounded-lg bg-orange-50 text-[#fa541c] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+        <div className="bg-white p-4 rounded-xl border border-neutral-200/80 shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-10 h-10 rounded-lg bg-orange-50 text-[#fa541c] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -195,8 +195,8 @@ export default function TeacherCenter() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
-          <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+        <div className="bg-white p-4 rounded-xl border border-neutral-200/80 shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
@@ -205,8 +205,8 @@ export default function TeacherCenter() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
-          <div className="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+        <div className="bg-white p-4 rounded-xl border border-neutral-200/80 shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
             <FolderKanban className="w-5 h-5" />
           </div>
           <div>
@@ -215,8 +215,8 @@ export default function TeacherCenter() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-neutral-border shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
-          <div className="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+        <div className="bg-white p-4 rounded-xl border border-neutral-200/80 shadow-2xs flex items-center gap-3.5 group hover:border-[#fa541c]/40 transition-all">
+          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
             <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
           </div>
           <div>
@@ -229,21 +229,21 @@ export default function TeacherCenter() {
       {/* 2-Column Detailed Layout Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Column (2 Cols wide on desktop): Detailed Profile Information & Specialties */}
+        {/* Left Column: Detailed Profile Information & Specialties */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Detailed Info Card */}
-          <div className="bg-white rounded-xl border border-neutral-border p-6 shadow-2xs space-y-5">
-            <div className="flex items-center justify-between border-b border-neutral-border/50 pb-3.5">
+          <div className="bg-white rounded-xl border border-neutral-200/80 p-6 shadow-2xs space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3.5">
               <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-[#fa541c]" /> 详细档案与联系信息
               </h3>
-              <span className="text-[11px] text-neutral-400">最后更新: 2026-05-20</span>
+              <span className="text-[11px] text-neutral-400 font-mono">最后更新: 2026-05-20</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+              <div className="p-3.5 rounded-[6px] bg-neutral-50/70 border border-neutral-100 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500 shrink-0">
                   <Hash className="w-4 h-4" />
                 </div>
                 <div>
@@ -252,7 +252,7 @@ export default function TeacherCenter() {
                     {profile.staffId}
                     <button 
                       onClick={() => showToast('教工号已复制')}
-                      className="text-neutral-400 hover:text-[#fa541c] cursor-pointer"
+                      className="text-neutral-400 hover:text-[#fa541c] cursor-pointer bg-transparent border-0 p-0"
                       title="复制"
                     >
                       <Copy className="w-3 h-3" />
@@ -261,8 +261,8 @@ export default function TeacherCenter() {
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+              <div className="p-3.5 rounded-[6px] bg-neutral-50/70 border border-neutral-100 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500 shrink-0">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div>
@@ -271,9 +271,9 @@ export default function TeacherCenter() {
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center justify-between">
+              <div className="p-3.5 rounded-[6px] bg-neutral-50/70 border border-neutral-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+                  <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500 shrink-0">
                     <Phone className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
@@ -283,25 +283,25 @@ export default function TeacherCenter() {
                 </div>
                 <button 
                   onClick={() => setIsPhoneModalOpen(true)}
-                  className="text-xs text-[#fa541c] hover:underline cursor-pointer font-medium"
+                  className="text-xs text-[#fa541c] hover:underline cursor-pointer font-medium border-0 bg-transparent p-0"
                 >
                   修改
                 </button>
               </div>
 
-              <div className="p-3.5 rounded-lg bg-neutral-50/70 border border-neutral-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500">
+              <div className="p-3.5 rounded-[6px] bg-neutral-50/70 border border-neutral-100 flex items-center justify-between">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-9 h-9 rounded-md bg-white border border-neutral-200/80 flex items-center justify-center text-neutral-500 shrink-0">
                     <Mail className="w-4 h-4 text-blue-600" />
                   </div>
-                  <div className="truncate max-w-[170px]">
+                  <div className="truncate">
                     <div className="text-[11px] text-neutral-400 font-medium">官方邮箱</div>
                     <div className="text-xs font-bold text-neutral-800 mt-0.5 truncate">{profile.email}</div>
                   </div>
                 </div>
                 <button 
                   onClick={() => setIsEmailModalOpen(true)}
-                  className="text-xs text-[#fa541c] hover:underline cursor-pointer font-medium"
+                  className="text-xs text-[#fa541c] hover:underline cursor-pointer font-medium border-0 bg-transparent p-0 shrink-0 ml-2"
                 >
                   修改
                 </button>
@@ -315,7 +315,7 @@ export default function TeacherCenter() {
                 {profile.specializations.map((spec, idx) => (
                   <span 
                     key={idx} 
-                    className="px-3 py-1 bg-neutral-100 hover:bg-[#fff2e8] hover:text-[#fa541c] transition-colors text-neutral-700 rounded-lg text-xs font-semibold border border-neutral-200/60 cursor-default flex items-center gap-1.5"
+                    className="px-3 py-1 bg-neutral-50 hover:bg-[#fff2e8] hover:text-[#fa541c] transition-colors text-neutral-700 rounded-[4px] text-xs font-medium border border-neutral-200/80 cursor-default flex items-center gap-1.5"
                   >
                     <CheckCircle2 className="w-3 h-3 text-[#fa541c]" /> {spec}
                   </span>
@@ -325,23 +325,23 @@ export default function TeacherCenter() {
           </div>
 
           {/* Teacher Academic Certifications & Honors */}
-          <div className="bg-white rounded-xl border border-neutral-border p-6 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-border/50 pb-3.5">
+          <div className="bg-white rounded-xl border border-neutral-200/80 p-6 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-100 pb-3.5">
               <Award className="w-4 h-4 text-[#fa541c]" /> 教师荣誉与学术资质
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="p-3.5 rounded-lg border border-neutral-200/80 bg-neutral-50/40 flex items-start gap-3">
+              <div className="p-3.5 rounded-[6px] border border-neutral-200/80 bg-neutral-50/40 flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 font-bold">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-neutral-900">2025年度全校十佳优秀教师标兵</div>
-                  <div className="text-[11px] text-neutral-500 mt-0.5">获颁单位: 清华大学计算机教务处</div>
+                  <div className="text-[11px] text-neutral-500 mt-0.5">获颁单位: 计算机科学学院教务处</div>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-lg border border-neutral-200/80 bg-neutral-50/40 flex items-start gap-3">
+              <div className="p-3.5 rounded-[6px] border border-neutral-200/80 bg-neutral-50/40 flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 font-bold">
                   <GraduationCap className="w-4 h-4" />
                 </div>
@@ -354,12 +354,12 @@ export default function TeacherCenter() {
           </div>
         </div>
 
-        {/* Right Column (1 Col wide): Ongoing Active Courses & Timeline */}
+        {/* Right Column: Ongoing Active Courses & Timeline */}
         <div className="space-y-6">
           
           {/* Active Courses Card */}
-          <div className="bg-white rounded-xl border border-neutral-border p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-neutral-border/50 pb-3">
+          <div className="bg-white rounded-xl border border-neutral-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-[#fa541c]" /> 当前负责实训课程
               </h3>
@@ -367,7 +367,7 @@ export default function TeacherCenter() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-3 rounded-lg border border-neutral-200/80 hover:border-[#fa541c]/40 transition-all bg-white">
+              <div className="p-3 rounded-[6px] border border-neutral-200/80 hover:border-[#fa541c]/40 transition-all bg-white">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-neutral-800">《大语言模型微调与 RAG 架构》</span>
                   <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">进行中</span>
@@ -381,7 +381,7 @@ export default function TeacherCenter() {
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg border border-neutral-200/80 hover:border-[#fa541c]/40 transition-all bg-white">
+              <div className="p-3 rounded-[6px] border border-neutral-200/80 hover:border-[#fa541c]/40 transition-all bg-white">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-neutral-800">《深度学习与 PyTorch 核心实践》</span>
                   <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-medium">进行中</span>
@@ -398,8 +398,8 @@ export default function TeacherCenter() {
           </div>
 
           {/* Recent Teaching Activities */}
-          <div className="bg-white rounded-xl border border-neutral-border p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-border/50 pb-3">
+          <div className="bg-white rounded-xl border border-neutral-200/80 p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-100 pb-3">
               <Activity className="w-4 h-4 text-[#fa541c]" /> 最近教学活动轨迹
             </h3>
             
@@ -430,90 +430,99 @@ export default function TeacherCenter() {
 
       {/* Edit Profile Modal */}
       {isEditProfileOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 border border-neutral-200">
-            <div className="px-6 py-4 border-b border-neutral-border flex justify-between items-center bg-neutral-50/50">
-              <h3 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-fade-in text-left">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 border border-neutral-200 flex flex-col">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h3 className="text-sm font-bold text-[#262626] flex items-center gap-2">
                 <Edit className="w-4 h-4 text-[#fa541c]" /> 编辑教师个人资料
               </h3>
-              <button onClick={() => setIsEditProfileOpen(false)} className="text-neutral-400 hover:text-neutral-600 cursor-pointer">
+              <button 
+                onClick={() => setIsEditProfileOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
             
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar text-xs">
               <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1.5">姓名 <span className="text-red-500">*</span></label>
+                <label className="block text-xs font-bold text-[#262626] mb-1.5">姓名 <span className="text-[#fa541c]">*</span></label>
                 <input 
                   type="text" 
                   value={editProfileForm.name} 
                   onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                  className="w-full px-3.5 py-2 rounded-[4px] border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium bg-white" 
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1.5">职称/头衔</label>
+                  <label className="block text-xs font-bold text-[#262626] mb-1.5">职称/头衔</label>
                   <input 
                     type="text" 
                     value={editProfileForm.title} 
                     onChange={e => setEditProfileForm({...editProfileForm, title: e.target.value})}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                    className="w-full px-3.5 py-2 rounded-[4px] border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium bg-white" 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1.5">在职状态</label>
+                  <label className="block text-xs font-bold text-[#262626] mb-1.5">在职状态</label>
                   <input 
                     type="text" 
                     value={editProfileForm.status} 
                     onChange={e => setEditProfileForm({...editProfileForm, status: e.target.value})}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                    className="w-full px-3.5 py-2 rounded-[4px] border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium bg-white" 
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1.5">所属院系</label>
+                <label className="block text-xs font-bold text-[#262626] mb-1.5">所属院系</label>
                 <input 
                   type="text" 
                   value={editProfileForm.department} 
                   onChange={e => setEditProfileForm({...editProfileForm, department: e.target.value})}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                  className="w-full px-3.5 py-2 rounded-[4px] border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium bg-white" 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1.5">个人研究签名 / 教学座右铭</label>
+                <label className="block text-xs font-bold text-[#262626] mb-1.5">个人研究签名 / 教学座右铭</label>
                 <textarea 
                   rows={3} 
                   value={editProfileForm.bio} 
                   onChange={e => setEditProfileForm({...editProfileForm, bio: e.target.value})}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium resize-none" 
+                  className="w-full px-3.5 py-2 rounded-[4px] border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium resize-none bg-white" 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1.5">主讲领域 (用逗号分隔)</label>
+                <label className="block text-xs font-bold text-[#262626] mb-1.5">主讲领域 (用逗号分隔)</label>
                 <input 
                   type="text" 
                   value={editProfileForm.specializationsStr} 
                   onChange={e => setEditProfileForm({...editProfileForm, specializationsStr: e.target.value})}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium" 
+                  className="w-full px-3.5 py-2 rounded-[4px] border border-neutral-200 focus:outline-none focus:border-[#fa541c] text-xs font-medium bg-white" 
                 />
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-neutral-50 flex justify-end gap-2.5 border-t border-neutral-border">
-              <Button onClick={() => setIsEditProfileOpen(false)} variant="outline" className="rounded-lg px-4 text-xs font-semibold h-8 cursor-pointer">取消</Button>
+            <div className="px-6 py-3.5 bg-neutral-50/50 flex justify-end gap-2.5 border-t border-neutral-100 shrink-0">
+              <Button 
+                onClick={() => setIsEditProfileOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 rounded-[4px] px-4 text-xs font-semibold h-8 bg-white cursor-pointer hover:bg-neutral-50"
+              >
+                取消
+              </Button>
               <Button 
                 onClick={() => {
-                  const specs = editProfileForm.specializationsStr.split(',').map(s => s.trim()).filter(Boolean);
+                  const specs = editProfileForm.specializationsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean);
                   setProfile({ ...editProfileForm, specializations: specs });
                   setIsEditProfileOpen(false);
                   showToast('个人资料已成功更新！');
                 }} 
-                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg px-5 text-xs font-semibold h-8 shadow-xs cursor-pointer border-0"
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-5 text-xs font-semibold h-8 shadow-xs cursor-pointer border-0"
               >
                 保存修改
               </Button>
