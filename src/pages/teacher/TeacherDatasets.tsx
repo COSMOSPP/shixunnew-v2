@@ -582,7 +582,7 @@ export default function TeacherDatasets({
             </div>
 
             {/* Bottom Pagination Bar */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 text-xs text-neutral-500">
+            <div className="px-6 py-4 bg-white flex items-center justify-end gap-3 text-xs text-neutral-500">
               <span>共 {filteredData.length} 条</span>
               <div className="flex items-center gap-1">
                 <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
