@@ -73,7 +73,6 @@ export default function TeacherCenter() {
   const [notifications, setNotifications] = useState(mockNotifications);
   const [notiFilter, setNotiFilter] = useState('所有');
   const [notiSearchQuery, setNotiSearchQuery] = useState('');
-  const [selectedNotiIds, setSelectedNotiIds] = useState<number[]>([]);
 
   const filteredNotis = notifications.filter(n => {
     if (notiFilter !== '所有' && n.type !== notiFilter) return false;
@@ -82,18 +81,6 @@ export default function TeacherCenter() {
   });
 
   const unreadCount = notifications.filter(n => !n.read).length;
-
-  const toggleSelectNoti = (id: number) => {
-    setSelectedNotiIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
-
-  const toggleSelectAllNotis = (selectAll: boolean) => {
-    if (selectAll) {
-      setSelectedNotiIds(filteredNotis.map(n => n.id));
-    } else {
-      setSelectedNotiIds([]);
-    }
-  };
 
   // --- Quota State ---
   const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
@@ -617,19 +604,6 @@ export default function TeacherCenter() {
                 <Check className="w-3.5 h-3.5 mr-1" /> 全部已读
               </Button>
             )}
-
-            {selectedNotiIds.length > 0 && (
-              <Button 
-                onClick={() => {
-                  setNotifications(prev => prev.filter(n => !selectedNotiIds.includes(n.id)));
-                  setSelectedNotiIds([]);
-                  showToast('已删除选中的消息通知');
-                }}
-                className="bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe8d6] border border-[#ffbb96]/50 h-8 px-3 rounded-[4px] text-xs font-semibold cursor-pointer shadow-2xs transition-all"
-              >
-                批量删除 ({selectedNotiIds.length})
-              </Button>
-            )}
           </div>
         </div>
 
@@ -638,15 +612,7 @@ export default function TeacherCenter() {
           <table className="w-full text-left border-collapse whitespace-nowrap text-[13px]">
             <thead>
               <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
-                <th className="p-4 font-medium w-[55%] flex items-center gap-3">
-                  <input 
-                    type="checkbox"
-                    checked={filteredNotis.length > 0 && selectedNotiIds.length === filteredNotis.length}
-                    onChange={(e) => toggleSelectAllNotis(e.target.checked)}
-                    className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer accent-[#fa541c]"
-                  />
-                  <span>消息详情</span>
-                </th>
+                <th className="p-4 font-medium w-[55%]">消息详情</th>
                 <th className="p-4 font-medium w-[20%]">消息分类</th>
                 <th className="p-4 font-medium w-[25%]">消息时间</th>
               </tr>
@@ -655,26 +621,15 @@ export default function TeacherCenter() {
               {filteredNotis.length > 0 ? (
                 filteredNotis.map((noti, index) => (
                   <tr key={noti.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredNotis.length - 1 && "border-b-0", !noti.read && "bg-orange-50/20")}>
-                    {/* 消息详情 (带前置方框) */}
+                    {/* 消息详情 */}
                     <td className="p-4 whitespace-normal">
-                      <div className="flex items-start gap-3">
-                        <input 
-                          type="checkbox"
-                          checked={selectedNotiIds.includes(noti.id)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            toggleSelectNoti(noti.id);
-                          }}
-                          className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer mt-1 shrink-0 accent-[#fa541c]"
-                        />
+                      <div className="flex items-start gap-2.5">
+                        {!noti.read && (
+                          <span className="w-2 h-2 rounded-full bg-[#fa541c] shrink-0 mt-1.5" title="未读消息"></span>
+                        )}
                         <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            {!noti.read && (
-                              <span className="w-2 h-2 rounded-full bg-[#fa541c] shrink-0" title="未读消息"></span>
-                            )}
-                            <div className={cn("font-medium transition-colors cursor-pointer group-hover:text-[#fa541c]", !noti.read ? "text-neutral-900 font-bold" : "text-neutral-800")}>
-                              {noti.title}
-                            </div>
+                          <div className={cn("font-medium transition-colors cursor-pointer group-hover:text-[#fa541c]", !noti.read ? "text-neutral-900 font-bold" : "text-neutral-800")}>
+                            {noti.title}
                           </div>
                           <div className="text-xs text-neutral-500 leading-relaxed font-normal">
                             {noti.content}
