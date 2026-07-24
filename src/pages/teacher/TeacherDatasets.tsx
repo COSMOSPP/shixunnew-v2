@@ -416,11 +416,12 @@ export default function TeacherDatasets({
         </div>
       </div>
 
-      {/* Content Area - Table Layout matching 题库管理 Table Container */}
-      <div className="flex-1 overflow-auto bg-white border border-neutral-200/80 rounded-[8px] flex flex-col justify-between overflow-hidden">
-        {filteredData.length > 0 ? (
-          <div className="flex flex-col flex-1 justify-between">
-            <div className="overflow-x-auto">
+      {/* Content Area - Table Card Container Module & Standalone Pagination */}
+      <div className="flex-1 flex flex-col justify-between overflow-hidden gap-3">
+        {/* Table Card Container */}
+        <div className="bg-white border border-neutral-200/80 rounded-[8px] overflow-hidden flex-1 flex flex-col">
+          {filteredData.length > 0 ? (
+            <div className="overflow-x-auto flex-1">
               <table className="w-full text-left border-collapse whitespace-nowrap text-[13px]">
                 <thead>
                   <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
@@ -580,40 +581,42 @@ export default function TeacherDatasets({
                 </tbody>
               </table>
             </div>
-
-            {/* Bottom Pagination Bar */}
-            <div className="px-6 py-4 bg-white flex items-center justify-end gap-3 text-xs text-neutral-500">
-              <span>共 {filteredData.length} 条</span>
-              <div className="flex items-center gap-1">
-                <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
-                  &lt;
-                </button>
-                <button className="w-7 h-7 bg-[#fa541c] text-white rounded font-bold flex items-center justify-center shadow-xs">
-                  1
-                </button>
-                <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
-                  &gt;
-                </button>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-center p-20">
+              <div className="w-32 h-32 bg-neutral-50 rounded-full flex items-center justify-center mb-4">
+                <Database className="w-12 h-12 text-neutral-300" />
               </div>
-              <select className="border border-neutral-200 rounded px-2 py-1 text-xs text-neutral-600 bg-white focus:outline-none focus:border-[#fa541c]">
-                <option value="10">10 条/页</option>
-                <option value="20">20 条/页</option>
-                <option value="50">50 条/页</option>
-              </select>
+              <h3 className="text-[16px] font-bold text-neutral-800 mb-2">未找到数据集</h3>
+              <p className="text-[13px] text-neutral-500 mb-6 max-w-sm">
+                当前分类下暂无数据集记录。您可以新建数据集或调整过滤条件。
+              </p>
+              <Button onClick={handleOpenCreate} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-6 text-[13px] border-0 cursor-pointer">
+                新建数据集
+              </Button>
             </div>
-          </div>
-        ) : (
-          <div className="h-full flex flex-col items-center justify-center text-center pb-20">
-            <div className="w-32 h-32 bg-neutral-50 rounded-full flex items-center justify-center mb-4">
-              <Database className="w-12 h-12 text-neutral-300" />
+          )}
+        </div>
+
+        {/* Standalone Bottom Pagination Bar - Independent Module outside Table Card */}
+        {filteredData.length > 0 && (
+          <div className="py-2 px-1 flex items-center justify-end gap-3 text-xs text-neutral-500 shrink-0 select-none">
+            <span>共 {filteredData.length} 条</span>
+            <div className="flex items-center gap-1">
+              <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
+                &lt;
+              </button>
+              <button className="w-7 h-7 bg-[#fa541c] text-white rounded font-bold flex items-center justify-center shadow-xs">
+                1
+              </button>
+              <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
+                &gt;
+              </button>
             </div>
-            <h3 className="text-[16px] font-bold text-neutral-800 mb-2">未找到数据集</h3>
-            <p className="text-[13px] text-neutral-500 mb-6 max-w-sm">
-              当前分类下暂无数据集记录。您可以新建数据集或调整过滤条件。
-            </p>
-            <Button onClick={handleOpenCreate} className="bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-[4px] px-6 text-[13px] border-0 cursor-pointer">
-              新建数据集
-            </Button>
+            <select className="border border-neutral-200 rounded px-2 py-1 text-xs text-neutral-600 bg-white focus:outline-none focus:border-[#fa541c]">
+              <option value="10">10 条/页</option>
+              <option value="20">20 条/页</option>
+              <option value="50">50 条/页</option>
+            </select>
           </div>
         )}
       </div>
