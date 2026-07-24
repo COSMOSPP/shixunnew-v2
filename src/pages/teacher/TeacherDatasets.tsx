@@ -104,11 +104,17 @@ export default function TeacherDatasets({
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const filterDropdownRef = React.useRef<HTMLDivElement>(null);
+  
+  const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
+  const actionDropdownRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
         setIsFilterDropdownOpen(false);
+      }
+      if (actionDropdownRef.current && !actionDropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdownId(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -374,35 +380,35 @@ export default function TeacherDatasets({
         </div>
       </div>
 
-      {/* Content Area - Table Layout matching user screenshot */}
+      {/* Content Area - Table Layout matching course table style in TeacherHome */}
       <div className="flex-1 overflow-auto bg-white rounded-xl border border-neutral-200/80 shadow-xs flex flex-col justify-between">
         {filteredData.length > 0 ? (
           <div className="flex flex-col flex-1 justify-between">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse whitespace-nowrap text-xs text-neutral-700">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-neutral-200/80 bg-white text-neutral-800 font-semibold text-[13px]">
-                    <th className="py-4 pl-6 pr-4 font-semibold text-left">数据集信息</th>
-                    <th className="py-4 px-4 font-semibold text-left">创建人</th>
-                    <th className="py-4 px-4 font-semibold text-left">类型</th>
-                    <th className="py-4 px-4 font-semibold text-left">是否可用</th>
-                    <th className="py-4 px-4 font-semibold text-left">范围</th>
-                    <th className="py-4 px-4 font-semibold text-left">审核状态</th>
-                    <th className="py-4 px-4 font-semibold text-left">更新时间</th>
-                    <th className="py-4 pl-4 pr-6 font-semibold text-left">操作</th>
+                  <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
+                    <th className="px-4 py-3 pl-6 text-left">数据集信息</th>
+                    <th className="px-4 py-3 text-left">创建人</th>
+                    <th className="px-4 py-3 text-left">类型</th>
+                    <th className="px-4 py-3 text-left">是否可用</th>
+                    <th className="px-4 py-3 text-left">范围</th>
+                    <th className="px-4 py-3 text-left">审核状态</th>
+                    <th className="px-4 py-3 text-left">更新时间</th>
+                    <th className="px-4 py-3 pr-6 text-left">操作</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100">
-                  {filteredData.map(ds => (
-                    <tr key={ds.id} className="hover:bg-neutral-50/40 transition-colors group">
+                <tbody>
+                  {filteredData.map((ds, index) => (
+                    <tr key={ds.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredData.length - 1 && "border-b-0")}>
                       {/* 数据集信息 */}
-                      <td className="py-4 pl-6 pr-4 align-top">
-                        <div className="font-bold text-neutral-900 text-sm leading-snug">{ds.name}</div>
+                      <td className="px-4 py-3 pl-6 text-left">
+                        <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer">{ds.name}</div>
                         {ds.subtitle && (
-                          <div className="text-xs text-neutral-500 mt-0.5 font-normal">{ds.subtitle}</div>
+                          <div className="text-xs text-neutral-500 font-mono mt-0.5">{ds.subtitle}</div>
                         )}
                         {ds.tags && ds.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
+                          <div className="flex flex-wrap gap-1.5 mt-1">
                             {ds.tags.map((t, idx) => (
                               <span key={idx} className="px-2 py-0.5 bg-neutral-50 text-neutral-500 border border-neutral-200/80 text-[11px] rounded font-mono">
                                 {t}
@@ -413,14 +419,14 @@ export default function TeacherDatasets({
                       </td>
 
                       {/* 创建人 */}
-                      <td className="py-4 px-4 align-top font-medium text-neutral-800">
+                      <td className="px-4 py-3 text-left text-neutral-600 font-medium">
                         {ds.creator}
                       </td>
 
                       {/* 类型 */}
-                      <td className="py-4 px-4 align-top">
+                      <td className="px-4 py-3 text-left">
                         <span className={cn(
-                          "px-2.5 py-1 text-xs font-medium rounded-md border inline-block",
+                          "px-2 py-0.5 text-[12px] rounded border font-medium",
                           ds.type === '文本' ? "bg-blue-50 text-blue-600 border-blue-200" :
                           (ds.type === '图像' || ds.type === '图片') ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
                           "bg-neutral-100 text-neutral-600 border-neutral-200"
@@ -430,68 +436,93 @@ export default function TeacherDatasets({
                       </td>
 
                       {/* 是否可用 */}
-                      <td className="py-4 px-4 align-top">
+                      <td className="px-4 py-3 text-left">
                         <span className={cn(
-                          "px-2.5 py-1 text-xs font-medium rounded-md border inline-block",
-                          ds.isAvailable ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-neutral-100 text-neutral-500 border-neutral-200"
+                          "px-2 py-0.5 text-[12px] rounded border font-medium",
+                          ds.isAvailable ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-neutral-100 text-neutral-600 border-neutral-200"
                         )}>
                           {ds.isAvailable ? '可用' : '不可用'}
                         </span>
                       </td>
 
                       {/* 范围 */}
-                      <td className="py-4 px-4 align-top">
+                      <td className="px-4 py-3 text-left">
                         <span className={cn(
-                          "px-2.5 py-1 text-xs font-medium rounded-md border inline-block",
-                          ds.scope === '公共' || ds.scope === '平台公共' ? "bg-orange-50 text-[#fa541c] border-orange-200" : "bg-neutral-100 text-neutral-500 border-neutral-200"
+                          "px-2 py-0.5 text-[12px] rounded border font-medium",
+                          ds.scope === '公共' || ds.scope === '平台公共' ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-neutral-50 text-neutral-500 border-neutral-200"
                         )}>
                           {ds.scope === '平台公共' ? '公共' : ds.scope}
                         </span>
                       </td>
 
                       {/* 审核状态 */}
-                      <td className="py-4 px-4 align-top font-bold">
+                      <td className="px-4 py-3 text-left">
                         {ds.auditStatus === '待审核' ? (
-                          <span className="text-[#fa541c]">待审核</span>
+                          <span className="text-[#fa541c] font-medium">待审核</span>
                         ) : ds.auditStatus === '审核通过' || ds.auditStatus === '已发布' ? (
-                          <span className="text-emerald-600">已通过</span>
+                          <span className="text-emerald-600 font-medium">已通过</span>
                         ) : (
                           <span className="text-neutral-400 font-normal">--</span>
                         )}
                       </td>
 
                       {/* 更新时间 */}
-                      <td className="py-4 px-4 align-top text-neutral-500 font-mono text-xs">
+                      <td className="px-4 py-3 text-left text-neutral-500 font-mono text-[12px]">
                         {ds.updateTime}
                       </td>
 
-                      {/* 操作 */}
-                      <td className="py-4 pl-4 pr-6 align-top">
-                        <div className="flex items-center gap-3 text-xs font-semibold">
+                      {/* 操作: 默认展示高频两个 (编辑, 公开), 其他放到"更多"下拉菜单 */}
+                      <td className="px-4 py-3 pr-6 text-left">
+                        <div className="flex items-center gap-3">
                           <button 
                             onClick={() => handleOpenEdit(ds)} 
-                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
+                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold"
                           >
                             编辑
                           </button>
                           <button 
                             onClick={() => handleApplyPublic(ds)} 
-                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
+                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold"
                           >
                             公开
                           </button>
-                          <button 
-                            onClick={() => handleDelete(ds)} 
-                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
-                          >
-                            删除
-                          </button>
-                          <button 
-                            onClick={() => toggleAvailability(ds)} 
-                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
-                          >
-                            {ds.isAvailable ? '禁用' : '启用'}
-                          </button>
+
+                          {/* 下拉菜单: 更多 */}
+                          <div className="relative" ref={activeDropdownId === ds.id ? actionDropdownRef : null}>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveDropdownId(activeDropdownId === ds.id ? null : ds.id);
+                              }}
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold flex items-center gap-0.5"
+                            >
+                              更多 <ChevronDown className="w-3 h-3" />
+                            </button>
+                            {activeDropdownId === ds.id && (
+                              <div className="absolute right-0 mt-1.5 bg-white border border-neutral-200 rounded-[4px] shadow-lg py-1 z-30 min-w-[100px] text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleAvailability(ds);
+                                    setActiveDropdownId(null);
+                                  }} 
+                                  className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50 font-medium"
+                                >
+                                  {ds.isAvailable ? '禁用' : '启用'}
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(ds);
+                                    setActiveDropdownId(null);
+                                  }} 
+                                  className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50 font-medium"
+                                >
+                                  删除
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -500,7 +531,7 @@ export default function TeacherDatasets({
               </table>
             </div>
 
-            {/* Bottom Pagination Bar matching screenshot */}
+            {/* Bottom Pagination Bar */}
             <div className="px-6 py-4 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 text-xs text-neutral-500">
               <span>共 {filteredData.length} 条</span>
               <div className="flex items-center gap-1">
@@ -655,13 +686,20 @@ export default function TeacherDatasets({
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end gap-3 shrink-0">
-              <Button onClick={() => setIsDrawerOpen(false)} variant="outline" className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-full text-[13px]">
+            {/* Footer - matching 新建课程 buttons style */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsDrawerOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
                 取消
               </Button>
-              <Button onClick={handleSave} className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-full shadow-sm text-[13px]">
-                保存并上传
+              <Button 
+                onClick={handleSave} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                确认
               </Button>
             </div>
           </div>
