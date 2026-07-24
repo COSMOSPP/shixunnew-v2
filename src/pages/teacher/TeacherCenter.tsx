@@ -72,11 +72,28 @@ export default function TeacherCenter() {
   // --- Notification State ---
   const [notifications, setNotifications] = useState(mockNotifications);
   const [notiFilter, setNotiFilter] = useState('所有');
-  const [showNotiSettings, setShowNotiSettings] = useState(false);
-  const [notiSettings, setNotiSettings] = useState({ sys: true, course: true, exam: true, activity: false, audit: true });
+  const [notiSearchQuery, setNotiSearchQuery] = useState('');
+  const [selectedNotiIds, setSelectedNotiIds] = useState<number[]>([]);
 
-  const filteredNotis = notifications.filter(n => notiFilter === '所有' || n.type === notiFilter);
+  const filteredNotis = notifications.filter(n => {
+    if (notiFilter !== '所有' && n.type !== notiFilter) return false;
+    if (notiSearchQuery && !n.title.toLowerCase().includes(notiSearchQuery.toLowerCase()) && !n.content.toLowerCase().includes(notiSearchQuery.toLowerCase())) return false;
+    return true;
+  });
+
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const toggleSelectNoti = (id: number) => {
+    setSelectedNotiIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAllNotis = (selectAll: boolean) => {
+    if (selectAll) {
+      setSelectedNotiIds(filteredNotis.map(n => n.id));
+    } else {
+      setSelectedNotiIds([]);
+    }
+  };
 
   // --- Quota State ---
   const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
@@ -545,86 +562,108 @@ export default function TeacherCenter() {
   );
 
   const renderNotifications = () => (
-    <div className="animate-fade-in space-y-5 text-left w-full">
-      {/* Top Controller Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Category Tabs */}
-        <div className="flex flex-wrap items-center gap-2">
-          {['所有', '系统通知', '考试提醒', '审核结果通知', '课程更新通知'].map(type => (
-            <button
-              key={type}
-              onClick={() => setNotiFilter(type)}
-              className={cn(
-                "px-3.5 py-1.5 rounded-[4px] text-xs font-semibold transition-all border cursor-pointer",
-                notiFilter === type 
-                  ? "bg-[#fa541c] text-white border-[#fa541c] shadow-xs" 
-                  : "bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50 hover:text-[#fa541c]"
-              )}
-            >
-              {type}
-            </button>
-          ))}
+    <div className="animate-fade-in space-y-4 text-left w-full">
+      {/* Header Section matching AdminAudit */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold text-neutral-900">消息通知</h2>
+          <p className="text-xs text-neutral-500 mb-0.5">
+            查看与管理系统通知、考试提醒、课程审核与团队协作消息
+          </p>
         </div>
 
-        {/* Top Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {unreadCount > 0 && (
-            <Button 
-              onClick={() => {
-                setNotifications(notifications.map(n => ({...n, read: true})));
-                showToast('已全部标记为已读');
-              }}
-              variant="outline" 
-              className="h-8 rounded-[4px] px-3.5 text-xs font-semibold border-neutral-200 text-neutral-700 hover:bg-neutral-50 bg-white cursor-pointer"
-            >
-              <Check className="w-3.5 h-3.5 mr-1" /> 全部已读
-            </Button>
-          )}
-          <Button 
-            onClick={() => setShowNotiSettings(!showNotiSettings)} 
-            variant="outline" 
-            className="h-8 rounded-[4px] px-3.5 text-xs font-semibold border-neutral-200 text-neutral-700 hover:bg-neutral-50 bg-white cursor-pointer"
-          >
-            <Settings className="w-3.5 h-3.5 mr-1" /> 通知设置
-          </Button>
+        {/* Quick Statistics Pill */}
+        <div className="flex items-center gap-3">
+          <div className="bg-white px-3 py-1.5 rounded border border-neutral-200 text-xs flex items-center gap-2">
+            <span className="text-neutral-500 font-medium">总通知:</span>
+            <span className="font-bold text-neutral-800">{notifications.length}</span>
+          </div>
+          <div className="bg-white px-3 py-1.5 rounded border border-neutral-200 text-xs flex items-center gap-2">
+            <span className="text-neutral-500 font-medium">未读:</span>
+            <span className="font-bold text-[#fa541c]">{unreadCount}</span>
+          </div>
         </div>
       </div>
 
-      {/* Preference Settings Panel */}
-      {showNotiSettings && (
-        <div className="bg-white p-5 rounded-xl border border-neutral-200/80 shadow-xs flex flex-col gap-3.5 relative animate-in fade-in slide-in-from-top-2 duration-200">
-          <button 
-            onClick={() => setShowNotiSettings(false)} 
-            className="absolute top-4 right-4 text-neutral-400 hover:text-[#fa541c] p-1 rounded hover:bg-neutral-100 transition-colors border-0 bg-transparent cursor-pointer"
-          >
-            <X className="w-4 h-4"/>
-          </button>
-          <h3 className="text-xs font-bold text-neutral-900 flex items-center gap-1.5">
-            <Bell className="w-3.5 h-3.5 text-[#fa541c]" /> 接收偏好设置
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
-            {Object.entries({ sys: '系统通知', course: '课程更新通知', exam: '考试提醒', activity: '活动通知', audit: '审核结果通知' }).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between bg-neutral-50/80 px-3.5 py-2.5 rounded-[6px] border border-neutral-100">
-                <span className="text-xs font-medium text-neutral-700">{label}</span>
-                <button 
-                  onClick={() => setNotiSettings({...notiSettings, [key]: !notiSettings[key as keyof typeof notiSettings]})}
-                  className={cn("relative w-9 h-5 rounded-full transition-colors cursor-pointer border-0", notiSettings[key as keyof typeof notiSettings] ? "bg-[#fa541c]" : "bg-neutral-200")}
+      {/* Table and Toolbar Unified Module (Ref AdminAudit Style) */}
+      <div className="bg-white rounded border border-neutral-200 overflow-hidden flex-1 flex flex-col">
+        {/* Integrated Toolbar Header Section */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-b border-neutral-100 bg-white shrink-0">
+          {/* Search Input bar */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative w-full md:w-64">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input 
+                type="text"
+                placeholder="搜索消息内容..."
+                value={notiSearchQuery}
+                onChange={(e) => setNotiSearchQuery(e.target.value)}
+                className="pl-9 pr-4 py-1.5 w-full bg-white border border-neutral-200 rounded-full text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] text-neutral-800 transition-all placeholder:text-neutral-400 h-9"
+              />
+            </div>
+          </div>
+
+          {/* Right: Actions & Category Pill Selectors (AdminAudit style) */}
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+            <div className="flex bg-neutral-100 rounded-full p-1 border border-neutral-200/50">
+              {['所有', '系统通知', '考试提醒', '审核结果通知', '课程更新通知'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => { setNotiFilter(type); setSelectedNotiIds([]); }}
+                  className={cn(
+                    "px-3.5 py-1.5 text-[12px] font-medium rounded-full transition-all duration-200 cursor-pointer border-0 bg-transparent",
+                    notiFilter === type 
+                      ? "bg-white text-[#fa541c] font-bold shadow-xs" 
+                      : "text-neutral-600 hover:text-neutral-900"
+                  )}
                 >
-                  <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-xs", notiSettings[key as keyof typeof notiSettings] ? "left-4.5" : "left-0.5")}></span>
+                  {type}
                 </button>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {unreadCount > 0 && (
+              <Button 
+                onClick={() => {
+                  setNotifications(notifications.map(n => ({...n, read: true})));
+                  showToast('已全部标记为已读');
+                }}
+                variant="outline" 
+                className="h-8 rounded-[4px] px-3.5 text-xs font-semibold border-neutral-200 text-neutral-700 hover:bg-neutral-50 bg-white cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5 mr-1" /> 全部已读
+              </Button>
+            )}
+
+            {selectedNotiIds.length > 0 && (
+              <Button 
+                onClick={() => {
+                  setNotifications(prev => prev.filter(n => !selectedNotiIds.includes(n.id)));
+                  setSelectedNotiIds([]);
+                  showToast('已删除选中的消息通知');
+                }}
+                className="bg-[#fff2e8] text-[#fa541c] hover:bg-[#ffe8d6] border border-[#ffbb96]/50 h-8 px-3 rounded-[4px] text-xs font-semibold cursor-pointer shadow-2xs transition-all"
+              >
+                批量删除 ({selectedNotiIds.length})
+              </Button>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Table Container - Displaying Notifications as Table */}
-      <div className="bg-white border border-neutral-200/80 rounded-[8px] overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Main Table Content */}
+        <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse whitespace-nowrap text-[13px]">
             <thead>
               <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
-                <th className="p-4 font-medium w-[55%]">消息详情</th>
+                <th className="p-4 font-medium w-[55%] flex items-center gap-3">
+                  <input 
+                    type="checkbox"
+                    checked={filteredNotis.length > 0 && selectedNotiIds.length === filteredNotis.length}
+                    onChange={(e) => toggleSelectAllNotis(e.target.checked)}
+                    className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer accent-[#fa541c]"
+                  />
+                  <span>消息详情</span>
+                </th>
                 <th className="p-4 font-medium w-[20%]">消息分类</th>
                 <th className="p-4 font-medium w-[25%]">消息时间</th>
               </tr>
@@ -633,15 +672,26 @@ export default function TeacherCenter() {
               {filteredNotis.length > 0 ? (
                 filteredNotis.map((noti, index) => (
                   <tr key={noti.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredNotis.length - 1 && "border-b-0", !noti.read && "bg-orange-50/20")}>
-                    {/* 消息详情 */}
+                    {/* 消息详情 (带前置方框) */}
                     <td className="p-4 whitespace-normal">
-                      <div className="flex items-start gap-2.5">
-                        {!noti.read && (
-                          <span className="w-2 h-2 rounded-full bg-[#fa541c] shrink-0 mt-1.5" title="未读消息"></span>
-                        )}
-                        <div className="space-y-1">
-                          <div className={cn("font-medium transition-colors cursor-pointer group-hover:text-[#fa541c]", !noti.read ? "text-neutral-900 font-bold" : "text-neutral-800")}>
-                            {noti.title}
+                      <div className="flex items-start gap-3">
+                        <input 
+                          type="checkbox"
+                          checked={selectedNotiIds.includes(noti.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleSelectNoti(noti.id);
+                          }}
+                          className="w-4 h-4 rounded border-neutral-300 text-[#fa541c] focus:ring-[#fa541c] cursor-pointer mt-1 shrink-0 accent-[#fa541c]"
+                        />
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            {!noti.read && (
+                              <span className="w-2 h-2 rounded-full bg-[#fa541c] shrink-0" title="未读消息"></span>
+                            )}
+                            <div className={cn("font-medium transition-colors cursor-pointer group-hover:text-[#fa541c]", !noti.read ? "text-neutral-900 font-bold" : "text-neutral-800")}>
+                              {noti.title}
+                            </div>
                           </div>
                           <div className="text-xs text-neutral-500 leading-relaxed font-normal">
                             {noti.content}
@@ -650,17 +700,9 @@ export default function TeacherCenter() {
                       </div>
                     </td>
 
-                    {/* 消息分类 */}
-                    <td className="p-4">
-                      <span className={cn(
-                        "px-2 py-0.5 text-[12px] rounded border font-medium inline-block",
-                        noti.type === '系统通知' ? "bg-blue-50 text-blue-600 border-blue-200" :
-                        noti.type === '考试提醒' ? "bg-purple-50 text-purple-600 border-purple-200" :
-                        noti.type === '审核结果通知' ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
-                        "bg-orange-50 text-orange-600 border-orange-200"
-                      )}>
-                        {noti.type}
-                      </span>
+                    {/* 消息分类 - 普通方式展示，无标签/背景样式 */}
+                    <td className="p-4 text-neutral-700 font-normal text-[13px]">
+                      {noti.type}
                     </td>
 
                     {/* 消息时间 */}
