@@ -250,8 +250,16 @@ export default function TeacherDatasets({
   };
 
   const toggleAvailability = (ds: Dataset) => {
-    setDatasets(prev => prev.map(d => d.id === ds.id ? { ...d, isAvailable: !d.isAvailable } : d));
-    showToast(`数据集「${ds.name}」已${!ds.isAvailable ? '启用' : '禁用'}`);
+    const actionText = ds.isAvailable ? '禁用' : '启用';
+    setConfirmDialog({
+      show: true,
+      title: `确认${actionText}数据集`,
+      message: `确定要${actionText}数据集 "${ds.name}" 吗？${ds.isAvailable ? '禁用后该数据集将暂不可用于相关实验项目。' : '启用后该数据集将正常恢复使用。'}`,
+      onConfirm: () => {
+        setDatasets(prev => prev.map(d => d.id === ds.id ? { ...d, isAvailable: !d.isAvailable } : d));
+        showToast(`数据集「${ds.name}」已${actionText}`);
+      }
+    });
   };
 
   const handleOpenCreate = () => {
