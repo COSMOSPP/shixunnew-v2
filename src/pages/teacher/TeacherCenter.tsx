@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Bell, Database, Key, Shield, AlertCircle, CheckCircle, ChevronRight, Clock, Plus, Trash2, Edit, Activity, Copy, Eye, EyeOff, Laptop, Smartphone, FileText, Check, Settings, Globe, Mail, Phone, Building2, Hash, Calendar, X, Lock, Award, BookOpen, GraduationCap, Sparkles, Users, Share2, Camera, FolderKanban, Star, CheckCircle2, Briefcase } from 'lucide-react';
+import { User, Bell, Database, Key, Shield, AlertCircle, CheckCircle, ChevronRight, Clock, Plus, Trash2, Edit, Activity, Copy, Eye, EyeOff, Laptop, Smartphone, FileText, Check, Settings, Globe, Mail, Phone, Building2, Hash, Calendar, X, Lock, Award, BookOpen, GraduationCap, Sparkles, Users, Share2, Camera, FolderKanban, Star, CheckCircle2, Briefcase, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -1131,7 +1131,7 @@ export default function TeacherCenter() {
   );
 
   return (
-    <div className="flex flex-1 w-full bg-white overflow-hidden shadow-sm">
+    <div className="flex h-full w-full bg-white overflow-hidden shadow-sm">
       
       {/* Toast */}
       {toast && (
