@@ -3,7 +3,7 @@ import {
   BookOpen, FolderKanban, FileQuestion, Cpu, Building, CheckCircle, 
   Clock, Search, Filter, Check, Shield, AlertCircle, Sparkles, X, 
   FileText, ClipboardCheck, ThumbsUp, User, ChevronRight, Database,
-  ChevronDown, HelpCircle
+  ChevronDown, HelpCircle, Info, ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -544,7 +544,7 @@ export default function AdminAudit() {
       )}
 
       {/* Left Sidebar Menu */}
-      <div className="w-[240px] border-r border-neutral-border flex-shrink-0 flex flex-col bg-white h-full">
+      <div className="w-[200px] border-r border-neutral-border flex-shrink-0 flex flex-col bg-white h-full">
         <div className="p-5 border-b border-neutral-border shrink-0">
           <h2 className="text-lg font-semibold text-neutral-title">审核中心</h2>
         </div>
@@ -554,7 +554,7 @@ export default function AdminAudit() {
           <button 
             onClick={() => { setActiveMenu("course"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "course" 
                 ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
                 : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
@@ -566,7 +566,7 @@ export default function AdminAudit() {
           <button 
             onClick={() => { setActiveMenu("project"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "project" 
                 ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
                 : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
@@ -578,7 +578,7 @@ export default function AdminAudit() {
           <button 
             onClick={() => { setActiveMenu("practice"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "practice" 
                 ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
                 : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
@@ -590,7 +590,7 @@ export default function AdminAudit() {
           <button 
             onClick={() => { setActiveMenu("dataset"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "dataset" 
                 ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
                 : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
@@ -602,7 +602,7 @@ export default function AdminAudit() {
           <button 
             onClick={() => { setActiveMenu("question"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "question" 
                 ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
                 : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
@@ -614,7 +614,7 @@ export default function AdminAudit() {
           <button 
             onClick={() => { setActiveMenu("ai_capacity"); setActiveStatusFilter("全部"); setCurrentPage(1); }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[14px] font-medium transition-all duration-200 cursor-pointer text-left border-0 bg-transparent",
               activeMenu === "ai_capacity" 
                 ? "bg-[#fff2e8] text-[#fa541c] font-semibold" 
                 : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
@@ -626,7 +626,7 @@ export default function AdminAudit() {
         </nav>
       </div>
 
-      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-8 flex flex-col min-h-0 space-y-4">
+      <div className="flex-1 overflow-auto bg-[#f5f6f8] p-6 flex flex-col min-h-0 space-y-4">
         {/* Header Title Section (Styled exact matching TeacherQuestions) */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 shrink-0">
           <div className="flex items-end gap-4">
@@ -717,30 +717,14 @@ export default function AdminAudit() {
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
                 <tr className="border-b border-neutral-border/50 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
-                  <th className="pl-6 pr-3 py-3.5 font-medium w-12 text-left">
-                    <button 
-                      type="button"
-                      onClick={() => toggleSelectAll(selectedItemIds.length !== paginatedResources.length || paginatedResources.length === 0)}
-                      className={cn(
-                        "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
-                        selectedItemIds.length === paginatedResources.length && paginatedResources.length > 0
-                          ? "bg-[#fa541c] border-[#fa541c] text-white"
-                          : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                      )}
-                    >
-                      {selectedItemIds.length === paginatedResources.length && paginatedResources.length > 0 && <span className="text-[10px] font-bold">✓</span>}
-                    </button>
-                  </th>
-                  <th className="px-3 py-3.5 font-medium text-left">资源名称</th>
+                  <th className="pl-6 pr-3 py-3.5 font-medium text-left">资源名称</th>
                   <th className="px-3 py-3.5 font-medium text-left">
                     <div className="flex items-center gap-1">类型 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
                   </th>
                   <th className="px-3 py-3.5 font-medium text-left">提交教师</th>
+                  <th className="px-3 py-3.5 font-medium text-left">申请时间</th>
                   <th className="px-3 py-3.5 font-medium text-left">
-                    <div className="flex items-center gap-1">申请时间 <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
-                  </th>
-                  <th className="px-3 py-3.5 font-medium text-left">
-                    <div className="flex items-center gap-1">审核状态 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /> <ChevronDown className="w-3.5 h-3.5 text-neutral-400" /></div>
+                    <div className="flex items-center gap-1">审核状态 <HelpCircle className="w-3.5 h-3.5 text-neutral-400" /></div>
                   </th>
                   <th className="pl-3 pr-6 py-3.5 font-medium text-left">操作</th>
                 </tr>
@@ -749,20 +733,6 @@ export default function AdminAudit() {
                 {paginatedResources.map((item, index) => (
                   <tr key={item.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === paginatedResources.length - 1 && "border-b-0")}>
                     <td className="pl-6 pr-3 py-3 text-left">
-                      <button 
-                        type="button"
-                        onClick={() => toggleSelectItem(item.id)}
-                        className={cn(
-                          "w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer",
-                          selectedItemIds.includes(item.id)
-                            ? "bg-[#fa541c] border-[#fa541c] text-white"
-                            : "border-neutral-300 hover:border-[#fa541c] bg-white"
-                        )}
-                      >
-                        {selectedItemIds.includes(item.id) && <span className="text-[10px] font-bold">✓</span>}
-                      </button>
-                    </td>
-                    <td className="px-3 py-3 text-left">
                       <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer truncate max-w-[340px]" title={item.name}>
                         {item.name}
                       </div>
@@ -887,15 +857,15 @@ export default function AdminAudit() {
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex justify-end animate-fade-in">
           <div className="bg-white w-full max-w-[620px] h-screen flex flex-col shadow-2xl border-l border-neutral-border animate-in slide-in-from-right duration-300">
             
-            {/* Drawer Header */}
-            <div className="px-6 py-5 border-b border-neutral-border flex justify-between items-center bg-neutral-50/50 shrink-0">
-              <h3 className="text-sm font-bold text-neutral-title flex items-center gap-2">
-                <Shield className="w-5 h-5 text-[#fa541c]" />
-                <span className="text-[15px]">审核</span>
+            {/* Drawer Header (Ref Teacher Invigilation Info Header) */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h3 className="text-[15px] font-bold text-neutral-850 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#fa541c]" />
+                <span>审核资源详情</span>
               </h3>
               <button 
                 onClick={() => setReviewingItem(null)} 
-                className="text-neutral-caption hover:text-neutral-title transition-colors p-1 rounded-lg hover:bg-neutral-100"
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -904,32 +874,45 @@ export default function AdminAudit() {
             {/* Drawer Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
               
-              {/* Basic Details Box */}
-              <div className="space-y-3 bg-[#fff2e8]/10 p-5 rounded-xl border border-[#ffbb96]/30">
-                <h4 className="text-[15px] font-bold text-neutral-title leading-snug">{reviewingItem.name}</h4>
-                <div className="h-[1px] bg-neutral-border/60"></div>
-                <p className="text-[12px] text-neutral-body flex flex-wrap gap-x-4 gap-y-1">
-                  <span><strong>提请教师:</strong> {reviewingItem.creator}</span>
-                  <span><strong>提交时间:</strong> {reviewingItem.submitTime}</span>
-                </p>
+              {/* Resource Core Info Panel Header (Ref Teacher Invigilation Card Style) */}
+              <div className="border border-neutral-200 rounded-[8px] bg-white shadow-xs overflow-hidden">
+                <div className="bg-neutral-50 px-4 py-2.5 border-b border-neutral-200 font-bold text-neutral-800 text-[13px] flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-[#fa541c]" />
+                    <span>审核资源基础信息</span>
+                  </div>
+                  <span className="px-2 py-0.5 text-[11px] font-bold rounded bg-orange-50 text-[#fa541c] border border-[#ffbb96]">
+                    {reviewingItem.status}
+                  </span>
+                </div>
+                <div className="p-4 space-y-3 select-none text-[13px]">
+                  <div className="text-[14px] font-bold text-neutral-900 leading-snug">{reviewingItem.name}</div>
+                  <div className="grid grid-cols-2 gap-3.5 pt-2 border-t border-neutral-100 text-neutral-700">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] text-neutral-400 font-medium">提请教师</span>
+                      <span className="text-neutral-800 font-semibold">{reviewingItem.creator}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] text-neutral-400 font-medium">提交时间</span>
+                      <span className="text-neutral-800 font-semibold">{reviewingItem.submitTime}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Resource Core details / 说明 */}
+              {/* Resource Core details / 说明 (Ref Teacher side Off-Shelf style) */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-neutral-caption uppercase tracking-wider block">说明</span>
-                <div className="p-5 border border-neutral-border rounded-xl bg-white space-y-4 shadow-3xs">
-                  <p className="text-xs text-neutral-body leading-relaxed font-medium bg-neutral-50 p-3 rounded-lg border border-neutral-100">{reviewingItem.details.content}</p>
-                  
-                  <div className="border-t border-neutral-200/50"></div>
-                  
-                  <span className="text-[10px] font-bold text-neutral-caption block uppercase tracking-wider">大纲结构/核心章节/评分细则:</span>
-                  <div className="space-y-2 pt-1">
-                    {reviewingItem.details.outline.map((line, idx) => (
-                      <div key={idx} className="flex gap-2.5 items-start text-xs text-neutral-body">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#fa541c] mt-1.5 shrink-0" />
-                        <span className="leading-relaxed font-medium">{line}</span>
-                      </div>
-                    ))}
+                <div className="flex items-center justify-between">
+                  <label className="text-[13px] font-bold text-[#262626]">申请说明</label>
+                  <span className="text-[11px] text-neutral-400">提请变动与发布详情</span>
+                </div>
+                <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-[#d4380d]">
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                  <div className="flex-1 space-y-1.5">
+                    <p className="font-bold text-[13px] text-[#fa541c]">说明及原由摘要</p>
+                    <p className="text-[13px] text-[#d4380d] opacity-90 leading-relaxed bg-white/80 border border-[#ffbb96]/50 rounded-[4px] p-3 font-normal">
+                      {reviewingItem.details.content}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -937,16 +920,16 @@ export default function AdminAudit() {
               {/* Rejection input area */}
               {showRejectForm && (
                 <div className="space-y-2 pt-2 animate-slide-up">
-                  <label className="text-[11px] font-bold text-rose-600 block flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>驳回审核具体意见 (必填)</span>
+                  <label className="text-[13px] font-bold text-[#fa541c] flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-[#fa541c]" />
+                    <span>驳回审核具体意见 <span className="text-[#fa541c]">*</span></span>
                   </label>
                   <textarea 
                     rows={4}
                     placeholder="请输入对该教学资源调整修改的细则说明，协助教师进行补充重构..."
                     value={rejectionInput}
                     onChange={(e) => setRejectionInput(e.target.value)}
-                    className="w-full border border-neutral-border rounded-lg p-3 text-xs focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c] bg-white text-neutral-title resize-none font-medium leading-normal shadow-3xs"
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] p-3.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28 leading-relaxed"
                   />
                 </div>
               )}
@@ -957,13 +940,31 @@ export default function AdminAudit() {
             <div className="px-6 py-4 border-t border-neutral-border bg-neutral-50/50 flex justify-end gap-3 shrink-0">
               {showRejectForm ? (
                 <>
-                  <button onClick={() => setShowRejectForm(false)} className="px-4 py-2.5 border border-neutral-border text-neutral-body rounded-lg text-xs font-bold hover:bg-neutral-100 cursor-pointer transition-colors">返回</button>
-                  <button onClick={() => handleReject(reviewingItem.id)} className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm">确认驳回</button>
+                  <button 
+                    onClick={() => setShowRejectForm(false)} 
+                    className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                  >
+                    返回
+                  </button>
+                  <button 
+                    onClick={() => handleReject(reviewingItem.id)} 
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-6 rounded-[4px] text-[13px] font-semibold cursor-pointer border-0 shadow-sm transition-colors"
+                  >
+                    确认驳回
+                  </button>
                 </>
               ) : (
                 <>
-                  <button onClick={() => setShowRejectForm(true)} className="px-4 py-2.5 border border-neutral-border text-neutral-body rounded-lg text-xs font-bold hover:bg-neutral-100 cursor-pointer transition-colors">驳回并通知</button>
-                  <button onClick={() => handleApprove(reviewingItem.id)} className="px-5 py-2.5 bg-[#fa541c] hover:bg-[#e84a15] text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm">
+                  <button 
+                    onClick={() => setShowRejectForm(true)} 
+                    className="border border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+                  >
+                    驳回并通知
+                  </button>
+                  <button 
+                    onClick={() => handleApprove(reviewingItem.id)} 
+                    className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] text-[13px] font-semibold cursor-pointer border-0 shadow-sm transition-colors"
+                  >
                     审核通过
                   </button>
                 </>
