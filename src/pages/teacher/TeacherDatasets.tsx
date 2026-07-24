@@ -416,35 +416,37 @@ export default function TeacherDatasets({
         </div>
       </div>
 
-      {/* Content Area - Table Layout matching course table style in TeacherHome */}
+      {/* Content Area - Table Layout matching TeacherProjects.tsx */}
       <div className="flex-1 overflow-auto bg-white rounded-xl border border-neutral-200/80 shadow-xs flex flex-col justify-between">
         {filteredData.length > 0 ? (
           <div className="flex flex-col flex-1 justify-between">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse whitespace-nowrap">
+              <table className="w-full text-left border-collapse whitespace-nowrap text-[13px]">
                 <thead>
                   <tr className="border-b border-neutral-100 bg-neutral-50/50 text-[13px] text-neutral-600 font-medium">
-                    <th className="px-4 py-3 pl-6 text-left">数据集信息</th>
-                    <th className="px-4 py-3 text-left">创建人</th>
-                    <th className="px-4 py-3 text-left">类型</th>
-                    <th className="px-4 py-3 text-left">是否可用</th>
-                    <th className="px-4 py-3 text-left">范围</th>
-                    <th className="px-4 py-3 text-left">审核状态</th>
-                    <th className="px-4 py-3 text-left">更新时间</th>
-                    <th className="px-4 py-3 pr-6 text-left">操作</th>
+                    <th className="p-4 font-medium w-[30%]">数据集信息</th>
+                    <th className="p-4 font-medium">创建人</th>
+                    <th className="p-4 font-medium">类型</th>
+                    <th className="p-4 font-medium">是否可用</th>
+                    <th className="p-4 font-medium">范围</th>
+                    <th className="p-4 font-medium">审核状态</th>
+                    <th className="p-4 font-medium">更新时间</th>
+                    <th className="p-4 font-medium">操作</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredData.map((ds, index) => (
                     <tr key={ds.id} className={cn("border-b border-neutral-100 hover:bg-neutral-50/30 transition-colors group text-[13px]", index === filteredData.length - 1 && "border-b-0")}>
-                      {/* 数据集信息 */}
-                      <td className="px-4 py-3 pl-6 text-left">
-                        <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer">{ds.name}</div>
+                      {/* 1. 数据集信息 */}
+                      <td className="p-4">
+                        <div className="font-medium text-neutral-800 group-hover:text-[#fa541c] transition-colors cursor-pointer">
+                          {ds.name}
+                        </div>
                         {ds.subtitle && (
                           <div className="text-xs text-neutral-500 font-mono mt-0.5">{ds.subtitle}</div>
                         )}
                         {ds.tags && ds.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-1">
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
                             {ds.tags.map((t, idx) => (
                               <span key={idx} className="px-2 py-0.5 bg-neutral-50 text-neutral-500 border border-neutral-200/80 text-[11px] rounded font-mono">
                                 {t}
@@ -454,13 +456,13 @@ export default function TeacherDatasets({
                         )}
                       </td>
 
-                      {/* 创建人 */}
-                      <td className="px-4 py-3 text-left text-neutral-600 font-medium">
-                        {ds.creator}
+                      {/* 2. 创建人 */}
+                      <td className="p-4 text-neutral-600 font-medium">
+                        <div className="text-neutral-800 font-medium">{ds.creator}</div>
                       </td>
 
-                      {/* 类型 */}
-                      <td className="px-4 py-3 text-left">
+                      {/* 3. 类型 */}
+                      <td className="p-4">
                         <span className={cn(
                           "px-2 py-0.5 text-[12px] rounded border font-medium",
                           ds.type === '文本' ? "bg-blue-50 text-blue-600 border-blue-200" :
@@ -471,18 +473,18 @@ export default function TeacherDatasets({
                         </span>
                       </td>
 
-                      {/* 是否可用 */}
-                      <td className="px-4 py-3 text-left">
+                      {/* 4. 是否可用 */}
+                      <td className="p-4">
                         <span className={cn(
                           "px-2 py-0.5 text-[12px] rounded border font-medium",
-                          ds.isAvailable ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-neutral-100 text-neutral-600 border-neutral-200"
+                          ds.isAvailable ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-neutral-50 text-neutral-500 border-neutral-200"
                         )}>
                           {ds.isAvailable ? '可用' : '不可用'}
                         </span>
                       </td>
 
-                      {/* 范围 */}
-                      <td className="px-4 py-3 text-left">
+                      {/* 5. 范围 */}
+                      <td className="p-4">
                         <span className={cn(
                           "px-2 py-0.5 text-[12px] rounded border font-medium",
                           ds.scope === '公共' || ds.scope === '平台公共' ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-neutral-50 text-neutral-500 border-neutral-200"
@@ -491,34 +493,34 @@ export default function TeacherDatasets({
                         </span>
                       </td>
 
-                      {/* 审核状态 */}
-                      <td className="px-4 py-3 text-left">
+                      {/* 6. 审核状态 */}
+                      <td className="p-4">
                         {ds.auditStatus === '待审核' ? (
                           <span className="text-[#fa541c] font-medium">待审核</span>
-                        ) : ds.auditStatus === '审核通过' || ds.auditStatus === '已发布' ? (
+                        ) : ds.auditStatus === '审核通过' || ds.auditStatus === '已发布' || ds.auditStatus === '已通过' ? (
                           <span className="text-emerald-600 font-medium">已通过</span>
                         ) : (
                           <span className="text-neutral-400 font-normal">--</span>
                         )}
                       </td>
 
-                      {/* 更新时间 */}
-                      <td className="px-4 py-3 text-left text-neutral-500 font-mono text-[12px]">
+                      {/* 7. 更新时间 */}
+                      <td className="p-4 text-neutral-500 font-mono text-[12px]">
                         {ds.updateTime}
                       </td>
 
-                      {/* 操作: 默认展示高频两个 (编辑, 公开), 其他放到"更多"下拉菜单 (包含下架) */}
-                      <td className="px-4 py-3 pr-6 text-left">
+                      {/* 8. 操作 */}
+                      <td className="p-4">
                         <div className="flex items-center gap-3">
                           <button 
                             onClick={() => handleOpenEdit(ds)} 
-                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold"
+                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-medium rounded-[4px]"
                           >
                             编辑
                           </button>
                           <button 
                             onClick={() => handleOpenApplyPublic(ds)} 
-                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold"
+                            className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-medium rounded-[4px]"
                           >
                             公开
                           </button>
@@ -530,7 +532,7 @@ export default function TeacherDatasets({
                                 e.stopPropagation();
                                 setActiveDropdownId(activeDropdownId === ds.id ? null : ds.id);
                               }}
-                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold flex items-center gap-0.5"
+                              className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-medium flex items-center gap-0.5 rounded-[4px]"
                             >
                               更多 <ChevronDown className="w-3 h-3" />
                             </button>
