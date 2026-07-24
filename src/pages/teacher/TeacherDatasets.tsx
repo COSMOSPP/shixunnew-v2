@@ -416,8 +416,8 @@ export default function TeacherDatasets({
         </div>
       </div>
 
-      {/* Content Area - Table Layout matching TeacherProjects.tsx */}
-      <div className="flex-1 overflow-auto bg-white border border-neutral-200/80 flex flex-col justify-between">
+      {/* Content Area - Table Layout matching 题库管理 Table Container */}
+      <div className="flex-1 overflow-auto bg-white border border-neutral-200/80 rounded-[8px] flex flex-col justify-between overflow-hidden">
         {filteredData.length > 0 ? (
           <div className="flex flex-col flex-1 justify-between">
             <div className="overflow-x-auto">
