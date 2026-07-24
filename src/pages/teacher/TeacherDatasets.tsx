@@ -26,16 +26,19 @@ import { cn } from '@/lib/utils';
 interface Dataset {
   id: number;
   name: string;
+  subtitle?: string;
   desc: string;
-  type: '文本' | '图片' | '视频' | '音频' | '表格' | '混合';
+  creator: string;
+  type: '文本' | '图像' | '视频' | '音频' | '表格' | '其他' | '混合';
+  isAvailable: boolean;
+  scope: '私有' | '公共' | '租户';
+  auditStatus?: '待审核' | '审核通过' | '已下架' | '--';
   tags: string[];
-  scope: '平台公共' | '我的私有';
-  size: string;
-  fileCount: number;
+  size?: string;
+  fileCount?: number;
   updateTime: string;
-  courseId: number | null;
+  courseId?: number | null;
   courseName?: string;
-  status?: '已发布' | '已下架';
 }
 
 interface TeacherDatasetsProps {
@@ -50,44 +53,46 @@ export default function TeacherDatasets({
   defaultCourseName = null,
 }: TeacherDatasetsProps) {
 
-  // Mock data
+  // Mock data matching exact user screenshot
   const initialDatasets: Dataset[] = [
     {
       id: 1,
-      name: '医疗诊断对话数据集',
-      desc: '包含10万+条医患多轮问答对话记录，经过专业脱敏处理。',
+      name: '111',
+      subtitle: '11',
+      desc: '11',
+      creator: 'liuwei01',
       type: '文本',
-      tags: ['医疗', 'NLP', '问答'],
-      scope: '平台公共',
-      size: '256 MB',
-      fileCount: 1,
-      updateTime: '2026-05-20',
-      courseId: null
+      isAvailable: false,
+      scope: '私有',
+      auditStatus: '--',
+      tags: ['tag-bbb'],
+      updateTime: '2026-07-23'
     },
     {
       id: 2,
-      name: '自动驾驶街景图像库',
-      desc: '5000张标注了车辆、行人、交通标志的高清街景图片。',
-      type: '图片',
-      tags: ['CV', '自动驾驶', '目标检测'],
-      scope: '我的私有',
-      size: '4.2 GB',
-      fileCount: 5000,
-      updateTime: '2026-05-21',
-      courseId: 1,
-      courseName: '人工智能基础与实践'
+      name: 'test2',
+      subtitle: '图像分类标注数据集',
+      desc: '涵盖多类型高分辨率图像标注与特征向量',
+      creator: 'liuwei01',
+      type: '图像',
+      isAvailable: true,
+      scope: '私有',
+      auditStatus: '待审核',
+      tags: ['公有云', '私有云'],
+      updateTime: '2026-07-15'
     },
     {
       id: 3,
-      name: '2025全球宏观经济指标',
-      desc: '涵盖全球主要经济体过去10年的核心经济指标时间序列数据。',
-      type: '表格',
-      tags: ['金融', '预测', '时序分析'],
-      scope: '平台公共',
-      size: '15 MB',
-      fileCount: 3,
-      updateTime: '2026-05-18',
-      courseId: null
+      name: 'test111',
+      subtitle: '大模型私有数据预处理包',
+      desc: '提供底层数据格式转换与预处理工具集',
+      creator: 'liuwei01',
+      type: '其他',
+      isAvailable: true,
+      scope: '私有',
+      auditStatus: '待审核',
+      tags: ['私有云'],
+      updateTime: '2026-07-14'
     }
   ];
 
@@ -197,6 +202,16 @@ export default function TeacherDatasets({
     }
   };
 
+  const handleApplyPublic = (ds: Dataset) => {
+    setDatasets(prev => prev.map(d => d.id === ds.id ? { ...d, auditStatus: '待审核' } : d));
+    showToast(`数据集「${ds.name}」已提交公开审核`);
+  };
+
+  const toggleAvailability = (ds: Dataset) => {
+    setDatasets(prev => prev.map(d => d.id === ds.id ? { ...d, isAvailable: !d.isAvailable } : d));
+    showToast(`数据集「${ds.name}」已${!ds.isAvailable ? '启用' : '禁用'}`);
+  };
+
   const handleOpenCreate = () => {
     setIsEditMode(false);
     setCurrentId(null);
@@ -204,7 +219,7 @@ export default function TeacherDatasets({
     setFormDesc('');
     setFormType('文本');
     setFormTags('');
-    setFormScope('我的私有');
+    setFormScope('私有');
     setFormFile(null);
     setIsDrawerOpen(true);
   };
@@ -236,7 +251,6 @@ export default function TeacherDatasets({
         desc: formDesc,
         type: formType,
         tags: tagsArray,
-        scope: formScope,
         updateTime: new Date().toISOString().split('T')[0]
       } : d));
       showToast('数据集更新成功');
@@ -244,14 +258,17 @@ export default function TeacherDatasets({
       const newDataset: Dataset = {
         id: Date.now(),
         name: formName,
+        subtitle: formDesc || formName,
         desc: formDesc,
+        creator: 'liuwei01',
         type: formType,
         tags: tagsArray,
-        scope: formScope,
+        isAvailable: true,
+        scope: '私有',
+        auditStatus: '--',
         size: formFile ? `${(formFile.size / 1024 / 1024).toFixed(2)} MB` : '0 MB',
         fileCount: formFile ? 1 : 0,
-        updateTime: new Date().toISOString().split('T')[0],
-        courseId: courseFilter !== 'all' ? Number(courseFilter) : null
+        updateTime: new Date().toISOString().split('T')[0]
       };
       setDatasets([newDataset, ...datasets]);
       showToast('数据集创建成功');
@@ -357,103 +374,152 @@ export default function TeacherDatasets({
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-auto">
+      {/* Content Area - Table Layout matching user screenshot */}
+      <div className="flex-1 overflow-auto bg-white rounded-xl border border-neutral-200/80 shadow-xs flex flex-col justify-between">
         {filteredData.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredData.map(ds => (
-              <div key={ds.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col hover:-translate-y-1">
-                <div className="p-6 flex-1 relative">
-                  {/* Status Badges */}
-                  <div className="absolute top-0 right-0 flex gap-1">
-                    {ds.status === '已下架' && (
-                      <div className="bg-neutral-100 text-neutral-600 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                        已下架
-                      </div>
-                    )}
-                    {ds.scope === '平台公共' && (
-                      <div className="bg-[#fff2e8] text-[#fa541c] text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                        公共资源
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center flex-shrink-0">
-                      {getIconByType(ds.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-[15px] text-neutral-800 truncate group-hover:text-[#fa541c] transition-colors">{ds.name}</h3>
-                      <p className="text-[12px] text-neutral-500 mt-1 line-clamp-2 leading-relaxed">{ds.desc}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {ds.tags.map((tag, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-neutral-50 text-neutral-600 rounded text-[11px] border border-neutral-200">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[12px] bg-neutral-50/50 rounded-lg py-2 border border-neutral-100/50">
-                    <div>
-                      <div className="text-neutral-400 text-[10px]">类型</div>
-                      <div className="font-medium text-neutral-700 mt-0.5">{ds.type}</div>
-                    </div>
-                    <div>
-                      <div className="text-neutral-400 text-[10px]">大小</div>
-                      <div className="font-medium text-neutral-700 mt-0.5">{ds.size}</div>
-                    </div>
-                    <div>
-                      <div className="text-neutral-400 text-[10px]">文件数</div>
-                      <div className="font-medium text-neutral-700 mt-0.5">{ds.fileCount}</div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Card Footer Actions */}
-                <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/40 flex items-center justify-between">
-                  <div className="text-[12px] text-neutral-400">更新于 {ds.updateTime}</div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="关联课程">
-                      <LinkIcon className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleOpenEdit(ds)}
-                      className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="编辑"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    {ds.status === '已下架' ? (
-                      <button 
-                        onClick={() => handleReShelfDataset(ds)}
-                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="重新上架"
-                      >
-                        <UploadCloud className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => {
-                          setDatasetToOffShelf(ds);
-                          setOffShelfReason('');
-                          setIsOffShelfModalOpen(true);
-                        }}
-                        className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="下架"
-                      >
-                        <ArrowDownCircle className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => handleDelete(ds)}
-                      className="p-1.5 text-neutral-400 hover:text-[#fa541c] hover:bg-orange-50 rounded transition-colors bg-transparent border-0 cursor-pointer" title="删除"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+          <div className="flex flex-col flex-1 justify-between">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap text-xs text-neutral-700">
+                <thead>
+                  <tr className="border-b border-neutral-200/80 bg-white text-neutral-800 font-semibold text-[13px]">
+                    <th className="py-4 pl-6 pr-4 font-semibold text-left">数据集信息</th>
+                    <th className="py-4 px-4 font-semibold text-left">创建人</th>
+                    <th className="py-4 px-4 font-semibold text-left">类型</th>
+                    <th className="py-4 px-4 font-semibold text-left">是否可用</th>
+                    <th className="py-4 px-4 font-semibold text-left">范围</th>
+                    <th className="py-4 px-4 font-semibold text-left">审核状态</th>
+                    <th className="py-4 px-4 font-semibold text-left">更新时间</th>
+                    <th className="py-4 pl-4 pr-6 font-semibold text-left">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {filteredData.map(ds => (
+                    <tr key={ds.id} className="hover:bg-neutral-50/40 transition-colors group">
+                      {/* 数据集信息 */}
+                      <td className="py-4 pl-6 pr-4 align-top">
+                        <div className="font-bold text-neutral-900 text-sm leading-snug">{ds.name}</div>
+                        {ds.subtitle && (
+                          <div className="text-xs text-neutral-500 mt-0.5 font-normal">{ds.subtitle}</div>
+                        )}
+                        {ds.tags && ds.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {ds.tags.map((t, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-neutral-50 text-neutral-500 border border-neutral-200/80 text-[11px] rounded font-mono">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* 创建人 */}
+                      <td className="py-4 px-4 align-top font-medium text-neutral-800">
+                        {ds.creator}
+                      </td>
+
+                      {/* 类型 */}
+                      <td className="py-4 px-4 align-top">
+                        <span className={cn(
+                          "px-2.5 py-1 text-xs font-medium rounded-md border inline-block",
+                          ds.type === '文本' ? "bg-blue-50 text-blue-600 border-blue-200" :
+                          (ds.type === '图像' || ds.type === '图片') ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
+                          "bg-neutral-100 text-neutral-600 border-neutral-200"
+                        )}>
+                          {ds.type}
+                        </span>
+                      </td>
+
+                      {/* 是否可用 */}
+                      <td className="py-4 px-4 align-top">
+                        <span className={cn(
+                          "px-2.5 py-1 text-xs font-medium rounded-md border inline-block",
+                          ds.isAvailable ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-neutral-100 text-neutral-500 border-neutral-200"
+                        )}>
+                          {ds.isAvailable ? '可用' : '不可用'}
+                        </span>
+                      </td>
+
+                      {/* 范围 */}
+                      <td className="py-4 px-4 align-top">
+                        <span className={cn(
+                          "px-2.5 py-1 text-xs font-medium rounded-md border inline-block",
+                          ds.scope === '公共' || ds.scope === '平台公共' ? "bg-orange-50 text-[#fa541c] border-orange-200" : "bg-neutral-100 text-neutral-500 border-neutral-200"
+                        )}>
+                          {ds.scope === '平台公共' ? '公共' : ds.scope}
+                        </span>
+                      </td>
+
+                      {/* 审核状态 */}
+                      <td className="py-4 px-4 align-top font-bold">
+                        {ds.auditStatus === '待审核' ? (
+                          <span className="text-[#fa541c]">待审核</span>
+                        ) : ds.auditStatus === '审核通过' || ds.auditStatus === '已发布' ? (
+                          <span className="text-emerald-600">已通过</span>
+                        ) : (
+                          <span className="text-neutral-400 font-normal">--</span>
+                        )}
+                      </td>
+
+                      {/* 更新时间 */}
+                      <td className="py-4 px-4 align-top text-neutral-500 font-mono text-xs">
+                        {ds.updateTime}
+                      </td>
+
+                      {/* 操作 */}
+                      <td className="py-4 pl-4 pr-6 align-top">
+                        <div className="flex items-center gap-3 text-xs font-semibold">
+                          <button 
+                            onClick={() => handleOpenEdit(ds)} 
+                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
+                          >
+                            编辑
+                          </button>
+                          <button 
+                            onClick={() => handleApplyPublic(ds)} 
+                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
+                          >
+                            公开
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(ds)} 
+                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
+                          >
+                            删除
+                          </button>
+                          <button 
+                            onClick={() => toggleAvailability(ds)} 
+                            className="text-[#fa541c] hover:underline cursor-pointer bg-transparent border-0"
+                          >
+                            {ds.isAvailable ? '禁用' : '启用'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Bottom Pagination Bar matching screenshot */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-white flex items-center justify-end gap-3 text-xs text-neutral-500">
+              <span>共 {filteredData.length} 条</span>
+              <div className="flex items-center gap-1">
+                <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
+                  &lt;
+                </button>
+                <button className="w-7 h-7 bg-[#fa541c] text-white rounded font-bold flex items-center justify-center shadow-xs">
+                  1
+                </button>
+                <button className="w-7 h-7 border border-neutral-200 rounded flex items-center justify-center hover:bg-neutral-50 cursor-pointer bg-white text-neutral-600">
+                  &gt;
+                </button>
               </div>
-            ))}
+              <select className="border border-neutral-200 rounded px-2 py-1 text-xs text-neutral-600 bg-white focus:outline-none focus:border-[#fa541c]">
+                <option value="10">10 条/页</option>
+                <option value="20">20 条/页</option>
+                <option value="50">50 条/页</option>
+              </select>
+            </div>
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center pb-20">
@@ -531,11 +597,12 @@ export default function TeacherDatasets({
                   className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800 bg-white"
                 >
                   <option value="文本">文本数据集</option>
-                  <option value="图片">图片数据集</option>
+                  <option value="图像">图像数据集</option>
                   <option value="视频">视频数据集</option>
                   <option value="音频">音频数据集</option>
                   <option value="表格">表格数据集</option>
                   <option value="混合">混合数据集</option>
+                  <option value="其他">其他数据集</option>
                 </select>
               </div>
 
@@ -550,39 +617,6 @@ export default function TeacherDatasets({
                   placeholder="输入标签，用逗号分隔（如：医疗, CV, 问答）"
                   className="w-full border border-neutral-200 rounded px-3.5 py-2 text-[13px] focus:outline-none focus:border-[#fa541c] transition-all text-neutral-800"
                 />
-              </div>
-
-              <div className="grid grid-cols-[80px_1fr] items-center gap-4">
-                <label className="text-[13px] font-bold text-neutral-400 text-right">
-                  公开设置 <span className="text-[#fa541c]">*</span>
-                </label>
-                <div className="flex items-center gap-6">
-                  {['我的私有', '平台公共'].map((scope) => (
-                    <label key={scope} className="flex items-center gap-2 cursor-pointer group text-[13px] text-neutral-600 select-none">
-                      <span className="relative flex items-center justify-center">
-                        <input
-                          type="radio"
-                          name="formScope"
-                          value={scope}
-                          checked={formScope === scope}
-                          onChange={() => setFormScope(scope as '我的私有' | '平台公共')}
-                          className="sr-only"
-                        />
-                        <span className={cn(
-                          "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                          formScope === scope 
-                            ? "border-neutral-300 bg-white" 
-                            : "border-neutral-200 group-hover:border-[#fa541c]"
-                        )}>
-                          {formScope === scope && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
-                          )}
-                        </span>
-                      </span>
-                      <span>{scope}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
 
               {/* Upload Area */}
