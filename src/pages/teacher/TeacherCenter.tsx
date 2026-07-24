@@ -603,25 +603,8 @@ export default function TeacherCenter() {
             </div>
           </div>
 
-          {/* Right: Actions & Category Pill Selectors (AdminAudit style) */}
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-            <div className="flex bg-neutral-100 rounded-full p-1 border border-neutral-200/50">
-              {['所有', '系统通知', '考试提醒', '审核结果通知', '课程更新通知'].map(type => (
-                <button
-                  key={type}
-                  onClick={() => { setNotiFilter(type); setSelectedNotiIds([]); }}
-                  className={cn(
-                    "px-3.5 py-1.5 text-[12px] font-medium rounded-full transition-all duration-200 cursor-pointer border-0 bg-transparent",
-                    notiFilter === type 
-                      ? "bg-white text-[#fa541c] font-bold shadow-xs" 
-                      : "text-neutral-600 hover:text-neutral-900"
-                  )}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-
+          {/* Right: Action Buttons */}
+          <div className="flex items-center gap-3 shrink-0">
             {unreadCount > 0 && (
               <Button 
                 onClick={() => {
