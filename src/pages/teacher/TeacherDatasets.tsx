@@ -133,6 +133,42 @@ export default function TeacherDatasets({
   const [datasetToOffShelf, setDatasetToOffShelf] = useState<Dataset | null>(null);
   const [offShelfReason, setOffShelfReason] = useState('');
 
+  // Apply Public State (Course Module Style)
+  const [isApplyPublicModalOpen, setIsApplyPublicModalOpen] = useState(false);
+  const [datasetToApply, setDatasetToApply] = useState<Dataset | null>(null);
+  const [applyRange, setApplyRange] = useState<'租户' | '平台'>('租户');
+  const [applyReason, setApplyReason] = useState('');
+
+  const handleOpenApplyPublic = (ds: Dataset) => {
+    setDatasetToApply(ds);
+    setApplyRange('租户');
+    setApplyReason('');
+    setIsApplyPublicModalOpen(true);
+  };
+
+  const handleConfirmApplyPublic = () => {
+    if (!applyReason.trim()) {
+      showToast('请填写申请说明', 'error');
+      return;
+    }
+    if (!datasetToApply) return;
+
+    setDatasets(prev => prev.map(d => {
+      if (d.id === datasetToApply.id) {
+        return {
+          ...d,
+          auditStatus: '待审核',
+          scope: applyRange === '平台' ? '公共' : '租户'
+        };
+      }
+      return d;
+    }));
+    showToast(`数据集「${datasetToApply.name}」已提交公开申请`);
+    setIsApplyPublicModalOpen(false);
+    setDatasetToApply(null);
+    setApplyReason('');
+  };
+
   // Confirmation Modal State
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean;
@@ -306,7 +342,7 @@ export default function TeacherDatasets({
   });
 
   return (
-    <div className={cn("flex flex-col h-full", embedded ? "p-6" : "p-8")}>
+    <div className={cn("flex flex-col h-full text-left", embedded ? "p-5" : "p-6")}>
       
       {/* Toast */}
       {toast && (
@@ -320,8 +356,8 @@ export default function TeacherDatasets({
         </div>
       )}
 
-      {/* Top Actions */}
-      <div className="flex items-center justify-between mb-8">
+      {/* Top Actions - Spacing matching TeacherProjects */}
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-4">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -334,7 +370,7 @@ export default function TeacherDatasets({
             />
           </div>
           
-          {/* Scope Dropdown - Exam Module More Dropdown Style */}
+          {/* Scope Dropdown */}
           <div ref={filterDropdownRef} className="relative">
             <button 
               onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
@@ -471,7 +507,7 @@ export default function TeacherDatasets({
                         {ds.updateTime}
                       </td>
 
-                      {/* 操作: 默认展示高频两个 (编辑, 公开), 其他放到"更多"下拉菜单 */}
+                      {/* 操作: 默认展示高频两个 (编辑, 公开), 其他放到"更多"下拉菜单 (包含下架) */}
                       <td className="px-4 py-3 pr-6 text-left">
                         <div className="flex items-center gap-3">
                           <button 
@@ -481,7 +517,7 @@ export default function TeacherDatasets({
                             编辑
                           </button>
                           <button 
-                            onClick={() => handleApplyPublic(ds)} 
+                            onClick={() => handleOpenApplyPublic(ds)} 
                             className="text-[#fa541c] hover:text-[#e84a15] transition-colors bg-transparent border-0 cursor-pointer p-0 text-[13px] font-semibold"
                           >
                             公开
@@ -509,6 +545,18 @@ export default function TeacherDatasets({
                                   className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50 font-medium"
                                 >
                                   {ds.isAvailable ? '禁用' : '启用'}
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDatasetToOffShelf(ds);
+                                    setOffShelfReason('');
+                                    setIsOffShelfModalOpen(true);
+                                    setActiveDropdownId(null);
+                                  }} 
+                                  className="w-full text-left px-3.5 py-1.5 text-[12px] bg-transparent border-0 cursor-pointer block transition-all text-neutral-900 hover:text-[#fa541c] hover:bg-orange-50 font-medium"
+                                >
+                                  下架
                                 </button>
                                 <button 
                                   onClick={(e) => {
@@ -706,7 +754,118 @@ export default function TeacherDatasets({
         </div>
       )}
 
-      {/* Dataset Off-Shelf Modal/Drawer */}
+      {/* Apply Public Drawer (Ref Course Module Style in TeacherHome) */}
+      {isApplyPublicModalOpen && datasetToApply && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
+          onClick={() => setIsApplyPublicModalOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[680px] h-screen flex flex-col shadow-2xl border-l border-neutral-100 animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
+              <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#fa541c]" />
+                申请公开数据集资源
+              </h2>
+              <button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                className="text-neutral-400 hover:text-[#fa541c] p-1.5 hover:bg-neutral-100 rounded-[4px] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
+              {/* Info Alert */}
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d]">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
+                <div>
+                  <p className="font-bold mb-1 text-[13px] text-[#fa541c]">公开后平台师生可见可用</p>
+                  <p className="text-xs text-[#d4380d] opacity-90 leading-relaxed">
+                    申请公开后，数据集需经过超管审核。审核通过将加入对应范围的公共数据集库，相应师生可见可用。
+                  </p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right">数据集名称</label>
+                  <input 
+                    type="text" 
+                    value={datasetToApply.name} 
+                    disabled 
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-[4px] px-3.5 py-2 cursor-not-allowed select-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2.5">
+                    公开范围 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: '租户', label: '租户级公开', desc: '本机构/租户内所有班级与教师可见' },
+                      { key: '平台', label: '平台级公开', desc: '全平台所有院校与租户可见' }
+                    ].map(opt => (
+                      <div 
+                        key={opt.key}
+                        onClick={() => setApplyRange(opt.key as any)}
+                        className={cn(
+                          "border p-4 rounded-[4px] cursor-pointer transition-all select-none flex flex-col gap-1",
+                          applyRange === opt.key 
+                            ? "border-[#fa541c] bg-[#fff5f0]/30 font-bold"
+                            : "border-neutral-200 bg-white hover:bg-neutral-50"
+                        )}
+                      >
+                        <span className={cn("font-bold text-[13px]", applyRange === opt.key ? "text-[#fa541c]" : "text-[#262626]")}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 leading-normal">{opt.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[100px_1fr] items-start gap-4">
+                  <label className="text-[13px] font-bold text-[#262626] text-right pt-2">
+                    申请说明 <span className="text-[#fa541c]">*</span>
+                  </label>
+                  <textarea
+                    value={applyReason}
+                    onChange={(e) => setApplyReason(e.target.value)}
+                    placeholder="请简述申请公开该数据集的理由或适用实验场景..."
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 flex items-center justify-end gap-3 shrink-0">
+              <Button 
+                onClick={() => setIsApplyPublicModalOpen(false)} 
+                variant="outline" 
+                className="border-neutral-200 text-neutral-600 h-9 px-6 rounded-[4px] text-[13px] bg-white cursor-pointer hover:bg-neutral-50 transition-colors font-semibold"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleConfirmApplyPublic} 
+                className="bg-[#fa541c] hover:bg-[#e84a15] text-white h-9 px-8 rounded-[4px] shadow-sm text-[13px] border-0 cursor-pointer transition-colors font-semibold"
+              >
+                提交申请
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dataset Off-Shelf Drawer (Ref Course Module Style in TeacherHome) */}
       {isOffShelfModalOpen && datasetToOffShelf && (
         <div 
           className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[2px] flex justify-end animate-fade-in text-left"
@@ -720,7 +879,7 @@ export default function TeacherDatasets({
             <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50 shrink-0">
               <h2 className="text-[16px] font-bold text-[#262626] flex items-center gap-2">
                 <Layers className="w-5 h-5 text-[#fa541c]" />
-                下架数据集
+                下架数据集资源
               </h2>
               <button 
                 onClick={() => setIsOffShelfModalOpen(false)} 
@@ -733,7 +892,7 @@ export default function TeacherDatasets({
             {/* Body */}
             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 bg-white text-[13px]">
               {/* Info Alert */}
-              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded p-4 flex gap-3 text-sm text-[#d4380d]">
+              <div className="bg-[#fff5f0] border border-[#ffbb96] rounded-[4px] p-4 flex gap-3 text-sm text-[#d4380d]">
                 <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#fa541c]" />
                 <div>
                   <p className="font-bold mb-1 text-[13px] text-[#fa541c]">下架后数据集将暂不对平台师生公开</p>
@@ -751,7 +910,7 @@ export default function TeacherDatasets({
                     type="text" 
                     value={datasetToOffShelf.name} 
                     disabled 
-                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded px-3.5 py-2 cursor-not-allowed select-none"
+                    className="w-full text-[13px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-[4px] px-3.5 py-2 cursor-not-allowed select-none"
                   />
                 </div>
 
@@ -763,7 +922,7 @@ export default function TeacherDatasets({
                     value={offShelfReason}
                     onChange={(e) => setOffShelfReason(e.target.value)}
                     placeholder="请简述下架该数据集的具体原因及后续安排..."
-                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
+                    className="w-full text-[13px] text-[#262626] border border-neutral-200 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:border-[#fa541c] focus:ring-1 focus:ring-[#fa541c]/20 bg-white transition-all resize-none h-28"
                   />
                 </div>
               </div>
